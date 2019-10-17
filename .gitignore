@@ -1,0 +1,9 @@
+/.idea/*
+!/.idea/copyright
+.gradle
+*.iml
+target
+build
+/kotlinx-collections-immutable/dependency-reduced-pom.xml
+/benchmarks-runner/benchmarkResults
+/benchmarks-runner/localReferenceBenchmarkResults

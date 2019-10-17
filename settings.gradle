@@ -1,0 +1,15 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://dl.bintray.com/orangy/maven' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        gradlePluginPortal()
+    }
+}
+
+enableFeaturePreview('GRADLE_METADATA')
+
+rootProject.name = 'Kotlin DateTime library'
+
+include ':core'
+project(":core").name='kotlinx-datetime'
