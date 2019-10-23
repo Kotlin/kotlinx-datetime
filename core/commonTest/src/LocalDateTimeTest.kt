@@ -60,4 +60,11 @@ class LocalDateTimeTest {
         checkComponents(datetime, 2019, 10, 1, 18, 43,15,100500000)
     }
 
+    @Test
+    fun getCurrentHMS() {
+        with(Instant.now().toLocalDateTime(TimeZone.SYSTEM)) {
+            println("${hour}h ${minute}m")
+        }
+    }
+
 }

@@ -26,7 +26,7 @@ public actual class LocalDateTime internal constructor(internal val value: java.
     public actual val second: Int get() = value.second
     public actual val nanosecond: Int get() = value.nano
 
-
+    public actual val date: LocalDate get() = LocalDate(value.toLocalDate()) // cache?
 
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is LocalDateTime && this.value == other.value)

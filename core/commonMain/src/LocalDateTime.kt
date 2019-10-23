@@ -12,6 +12,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
         public fun parse(isoString: String): LocalDateTime
     }
 
+    public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int)
+
     public val year: Int
     public val monthNumber: Int
     public val month: Month
@@ -23,7 +25,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public val second: Int
     public val nanosecond: Int
 
-    public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int)
+    public val date: LocalDate
 
     public override operator fun compareTo(other: LocalDateTime): Int
 }
