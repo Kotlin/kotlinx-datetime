@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlin.random.*
 import kotlin.test.*
 
 class LocalDateTest {
@@ -48,5 +49,45 @@ class LocalDateTest {
         val datetime = LocalDateTime.parse("2016-02-29T23:59")
         val date = LocalDate(2016, 2, 29)
         checkLocalDateTimePart(date, datetime)
+    }
+
+    @Test
+    fun addComponents() {
+        val startDate = LocalDate(2016, 2, 29)
+        checkComponents(startDate + 1.calendarDays, 2016, 3, 1)
+        checkComponents(startDate + 1.calendarYears, 2017, 2, 28)
+        checkComponents(startDate + 4.calendarYears, 2020, 2, 29)
+
+        checkComponents(LocalDate.parse("2016-01-31") + 1.calendarMonths, 2016, 2, 29)
+
+        assertFailsWith<UnsupportedOperationException> { startDate + CalendarPeriod(hours = 7) }
+        assertFailsWith<UnsupportedOperationException> { startDate.plus(7, CalendarUnit.HOUR) }
+    }
+
+    @Test
+    fun tomorrow() {
+        val today = Instant.now().toLocalDateTime(TimeZone.SYSTEM).date
+
+        val nextMonthPlusDay1 = today + 1.calendarMonths + 1.calendarDays
+        val nextMonthPlusDay2 = today + (1.calendarMonths + 1.calendarDays)
+        val nextMonthPlusDay3 = today + 1.calendarDays + 1.calendarMonths
+
+    }
+
+    @Test
+    fun diffInvariant() {
+        val origin = LocalDate(2001, 1, 1)
+
+        repeat(1000) {
+            val days1 = Random.nextInt(-3652..3652)
+            val days2 = Random.nextInt(-3652..3652)
+            val ldtBefore = origin + days1.calendarDays
+            val ldtNow = origin + days2.calendarDays
+
+            val diff = ldtNow - ldtBefore
+            val ldtAfter = ldtBefore + diff
+            if (ldtAfter != ldtNow)
+                println("start: $ldtBefore, end: $ldtNow, start + diff: ${ldtBefore + diff}, diff: $diff")
+        }
     }
 }

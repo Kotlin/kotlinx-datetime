@@ -11,6 +11,7 @@ public expect class TimeZone {
     companion object {
         val SYSTEM: TimeZone
         val UTC: TimeZone
+        fun of(zoneId: String): TimeZone
     }
 
     public fun Instant.toLocalDateTime(): LocalDateTime

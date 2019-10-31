@@ -20,3 +20,8 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     public override fun compareTo(other: LocalDate): Int
 }
+
+expect fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate
+expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
+expect operator fun LocalDate.plus(period: CalendarPeriod): LocalDate
+expect operator fun LocalDate.minus(other: LocalDate): CalendarPeriod

@@ -23,5 +23,6 @@ actual class TimeZone private constructor(internal val zoneId: java.time.ZoneId)
     actual companion object {
         actual val SYSTEM: TimeZone = java.time.ZoneId.systemDefault().let(::TimeZone)
         actual val UTC: TimeZone = java.time.ZoneId.of("UTC").let(::TimeZone)
+        actual fun of(zoneId: String): TimeZone = java.time.ZoneId.of(zoneId).let(::TimeZone)
     }
 }

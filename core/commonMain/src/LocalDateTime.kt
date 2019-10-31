@@ -34,3 +34,10 @@ public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
+
+
+
+expect fun LocalDateTime.plus(value: Long, unit: CalendarUnit): LocalDateTime
+expect fun LocalDateTime.plus(value: Int, unit: CalendarUnit): LocalDateTime
+expect operator fun LocalDateTime.plus(period: CalendarPeriod): LocalDateTime
+expect operator fun LocalDateTime.minus(other: LocalDateTime): CalendarPeriod

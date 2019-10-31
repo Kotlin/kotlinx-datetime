@@ -30,5 +30,40 @@ public actual class LocalDate internal constructor(internal val value: java.time
     override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
+}
 
+
+public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
+        when (unit) {
+            CalendarUnit.YEAR -> this.value.plusYears(value)
+            CalendarUnit.MONTH -> this.value.plusMonths(value)
+            CalendarUnit.WEEK -> this.value.plusWeeks(value)
+            CalendarUnit.DAY -> this.value.plusDays(value)
+            CalendarUnit.HOUR,
+            CalendarUnit.MINUTE,
+            CalendarUnit.SECOND,
+            CalendarUnit.NANOSECOND -> throw UnsupportedOperationException("Only date based units can be added to LocalDate")
+        }.let(::LocalDate)
+
+public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
+        plus(value.toLong(), unit)
+
+public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
+        with(period) {
+            if (hours != 0 || minutes != 0 || seconds != 0L || nanoseconds != 0L) {
+                throw UnsupportedOperationException("Only date based units can be added to LocalDate")
+            }
+
+            return@with value
+                    .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
+                    .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                    .run { if (days != 0) plusDays(days.toLong()) else this }
+
+        }.let(::LocalDate)
+
+
+
+public actual operator fun LocalDate.minus(other: LocalDate): CalendarPeriod {
+    val period = java.time.Period.between(other.value, this.value)
+    return period.run { CalendarPeriod(years, months, days) }
 }
