@@ -5,7 +5,9 @@
 
 package kotlinx.datetime
 
-actual class TimeZone private constructor(internal val zoneId: java.time.ZoneId) {
+import java.time.ZoneId
+
+actual class TimeZone private constructor(internal val zoneId: ZoneId) {
     public actual val id: String get() = zoneId.id
 
 
@@ -21,8 +23,8 @@ actual class TimeZone private constructor(internal val zoneId: java.time.ZoneId)
     override fun toString(): String = zoneId.toString()
 
     actual companion object {
-        actual val SYSTEM: TimeZone = java.time.ZoneId.systemDefault().let(::TimeZone)
-        actual val UTC: TimeZone = java.time.ZoneId.of("UTC").let(::TimeZone)
-        actual fun of(zoneId: String): TimeZone = java.time.ZoneId.of(zoneId).let(::TimeZone)
+        actual val SYSTEM: TimeZone = ZoneId.systemDefault().let(::TimeZone)
+        actual val UTC: TimeZone = ZoneId.of("UTC").let(::TimeZone)
+        actual fun of(zoneId: String): TimeZone = ZoneId.of(zoneId).let(::TimeZone)
     }
 }

@@ -8,9 +8,11 @@ package kotlinx.datetime
 import kotlin.time.Duration
 import kotlin.time.nanoseconds
 import kotlin.time.seconds
+import java.time.Instant as jtInstant
+import java.time.Clock as jtClock
 
 @UseExperimental(kotlin.time.ExperimentalTime::class)
-public actual class Instant internal constructor(internal val value: java.time.Instant) : Comparable<Instant> {
+public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual fun toUnixMillis(): Long = value.toEpochMilli()
 
@@ -21,10 +23,9 @@ public actual class Instant internal constructor(internal val value: java.time.I
 
     actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
-    actual operator fun minus(other: Instant): Duration {
-        val diff = java.time.Duration.between(other.value, this.value)
-        return diff.seconds.seconds + diff.nano.nanoseconds
-    }
+    actual operator fun minus(other: Instant): Duration =
+            (this.value.epochSecond - other.value.epochSecond).seconds + // won't overflow given the instant bounds
+            (this.value.nano - other.value.nano).nanoseconds
 
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value)
 
@@ -37,13 +38,13 @@ public actual class Instant internal constructor(internal val value: java.time.I
 
     public actual companion object {
         actual fun now(): Instant =
-                Instant(java.time.Clock.systemUTC().instant())
+                Instant(jtClock.systemUTC().instant())
 
         actual fun fromUnixMillis(millis: Long): Instant =
-                Instant(java.time.Instant.ofEpochMilli(millis))
+                Instant(jtInstant.ofEpochMilli(millis))
 
         actual fun parse(isoString: String): Instant =
-                Instant(java.time.Instant.parse(isoString))
+                Instant(jtInstant.parse(isoString))
     }
 
 }

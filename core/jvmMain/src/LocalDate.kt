@@ -5,15 +5,19 @@
 
 package kotlinx.datetime
 
-public actual class LocalDate internal constructor(internal val value: java.time.LocalDate) : Comparable<LocalDate> {
+import java.time.LocalDate as jtLocalDate
+import java.time.Period as jtPeriod
+
+
+public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
         public actual fun parse(isoString: String): LocalDate {
-            return java.time.LocalDate.parse(isoString).let(::LocalDate)
+            return jtLocalDate.parse(isoString).let(::LocalDate)
         }
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
-            this(java.time.LocalDate.of(year, monthNumber, dayOfMonth))
+            this(jtLocalDate.of(year, monthNumber, dayOfMonth))
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
@@ -64,6 +68,6 @@ public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
 
 
 public actual operator fun LocalDate.minus(other: LocalDate): CalendarPeriod {
-    val period = java.time.Period.between(other.value, this.value)
+    val period = jtPeriod.between(other.value, this.value)
     return period.run { CalendarPeriod(years, months, days) }
 }

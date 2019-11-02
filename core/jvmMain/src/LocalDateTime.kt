@@ -7,15 +7,17 @@ package kotlinx.datetime
 
 import kotlin.math.sign
 import kotlin.time.*
+import java.time.LocalDateTime as jtLocalDateTime
+import java.time.Period as jtPeriod
 
 
 public actual typealias Month = java.time.Month
 public actual typealias DayOfWeek = java.time.DayOfWeek
 
-public actual class LocalDateTime internal constructor(internal val value: java.time.LocalDateTime) : Comparable<LocalDateTime> {
+public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-            this(java.time.LocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond))
+            this(jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond))
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
@@ -42,7 +44,7 @@ public actual class LocalDateTime internal constructor(internal val value: java.
 
     actual companion object {
         public actual fun parse(isoString: String): LocalDateTime {
-            return java.time.LocalDateTime.parse(isoString).let(::LocalDateTime)
+            return jtLocalDateTime.parse(isoString).let(::LocalDateTime)
         }
     }
 
@@ -50,7 +52,7 @@ public actual class LocalDateTime internal constructor(internal val value: java.
 
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-        java.time.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+        jtLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
@@ -95,7 +97,7 @@ actual operator fun LocalDateTime.minus(other: LocalDateTime): CalendarPeriod {
         timeNanoDiff.nanoseconds
     }
 
-    val resultPeriod = java.time.Period.between(other.value.toLocalDate(), this.value.toLocalDate().plusDays(borrowDay.toLong()))
+    val resultPeriod = jtPeriod.between(other.value.toLocalDate(), this.value.toLocalDate().plusDays(borrowDay.toLong()))
 
     return with(resultPeriod) {
         resultTime.toComponents { hours, minutes, seconds, nanoseconds ->
