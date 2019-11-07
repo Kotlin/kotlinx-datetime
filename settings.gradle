@@ -9,7 +9,7 @@ pluginManagement {
 
 enableFeaturePreview('GRADLE_METADATA')
 
-rootProject.name = 'Kotlin DateTime library'
+rootProject.name = 'Kotlin-DateTime-library'
 
 include ':core'
 project(":core").name='kotlinx-datetime'

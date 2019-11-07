@@ -58,7 +58,6 @@ kotlin {
     }
      */
 
-    /*
     js {
         nodejs {
 //            testTask { }
@@ -76,7 +75,6 @@ kotlin {
 //            }
 //        }
     }
-    */
 
     sourceSets.all {
         kotlin.setSrcDirs(listOf("$name/src"))
@@ -127,10 +125,10 @@ kotlin {
             }
         }
 
-        /*
         val jsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
+                implementation(npm("js-joda", "core",  "1.12.0"))
             }
         }
 
@@ -139,7 +137,6 @@ kotlin {
                 api("org.jetbrains.kotlin:kotlin-test-js")
             }
         }
-        */
     }
 }
 
