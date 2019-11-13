@@ -28,12 +28,6 @@ class InstantTest {
         assertNotEquals(notEqualInstant, instant)
     }
 
-    @Test
-    fun timeZones() {
-        println(TimeZone.SYSTEM)
-        println(TimeZone.UTC)
-    }
-
     @UseExperimental(ExperimentalTime::class)
     @Test
     fun instantArithmetic() {
@@ -65,7 +59,5 @@ class InstantTest {
 
         assertEquals(1570611720_123L, instant.toUnixMillis())
     }
-
-
 
 }

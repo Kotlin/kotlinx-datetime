@@ -135,6 +135,7 @@ kotlin {
         val jsTest by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-test-js")
+                implementation(npm("js-joda", "timezone", "2.2.0"))
             }
         }
     }

@@ -12,6 +12,7 @@ public expect class TimeZone {
         val SYSTEM: TimeZone
         val UTC: TimeZone
         fun of(zoneId: String): TimeZone
+        val availableZoneIds: Set<String>
     }
 
     public fun Instant.toLocalDateTime(): LocalDateTime
