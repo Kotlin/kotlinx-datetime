@@ -67,6 +67,7 @@ class InstantTest {
     fun instantCalendarArithmetic() {
         val zone = TimeZone.of("Europe/Berlin")
         val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(CalendarPeriod(hours = 24), zone)
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
@@ -83,6 +84,29 @@ class InstantTest {
         val instant4 = instant1.plus(period, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant4, zone))
+    }
+
+    @UseExperimental(ExperimentalTime::class)
+    @Test
+    fun instantOffset() {
+        val zone = TimeZone.of("Europe/Berlin")
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        val ldt1 = instant1.toLocalDateTime(zone)
+        val offset1 = instant1.offsetAt(zone)
+        checkComponents(ldt1, 2019, 10, 27, 2, 59)
+        assertEquals(instant1, ldt1.toInstant(offset1))
+
+        val instant2 = instant1 + 1.hours
+        val ldt2 = instant2.toLocalDateTime(zone)
+        val offset2 = instant2.offsetAt(zone)
+        assertEquals(ldt1, ldt2)
+        assertEquals(instant2, ldt2.toInstant(offset2))
+        assertNotEquals(offset1, offset2)
+        assertEquals(offset1.totalSeconds.seconds, offset2.totalSeconds.seconds + 1.hours)
+
+        val instant3 = instant2 - 2.hours
+        val offset3 = instant3.offsetAt(zone)
+        assertEquals(offset1, offset3)
     }
 
     @Test

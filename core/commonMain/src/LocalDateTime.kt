@@ -33,5 +33,6 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
+public expect fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
 

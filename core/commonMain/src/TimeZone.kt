@@ -5,7 +5,7 @@
 
 package kotlinx.datetime
 
-public expect class TimeZone {
+public expect open class TimeZone {
     public val id: String
 
     companion object {
@@ -16,5 +16,10 @@ public expect class TimeZone {
     }
 
     public fun Instant.toLocalDateTime(): LocalDateTime
+    public val Instant.offset: ZoneOffset
     public fun LocalDateTime.toInstant(): Instant
+}
+
+public expect class ZoneOffset : TimeZone {
+    val totalSeconds: Int
 }
