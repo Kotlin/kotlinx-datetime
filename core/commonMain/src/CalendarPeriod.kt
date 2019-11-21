@@ -37,6 +37,32 @@ class CalendarPeriod(val years: Int = 0, val months: Int = 0, val days: Int = 0,
 
         if (length == 1) append("0D")
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CalendarPeriod) return false
+
+        if (years != other.years) return false
+        if (months != other.months) return false
+        if (days != other.days) return false
+        if (hours != other.hours) return false
+        if (minutes != other.minutes) return false
+        if (seconds != other.seconds) return false
+        if (nanoseconds != other.nanoseconds) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = years
+        result = 31 * result + months
+        result = 31 * result + days
+        result = 31 * result + hours
+        result = 31 * result + minutes
+        result = 31 * result + seconds.hashCode()
+        result = 31 * result + nanoseconds.hashCode()
+        return result
+    }
 }
 
 inline fun period(builder: CalendarPeriod.Builder.() -> CalendarPeriod): CalendarPeriod = CalendarPeriod.Builder.builder()
