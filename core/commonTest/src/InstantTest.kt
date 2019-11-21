@@ -101,6 +101,27 @@ class InstantTest {
         }
     }
 
+    @Test
+    fun diffInvariantSameAsDate() {
+        repeat(1000) {
+            val millis1 = Random.nextLong(2_000_000_000_000L)
+            val millis2 = Random.nextLong(2_000_000_000_000L)
+            with(TimeZone.UTC) TZ@ {
+                val date1 = Instant.fromUnixMillis(millis1).toLocalDateTime().date
+                val date2 = Instant.fromUnixMillis(millis2).toLocalDateTime().date
+                fun LocalDate.instantAtStartOfDay() = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0, 0, 0).toInstant()
+                val instant1 = date1.instantAtStartOfDay()
+                val instant2 = date2.instantAtStartOfDay()
+
+                val diff1 = instant1.periodUntil(instant2, this@TZ)
+                val diff2 = date1.periodUntil(date2)
+
+                if (diff1 != diff2)
+                    println("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
+            }
+        }
+    }
+
 
     @Test
     fun zoneDependentDiff() {

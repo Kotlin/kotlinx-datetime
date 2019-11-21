@@ -2,11 +2,11 @@
  * Copyright 2016-2019 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-
+@file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
-import java.time.Period as jtPeriod
 
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
@@ -66,8 +66,11 @@ public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
         }.let(::LocalDate)
 
 
+public actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
+    var startD = this.value
+    val endD = other.value
+    val months = startD.until(endD, ChronoUnit.MONTHS); startD = startD.plusMonths(months)
+    val days = startD.until(endD, ChronoUnit.DAYS)
 
-public actual operator fun LocalDate.minus(other: LocalDate): CalendarPeriod {
-    val period = jtPeriod.between(other.value, this.value)
-    return period.run { CalendarPeriod(years, months, days) }
+    return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
 }

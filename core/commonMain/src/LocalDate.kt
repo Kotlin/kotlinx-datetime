@@ -24,4 +24,6 @@ public expect class LocalDate : Comparable<LocalDate> {
 expect fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate
 expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
 expect operator fun LocalDate.plus(period: CalendarPeriod): LocalDate
-expect operator fun LocalDate.minus(other: LocalDate): CalendarPeriod
+
+expect fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod
+operator fun LocalDate.minus(other: LocalDate): CalendarPeriod = other.periodUntil(this)

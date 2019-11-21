@@ -5,8 +5,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.JSJoda.ChronoUnit
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
-import kotlinx.datetime.internal.JSJoda.Period as jtPeriod
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
@@ -36,7 +36,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 }
 
 
-public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
+private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate =
         when (unit) {
             CalendarUnit.YEAR -> this.value.plusYears(value)
             CalendarUnit.MONTH -> this.value.plusMonths(value)
@@ -48,8 +48,13 @@ public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
             CalendarUnit.NANOSECOND -> throw UnsupportedOperationException("Only date based units can be added to LocalDate")
         }.let(::LocalDate)
 
+public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
+        plusNumber(value, unit)
+
 public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
-        plus(value.toLong(), unit)
+        plusNumber(value, unit)
+
+
 
 public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
         with(period) {
@@ -66,7 +71,11 @@ public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
 
 
 
-public actual operator fun LocalDate.minus(other: LocalDate): CalendarPeriod {
-    val period = jtPeriod.between(other.value, this.value)
-    return period.run { CalendarPeriod(years().toInt(), months().toInt(), days().toInt()) }
+public actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
+    var startD = this.value
+    val endD = other.value
+    val months = startD.until(endD, ChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
+    val days = startD.until(endD, ChronoUnit.DAYS).toInt()
+
+    return CalendarPeriod(months / 12, months % 12, days)
 }
