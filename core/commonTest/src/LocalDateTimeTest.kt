@@ -12,27 +12,7 @@ import kotlin.time.*
 
 class LocalDateTimeTest {
 
-    fun checkEquals(expected: LocalDateTime, actual: LocalDateTime) {
-        assertEquals(expected, actual)
-        assertEquals(expected.hashCode(), actual.hashCode())
-        assertEquals(expected.toString(), actual.toString())
-    }
 
-    fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
-        assertEquals(year, value.year)
-        assertEquals(month, value.monthNumber)
-        assertEquals(Month(month), value.month)
-        assertEquals(day, value.dayOfMonth)
-        assertEquals(hour, value.hour)
-        assertEquals(minute, value.minute)
-        assertEquals(second, value.second)
-        assertEquals(nanosecond, value.nanosecond)
-        if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number)
-        if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear)
-
-        val fromComponents = LocalDateTime(year, month, day, hour, minute, second, nanosecond)
-        checkEquals(fromComponents, value)
-    }
 
     @Test
     fun localDateTimeParsing() {
@@ -74,43 +54,37 @@ class LocalDateTimeTest {
     fun tomorrow() {
         val localFixed = LocalDateTime(2019, 1, 30, 0, 0, 0, 0)
 
-        println(localFixed + 1.calendarMonths + 1.calendarDays)
-        println(localFixed + (1.calendarMonths + 1.calendarDays))
-        println(localFixed + period { 1.days + 1.months })
-        println(localFixed + Period(days = -2, months = 1))
-
-        println(localFixed + 1.days.toCalendarPeriod())
+//        println(localFixed + 1.calendarMonths + 1.calendarDays)
+//        println(localFixed + (1.calendarMonths + 1.calendarDays))
+//        println(localFixed + period { 1.days + 1.months })
+//        println(localFixed + Period(days = -2, months = 1))
+//
+//        println(localFixed + 1.days.toCalendarPeriod())
 
         println(localFixed.dayOfWeek)
     }
 
-    @Test
-    fun diffInvariant() {
-        repeat(1000) {
-            val millis1 = Random.nextLong(2_000_000_000_000L)
-            val millis2 = Random.nextLong(millis1, 2_000_000_000_000L)
-            val ldtBefore = Instant.fromUnixMillis(millis1).toLocalDateTime(TimeZone.SYSTEM)
-            val ldtNow = Instant.fromUnixMillis(millis2).toLocalDateTime(TimeZone.SYSTEM)
-
-            val diff = ldtNow - ldtBefore
-            val ldtAfter = ldtBefore + diff
-            if (ldtAfter != ldtNow)
-                println("start: $ldtBefore, end: $ldtNow, start + diff: ${ldtBefore + diff}, diff: $diff")
-        }
-    }
-
-
-    @Test
-    fun zoneDependentDiff() {
-        val instant1 = Instant.parse("2019-04-01T00:00:00Z")
-        val instant2 = Instant.parse("2019-05-01T04:00:00Z")
-
-        for (zone in (-12..12 step 3).map { h -> TimeZone.of("${if (h >= 0) "+" else ""}$h") }) {
-            val dt1 = instant1.toLocalDateTime(zone)
-            val dt2 = instant2.toLocalDateTime(zone)
-            val diff = dt2 - dt1
-            println("diff between $dt1 and $dt2 at zone $zone: $diff")
-        }
-    }
-
 }
+
+fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
+    assertEquals(year, value.year)
+    assertEquals(month, value.monthNumber)
+    assertEquals(Month(month), value.month)
+    assertEquals(day, value.dayOfMonth)
+    assertEquals(hour, value.hour)
+    assertEquals(minute, value.minute)
+    assertEquals(second, value.second)
+    assertEquals(nanosecond, value.nanosecond)
+    if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number)
+    if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear)
+
+    val fromComponents = LocalDateTime(year, month, day, hour, minute, second, nanosecond)
+    checkEquals(fromComponents, value)
+}
+
+fun checkEquals(expected: LocalDateTime, actual: LocalDateTime) {
+    assertEquals(expected, actual)
+    assertEquals(expected.hashCode(), actual.hashCode())
+    assertEquals(expected.toString(), actual.toString())
+}
+

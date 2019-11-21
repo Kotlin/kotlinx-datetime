@@ -31,3 +31,13 @@ public expect class Instant : Comparable<Instant> {
 }
 
 public fun String.toInstant(): Instant = Instant.parse(this)
+
+public expect fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant
+public expect fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
+public expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant
+
+public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod
+public expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long
+public expect fun Instant.daysUntil(other: Instant, zone: TimeZone): Int
+public expect fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int
+public expect fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int
