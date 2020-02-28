@@ -1,0 +1,2 @@
+package = kotlinx.datetime
+linkerOpts = -L../date-cpp-c-wrapper/build/lib/main/release -ldate-cpp-c-wrapper

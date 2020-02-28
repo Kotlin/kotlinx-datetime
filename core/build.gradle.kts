@@ -23,11 +23,18 @@ val JDK_8: String by project
 //    }
 //}
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.CInteropProcess> {
+    dependsOn(":date-cpp-c-wrapper:assembleRelease")
+}
+
 kotlin {
     infra {
-//        target("macosX64")
-//        target("linuxX64")
-//        target("mingwX64")
+        target("macosX64")
+        target("iosX64")
+        target("iosArm64")
+        target("iosArm32")
+        target("linuxX64")
+        target("mingwX64")
     }
 
     jvm {
@@ -60,7 +67,7 @@ kotlin {
 
     js {
         nodejs {
-//            testTask { }
+            //            testTask { }
         }
         compilations.all {
             kotlinOptions {
@@ -74,6 +81,20 @@ kotlin {
 //                outputFile = "kotlinx-datetime-tmp.js"
 //            }
 //        }
+    }
+
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+        binaries {
+            all {
+                linkerOpts("-L${project(":date-cpp-c-wrapper").buildDir}/lib/main/release");
+            }
+        }
+        compilations["main"].cinterops {
+            create("date") {
+                headers("${project(":date-cpp-c-wrapper").projectDir}/src/main/public/cdate.h")
+                defFile("nativeMain/cinterop/date.def")
+            }
+        }
     }
 
     sourceSets.all {
@@ -137,6 +158,13 @@ kotlin {
                 api("org.jetbrains.kotlin:kotlin-test-js")
                 implementation(npm("js-joda", "timezone", "2.2.0"))
             }
+        }
+
+        val nativeMain by getting {
+        }
+
+        val nativeTest by getting {
+
         }
     }
 }

@@ -4,12 +4,12 @@ buildscript {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
     }
 }
 
 plugins {
-    id("kotlinx.team.infra") version "0.1.0-dev-49"
+    id("kotlinx.team.infra") version "0.1.0-dev-51"
 }
 
 project(":kotlinx-datetime") {

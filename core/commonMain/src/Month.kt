@@ -30,4 +30,24 @@ public fun Month(number: Int): Month {
     return allMonths[number - 1]
 }
 
+
+// From threetenbp
+public fun Month.firstDayOfYear(leapYear: Boolean): Int {
+    val leap = if (leapYear) 1 else 0
+    return when (this) {
+        Month.JANUARY -> 1
+        Month.FEBRUARY -> 32
+        Month.MARCH -> 60 + leap
+        Month.APRIL -> 91 + leap
+        Month.MAY -> 121 + leap
+        Month.JUNE -> 152 + leap
+        Month.JULY -> 182 + leap
+        Month.AUGUST -> 213 + leap
+        Month.SEPTEMBER -> 244 + leap
+        Month.OCTOBER -> 274 + leap
+        Month.NOVEMBER -> 305 + leap
+        Month.DECEMBER -> 335 + leap
+    }
+}
+
 // companion object members vs typealiasing to java.time.Month?
