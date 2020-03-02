@@ -6,6 +6,7 @@ plugins {
 }
 
 extensions.configure<CppLibrary> {
+    linkage.set(setOf(Linkage.STATIC))
     source.from(file("date/src"))
     publicHeaders.from(file("date/include"))
 }

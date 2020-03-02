@@ -67,16 +67,16 @@ class LocalDateTimeTest {
 }
 
 fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
-    assertEquals(year, value.year)
-    assertEquals(month, value.monthNumber)
+    assertEquals(year, value.year, "years")
+    assertEquals(month, value.monthNumber, "months")
     assertEquals(Month(month), value.month)
-    assertEquals(day, value.dayOfMonth)
-    assertEquals(hour, value.hour)
-    assertEquals(minute, value.minute)
-    assertEquals(second, value.second)
-    assertEquals(nanosecond, value.nanosecond)
-    if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number)
-    if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear)
+    assertEquals(day, value.dayOfMonth, "days")
+    assertEquals(hour, value.hour, "hours")
+    assertEquals(minute, value.minute, "minutes")
+    assertEquals(second, value.second, "seconds")
+    assertEquals(nanosecond, value.nanosecond, "nanoseconds")
+    if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number, "weekday")
+    if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear, "day of year")
 
     val fromComponents = LocalDateTime(year, month, day, hour, minute, second, nanosecond)
     checkEquals(fromComponents, value)

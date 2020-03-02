@@ -50,4 +50,12 @@ public fun Month.firstDayOfYear(leapYear: Boolean): Int {
     }
 }
 
+public fun Month.length(leapYear: Boolean): Int {
+    return when (this) {
+        Month.FEBRUARY -> if (leapYear) 29 else 28
+        Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
+        else -> 31
+    }
+}
+
 // companion object members vs typealiasing to java.time.Month?

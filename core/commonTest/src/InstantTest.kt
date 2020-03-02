@@ -59,8 +59,6 @@ class InstantTest {
         val instant = Instant.parse("2019-10-09T09:02:00.123Z")
 
         assertEquals(1570611720_123L, instant.toUnixMillis())
-
-        Instant.parse("gibberish")
     }
 
 

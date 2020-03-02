@@ -7,16 +7,66 @@ package kotlinx.datetime
 
 import kotlin.math.*
 
-public actual class LocalDate internal constructor (actual val year: Int, actual val month: Month, actual val dayOfMonth: Int) : Comparable<LocalDate> {
+internal val localDateParser: Parser<LocalDate>
+    get() = intParser(4, 10)
+        .chainIgnoring(concreteCharParser('-'))
+        .chain(intParser(2, 2))
+        .chainIgnoring(concreteCharParser('-'))
+        .chain(intParser(2, 2))
+        .map {
+            val (yearMonth, day) = it
+            val (year, month) = yearMonth
+            LocalDate(year, month, day)
+        }
+
+public actual class LocalDate private constructor (actual val year: Int, actual val month: Month, actual val dayOfMonth: Int) : Comparable<LocalDate> {
     actual companion object {
-        actual fun parse(isoString: String): LocalDate {
-            TODO("Not yet implemented")
+        actual fun parse(isoString: String): LocalDate =
+            localDateParser.parse(isoString)
+
+        internal fun ofEpochDay(epochDay: Long): LocalDate {
+            var zeroDay: Long = epochDay + DAYS_0000_TO_1970
+            // find the march-based year
+            zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
+
+            var adjust: Long = 0
+            if (zeroDay < 0) { // adjust negative years to positive for calculation
+                val adjustCycles: Long = (zeroDay + 1) / DAYS_PER_CYCLE - 1
+                adjust = adjustCycles * 400
+                zeroDay += -adjustCycles * DAYS_PER_CYCLE
+            }
+            var yearEst: Long = (400 * zeroDay + 591) / DAYS_PER_CYCLE
+            var doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
+            if (doyEst < 0) { // fix estimate
+                yearEst--
+                doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
+            }
+            yearEst += adjust // reset any negative year
+
+            val marchDoy0 = doyEst.toInt()
+
+            // convert march-based values back to january-based
+            val marchMonth0 = (marchDoy0 * 5 + 2) / 153
+            val month = (marchMonth0 + 2) % 12 + 1
+            val dom = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
+            yearEst += marchMonth0 / 10.toLong()
+
+            // check year now we are certain it is correct
+            return LocalDate(yearEst.toInt(), month, dom)
         }
     }
 
-    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) : this(year, Month(monthNumber), dayOfMonth)
+    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) : this(year, Month(monthNumber), dayOfMonth) {
+        if (dayOfMonth > 28 && dayOfMonth > month.length(isLeapYear(year))) {
+            if (dayOfMonth == 29) {
+                throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
+            } else {
+                throw IllegalArgumentException("Invalid date '${month.name} $dayOfMonth'")
+            }
+        }
+    }
 
-    private fun toEpochDay(): Long {
+    internal fun toEpochDay(): Long {
         val y = year
         val m = monthNumber
         var total = 0
@@ -37,26 +87,22 @@ public actual class LocalDate internal constructor (actual val year: Int, actual
         return total - DAYS_0000_TO_1970
     }
 
+    internal fun withYear(newYear: Int): LocalDate = LocalDate(newYear, monthNumber, dayOfMonth)
+
     actual val monthNumber: Int = month.number
 
-    actual val dayOfWeek: DayOfWeek
-        get() {
-            val dow0 = ((toEpochDay() + 3) / 7).toInt()
-            return DayOfWeek(dow0 + 1)
-        }
+    actual val dayOfWeek: DayOfWeek = run {
+        val dow0 = floorMod(toEpochDay() + 3, 7).toInt()
+        DayOfWeek(dow0 + 1)
+    }
 
-    actual val dayOfYear: Int
-        get() = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
+    actual val dayOfYear: Int = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
 
     actual override fun compareTo(other: LocalDate): Int =
         compareBy<LocalDate>({ it.year }, { it.monthNumber }, {it.dayOfMonth}).compare(this, other)
 
     private fun resolvePreviousValid(year: Int, month: Month, day: Int): LocalDate {
-        val newDay = when (month) {
-            Month.FEBRUARY -> min(day, if (isLeapYear(year)) 29 else 28)
-            Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> min(day, 30)
-            else -> day
-        }
+        val newDay = min(day, month.length(isLeapYear(year)))
         return LocalDate(year, month, newDay)
     }
 
@@ -90,6 +136,40 @@ public actual class LocalDate internal constructor (actual val year: Int, actual
         return ofEpochDay(mjDay)
     }
 
+    override fun equals(other: Any?): Boolean =
+        this === other || (other is LocalDate && compareTo(other) == 0)
+
+    override fun hashCode(): Int {
+        val yearValue = year
+        val monthValue: Int = monthNumber
+        val dayValue: Int = dayOfMonth
+        return yearValue and -0x800 xor (yearValue shl 11) + (monthValue shl 6) + dayValue
+    }
+
+    override fun toString(): String {
+        val yearValue = year
+        val monthValue: Int = monthNumber
+        val dayValue: Int = dayOfMonth
+        val absYear: Int = abs(yearValue)
+        val buf = StringBuilder(10)
+        if (absYear < 1000) {
+            if (yearValue < 0) {
+                buf.append(yearValue - 10000).deleteCharAt(1)
+            } else {
+                buf.append(yearValue + 10000).deleteCharAt(0)
+            }
+        } else {
+            if (yearValue > 9999) {
+                buf.append('+')
+            }
+            buf.append(yearValue)
+        }
+        return buf.append(if (monthValue < 10) "-0" else "-")
+            .append(monthValue)
+            .append(if (dayValue < 10) "-0" else "-")
+            .append(dayValue)
+            .toString()
+    }
 }
 
 actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
@@ -107,6 +187,44 @@ actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
 actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
     plus(value.toLong(), unit)
 
-actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate {
-    TODO("Not yet implemented")
+actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
+    with(period) {
+        if (hours != 0 || minutes != 0 || seconds != 0L || nanoseconds != 0L) {
+            throw UnsupportedOperationException("Only date based units can be added to LocalDate")
+        }
+
+        return@with this@plus
+            .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
+            .run { if (months != 0) this.plusMonths(years * 12L + months.toLong()) else this }
+            .run { if (days != 0) this.plusDays(days.toLong()) else this }
+    }
+
+fun LocalDate.daysUntil(other: LocalDate): Long =
+    other.toEpochDay() - this.toEpochDay()
+
+val LocalDate.prolepticMonth get() = (year * 12L) + (monthNumber - 1)
+
+fun LocalDate.monthsUntil(other: LocalDate): Long {
+    val packed1: Long = prolepticMonth * 32L + dayOfMonth
+    val packed2: Long = other.prolepticMonth * 32L + other.dayOfMonth
+    return (packed2 - packed1) / 32
+}
+
+fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long {
+    when (unit) {
+        CalendarUnit.DAY -> return daysUntil(end)
+        CalendarUnit.WEEK -> return daysUntil(end) / 7
+        CalendarUnit.MONTH -> return monthsUntil(end)
+        CalendarUnit.YEAR -> return monthsUntil(end) / 12
+        CalendarUnit.HOUR,
+        CalendarUnit.MINUTE,
+        CalendarUnit.SECOND,
+        CalendarUnit.NANOSECOND -> throw UnsupportedOperationException("Unsupported unit: $unit")
+    }
+}
+
+actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
+    val months = until(other, CalendarUnit.MONTH)
+    val days = plusMonths(months).until(other, CalendarUnit.DAY)
+    return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
 }

@@ -12,7 +12,7 @@ class TimeZoneTest {
     @Test
     fun utc() {
         println(TimeZone.UTC)
-        assertEquals("UTC", TimeZone.UTC.id)
+        assertEquals("Z", TimeZone.UTC.id)
     }
 
     @Test
@@ -29,7 +29,7 @@ class TimeZoneTest {
 
         assertNotEquals(0, allTzIds.size)
         assertTrue(TimeZone.SYSTEM.id in allTzIds)
-        assertTrue(TimeZone.UTC.id in allTzIds)
+        assertTrue("UTC" in allTzIds)
     }
 
     @Test

@@ -38,6 +38,34 @@ internal const val DAYS_PER_CYCLE: Long = 146097
  */
 internal const val DAYS_0000_TO_1970: Long = (DAYS_PER_CYCLE * 5L) - (30L * 365L + 7L)
 
+// days in a 400 year cycle = 146097
+// days in a 10,000 year cycle = 146097 * 25
+// seconds per day = 86400
+internal const val SECONDS_PER_10000_YEARS = 146097L * 25L * 86400L
+
+/**
+ * Hours per day.
+ */
+internal const val HOURS_PER_DAY = 24
+
+/**
+ * Seconds per day.
+ */
+internal const val SECONDS_PER_DAY: Int = SECONDS_PER_HOUR * HOURS_PER_DAY
+
+internal const val MINUTES_PER_DAY: Int = MINUTES_PER_HOUR * HOURS_PER_DAY
+
+internal const val NANOS_PER_MINUTE: Long = NANOS_PER_ONE * SECONDS_PER_MINUTE.toLong()
+
+internal const val NANOS_PER_HOUR = NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
+
+/**
+ * Nanos per day.
+ */
+val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
+
+internal const val SECONDS_0000_TO_1970 = (146097L * 5L - (30L * 365L + 7L)) * 86400L
+
 /**
  * Safely adds two long values.
  * throws [ArithmeticException] if the result overflows a long
@@ -60,16 +88,16 @@ internal fun safeAdd(a: Long, b: Long): Long {
  * @return the new total
  * @throws ArithmeticException if the result overflows a long
  */
-fun safeMultiply(a: Long, b: Int): Long {
+fun safeMultiply(a: Long, b: Long): Long {
     when (b) {
-        -1 -> {
+        -1L -> {
             if (a == Long.MIN_VALUE) {
                 throw ArithmeticException("Multiplication overflows a long: $a * $b")
             }
             return -a
         }
-        0 -> return 0L
-        1 -> return a
+        0L -> return 0L
+        1L -> return a
     }
     val total = a * b
     if (total / b != a) {
@@ -168,5 +196,6 @@ fun ofEpochDay(epochDay: Long): LocalDate {
     val month0 = (marchMonth0 + 2) % 12
     val dom = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
     yearEst += marchMonth0 / 10.toLong()
-    return LocalDate(yearEst.toInt(), Month(month0 + 1), dom)
+    return LocalDate(yearEst.toInt(), month0 + 1, dom)
 }
+
