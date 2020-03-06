@@ -1,22 +1,93 @@
 #include "date/date.h"
+#include "date/tz.h"
 using namespace date;
 using namespace std::chrono;
+
+template <class T>
+static const char * timezone_name(const T& zone)
+{
+    auto name = zone.name();
+    char * name_copy = (char *)malloc(sizeof(char) * (name.size() + 1));
+    name_copy[name.size()] = '\0';
+    name.copy(name_copy, name.size());
+    return name_copy;
+}
+
 extern "C" {
 
 #include "cdate.h"
 
-instant instant_now() {
-    instant t;
+const char * get_system_timezone()
+{
+    auto& tzdb = get_tzdb();
+    auto zone = tzdb.current_zone();
+    return timezone_name(*zone);
+}
 
-    /* According to the standard https://pubs.opengroup.org/onlinepubs/7908799/xsh/clock_gettime.html,
-    the possible error values for `clock_gettime()` are as follows:
-    - [EINVAL] The clock_id argument does not specify a known clock.
-    - [ENOSYS] The functions clock_settime(), clock_gettime(), and clock_getres() are not supported.
-    Both these error conditions will fail the tests if they happen, so we may ignore the error.
-    */
-    clock_gettime(CLOCK_REALTIME, &t);
+const char ** available_zone_ids()
+{
+    auto& tzdb = get_tzdb();
+    auto& zones = tzdb.zones;
+    auto& links = tzdb.links;
+    const char ** zones_copy = (const char **)malloc(
+            sizeof(const char *) * (zones.size() + links.size() + 1));
+    zones_copy[zones.size() + links.size()] = nullptr;
+    for (int i = 0; i < zones.size(); ++i) {
+        zones_copy[i] = timezone_name(zones[i]);
+    }
+    for (int i = 0; i < links.size(); ++i) {
+        zones_copy[zones.size() + i] = timezone_name(links[i]);
+    }
+    return zones_copy;
+}
 
-    return t;
+int offset_at_instant(const char *zone_name, const timespec * tp)
+{
+    auto& tzdb = get_tzdb();
+    auto sys_time = utc_clock::to_sys(utc_time<std::chrono::seconds>(std::chrono::seconds(tp->tv_sec)));
+    try {
+        auto zone = tzdb.locate_zone(zone_name);
+        auto info = zone->get_info(sys_time);
+        return info.offset.count();
+    } catch (std::runtime_error e) {
+        return INT_MAX;
+    }
+}
+
+bool is_known_timezone(const char *zone_name)
+{
+    auto& tzdb = get_tzdb();
+    try {
+        tzdb.locate_zone(zone_name);
+        return true;
+    } catch (std::runtime_error e) {
+        return false;
+    }
+}
+
+int offset_at_datetime(const char *zone_name, int64_t epoch_sec)
+{
+    auto& tzdb = get_tzdb();
+    try {
+        auto zone = tzdb.locate_zone(zone_name);
+        local_seconds seconds((std::chrono::seconds(epoch_sec)));
+        auto info = zone->get_info(seconds);
+        sys_info sinfo;
+        switch (info.result) {
+            case local_info::unique:
+                sinfo = info.first;
+                break;
+            case local_info::nonexistent:
+                sinfo = info.second;
+                break;
+            case local_info::ambiguous:
+                sinfo = info.first;
+                break;
+        }
+        return sinfo.offset.count();
+    } catch (std::runtime_error e) {
+        return INT_MAX;
+    }
 }
 
 }

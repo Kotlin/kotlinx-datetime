@@ -24,7 +24,8 @@ val JDK_8: String by project
 //}
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.CInteropProcess> {
-    dependsOn(":date-cpp-c-wrapper:assembleRelease")
+    // dependsOn(":date-cpp-c-wrapper:assembleRelease")
+    // dependsOn(":date-cpp-library:assembleRelease")
 }
 
 kotlin {
@@ -84,14 +85,9 @@ kotlin {
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        binaries {
-            all {
-                linkerOpts("-L${project(":date-cpp-c-wrapper").buildDir}/lib/main/release");
-            }
-        }
         compilations["main"].cinterops {
             create("date") {
-                headers("${project(":date-cpp-c-wrapper").projectDir}/src/main/public/cdate.h")
+                headers("${project(":").projectDir}/date-cpp-c-wrapper/src/main/public/cdate.h")
                 defFile("nativeMain/cinterop/date.def")
             }
         }
@@ -164,7 +160,6 @@ kotlin {
         }
 
         val nativeTest by getting {
-
         }
     }
 }

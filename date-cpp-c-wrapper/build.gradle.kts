@@ -8,8 +8,6 @@ plugins {
 library {
     linkage.set(setOf(Linkage.STATIC))
     dependencies {
-        implementation(project(":date-cpp-library"))
+        api(project(":date-cpp-library"))
     }
 }
-
-println("$buildDir")
