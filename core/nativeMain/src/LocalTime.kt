@@ -39,6 +39,17 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
             val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE.toLong()
             return LocalTime(hours, minutes, second.toInt(), nanoOfSecond)
         }
+
+        internal fun ofNanoOfDay(nanoOfDay: Long): LocalTime {
+            var nanoOfDay = nanoOfDay
+            val hours = (nanoOfDay / NANOS_PER_HOUR).toInt()
+            nanoOfDay -= hours * NANOS_PER_HOUR
+            val minutes = (nanoOfDay / NANOS_PER_MINUTE).toInt()
+            nanoOfDay -= minutes * NANOS_PER_MINUTE
+            val seconds = (nanoOfDay / NANOS_PER_ONE).toInt()
+            nanoOfDay -= seconds * NANOS_PER_ONE
+            return LocalTime(hours, minutes, seconds, nanoOfDay.toInt())
+        }
     }
 
     override fun compareTo(other: LocalTime): Int =
@@ -56,7 +67,7 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
      * @return the nano of day equivalent to this time
      */
     internal fun toNanoOfDay(): Long {
-        var total: Long = hour * NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
+        var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
         total += minute * NANOS_PER_ONE * SECONDS_PER_MINUTE
         total += second * NANOS_PER_ONE
         total += nanosecond.toLong()

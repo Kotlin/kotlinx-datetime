@@ -98,3 +98,27 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
             }
         }
     }
+
+internal fun LocalDateTime.plusSeconds(seconds: Long): LocalDateTime =
+    plusWithOverflow(date, 0, 0, seconds, 0, 1)
+
+internal fun LocalDateTime.plusWithOverflow(newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime {
+    if (hours or minutes or seconds or nanos == 0L) {
+        return LocalDateTime(newDate, time)
+    }
+    var totDays = nanos / NANOS_PER_DAY + //   max/24*60*60*1B
+        seconds / SECONDS_PER_DAY + //   max/24*60*60
+        minutes / MINUTES_PER_DAY + //   max/24*60
+        hours / HOURS_PER_DAY //   max/24
+    totDays *= sign.toLong() // total max*0.4237...
+    var totNanos: Long = nanos % NANOS_PER_DAY + //   max  86400000000000
+        seconds % SECONDS_PER_DAY * NANOS_PER_ONE + //   max  86400000000000
+        minutes % MINUTES_PER_DAY * NANOS_PER_MINUTE + //   max  86400000000000
+        hours % HOURS_PER_DAY * NANOS_PER_HOUR //   max  86400000000000
+    val curNoD: Long = time.toNanoOfDay() //   max  86400000000000
+    totNanos = totNanos * sign + curNoD // total 432000000000000
+    totDays += floorDiv(totNanos, NANOS_PER_DAY)
+    val newNoD: Long = floorMod(totNanos, NANOS_PER_DAY)
+    val newTime: LocalTime = if (newNoD == curNoD) time else LocalTime.ofNanoOfDay(newNoD)
+    return LocalDateTime(newDate.plusDays(totDays), newTime)
+}

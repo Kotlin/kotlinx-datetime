@@ -218,7 +218,7 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
 
     val months = thisLdt.until(otherLdt, CalendarUnit.MONTH); thisLdt = thisLdt.plusMonths(months)
     val days = thisLdt.until(otherLdt, CalendarUnit.DAY); thisLdt = thisLdt.plusDays(days)
-    val time = thisLdt.until(otherLdt, CalendarUnit.NANOSECOND).nanoseconds
+    val time = thisLdt.toInstant(zone).until(otherLdt.toInstant(zone), CalendarUnit.NANOSECOND, zone).nanoseconds
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
         return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
@@ -226,7 +226,17 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
 }
 
 actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
-    toLocalDateTime(zone).until(other.toLocalDateTime(zone), unit)
+    when (unit) {
+        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
+            toLocalDateTime(zone).until(other.toLocalDateTime(zone), unit)
+        }
+        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
+            val thisLdt = toLocalDateTime(zone)
+            val offsetDiff = with (zone) { offset.totalSeconds - other.offset.totalSeconds }
+            val otherLdt = other.toLocalDateTime(zone).plusSeconds(offsetDiff.toLong())
+            thisLdt.until(otherLdt, unit)
+        }
+    }
 
 actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.DAY, zone).toInt()
 actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.MONTH, zone).toInt()
