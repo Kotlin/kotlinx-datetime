@@ -72,14 +72,16 @@ public actual open class TimeZone(actual val id: String) {
             }
     }
 
-    actual fun Instant.toLocalDateTime(): LocalDateTime {
+    internal fun Instant.toZonedLocalDateTime(): ZonedLocalDateTime {
         val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
         val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
         val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
         val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
         val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanos)
-        return LocalDateTime(date, time)
+        return ZonedLocalDateTime(LocalDateTime(date, time), this@TimeZone, offset)
     }
+
+    actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime().dateTime
 
     actual open val Instant.offset: ZoneOffset
         get() = memScoped {
@@ -90,10 +92,10 @@ public actual open class TimeZone(actual val id: String) {
         }
 
     actual fun LocalDateTime.toInstant(): Instant =
-        Instant(toEpochSecond(presumedOffset), nanosecond)
+        Instant(toEpochSecond(presumedOffset()), nanosecond)
 
-    internal open val LocalDateTime.presumedOffset: ZoneOffset
-        get() = ZoneOffset(offset_at_datetime(id, toEpochSecond(ZoneOffset(0))))
+    internal open fun LocalDateTime.presumedOffset(preferred: ZoneOffset? = null): ZoneOffset =
+        ZoneOffset(offset_at_datetime(id, toEpochSecond(ZoneOffset(0)), preferred?.totalSeconds ?: INT_MAX))
 
     override fun equals(other: Any?): Boolean =
         (this === other) || (other is TimeZone && this.id == other.id)
@@ -172,9 +174,10 @@ public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null)
         }
     }
 
-    override internal val LocalDateTime.presumedOffset: ZoneOffset
-        get() = this@ZoneOffset
+    override internal fun LocalDateTime.presumedOffset(preferred: ZoneOffset?): ZoneOffset = this@ZoneOffset
 
     override val Instant.offset: ZoneOffset
         get() = this@ZoneOffset
 }
+
+// TODO: transition duration

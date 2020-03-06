@@ -65,7 +65,7 @@ bool is_known_timezone(const char *zone_name)
     }
 }
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec)
+int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int preferred)
 {
     auto& tzdb = get_tzdb();
     try {
@@ -81,6 +81,8 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec)
                 sinfo = info.second;
                 break;
             case local_info::ambiguous:
+                if (info.second.offset.count() == preferred)
+                    return preferred;
                 sinfo = info.first;
                 break;
         }

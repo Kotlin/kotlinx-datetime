@@ -19,7 +19,7 @@ public actual class LocalDateTime(actual val date: LocalDate, val time: LocalTim
             localDateTimeParser.parse(isoString)
     }
 
-    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int):
+    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, monthNumber, dayOfMonth), LocalTime(hour, minute, second, nanosecond))
 
     actual val year: Int get() = date.year
@@ -52,20 +52,20 @@ public actual class LocalDateTime(actual val date: LocalDate, val time: LocalTim
         return secs
     }
 
-    fun plusYears(years: Long): LocalDateTime = LocalDateTime(date.plusYears(years), time)
-    fun plusMonths(months: Long): LocalDateTime = LocalDateTime(date.plusMonths(months), time)
-    fun plusDays(days: Long): LocalDateTime = LocalDateTime(date.plusDays(days), time)
+    internal fun plusYears(years: Long): LocalDateTime = LocalDateTime(date.plusYears(years), time)
+    internal fun plusMonths(months: Long): LocalDateTime = LocalDateTime(date.plusMonths(months), time)
+    internal fun plusDays(days: Long): LocalDateTime = LocalDateTime(date.plusDays(days), time)
 
 }
 
 actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    with (timeZone) { toLocalDateTime() }
+    with(timeZone) { toLocalDateTime() }
 
 actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-    with (timeZone) { toInstant() }
+    with(timeZone) { toInstant() }
 
 actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
-    with (timeZone) { offset }
+    with(timeZone) { offset }
 
 internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long =
     when (unit) {
@@ -102,7 +102,8 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
 internal fun LocalDateTime.plusSeconds(seconds: Long): LocalDateTime =
     plusWithOverflow(date, 0, 0, seconds, 0, 1)
 
-internal fun LocalDateTime.plusWithOverflow(newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime {
+internal fun LocalDateTime.plusWithOverflow(
+    newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime {
     if (hours or minutes or seconds or nanos == 0L) {
         return LocalDateTime(newDate, time)
     }
