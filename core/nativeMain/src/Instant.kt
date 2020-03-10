@@ -24,7 +24,7 @@ public actual enum class DayOfWeek {
 
 val instantParser : Parser<Instant> =
 localDateParser
-    .chainIgnoring(concreteCharParser('T'))
+    .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
     .chain(intParser(2, 2)) // hour
     .chainIgnoring(concreteCharParser(':'))
     .chain(intParser(2, 2)) // minute
@@ -34,7 +34,7 @@ localDateParser
         concreteCharParser('.')
             .chainSkipping(fractionParser(0, 9, 9)) // nanos
     ))
-    .chainIgnoring(concreteCharParser('Z'))
+    .chainIgnoring(concreteCharParser('Z').or(concreteCharParser('z')))
     .map {
         val (dateHourMinuteSecond, nanosVal) = it
         val (dateHourMinute, secondsVal) = dateHourMinuteSecond

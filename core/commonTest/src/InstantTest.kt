@@ -5,7 +5,7 @@
 
 package kotlinx.datetime.test
 import kotlinx.datetime.*
-import kotlin.random.Random
+import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
 
@@ -53,14 +53,29 @@ class InstantTest {
     }
 
 
-
     @Test
     fun instantParsing() {
-        val instant = Instant.parse("2019-10-09T09:02:00.123Z")
-
-        assertEquals(1570611720_123L, instant.toUnixMillis())
+        val instants = arrayOf(
+            Triple("1970-01-01T00:00:00Z", 0, 0),
+            Triple("1970-01-01t00:00:00Z", 0, 0),
+            Triple("1970-01-01T00:00:00z", 0, 0),
+            Triple("1970-01-01T00:00:00.0Z", 0, 0),
+            Triple("1970-01-01T00:00:00.000000000Z", 0, 0),
+            Triple("1970-01-01T00:00:00.000000001Z", 0, 1),
+            Triple("1970-01-01T00:00:00.100000000Z", 0, 100000000),
+            Triple("1970-01-01T00:00:01Z", 1, 0),
+            Triple("1970-01-01T00:01:00Z", 60, 0),
+            Triple("1970-01-01T00:01:01Z", 61, 0),
+            Triple("1970-01-01T00:01:01.000000001Z", 61, 1),
+            Triple("1970-01-01T01:00:00.000000000Z", 3600, 0),
+            Triple("1970-01-01T01:01:01.000000001Z", 3661, 1),
+            Triple("1970-01-02T01:01:01.100000000Z", 90061, 100000000))
+        instants.forEach {
+            val (str, seconds, nanos) = it
+            val instant = Instant.parse(str)
+            assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toUnixMillis())
+        }
     }
-
 
 
     @UseExperimental(ExperimentalTime::class)
@@ -159,6 +174,69 @@ class InstantTest {
             val diff = instant1.periodUntil(instant2, zone)
             println("diff between $dt1 and $dt2 at zone $zone: $diff")
         }
+    }
+
+
+    @ExperimentalTime
+    @Test
+    fun strings() {
+        /*
+        assertEquals("1970-01-01T00:01:05.000000567Z", Instant.ofEpochSecond(65L, 567).toString())
+        assertEquals("1970-01-01T00:00:01Z", Instant.ofEpochSecond(1, 0).toString())
+        assertEquals("1970-01-01T00:01:00Z", Instant.ofEpochSecond(60, 0).toString())
+        assertEquals("1970-01-01T01:00:00Z", Instant.ofEpochSecond(3600, 0).toString())
+        assertEquals("1969-12-31T23:59:59Z", Instant.ofEpochSecond(-1, 0).toString())
+         */
+        assertEquals("0000-01-02T00:00:00Z", LocalDateTime(0, 1, 2, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("0000-01-01T12:30:00Z", LocalDateTime(0, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("0000-01-01T00:00:00.000000001Z", LocalDateTime(0, 1, 1, 0, 0, 0, 1).toInstant(TimeZone.UTC).toString())
+        assertEquals("0000-01-01T00:00:00Z", LocalDateTime(0, 1, 1, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-0001-12-31T23:59:59.999999999Z", LocalDateTime(-1, 12, 31, 23, 59, 59, 999999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("-0001-12-31T12:30:00Z", LocalDateTime(-1, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-0001-12-30T12:30:00Z", LocalDateTime(-1, 12, 30, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-9999-01-02T12:30:00Z", LocalDateTime(-9999, 1, 2, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-9999-01-01T12:30:00Z", LocalDateTime(-9999, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-9999-01-01T00:00:00Z", LocalDateTime(-9999, 1, 1, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-10000-12-31T23:59:59.999999999Z", LocalDateTime(-10000, 12, 31, 23, 59, 59, 999999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("-10000-12-31T12:30:00Z", LocalDateTime(-10000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-10000-12-30T12:30:00Z", LocalDateTime(-10000, 12, 30, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-15000-12-31T12:30:00Z", LocalDateTime(-15000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-19999-01-02T12:30:00Z", LocalDateTime(-19999, 1, 2, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-19999-01-01T12:30:00Z", LocalDateTime(-19999, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-19999-01-01T00:00:00Z", LocalDateTime(-19999, 1, 1, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-20000-12-31T23:59:59.999999999Z", LocalDateTime(-20000, 12, 31, 23, 59, 59, 999999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("-20000-12-31T12:30:00Z", LocalDateTime(-20000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-20000-12-30T12:30:00Z", LocalDateTime(-20000, 12, 30, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("-25000-12-31T12:30:00Z", LocalDateTime(-25000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("9999-12-30T12:30:00Z", LocalDateTime(9999, 12, 30, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("9999-12-31T12:30:00Z", LocalDateTime(9999, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("9999-12-31T23:59:59.999999999Z", LocalDateTime(9999, 12, 31, 23, 59, 59, 999999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("+10000-01-01T00:00:00Z", LocalDateTime(10000, 1, 1, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+10000-01-01T12:30:00Z", LocalDateTime(10000, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+10000-01-02T12:30:00Z", LocalDateTime(10000, 1, 2, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+15000-12-31T12:30:00Z", LocalDateTime(15000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-30T12:30:00Z", LocalDateTime(19999, 12, 30, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T12:30:00Z", LocalDateTime(19999, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.999999999Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 999999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("+20000-01-01T00:00:00Z", LocalDateTime(20000, 1, 1, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+20000-01-01T12:30:00Z", LocalDateTime(20000, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+20000-01-02T12:30:00Z", LocalDateTime(20000, 1, 2, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+25000-12-31T12:30:00Z", LocalDateTime(25000, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.009999999Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9999999).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.999999Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 999999000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.009999Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9999000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.123Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 123000000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.100Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 100000000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.020Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 20000000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.003Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 3000000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000400Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 400000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000050Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 50000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000006Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 6000).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000000700Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 700).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000000080Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 80).toInstant(TimeZone.UTC).toString())
+        assertEquals("+19999-12-31T23:59:59.000000009Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9).toInstant(TimeZone.UTC).toString())
+        // assertEquals("-1000000000-12-31T12:30:00Z", LocalDateTime(-999999999, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).minus(1.days).toString())
+        // assertEquals("+1000000000-01-01T12:30:00Z", LocalDateTime(999999999, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).plus(1, CalendarUnit.DAY, TimeZone.UTC).toString())
     }
 
 }
