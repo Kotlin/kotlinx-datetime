@@ -160,7 +160,7 @@ public actual data class Instant internal constructor (internal val epochSeconds
                 assertEquals(0, error)
                 // according to https://en.cppreference.com/w/c/chrono/timespec,
                 // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
-                Instant(timespecBuf.tv_sec, timespecBuf.tv_nsec.toInt())
+                Instant(timespecBuf.tv_sec.toLong(), timespecBuf.tv_nsec.toInt())
             }
         }
 
