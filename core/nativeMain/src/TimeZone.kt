@@ -84,12 +84,7 @@ public actual open class TimeZone(actual val id: String) {
     actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime().dateTime
 
     actual open val Instant.offset: ZoneOffset
-        get() = memScoped {
-            val timespecBuf = alloc<timespec>()
-            timespecBuf.tv_sec = epochSeconds
-            val result = offset_at_instant(id, timespecBuf.ptr)
-            ZoneOffset(result)
-        }
+        get() = ZoneOffset(offset_at_instant(id, epochSeconds))
 
     actual fun LocalDateTime.toInstant(): Instant =
         Instant(toEpochSecond(presumedOffset()), nanosecond)

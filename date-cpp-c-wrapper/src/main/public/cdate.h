@@ -9,7 +9,7 @@ const char * get_system_timezone();
    The array and its contents must be freed by the caller. */
 const char ** available_zone_ids();
 
-int offset_at_instant(const char *zone_name, const struct timespec *);
+int offset_at_instant(const char *zone_name, int64_t epoch_sec);
 
 bool is_known_timezone(const char *zone_name);
 

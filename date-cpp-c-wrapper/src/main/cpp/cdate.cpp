@@ -28,26 +28,24 @@ const char ** available_zone_ids()
 {
     auto& tzdb = get_tzdb();
     auto& zones = tzdb.zones;
-    auto& links = tzdb.links;
     const char ** zones_copy = (const char **)malloc(
-            sizeof(const char *) * (zones.size() + links.size() + 1));
-    zones_copy[zones.size() + links.size()] = nullptr;
+            sizeof(const char *) * (zones.size() + 1));
+    zones_copy[zones.size()] = nullptr;
     for (int i = 0; i < zones.size(); ++i) {
         zones_copy[i] = timezone_name(zones[i]);
-    }
-    for (int i = 0; i < links.size(); ++i) {
-        zones_copy[zones.size() + i] = timezone_name(links[i]);
     }
     return zones_copy;
 }
 
-int offset_at_instant(const char *zone_name, const timespec * tp)
+int offset_at_instant(const char *zone_name, int64_t epoch_sec)
 {
     auto& tzdb = get_tzdb();
-    auto sys_time = utc_clock::to_sys(utc_time<std::chrono::seconds>(std::chrono::seconds(tp->tv_sec)));
+    /* `sys_time` is usually Unix time (UTC, not counting leap seconds).
+    Starting from C++20, it is specified in the standard. */
+    auto stime = sys_time<std::chrono::seconds>(std::chrono::seconds(epoch_sec));
     try {
         auto zone = tzdb.locate_zone(zone_name);
-        auto info = zone->get_info(sys_time);
+        auto info = zone->get_info(stime);
         return info.offset.count();
     } catch (std::runtime_error e) {
         return INT_MAX;
