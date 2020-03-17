@@ -19,7 +19,7 @@ internal val localDateParser: Parser<LocalDate>
             LocalDate(year, month, day)
         }
 
-public actual class LocalDate private constructor (actual val year: Int, actual val month: Month, actual val dayOfMonth: Int) : Comparable<LocalDate> {
+public actual class LocalDate private constructor(actual val year: Int, actual val month: Month, actual val dayOfMonth: Int) : Comparable<LocalDate> {
     actual companion object {
         actual fun parse(isoString: String): LocalDate =
             localDateParser.parse(isoString)
@@ -99,7 +99,7 @@ public actual class LocalDate private constructor (actual val year: Int, actual 
     actual val dayOfYear: Int = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
 
     actual override fun compareTo(other: LocalDate): Int =
-        compareBy<LocalDate>({ it.year }, { it.monthNumber }, {it.dayOfMonth}).compare(this, other)
+        compareBy<LocalDate>({ it.year }, { it.monthNumber }, { it.dayOfMonth }).compare(this, other)
 
     private fun resolvePreviousValid(year: Int, month: Month, day: Int): LocalDate {
         val newDay = min(day, month.length(isLeapYear(year)))
@@ -128,7 +128,7 @@ public actual class LocalDate private constructor (actual val year: Int, actual 
     public fun plusWeeks(value: Long): LocalDate =
         plusDays(safeMultiply(value, 7))
 
-    fun plusDays(daysToAdd: Long): LocalDate {
+    public fun plusDays(daysToAdd: Long): LocalDate {
         if (daysToAdd == 0L) {
             return this
         }
@@ -210,18 +210,17 @@ fun LocalDate.monthsUntil(other: LocalDate): Long {
     return (packed2 - packed1) / 32
 }
 
-fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long {
+fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
     when (unit) {
-        CalendarUnit.DAY -> return daysUntil(end)
-        CalendarUnit.WEEK -> return daysUntil(end) / 7
-        CalendarUnit.MONTH -> return monthsUntil(end)
-        CalendarUnit.YEAR -> return monthsUntil(end) / 12
+        CalendarUnit.DAY -> daysUntil(end)
+        CalendarUnit.WEEK -> daysUntil(end) / 7
+        CalendarUnit.MONTH -> monthsUntil(end)
+        CalendarUnit.YEAR -> monthsUntil(end) / 12
         CalendarUnit.HOUR,
         CalendarUnit.MINUTE,
         CalendarUnit.SECOND,
         CalendarUnit.NANOSECOND -> throw UnsupportedOperationException("Unsupported unit: $unit")
     }
-}
 
 actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
     val months = until(other, CalendarUnit.MONTH)

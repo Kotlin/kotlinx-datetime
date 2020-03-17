@@ -18,14 +18,17 @@ internal const val NANOS_PER_ONE = 1_000_000_000
  * The number of seconds per hour.
  */
 internal const val SECONDS_PER_HOUR = 60 * 60
+
 /**
  * The number of seconds per minute.
  */
 internal const val SECONDS_PER_MINUTE = 60
+
 /**
  * The number of minutes per hour.
  */
 internal const val MINUTES_PER_HOUR = 60
+
 /**
  * The number of days in a 400 year cycle.
  */
@@ -62,7 +65,7 @@ internal const val NANOS_PER_HOUR = NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
 /**
  * Nanos per day.
  */
-val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
+const val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
 
 internal const val SECONDS_0000_TO_1970 = (146097L * 5L - (30L * 365L + 7L)) * 86400L
 
@@ -123,9 +126,6 @@ fun safeMultiply(a: Long, b: Long): Long {
 fun floorDiv(a: Long, b: Long): Long {
     return if (a >= 0) a / b else (a + 1) / b - 1
 }
-fun floorDiv(a: Int, b: Int): Int {
-    return if (a >= 0) a / b else (a + 1) / b - 1
-}
 
 /**
  * Returns the floor modulus.
@@ -142,9 +142,6 @@ fun floorDiv(a: Int, b: Int): Int {
  * @return the floor modulus (positive)
  */
 fun floorMod(a: Long, b: Long): Long {
-    return (a % b + b) % b
-}
-fun floorMod(a: Int, b: Int): Int {
     return (a % b + b) % b
 }
 
@@ -172,30 +169,3 @@ internal fun isLeapYear(year: Int): Boolean {
     val prolepticYear: Long = year.toLong()
     return prolepticYear and 3 == 0L && (prolepticYear % 100 != 0L || prolepticYear % 400 == 0L)
 }
-
-fun ofEpochDay(epochDay: Long): LocalDate {
-    var zeroDay: Long = epochDay + DAYS_0000_TO_1970
-    // find the march-based year
-    zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
-    var adjust: Long = 0
-    if (zeroDay < 0) { // adjust negative years to positive for calculation
-        val adjustCycles: Long = (zeroDay + 1) / DAYS_PER_CYCLE - 1
-        adjust = adjustCycles * 400
-        zeroDay += -adjustCycles * DAYS_PER_CYCLE
-    }
-    var yearEst: Long = (400 * zeroDay + 591) / DAYS_PER_CYCLE
-    var doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
-    if (doyEst < 0) { // fix estimate
-        yearEst--
-        doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
-    }
-    yearEst += adjust // reset any negative year
-    val marchDoy0 = doyEst.toInt()
-    // convert march-based values back to january-based
-    val marchMonth0 = (marchDoy0 * 5 + 2) / 153
-    val month0 = (marchMonth0 + 2) % 12
-    val dom = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
-    yearEst += marchMonth0 / 10.toLong()
-    return LocalDate(yearEst.toInt(), month0 + 1, dom)
-}
-

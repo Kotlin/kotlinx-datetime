@@ -7,23 +7,23 @@ package kotlinx.datetime
 
 typealias Parser<T> = (String, Int) -> Pair<Int, T>
 
-class ParseException(message: String, position: Int): Exception("Parse error at char $position: $message")
+class ParseException(message: String, position: Int) : Exception("Parse error at char $position: $message")
 
-internal fun<T, S> Parser<T>.map(transform: (T) -> S): Parser<S> = { str, pos ->
+internal fun <T, S> Parser<T>.map(transform: (T) -> S): Parser<S> = { str, pos ->
     val (pos1, t) = this(str, pos)
     Pair(pos1, transform(t))
 }
 
-internal fun<T, S> Parser<T>.chain(other: Parser<S>): Parser<Pair<T, S>> = { str, pos ->
+internal fun <T, S> Parser<T>.chain(other: Parser<S>): Parser<Pair<T, S>> = { str, pos ->
     val (pos1, t) = this(str, pos)
     val (pos2, s) = other(str, pos1)
     Pair(pos2, Pair(t, s))
 }
 
-internal fun<T, S> Parser<T>.chainIgnoring(other: Parser<S>): Parser<T> =
+internal fun <T, S> Parser<T>.chainIgnoring(other: Parser<S>): Parser<T> =
     chain(other).map { (t, _) -> t }
 
-internal fun<T, S> Parser<T>.chainSkipping(other: Parser<S>): Parser<S> =
+internal fun <T, S> Parser<T>.chainSkipping(other: Parser<S>): Parser<S> =
     chain(other).map { (_, s) -> s }
 
 internal val eofParser: Parser<Unit> = { str, pos ->
@@ -33,13 +33,17 @@ internal val eofParser: Parser<Unit> = { str, pos ->
     Pair(pos, Unit)
 }
 
-internal fun<T> Parser<T>.parse(str: String): T =
+internal fun <T> Parser<T>.parse(str: String): T =
     chainIgnoring(eofParser)(str, 0).second
 
 internal fun digitSpanParser(minLength: Int?, maxLength: Int?): Parser<IntRange> = { str, pos ->
     var spanLength = 0
     // index of the position after the potential sign
-    val pos1 = if (str.length > pos && (str[pos] == '-' || str[pos] == '+')) { pos + 1 } else { pos }
+    val pos1 = if (str.length > pos && (str[pos] == '-' || str[pos] == '+')) {
+        pos + 1
+    } else {
+        pos
+    }
     for (i in pos1 until str.length) {
         if (str[i].isDigit()) {
             spanLength += 1
@@ -84,14 +88,6 @@ internal fun fractionParser(minDigits: Int, maxDigits: Int, denominatorDigits: I
         }
         Pair(pos1, result)
     }
-}
-
-internal fun <T> ensure(predicate: (T) -> Boolean, parser: Parser<T>, error: String): Parser<T> = { str, pos ->
-    val (pos1, t) = parser(str, pos)
-    if (!predicate(t)) {
-        throw ParseException(error, pos)
-    }
-    Pair (pos1, t)
 }
 
 internal fun <T> Parser<T>.or(other: Parser<T>): Parser<T> = { str, pos ->

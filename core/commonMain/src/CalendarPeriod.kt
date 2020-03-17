@@ -72,7 +72,7 @@ val Int.calendarMonths: CalendarPeriod get() = CalendarPeriod(months = this)
 val Int.calendarYears: CalendarPeriod get() = CalendarPeriod(years = this)
 
 
-@UseExperimental(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 fun Duration.toCalendarPeriod(): CalendarPeriod = toComponents { hours, minutes, seconds, nanoseconds ->
     CalendarPeriod(hours = hours, minutes = minutes, seconds = seconds.toLong(), nanoseconds = nanoseconds.toLong())
 }

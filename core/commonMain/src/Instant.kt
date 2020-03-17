@@ -8,7 +8,7 @@ package kotlinx.datetime
 import kotlin.time.Duration
 
 
-@UseExperimental(kotlin.time.ExperimentalTime::class)
+@OptIn(kotlin.time.ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
 
     // TODO: primary value properties

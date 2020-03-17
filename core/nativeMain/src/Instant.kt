@@ -7,7 +7,6 @@ package kotlinx.datetime
 
 import kotlinx.cinterop.*
 import platform.posix.*
-import platform.posix.abs
 import kotlin.math.*
 import kotlin.test.*
 import kotlin.time.*
@@ -22,46 +21,46 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
-val instantParser : Parser<Instant> =
-localDateParser
-    .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-    .chain(intParser(2, 2)) // hour
-    .chainIgnoring(concreteCharParser(':'))
-    .chain(intParser(2, 2)) // minute
-    .chainIgnoring(concreteCharParser(':'))
-    .chain(intParser(2, 2)) // second
-    .chain(optional(
-        concreteCharParser('.')
-            .chainSkipping(fractionParser(0, 9, 9)) // nanos
-    ))
-    .chainIgnoring(concreteCharParser('Z').or(concreteCharParser('z')))
-    .map {
-        val (dateHourMinuteSecond, nanosVal) = it
-        val (dateHourMinute, secondsVal) = dateHourMinuteSecond
-        val (dateHour, minutesVal) = dateHourMinute
-        val (dateVal, hoursVal) = dateHour
+val instantParser: Parser<Instant> =
+    localDateParser
+        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
+        .chain(intParser(2, 2)) // hour
+        .chainIgnoring(concreteCharParser(':'))
+        .chain(intParser(2, 2)) // minute
+        .chainIgnoring(concreteCharParser(':'))
+        .chain(intParser(2, 2)) // second
+        .chain(optional(
+            concreteCharParser('.')
+                .chainSkipping(fractionParser(0, 9, 9)) // nanos
+        ))
+        .chainIgnoring(concreteCharParser('Z').or(concreteCharParser('z')))
+        .map {
+            val (dateHourMinuteSecond, nanosVal) = it
+            val (dateHourMinute, secondsVal) = dateHourMinuteSecond
+            val (dateHour, minutesVal) = dateHourMinute
+            val (dateVal, hoursVal) = dateHour
 
-        val nano = nanosVal ?: 0
-        val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
-            listOf(1, 0, 0, 0)
-        } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
-            // parsed a leap second, but it seems it isn't used
-            listOf(0, 23, 59, 59)
-        } else {
-            listOf(0, hoursVal, minutesVal, secondsVal)
+            val nano = nanosVal ?: 0
+            val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
+                listOf(1, 0, 0, 0)
+            } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
+                // parsed a leap second, but it seems it isn't used
+                listOf(0, 23, 59, 59)
+            } else {
+                listOf(0, hoursVal, minutesVal, secondsVal)
+            }
+
+            val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, CalendarUnit.DAY)
+            val localTime = LocalTime(hours, min, seconds, 0)
+            val secDelta: Long = safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
+            val epochDay: Long = localDate.toEpochDay()
+            val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
+
+            Instant(instantSecs, nano)
         }
 
-        val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, CalendarUnit.DAY)
-        val localTime = LocalTime(hours, min, seconds, 0)
-        val secDelta: Long = safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
-        val epochDay: Long = localDate.toEpochDay()
-        val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
-
-        Instant(instantSecs, nano)
-    }
-
-@UseExperimental(ExperimentalTime::class)
-public actual data class Instant internal constructor (internal val epochSeconds: Long, internal val nanos: Int) : Comparable<Instant> {
+@OptIn(ExperimentalTime::class)
+public actual data class Instant internal constructor(internal val epochSeconds: Long, internal val nanos: Int) : Comparable<Instant> {
 
     actual fun toUnixMillis(): Long = epochSeconds * MILLIS_PER_ONE + nanos / NANOS_PER_MILLI
 
@@ -76,7 +75,7 @@ public actual data class Instant internal constructor (internal val epochSeconds
         return ofEpochSecond(newEpochSeconds, nanoAdjustment)
     }
 
-    actual operator fun plus(duration: Duration): Instant = duration.toComponents {epochSeconds, nanos ->
+    actual operator fun plus(duration: Duration): Instant = duration.toComponents { epochSeconds, nanos ->
         plus(epochSeconds, nanos.toLong())
     }
 
@@ -84,7 +83,7 @@ public actual data class Instant internal constructor (internal val epochSeconds
 
     actual operator fun minus(other: Instant): Duration =
         (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
-        (this.nanos - other.nanos).nanoseconds
+            (this.nanos - other.nanos).nanoseconds
 
     actual override fun compareTo(other: Instant): Int =
         compareBy<Instant>({ it.epochSeconds }, { it.nanos }).compare(this, other)
@@ -160,7 +159,9 @@ public actual data class Instant internal constructor (internal val epochSeconds
                 assertEquals(0, error)
                 // according to https://en.cppreference.com/w/c/chrono/timespec,
                 // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
-                Instant(timespecBuf.tv_sec.toLong(), timespecBuf.tv_nsec.toInt())
+                val seconds = timespecBuf.tv_sec.toLong() // conversion is needed on some platforms
+                val nanosec = timespecBuf.tv_nsec.toInt()
+                Instant(seconds, nanosec)
             }
         }
 
@@ -211,7 +212,7 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
         CalendarUnit.NANOSECOND -> plus(0, value)
     }
 
-@UseExperimental(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
     var thisLdt = with(zone) { toZonedLocalDateTime() }
     val otherLdt = with(zone) { other.toZonedLocalDateTime() }

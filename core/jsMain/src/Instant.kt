@@ -16,7 +16,7 @@ import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
 import kotlinx.datetime.internal.JSJoda.ZoneId
 
-@UseExperimental(kotlin.time.ExperimentalTime::class)
+@OptIn(kotlin.time.ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual fun toUnixMillis(): Long = value.toEpochMilli().toLong()
@@ -94,7 +94,7 @@ public actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone):
             CalendarUnit.NANOSECOND -> this.value.plusNanos(value)
         }.let(::Instant)
 
-@UseExperimental(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
     var thisZdt = this.value.atZone(zone.zoneId)
     val otherZdt = other.value.atZone(zone.zoneId)

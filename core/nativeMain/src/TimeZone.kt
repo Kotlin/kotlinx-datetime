@@ -8,7 +8,7 @@ package kotlinx.datetime
 import kotlinx.cinterop.*
 import platform.posix.*
 
-class DateTimeException(str: String? = null): Exception(str)
+class DateTimeException(str: String? = null) : Exception(str)
 
 public actual open class TimeZone(actual val id: String) {
 
@@ -72,13 +72,13 @@ public actual open class TimeZone(actual val id: String) {
             }
     }
 
-    internal fun Instant.toZonedLocalDateTime(): ZonedLocalDateTime {
+    internal fun Instant.toZonedLocalDateTime(): ZonedDateTime {
         val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
         val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
         val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
         val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
         val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanos)
-        return ZonedLocalDateTime(LocalDateTime(date, time), this@TimeZone, offset)
+        return ZonedDateTime(LocalDateTime(date, time), this@TimeZone, offset)
     }
 
     actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime().dateTime
@@ -101,7 +101,8 @@ public actual open class TimeZone(actual val id: String) {
 
 }
 
-public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null) : TimeZone(id ?: zoneIdByOffset(totalSeconds)) {
+public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null) : TimeZone(id
+    ?: zoneIdByOffset(totalSeconds)) {
 
     companion object {
         fun of(offsetId: String): ZoneOffset {
@@ -169,7 +170,7 @@ public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null)
         }
     }
 
-    override internal fun LocalDateTime.presumedOffset(preferred: ZoneOffset?): ZoneOffset = this@ZoneOffset
+    internal override fun LocalDateTime.presumedOffset(preferred: ZoneOffset?): ZoneOffset = this@ZoneOffset
 
     override val Instant.offset: ZoneOffset
         get() = this@ZoneOffset

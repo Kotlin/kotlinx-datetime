@@ -24,7 +24,7 @@ class LocalDateTimeTest {
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
     }
 
-    @UseExperimental(ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Test
     fun localDtToInstantConversion() {
         val ldt1 = "2019-10-01T18:43:15.100500".toLocalDateTime()
@@ -49,7 +49,7 @@ class LocalDateTimeTest {
     }
 
 
-    @UseExperimental(ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Test
     fun tomorrow() {
         val localFixed = LocalDateTime(2019, 1, 30, 0, 0, 0, 0)

@@ -29,7 +29,7 @@ class InstantTest {
         assertNotEquals(notEqualInstant, instant)
     }
 
-    @UseExperimental(ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Test
     fun instantArithmetic() {
         val instant = Instant.now().toUnixMillis().let { Instant.fromUnixMillis(it) } // round to millis
@@ -78,7 +78,7 @@ class InstantTest {
     }
 
 
-    @UseExperimental(ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Test
     fun instantCalendarArithmetic() {
         val zone = TimeZone.of("Europe/Berlin")
@@ -102,7 +102,7 @@ class InstantTest {
         assertEquals(period, instant1.periodUntil(instant4, zone))
     }
 
-    @UseExperimental(ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")

@@ -20,14 +20,14 @@ val localTimeParser: Parser<LocalTime>
         .map {
             val (hourMinute, secNano) = it
             val (hour, minute) = hourMinute
-            val (second, nanosecond) = when(secNano) {
+            val (sec, nanosecond) = when (secNano) {
                 null -> Pair(0, 0)
                 else -> Pair(secNano.first, secNano.second ?: 0)
             }
-            LocalTime(hour, minute, second, nanosecond)
+            LocalTime(hour, minute, sec, nanosecond)
         }
 
-class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int): Comparable<LocalTime> {
+class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
 
     companion object {
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
@@ -41,14 +41,14 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
         }
 
         internal fun ofNanoOfDay(nanoOfDay: Long): LocalTime {
-            var nanoOfDay = nanoOfDay
-            val hours = (nanoOfDay / NANOS_PER_HOUR).toInt()
-            nanoOfDay -= hours * NANOS_PER_HOUR
-            val minutes = (nanoOfDay / NANOS_PER_MINUTE).toInt()
-            nanoOfDay -= minutes * NANOS_PER_MINUTE
-            val seconds = (nanoOfDay / NANOS_PER_ONE).toInt()
-            nanoOfDay -= seconds * NANOS_PER_ONE
-            return LocalTime(hours, minutes, seconds, nanoOfDay.toInt())
+            var newNanoOfDay = nanoOfDay
+            val hours = (newNanoOfDay / NANOS_PER_HOUR).toInt()
+            newNanoOfDay -= hours * NANOS_PER_HOUR
+            val minutes = (newNanoOfDay / NANOS_PER_MINUTE).toInt()
+            newNanoOfDay -= minutes * NANOS_PER_MINUTE
+            val seconds = (newNanoOfDay / NANOS_PER_ONE).toInt()
+            newNanoOfDay -= seconds * NANOS_PER_ONE
+            return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt())
         }
     }
 
@@ -93,12 +93,16 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
             buf.append(if (secondValue < 10) ":0" else ":").append(secondValue)
             if (nanoValue > 0) {
                 buf.append('.')
-                if (nanoValue % 1000000 == 0) {
-                    buf.append((nanoValue / 1000000 + 1000).toString().substring(1))
-                } else if (nanoValue % 1000 == 0) {
-                    buf.append((nanoValue / 1000 + 1000000).toString().substring(1))
-                } else {
-                    buf.append((nanoValue + 1000000000).toString().substring(1))
+                when {
+                    nanoValue % 1000000 == 0 -> {
+                        buf.append((nanoValue / 1000000 + 1000).toString().substring(1))
+                    }
+                    nanoValue % 1000 == 0 -> {
+                        buf.append((nanoValue / 1000 + 1000000).toString().substring(1))
+                    }
+                    else -> {
+                        buf.append((nanoValue + 1000000000).toString().substring(1))
+                    }
                 }
             }
         }

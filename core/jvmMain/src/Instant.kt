@@ -12,7 +12,7 @@ import kotlin.time.*
 import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
-@UseExperimental(kotlin.time.ExperimentalTime::class)
+@OptIn(kotlin.time.ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual fun toUnixMillis(): Long = value.toEpochMilli()
@@ -79,7 +79,7 @@ public actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone):
             CalendarUnit.NANOSECOND -> this.value.plusNanos(value)
         }.let(::Instant)
 
-@UseExperimental(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
     var thisZdt = this.value.atZone(zone.zoneId)
     val otherZdt = other.value.atZone(zone.zoneId)
