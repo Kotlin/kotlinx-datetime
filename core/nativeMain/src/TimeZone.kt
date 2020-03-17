@@ -20,7 +20,7 @@ public actual open class TimeZone(actual val id: String) {
                 free(string)
                 TimeZone(kotlinString)
             }
-        actual val UTC: TimeZone = ZoneOffset(0)
+        actual val UTC: TimeZone = ZoneOffset.UTC
 
         actual fun of(zoneId: String): TimeZone {
             // TODO: normalize aliases?
@@ -93,7 +93,7 @@ public actual open class TimeZone(actual val id: String) {
         ZoneOffset(offset_at_datetime(id, toEpochSecond(ZoneOffset(0)), preferred?.totalSeconds ?: INT_MAX))
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is TimeZone && this.id == other.id)
+        this === other || other is TimeZone && this.id == other.id
 
     override fun hashCode(): Int = id.hashCode()
 
@@ -101,13 +101,15 @@ public actual open class TimeZone(actual val id: String) {
 
 }
 
-public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null) : TimeZone(id
+public actual class ZoneOffset internal constructor(actual val totalSeconds: Int, id: String? = null) : TimeZone(id
     ?: zoneIdByOffset(totalSeconds)) {
 
     companion object {
-        fun of(offsetId: String): ZoneOffset {
+        val UTC = ZoneOffset(0)
+
+        internal fun of(offsetId: String): ZoneOffset {
             if (offsetId == "Z") {
-                return ZoneOffset(0)
+                return UTC
             }
 
             // parse - +h, +hh, +hhmm, +hh:mm, +hhmmss, +hh:mm:ss
@@ -154,8 +156,40 @@ public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null)
             }
         }
 
-        private fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset =
-            ZoneOffset(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+        private fun validate(hours: Int, minutes: Int, seconds: Int) {
+            if (hours < -18 || hours > 18) {
+                throw DateTimeException("Zone offset hours not in valid range: value " + hours +
+                    " is not in the range -18 to 18")
+            }
+            if (hours > 0) {
+                if (minutes < 0 || seconds < 0) {
+                    throw DateTimeException("Zone offset minutes and seconds must be positive because hours is positive")
+                }
+            } else if (hours < 0) {
+                if (minutes > 0 || seconds > 0) {
+                    throw DateTimeException("Zone offset minutes and seconds must be negative because hours is negative")
+                }
+            } else if (minutes > 0 && seconds < 0 || minutes < 0 && seconds > 0) {
+                throw DateTimeException("Zone offset minutes and seconds must have the same sign")
+            }
+            if (abs(minutes) > 59) {
+                throw DateTimeException("Zone offset minutes not in valid range: abs(value) " +
+                    abs(minutes) + " is not in the range 0 to 59")
+            }
+            if (abs(seconds) > 59) {
+                throw DateTimeException("Zone offset seconds not in valid range: abs(value) " +
+                    abs(seconds) + " is not in the range 0 to 59")
+            }
+            if (abs(hours) == 18 && (abs(minutes) > 0 || abs(seconds) > 0)) {
+                throw DateTimeException("Zone offset not in valid range: -18:00 to +18:00")
+            }
+        }
+
+        fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset {
+            validate(hours, minutes, seconds)
+            return if (hours == 0 && minutes == 0 && seconds == 0) UTC
+            else ZoneOffset(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+        }
 
         private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
             if (precededByColon && offsetId[pos - 1] != ':') {
@@ -174,6 +208,13 @@ public actual class ZoneOffset(actual val totalSeconds: Int, id: String? = null)
 
     override val Instant.offset: ZoneOffset
         get() = this@ZoneOffset
+
+    override fun toString(): String = id
+
+    override fun hashCode(): Int = totalSeconds
+
+    override fun equals(other: Any?): Boolean =
+        this === other || other is ZoneOffset && totalSeconds == other.totalSeconds
 }
 
 // TODO: transition duration

@@ -30,6 +30,9 @@ val localTimeParser: Parser<LocalTime>
 class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
 
     companion object {
+        internal fun parse(isoString: String): LocalTime =
+            localTimeParser.parse(isoString)
+
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
             require(secondOfDay in 0..SECONDS_PER_DAY)
             require(nanoOfSecond in 0..1_000_000_000)
@@ -68,8 +71,8 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
      */
     internal fun toNanoOfDay(): Long {
         var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
-        total += minute * NANOS_PER_ONE * SECONDS_PER_MINUTE
-        total += second * NANOS_PER_ONE
+        total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
+        total += second.toLong() * NANOS_PER_ONE
         total += nanosecond.toLong()
         return total
     }

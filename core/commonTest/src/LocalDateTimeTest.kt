@@ -6,7 +6,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
 
@@ -16,12 +15,18 @@ class LocalDateTimeTest {
 
     @Test
     fun localDateTimeParsing() {
-        fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int, dayOfYear: Int) {
+        fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
             checkComponents(value.toLocalDateTime(), year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
         }
         checkParsedComponents("2019-10-01T18:43:15.100500", 2019, 10, 1, 18, 43, 15, 100500000, 2, 274)
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
+        // from 310 bp
+        checkParsedComponents("2008-07-05T02:01", 2008, 7, 5, 2, 1, 0, 0)
+        checkParsedComponents("2007-12-31T23:59:01", 2007, 12, 31, 23, 59, 1, 0)
+        checkParsedComponents("0999-12-31T23:59:59.990", 999, 12, 31, 23, 59, 59, 990000000)
+        checkParsedComponents("-0001-01-02T23:59:59.999990", -1, 1, 2, 23, 59, 59, 999990000)
+        checkParsedComponents("-2008-01-02T23:59:59.999999990", -2008, 1, 2, 23, 59, 59, 999999990)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -32,6 +37,15 @@ class LocalDateTimeTest {
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(1.hours + 7.minutes - 15.seconds + 400100.microseconds, diff)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun localDtToInstantConversionRespectsTimezones() {
+        val ldt1 = "2011-03-26T04:00:00".toLocalDateTime()
+        val ldt2 = "2011-03-27T04:00:00".toLocalDateTime()
+        val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
+        assertEquals(23.hours, diff)
     }
 
     @Test
@@ -62,6 +76,16 @@ class LocalDateTimeTest {
 //        println(localFixed + 1.days.toCalendarPeriod())
 
         println(localFixed.dayOfWeek)
+    }
+
+    // taken from 310bp
+    @Test
+    fun strings() {
+        assertEquals("2008-07-05T02:01", LocalDateTime(2008, 7, 5, 2, 1, 0, 0).toString())
+        assertEquals("2007-12-31T23:59:01", LocalDateTime(2007, 12, 31, 23, 59, 1, 0).toString())
+        assertEquals("0999-12-31T23:59:59.990", LocalDateTime(999, 12, 31, 23, 59, 59, 990000000).toString())
+        assertEquals("-0001-01-02T23:59:59.999990", LocalDateTime(-1, 1, 2, 23, 59, 59, 999990000).toString())
+        assertEquals("-2008-01-02T23:59:59.999999990", LocalDateTime(-2008, 1, 2, 23, 59, 59, 999999990).toString())
     }
 
 }

@@ -202,15 +202,15 @@ actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
 fun LocalDate.daysUntil(other: LocalDate): Long =
     other.toEpochDay() - this.toEpochDay()
 
-val LocalDate.prolepticMonth get() = (year * 12L) + (monthNumber - 1)
+internal val LocalDate.prolepticMonth get() = (year * 12L) + (monthNumber - 1)
 
-fun LocalDate.monthsUntil(other: LocalDate): Long {
+internal fun LocalDate.monthsUntil(other: LocalDate): Long {
     val packed1: Long = prolepticMonth * 32L + dayOfMonth
     val packed2: Long = other.prolepticMonth * 32L + other.dayOfMonth
     return (packed2 - packed1) / 32
 }
 
-fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
+internal fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
     when (unit) {
         CalendarUnit.DAY -> daysUntil(end)
         CalendarUnit.WEEK -> daysUntil(end) / 7

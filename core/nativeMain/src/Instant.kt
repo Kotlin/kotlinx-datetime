@@ -169,7 +169,7 @@ public actual data class Instant internal constructor(internal val epochSeconds:
             Instant(floorDiv(millis, MILLIS_PER_ONE.toLong()),
                 (floorMod(millis, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
-        fun ofEpochSecond(epochSecond: Long, nanoAdjustment: Long): Instant {
+        internal fun ofEpochSecond(epochSecond: Long, nanoAdjustment: Long = 0): Instant {
             val secs = safeAdd(epochSecond, floorDiv(nanoAdjustment, NANOS_PER_ONE.toLong()))
             val nos = floorMod(nanoAdjustment, NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
