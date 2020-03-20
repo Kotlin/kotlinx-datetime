@@ -4,9 +4,11 @@
  */
 
 package kotlinx.datetime.test
+
 import kotlinx.datetime.*
 import kotlin.math.*
 import kotlin.test.*
+
 
 /**
  * This file takes tests from the 310 backport project and tests with them the parts that were adapted from it.
@@ -114,6 +116,22 @@ class ThreeTenBpTimeZoneTest {
         zoneOffsetCheck(test1, -18, 0, 0)
         val test2 = ZoneOffset.of("+18:00:00")
         zoneOffsetCheck(test2, 18, 0, 0)
+    }
+
+    @Test
+    fun nonExistentLocalTime() {
+        val t1 = LocalDateTime(2007, 4, 1, 0, 14, 17, 201)
+        val t2 = LocalDateTime(2007, 4, 1, 1, 14, 17, 201)
+        val tz = TimeZone.of("Asia/Gaza")
+        assertEquals(with (tz) { t1.atZone() }, with (tz) { t2.atZone() })
+    }
+
+    @Test
+    fun overlappingLocalTime() {
+        val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
+        val zone = TimeZone.of("Europe/Paris")
+        assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
+                zone, ZoneOffset(2 * 3600)), with (zone) { t.atZone() })
     }
 
 }

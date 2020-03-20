@@ -13,4 +13,8 @@ int offset_at_instant(const char *zone_name, int64_t epoch_sec);
 
 bool is_known_timezone(const char *zone_name);
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int preferred);
+/* Sets the result in "offset"; in case an existing value in "offset" is an
+   acceptable one, leaves it untouched. Returns the number of seconds that the
+   caller needs to add to their existing estimation of date, which is needed in
+   case the time does not exist, having fallen in the gap. */
+int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset);

@@ -63,28 +63,28 @@ bool is_known_timezone(const char *zone_name)
     }
 }
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int preferred)
+int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
 {
     auto& tzdb = get_tzdb();
     try {
         auto zone = tzdb.locate_zone(zone_name);
         local_seconds seconds((std::chrono::seconds(epoch_sec)));
         auto info = zone->get_info(seconds);
-        sys_info sinfo;
         switch (info.result) {
             case local_info::unique:
-                sinfo = info.first;
-                break;
-            case local_info::nonexistent:
-                sinfo = info.second;
-                break;
+                *offset = info.first.offset.count();
+                return 0;
+            case local_info::nonexistent: {
+                auto trans_duration = info.second.offset.count() -
+                    info.first.offset.count();
+                *offset = info.second.offset.count();
+                return trans_duration;
+            }
             case local_info::ambiguous:
-                if (info.second.offset.count() == preferred)
-                    return preferred;
-                sinfo = info.first;
-                break;
+                if (info.second.offset.count() != *offset)
+                    *offset = info.first.offset.count();
+                return 0;
         }
-        return sinfo.offset.count();
     } catch (std::runtime_error e) {
         return INT_MAX;
     }

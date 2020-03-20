@@ -86,11 +86,21 @@ public actual open class TimeZone(actual val id: String) {
     actual open val Instant.offset: ZoneOffset
         get() = ZoneOffset(offset_at_instant(id, epochSeconds))
 
-    actual fun LocalDateTime.toInstant(): Instant =
-        Instant(toEpochSecond(presumedOffset()), nanosecond)
+    actual fun LocalDateTime.toInstant(): Instant {
+        val zoned = atZone()
+        return Instant(zoned.dateTime.toEpochSecond(zoned.offset), nanosecond)
+    }
 
-    internal open fun LocalDateTime.presumedOffset(preferred: ZoneOffset? = null): ZoneOffset =
-        ZoneOffset(offset_at_datetime(id, toEpochSecond(ZoneOffset(0)), preferred?.totalSeconds ?: INT_MAX))
+    internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
+        val epochSeconds = toEpochSecond(ZoneOffset(0))
+        val offset = alloc<IntVar>()
+        offset.value = preferred?.totalSeconds ?: INT_MAX
+        println("$id $epochSeconds ${offset.value}")
+        val transitionDuration = offset_at_datetime(id, epochSeconds, offset.ptr)
+        println("Transit is $transitionDuration; ${offset.value}")
+        val dateTime = this@atZone.plusSeconds(transitionDuration.toLong())
+        ZonedDateTime(dateTime, this@TimeZone, ZoneOffset(offset.value))
+    }
 
     override fun equals(other: Any?): Boolean =
         this === other || other is TimeZone && this.id == other.id
@@ -204,7 +214,8 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
         }
     }
 
-    internal override fun LocalDateTime.presumedOffset(preferred: ZoneOffset?): ZoneOffset = this@ZoneOffset
+    internal override fun LocalDateTime.atZone(preferred: ZoneOffset?): ZonedDateTime =
+        ZonedDateTime(this@atZone, this@ZoneOffset, this@ZoneOffset)
 
     override val Instant.offset: ZoneOffset
         get() = this@ZoneOffset
@@ -216,5 +227,3 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
     override fun equals(other: Any?): Boolean =
         this === other || other is ZoneOffset && totalSeconds == other.totalSeconds
 }
-
-// TODO: transition duration

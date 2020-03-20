@@ -10,8 +10,24 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     internal fun plusMonths(months: Long): ZonedDateTime = resolve(dateTime.plusMonths(months))
     internal fun plusDays(days: Long): ZonedDateTime = resolve(dateTime.plusDays(days))
 
-    private fun resolve(dateTime: LocalDateTime): ZonedDateTime =
-        ZonedDateTime(dateTime, zone, with(zone) { dateTime.presumedOffset(offset) })
+    private fun resolve(dateTime: LocalDateTime): ZonedDateTime = with(zone) { dateTime.atZone(offset) }
+
+    override fun equals(other: Any?): Boolean =
+        this === other || other is ZonedDateTime &&
+            dateTime == other.dateTime && offset == other.offset && zone == other.zone
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun hashCode(): Int {
+        return dateTime.hashCode() xor offset.hashCode() xor zone.hashCode().rotateLeft(3)
+    }
+
+    override fun toString(): String {
+        var str = dateTime.toString() + offset.toString()
+        if (offset !== zone) {
+            str += "[$zone]"
+        }
+        return str
+    }
 }
 
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =
