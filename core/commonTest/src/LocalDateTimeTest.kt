@@ -21,7 +21,10 @@ class LocalDateTimeTest {
         checkParsedComponents("2019-10-01T18:43:15.100500", 2019, 10, 1, 18, 43, 15, 100500000, 2, 274)
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
-        // from 310 bp
+
+        /* Based on the ThreeTenBp project.
+         * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+         */
         checkParsedComponents("2008-07-05T02:01", 2008, 7, 5, 2, 1, 0, 0)
         checkParsedComponents("2007-12-31T23:59:01", 2007, 12, 31, 23, 59, 1, 0)
         checkParsedComponents("0999-12-31T23:59:59.990", 999, 12, 31, 23, 59, 59, 990000000)
@@ -78,7 +81,9 @@ class LocalDateTimeTest {
         println(localFixed.dayOfWeek)
     }
 
-    // taken from 310bp
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
     @Test
     fun strings() {
         assertEquals("2008-07-05T02:01", LocalDateTime(2008, 7, 5, 2, 1, 0, 0).toString())

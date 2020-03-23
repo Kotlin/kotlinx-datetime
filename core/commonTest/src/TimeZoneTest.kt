@@ -2,6 +2,9 @@
  * Copyright 2016-2019 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime.test
 import kotlinx.datetime.*
@@ -44,6 +47,7 @@ class TimeZoneTest {
 
     }
 
+    // from 310bp
     @Test
     fun timeZoneEquals() {
         val test1 = TimeZone.of("Europe/London")
@@ -61,6 +65,7 @@ class TimeZoneTest {
         assertEquals(test2.hashCode(), test2b.hashCode())
     }
 
+    // from 310bp
     @Test
     fun timeZoneToString() {
         val idToString = arrayOf(
@@ -77,6 +82,7 @@ class TimeZoneTest {
         }
     }
 
+    // from 310bp
     @Test
     fun newYorkOffset() {
         val test = TimeZone.of("America/New_York")
@@ -107,6 +113,7 @@ class TimeZoneTest {
         assertEquals(TimeZone.of("-5"), with (test) { createInstant(offset, 2008, 12, 28).offset })
     }
 
+    // from 310bp
     @Test
     fun newYorkOffsetToDST() {
         val test = TimeZone.of("America/New_York")
@@ -123,6 +130,7 @@ class TimeZoneTest {
         assertEquals(TimeZone.of("-4"), with (test) { createInstant(offset, 2008, 3, 9, 2, 0, 0, 0).offset })
     }
 
+    // from 310bp
     @Test
     fun newYorkOffsetFromDST() {
         val test = TimeZone.of("America/New_York")
@@ -139,6 +147,7 @@ class TimeZoneTest {
         assertEquals(TimeZone.of("-5"), with (test) { createInstant(offset, 2008, 11, 2, 2, 0, 0, 0).offset })
     }
 
+    // from 310bp
     private fun createInstant(offset: TimeZone, year: Int, month: Int, day: Int, hour: Int = 0, min: Int = 0, sec: Int = 0, nano: Int = 0): Instant =
         LocalDateTime(year, month, day, hour, min, sec, nano).toInstant(offset)
 }

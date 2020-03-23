@@ -2,10 +2,14 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
-val localTimeParser: Parser<LocalTime>
+// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_TIME
+internal val localTimeParser: Parser<LocalTime>
     get() = intParser(2, 2) // hour
         .chainIgnoring(concreteCharParser(':'))
         .chain(intParser(2, 2)) // minute
@@ -27,12 +31,13 @@ val localTimeParser: Parser<LocalTime>
             LocalTime(hour, minute, sec, nanosecond)
         }
 
-class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
+internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
 
     companion object {
         internal fun parse(isoString: String): LocalTime =
             localTimeParser.parse(isoString)
 
+        // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
             require(secondOfDay in 0..SECONDS_PER_DAY)
             require(nanoOfSecond in 0..1_000_000_000)
@@ -43,6 +48,7 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
             return LocalTime(hours, minutes, second.toInt(), nanoOfSecond)
         }
 
+        // org.threeten.bp.LocalTime#ofNanoOfDay
         internal fun ofNanoOfDay(nanoOfDay: Long): LocalTime {
             var newNanoOfDay = nanoOfDay
             val hours = (newNanoOfDay / NANOS_PER_HOUR).toInt()
@@ -63,12 +69,7 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
         return (nod xor (nod ushr 32)).toInt()
     }
 
-    /**
-     * Extracts the time as nanos of day,
-     * from `0` to `24 * 60 * 60 * 1,000,000,000 - 1`.
-     *
-     * @return the nano of day equivalent to this time
-     */
+    // org.threeten.bp.LocalTime#toNanoOfDay
     internal fun toNanoOfDay(): Long {
         var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
         total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
@@ -77,6 +78,7 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
         return total
     }
 
+    // org.threeten.bp.LocalTime#toSecondOfDay
     internal fun toSecondOfDay(): Int {
         var total: Int = hour * SECONDS_PER_HOUR
         total += minute * SECONDS_PER_MINUTE
@@ -84,6 +86,7 @@ class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond:
         return total
     }
 
+    // org.threeten.bp.LocalTime#toString
     override fun toString(): String {
         val buf = StringBuilder(18)
         val hourValue = hour

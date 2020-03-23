@@ -52,7 +52,9 @@ class InstantTest {
         println(now.toLocalDateTime(TimeZone.SYSTEM))
     }
 
-
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
     @Test
     fun instantParsing() {
         val instants = arrayOf(
@@ -177,6 +179,9 @@ class InstantTest {
     }
 
 
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
     @ExperimentalTime
     @Test
     fun strings() {

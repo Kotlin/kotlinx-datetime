@@ -2,10 +2,14 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
-val localDateTimeParser: Parser<LocalDateTime>
+// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
+internal val localDateTimeParser: Parser<LocalDateTime>
     get() = localDateParser
         .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
         .chain(localTimeParser)
@@ -13,7 +17,8 @@ val localDateTimeParser: Parser<LocalDateTime>
             LocalDateTime(date, time)
         }
 
-public actual class LocalDateTime(actual val date: LocalDate, val time: LocalTime) : Comparable<LocalDateTime> {
+public actual class LocalDateTime internal constructor(
+    actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
     actual companion object {
         actual fun parse(isoString: String): LocalDateTime =
             localDateTimeParser.parse(isoString)
@@ -39,12 +44,15 @@ public actual class LocalDateTime(actual val date: LocalDate, val time: LocalTim
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDateTime && compareTo(other) == 0)
 
+    // org.threeten.bp.LocalDateTime#hashCode
     override fun hashCode(): Int {
         return date.hashCode() xor time.hashCode()
     }
 
+    // org.threeten.bp.LocalDateTime#toString
     override fun toString(): String = date.toString() + 'T' + time.toString()
 
+    // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: ZoneOffset): Long {
         val epochDay: Long = date.toEpochDay()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
@@ -67,6 +75,7 @@ actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
 actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
     with(timeZone) { offset }
 
+// org.threeten.bp.LocalDateTime#until
 internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long =
     when (unit) {
         CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
@@ -99,9 +108,11 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
         }
     }
 
+// org.threeten.bp.LocalDateTime#plusSeconds
 internal fun LocalDateTime.plusSeconds(seconds: Long): LocalDateTime =
     plusWithOverflow(date, 0, 0, seconds, 0, 1)
 
+// org.threeten.bp.LocalDateTime#plusWithOverflow
 internal fun LocalDateTime.plusWithOverflow(
     newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime {
     if (hours or minutes or seconds or nanos == 0L) {

@@ -2,6 +2,9 @@
  * Copyright 2016-2019 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
@@ -21,7 +24,8 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
-val instantParser: Parser<Instant> =
+// org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#parse
+private val instantParser: Parser<Instant> =
     localDateParser
         .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
         .chain(intParser(2, 2)) // hour
@@ -60,10 +64,11 @@ val instantParser: Parser<Instant> =
         }
 
 @OptIn(ExperimentalTime::class)
-public actual data class Instant internal constructor(internal val epochSeconds: Long, internal val nanos: Int) : Comparable<Instant> {
+public actual class Instant internal constructor(internal val epochSeconds: Long, internal val nanos: Int) : Comparable<Instant> {
 
     actual fun toUnixMillis(): Long = epochSeconds * MILLIS_PER_ONE + nanos / NANOS_PER_MILLI
 
+    // org.threeten.bp.Instant#plus(long, long)
     internal fun plus(secondsToAdd: Long, nanosToAdd: Long): Instant {
         if ((secondsToAdd or nanosToAdd) == 0L) {
             return this
@@ -88,7 +93,14 @@ public actual data class Instant internal constructor(internal val epochSeconds:
     actual override fun compareTo(other: Instant): Int =
         compareBy<Instant>({ it.epochSeconds }, { it.nanos }).compare(this, other)
 
-    // Zero idea what goes on here. Taken from threetenbp's InstantPrinterParser.print.
+    override fun equals(other: Any?): Boolean =
+        this === other || other is Instant && this.epochSeconds == other.epochSeconds && this.nanos == other.nanos
+
+    // org.threeten.bp.Instant#hashCode
+    override fun hashCode(): Int =
+        (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanos
+
+    // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
     override fun toString(): String {
         val buf = StringBuilder()
         val inNano: Int = nanos
@@ -165,10 +177,12 @@ public actual data class Instant internal constructor(internal val epochSeconds:
             }
         }
 
+        // org.threeten.bp.Instant#ofEpochMilli
         actual fun fromUnixMillis(millis: Long): Instant =
             Instant(floorDiv(millis, MILLIS_PER_ONE.toLong()),
                 (floorMod(millis, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
+        // org.threeten.bp.Instant#ofEpochSecond(long, long)
         internal fun ofEpochSecond(epochSecond: Long, nanoAdjustment: Long = 0): Instant {
             val secs = safeAdd(epochSecond, floorDiv(nanoAdjustment, NANOS_PER_ONE.toLong()))
             val nos = floorMod(nanoAdjustment, NANOS_PER_ONE.toLong()).toInt()
@@ -182,7 +196,7 @@ public actual data class Instant internal constructor(internal val epochSeconds:
 }
 
 actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {
-    toLocalDateTime(zone).toInstant(zone)
+    // See [Instant.plus(Instant, long, CalendarUnit, TimeZone)] for an explanation of why time inside day is special
     val seconds = with(period) {
         safeAdd(seconds, safeAdd(
             minutes.toLong() * SECONDS_PER_MINUTE,
@@ -206,6 +220,22 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
         CalendarUnit.MONTH -> toLocalDateTime(zone).plusMonths(value).toInstant(zone)
         CalendarUnit.WEEK -> toLocalDateTime(zone).plusDays(value * 7).toInstant(zone)
         CalendarUnit.DAY -> toLocalDateTime(zone).plusDays(value).toInstant(zone)
+        /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
+           then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
+           (gotten from org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond). This, in turn,
+           finds an applicable offset and builds the local representation of the zoned datetime.
+           If we then feed the result to org.threeten.bp.chrono.ChronoZonedDateTime#toInstant, it simply
+           builds the instant with org.threeten.bp.chrono.ChronoZonedDateTime#toEpochSecond, which, once
+           more, finds the absolute instant. Thus, we can summarize the composition of `atZone`, `plusHours`
+           and `toInstant` like this:
+           1. An absolute instant is converted to a zoned datetime by adding an offset;
+           2. Time is added to a datetime, ignoring the offset;
+           3. Using the know offset, it is converted to an absolute instant;
+           4. The instant is adapted to a zoned datetime representation;
+           5. The zoned datetime is converted to an absolute instant.
+           4 and 5 are invertible by their form: their composition adds and subtracts the offset to and from
+           the unix epoch. 1-3 can then be simplified to just adding the time to the instant directly.
+         */
         CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0)
         CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0)
         CalendarUnit.SECOND -> plus(value, 0)

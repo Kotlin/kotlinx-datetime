@@ -2,6 +2,9 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
@@ -10,7 +13,7 @@ import platform.posix.*
 
 class DateTimeException(str: String? = null) : Exception(str)
 
-public actual open class TimeZone(actual val id: String) {
+public actual open class TimeZone internal constructor(actual val id: String) {
 
     actual companion object {
         actual val SYSTEM: TimeZone
@@ -20,8 +23,10 @@ public actual open class TimeZone(actual val id: String) {
                 free(string)
                 TimeZone(kotlinString)
             }
+
         actual val UTC: TimeZone = ZoneOffset.UTC
 
+        // org.threeten.bp.ZoneId#of(java.lang.String)
         actual fun of(zoneId: String): TimeZone {
             // TODO: normalize aliases?
             if (zoneId == "Z") {
@@ -72,6 +77,7 @@ public actual open class TimeZone(actual val id: String) {
             }
     }
 
+    // org.threeten.bp.LocalDateTime#ofEpochSecond + org.threeten.bp.ZonedDateTime#create
     internal fun Instant.toZonedLocalDateTime(): ZonedDateTime {
         val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
         val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
@@ -95,18 +101,19 @@ public actual open class TimeZone(actual val id: String) {
         val epochSeconds = toEpochSecond(ZoneOffset(0))
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: INT_MAX
-        println("$id $epochSeconds ${offset.value}")
         val transitionDuration = offset_at_datetime(id, epochSeconds, offset.ptr)
-        println("Transit is $transitionDuration; ${offset.value}")
         val dateTime = this@atZone.plusSeconds(transitionDuration.toLong())
         ZonedDateTime(dateTime, this@TimeZone, ZoneOffset(offset.value))
     }
 
+    // org.threeten.bp.ZoneId#equals
     override fun equals(other: Any?): Boolean =
         this === other || other is TimeZone && this.id == other.id
 
+    // org.threeten.bp.ZoneId#hashCode
     override fun hashCode(): Int = id.hashCode()
 
+    // org.threeten.bp.ZoneId#toString
     override fun toString(): String = id
 
 }
@@ -115,8 +122,10 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
     ?: zoneIdByOffset(totalSeconds)) {
 
     companion object {
+        // org.threeten.bp.ZoneOffset#UTC
         val UTC = ZoneOffset(0)
 
+        // org.threeten.bp.ZoneOffset#of
         internal fun of(offsetId: String): ZoneOffset {
             if (offsetId == "Z") {
                 return UTC
@@ -166,6 +175,7 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
             }
         }
 
+        // org.threeten.bp.ZoneOffset#validate
         private fun validate(hours: Int, minutes: Int, seconds: Int) {
             if (hours < -18 || hours > 18) {
                 throw DateTimeException("Zone offset hours not in valid range: value " + hours +
@@ -195,12 +205,14 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
             }
         }
 
-        fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset {
+        // org.threeten.bp.ZoneOffset#ofHoursMinutesSeconds
+        internal fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset {
             validate(hours, minutes, seconds)
             return if (hours == 0 && minutes == 0 && seconds == 0) UTC
             else ZoneOffset(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
         }
 
+        // org.threeten.bp.ZoneOffset#parseNumber
         private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
             if (precededByColon && offsetId[pos - 1] != ':') {
                 throw DateTimeException("Invalid ID for ZoneOffset, colon not found when expected: $offsetId")
@@ -220,10 +232,13 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
     override val Instant.offset: ZoneOffset
         get() = this@ZoneOffset
 
+    // org.threeten.bp.ZoneOffset#toString
     override fun toString(): String = id
 
+    // org.threeten.bp.ZoneOffset#hashCode
     override fun hashCode(): Int = totalSeconds
 
+    // org.threeten.bp.ZoneOffset#equals
     override fun equals(other: Any?): Boolean =
         this === other || other is ZoneOffset && totalSeconds == other.totalSeconds
 }

@@ -2,6 +2,9 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
@@ -30,11 +33,15 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     }
 }
 
+// org.threeten.bp.ZonedDateTime#until
+// This version is simplified and to be used ONLY in case you know the timezones are equal!
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =
     when (unit) {
+        // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
         CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
             dateTime.until(other.dateTime, unit)
         }
+        // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
         CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
             dateTime.until(other.dateTime.plusSeconds(offsetDiff.toLong()), unit)

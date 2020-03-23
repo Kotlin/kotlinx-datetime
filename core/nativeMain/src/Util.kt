@@ -2,12 +2,15 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 package kotlinx.datetime
 
 import platform.posix.*
 
 /**
- * Most code here was taken with few changes from https://github.com/ThreeTen/threetenbp
+ * All code from here was taken from various places of https://github.com/ThreeTen/threetenbp with few changes
  */
 
 internal const val NANOS_PER_MILLI = 1_000_000
@@ -65,7 +68,7 @@ internal const val NANOS_PER_HOUR = NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
 /**
  * Nanos per day.
  */
-const val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
+internal const val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
 
 internal const val SECONDS_0000_TO_1970 = (146097L * 5L - (30L * 365L + 7L)) * 86400L
 
@@ -91,7 +94,7 @@ internal fun safeAdd(a: Long, b: Long): Long {
  * @return the new total
  * @throws ArithmeticException if the result overflows a long
  */
-fun safeMultiply(a: Long, b: Long): Long {
+internal fun safeMultiply(a: Long, b: Long): Long {
     when (b) {
         -1L -> {
             if (a == Long.MIN_VALUE) {
@@ -123,7 +126,7 @@ fun safeMultiply(a: Long, b: Long): Long {
  * @param b  the divisor
  * @return the floor division
  */
-fun floorDiv(a: Long, b: Long): Long {
+internal fun floorDiv(a: Long, b: Long): Long {
     return if (a >= 0) a / b else (a + 1) / b - 1
 }
 
@@ -141,11 +144,11 @@ fun floorDiv(a: Long, b: Long): Long {
  * @param b  the divisor
  * @return the floor modulus (positive)
  */
-fun floorMod(a: Long, b: Long): Long {
+internal fun floorMod(a: Long, b: Long): Long {
     return (a % b + b) % b
 }
 
-
+// org.threeten.bp.ZoneOffset#buildId
 internal fun zoneIdByOffset(totalSeconds: Int): String {
     return if (totalSeconds == 0) {
         "Z"
@@ -164,7 +167,7 @@ internal fun zoneIdByOffset(totalSeconds: Int): String {
         buf.toString()
     }
 }
-
+// org.threeten.bp.chrono.IsoChronology#isLeapYear
 internal fun isLeapYear(year: Int): Boolean {
     val prolepticYear: Long = year.toLong()
     return prolepticYear and 3 == 0L && (prolepticYear % 100 != 0L || prolepticYear % 400 == 0L)

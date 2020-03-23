@@ -2,11 +2,15 @@
  * Copyright 2016-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+/* Based on the ThreeTenBp project.
+ * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+ */
 
 package kotlinx.datetime
 
 import kotlin.math.*
 
+// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE
 internal val localDateParser: Parser<LocalDate>
     get() = intParser(4, 10)
         .chainIgnoring(concreteCharParser('-'))
@@ -24,6 +28,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         actual fun parse(isoString: String): LocalDate =
             localDateParser.parse(isoString)
 
+        // org.threeten.bp.LocalDate#toEpochDay
         internal fun ofEpochDay(epochDay: Long): LocalDate {
             var zeroDay: Long = epochDay + DAYS_0000_TO_1970
             // find the march-based year
@@ -56,6 +61,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         }
     }
 
+    // org.threeten.bp.LocalDate#create
     actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) : this(year, Month(monthNumber), dayOfMonth) {
         if (dayOfMonth > 28 && dayOfMonth > month.length(isLeapYear(year))) {
             if (dayOfMonth == 29) {
@@ -66,6 +72,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         }
     }
 
+    // org.threeten.bp.LocalDate#toEpochDay
     internal fun toEpochDay(): Long {
         val y = year
         val m = monthNumber
@@ -91,22 +98,26 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
 
     actual val monthNumber: Int = month.number
 
+    // org.threeten.bp.LocalDate#getDayOfWeek
     actual val dayOfWeek: DayOfWeek = run {
         val dow0 = floorMod(toEpochDay() + 3, 7).toInt()
         DayOfWeek(dow0 + 1)
     }
 
+    // org.threeten.bp.LocalDate#getDayOfYear
     actual val dayOfYear: Int = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
 
     actual override fun compareTo(other: LocalDate): Int =
         compareBy<LocalDate>({ it.year }, { it.monthNumber }, { it.dayOfMonth }).compare(this, other)
 
+    // org.threeten.bp.LocalDate#resolvePreviousValid
     private fun resolvePreviousValid(year: Int, month: Month, day: Int): LocalDate {
         val newDay = min(day, month.length(isLeapYear(year)))
         return LocalDate(year, month, newDay)
     }
 
-    public fun plusYears(yearsToAdd: Long): LocalDate =
+    // org.threeten.bp.LocalDate#plusYears
+    internal fun plusYears(yearsToAdd: Long): LocalDate =
         if (yearsToAdd == 0L) {
             this
         } else {
@@ -114,7 +125,8 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
             resolvePreviousValid(newYear, month, dayOfMonth)
         }
 
-    public fun plusMonths(monthsToAdd: Long): LocalDate {
+    // org.threeten.bp.LocalDate#plusMonths
+    internal fun plusMonths(monthsToAdd: Long): LocalDate {
         if (monthsToAdd == 0L) {
             return this
         }
@@ -125,10 +137,12 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         return resolvePreviousValid(newYear, newMonth, dayOfMonth)
     }
 
-    public fun plusWeeks(value: Long): LocalDate =
+    // org.threeten.bp.LocalDate#plusWeeks
+    internal fun plusWeeks(value: Long): LocalDate =
         plusDays(safeMultiply(value, 7))
 
-    public fun plusDays(daysToAdd: Long): LocalDate {
+    // org.threeten.bp.LocalDate#plusDays
+    internal fun plusDays(daysToAdd: Long): LocalDate {
         if (daysToAdd == 0L) {
             return this
         }
@@ -139,6 +153,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDate && compareTo(other) == 0)
 
+    // org.threeten.bp.LocalDate#hashCode
     override fun hashCode(): Int {
         val yearValue = year
         val monthValue: Int = monthNumber
@@ -146,6 +161,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         return yearValue and -0x800 xor (yearValue shl 11) + (monthValue shl 6) + dayValue
     }
 
+    // org.threeten.bp.LocalDate#toString
     override fun toString(): String {
         val yearValue = year
         val monthValue: Int = monthNumber
@@ -199,17 +215,21 @@ actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
             .run { if (days != 0) this.plusDays(days.toLong()) else this }
     }
 
-fun LocalDate.daysUntil(other: LocalDate): Long =
+// org.threeten.bp.LocalDate#daysUntil
+internal fun LocalDate.daysUntil(other: LocalDate): Long =
     other.toEpochDay() - this.toEpochDay()
 
+// org.threeten.bp.LocalDate#getProlepticMonth
 internal val LocalDate.prolepticMonth get() = (year * 12L) + (monthNumber - 1)
 
+// org.threeten.bp.LocalDate#monthsUntil
 internal fun LocalDate.monthsUntil(other: LocalDate): Long {
     val packed1: Long = prolepticMonth * 32L + dayOfMonth
     val packed2: Long = other.prolepticMonth * 32L + other.dayOfMonth
     return (packed2 - packed1) / 32
 }
 
+// org.threeten.bp.LocalDate#until(org.threeten.bp.temporal.Temporal, org.threeten.bp.temporal.TemporalUnit)
 internal fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
     when (unit) {
         CalendarUnit.DAY -> daysUntil(end)
