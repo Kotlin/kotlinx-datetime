@@ -87,8 +87,20 @@ kotlin {
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
         compilations["main"].cinterops {
             create("date") {
-                headers("${project(":").projectDir}/date-cpp-c-wrapper/src/main/public/cdate.h")
+                val cinteropDir = "$projectDir/nativeMain/cinterop"
+                val dateLibDir = "${project(":").projectDir}/thirdparty/date"
+                headers("$cinteropDir/public/cdate.h")
                 defFile("nativeMain/cinterop/date.def")
+                extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
+                extraOpts("-Xcompile-source", "$cinteropDir/cpp/apple.mm")
+                extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
+                extraOpts("-Xcompile-source", "$dateLibDir/src/ios.mm")
+                extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
+                extraOpts("-Xsource-compiler-option", "-DAUTO_DOWNLOAD=0")
+                extraOpts("-Xsource-compiler-option", "-DHAS_REMOTE_API=0")
+                extraOpts("-Xsource-compiler-option", "-std=c++11")
+                extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
+                extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
             }
         }
     }

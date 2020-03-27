@@ -1,3 +1,7 @@
+#ifndef TARGET_OS_IPHONE
+#define TARGET_OS_IPHONE 0
+#endif
+#if !TARGET_OS_IPHONE
 #include "date/date.h"
 #include "date/tz.h"
 using namespace date;
@@ -91,3 +95,4 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
 }
 
 }
+#endif // !TARGET_OS_IPHONE

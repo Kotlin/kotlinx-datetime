@@ -1,3 +1,1 @@
 package = kotlinx.datetime
-staticLibraries = libdate-cpp-c-wrapper.a libdate-cpp-library.a
-libraryPaths = date-cpp-library/build/lib/main/release date-cpp-c-wrapper/build/lib/main/release

@@ -1,3 +1,4 @@
+#if TARGET_OS_IPHONE
 #include <Foundation/Foundation.h>
 #include <Foundation/NSTimeZone.h>
 #include <Foundation/NSDate.h>
@@ -100,4 +101,4 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset) {
 }
 
 }
-
+#endif // TARGET_OS_IPHONE
