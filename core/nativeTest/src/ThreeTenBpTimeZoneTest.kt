@@ -123,9 +123,9 @@ class ThreeTenBpTimeZoneTest {
 
     @Test
     fun nonExistentLocalTime() {
-        val t1 = LocalDateTime(2007, 4, 1, 0, 14, 17, 201)
-        val t2 = LocalDateTime(2007, 4, 1, 1, 14, 17, 201)
-        val tz = TimeZone.of("Asia/Gaza")
+        val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
+        val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
+        val tz = TimeZone.of("Europe/Berlin")
         assertEquals(with (tz) { t1.atZone() }, with (tz) { t2.atZone() })
     }
 

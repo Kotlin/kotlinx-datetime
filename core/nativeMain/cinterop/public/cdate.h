@@ -2,13 +2,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Returns a string that must be freed by the caller. */
+/* Returns a string that must be freed by the caller, or null. */
 const char * get_system_timezone();
 
 /* Returns an array of strings. The end of the array is marked with a NULL.
    The array and its contents must be freed by the caller. */
 const char ** available_zone_ids();
 
+// returns the offset, or INT_MAX if there's a problem with the time zone.
 int offset_at_instant(const char *zone_name, int64_t epoch_sec);
 
 bool is_known_timezone(const char *zone_name);

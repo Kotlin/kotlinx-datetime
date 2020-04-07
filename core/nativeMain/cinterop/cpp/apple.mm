@@ -21,8 +21,8 @@ const char * get_system_timezone()
     }
 
     CFRelease(zone);
-    buffer[0] = '\0';
-    return buffer;
+    free(buffer);
+    return nullptr;
 }
 
 const char ** available_zone_ids()

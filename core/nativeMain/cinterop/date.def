@@ -1,1 +1,5 @@
 package = kotlinx.datetime
+
+# requirements of the `date` library: https://howardhinnant.github.io/date/tz.html#Installation
+linkerOpts.mingw_x64 = -lole32
+linkerOpts.linux_x64 = -lpthread

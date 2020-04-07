@@ -18,8 +18,8 @@ public actual open class TimeZone internal constructor(actual val id: String) {
     actual companion object {
         actual val SYSTEM: TimeZone
             get() = memScoped {
-                val string = get_system_timezone()
-                val kotlinString = string!!.toKString()
+                val string = get_system_timezone() ?: throw RuntimeException("Failed to get the system timezone.")
+                val kotlinString = string.toKString()
                 free(string)
                 TimeZone(kotlinString)
             }
