@@ -94,7 +94,7 @@ kotlin {
                 headers("$cinteropDir/public/cdate.h")
                 defFile("nativeMain/cinterop/date.def")
                 // common options
-                extraOpts("-Xsource-compiler-option", "-std=c++11")
+                extraOpts("-Xsource-compiler-option", "-std=c++17")
                 extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
                 extraOpts("-Xsource-compiler-option", "-include$cinteropDir/cpp/defines.hpp")
                 // *nix support

@@ -16,6 +16,8 @@
 #ifdef DEBUG
 #include <iostream>
 #endif
+#include <chrono>
+#include <shared_mutex>
 #include "date/date.h"
 #include "windows_zones.hpp"
 
@@ -46,19 +48,48 @@ static const char *native_name_to_standard_name(const char *native) {
     }
 }
 
-static bool time_zone_by_native_name(
-    const std::string& native_name, DYNAMIC_TIME_ZONE_INFORMATION& dtzi)
+static std::chrono::time_point<std::chrono::steady_clock>
+    next_flush = std::chrono::steady_clock::now();
+static std::unordered_map<
+    std::string, DYNAMIC_TIME_ZONE_INFORMATION> cache;
+static std::shared_mutex rwlock;
+
+static void repopulate_timezone_cache(
+    std::chrono::time_point<std::chrono::steady_clock> current_time)
 {
-    std::wstring wnative_name(native_name.begin(), native_name.end());
+    rwlock.lock();
+    if (current_time < next_flush) {
+        rwlock.unlock();
+        return;
+    }
+    cache.clear();
+    DYNAMIC_TIME_ZONE_INFORMATION dtzi;
+    next_flush = current_time + std::chrono::minutes(5);
     for (DWORD dwResult = 0, i = 0; dwResult != ERROR_NO_MORE_ITEMS; ++i) {
         dwResult = EnumDynamicTimeZoneInformation(i, &dtzi);
         if (dwResult == ERROR_SUCCESS) {
-            if (wnative_name == dtzi.TimeZoneKeyName) {
-                return true;
-            }
+            cache[copy_name(dtzi)] = dtzi;
         }
     }
-    return false;
+    rwlock.unlock();
+}
+
+static bool time_zone_by_native_name(
+    const std::string& native_name, DYNAMIC_TIME_ZONE_INFORMATION& dtzi)
+{
+    auto current_time = std::chrono::steady_clock::now();
+    if (current_time > next_flush) {
+        repopulate_timezone_cache(current_time);
+    }
+    rwlock.lock_shared();
+    bool result = true;
+    try {
+        dtzi = cache.at(native_name);
+    } catch (std::out_of_range e) {
+        result = false;
+    }
+    rwlock.unlock_shared();
+    return result;
 }
 
 static bool time_zone_by_name(
