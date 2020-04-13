@@ -185,13 +185,6 @@ class InstantTest {
     @ExperimentalTime
     @Test
     fun strings() {
-        /*
-        assertEquals("1970-01-01T00:01:05.000000567Z", Instant.ofEpochSecond(65L, 567).toString())
-        assertEquals("1970-01-01T00:00:01Z", Instant.ofEpochSecond(1, 0).toString())
-        assertEquals("1970-01-01T00:01:00Z", Instant.ofEpochSecond(60, 0).toString())
-        assertEquals("1970-01-01T01:00:00Z", Instant.ofEpochSecond(3600, 0).toString())
-        assertEquals("1969-12-31T23:59:59Z", Instant.ofEpochSecond(-1, 0).toString())
-         */
         assertEquals("0000-01-02T00:00:00Z", LocalDateTime(0, 1, 2, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
         assertEquals("0000-01-01T12:30:00Z", LocalDateTime(0, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).toString())
         assertEquals("0000-01-01T00:00:00.000000001Z", LocalDateTime(0, 1, 1, 0, 0, 0, 1).toInstant(TimeZone.UTC).toString())
@@ -240,8 +233,6 @@ class InstantTest {
         assertEquals("+19999-12-31T23:59:59.000000700Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 700).toInstant(TimeZone.UTC).toString())
         assertEquals("+19999-12-31T23:59:59.000000080Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 80).toInstant(TimeZone.UTC).toString())
         assertEquals("+19999-12-31T23:59:59.000000009Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9).toInstant(TimeZone.UTC).toString())
-        // assertEquals("-1000000000-12-31T12:30:00Z", LocalDateTime(-999999999, 1, 1, 12, 30, 0, 0).toInstant(TimeZone.UTC).minus(1.days).toString())
-        // assertEquals("+1000000000-01-01T12:30:00Z", LocalDateTime(999999999, 12, 31, 12, 30, 0, 0).toInstant(TimeZone.UTC).plus(1, CalendarUnit.DAY, TimeZone.UTC).toString())
     }
 
 }

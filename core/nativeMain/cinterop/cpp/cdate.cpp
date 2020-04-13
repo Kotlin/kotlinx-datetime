@@ -1,15 +1,26 @@
+/*
+ * Copyright 2016-2020 JetBrains s.r.o.
+ * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
+ */
+/* This file implements the functions specified in `cdate.h` using the C++20
+   chrono API. Since this is not yet widely supported, it relies on the `date`
+   library. This implementation is used for MacOS and Linux, but once <chrono>
+   is available for all the target platforms, the dependency on `date` can be
+   removed along with the neighboring implementations. */
 #if !TARGET_OS_IPHONE
-#if !WIN32
+#if !DATETIME_TARGET_WIN32
 #include "date/date.h"
 #include "date/tz.h"
+#include "helper_macros.hpp"
 using namespace date;
 using namespace std::chrono;
 
 template <class T>
-static const char * timezone_name(const T& zone)
+static char * timezone_name(const T& zone)
 {
     auto name = zone.name();
     char * name_copy = (char *)malloc(sizeof(char) * (name.size() + 1));
+    if (name_copy == nullptr) { return nullptr; }
     name_copy[name.size()] = '\0';
     name.copy(name_copy, name.size());
     return name_copy;
@@ -19,33 +30,43 @@ extern "C" {
 
 #include "cdate.h"
 
-const char * get_system_timezone()
+char * get_system_timezone()
 {
-    auto& tzdb = get_tzdb();
-    auto zone = tzdb.current_zone();
-    return timezone_name(*zone);
+    try {
+        auto& tzdb = get_tzdb();
+        auto zone = tzdb.current_zone();
+        return timezone_name(*zone);
+    } catch (std::runtime_error e) {
+        return nullptr;
+    }
 }
 
-const char ** available_zone_ids()
+char ** available_zone_ids()
 {
-    auto& tzdb = get_tzdb();
-    auto& zones = tzdb.zones;
-    const char ** zones_copy = (const char **)malloc(
-            sizeof(const char *) * (zones.size() + 1));
-    zones_copy[zones.size()] = nullptr;
-    for (int i = 0; i < zones.size(); ++i) {
-        zones_copy[i] = timezone_name(zones[i]);
+    try {
+        auto& tzdb = get_tzdb();
+        auto& zones = tzdb.zones;
+        char ** zones_copy = (char **)malloc(
+                sizeof(char *) * (zones.size() + 1));
+        if (zones_copy == nullptr) { return nullptr; }
+        zones_copy[zones.size()] = nullptr;
+        for (unsigned long i = 0; i < zones.size(); ++i) {
+            PUSH_BACK_OR_RETURN(zones_copy, i, timezone_name(zones[i]));
+        }
+        return zones_copy;
+    } catch (std::runtime_error e) {
+        return nullptr;
     }
-    return zones_copy;
 }
 
 int offset_at_instant(const char *zone_name, int64_t epoch_sec)
 {
-    auto& tzdb = get_tzdb();
-    /* `sys_time` is usually Unix time (UTC, not counting leap seconds).
-    Starting from C++20, it is specified in the standard. */
-    auto stime = sys_time<std::chrono::seconds>(std::chrono::seconds(epoch_sec));
     try {
+        auto& tzdb = get_tzdb();
+        /* `sys_time` is usually Unix time (UTC, not counting leap seconds).
+           Starting from C++20, it is specified in the standard. */
+        auto stime = sys_time<std::chrono::seconds>(
+            std::chrono::seconds(epoch_sec));
         auto zone = tzdb.locate_zone(zone_name);
         auto info = zone->get_info(stime);
         return info.offset.count();
@@ -56,8 +77,8 @@ int offset_at_instant(const char *zone_name, int64_t epoch_sec)
 
 bool is_known_timezone(const char *zone_name)
 {
-    auto& tzdb = get_tzdb();
     try {
+        auto& tzdb = get_tzdb();
         tzdb.locate_zone(zone_name);
         return true;
     } catch (std::runtime_error e) {
@@ -67,8 +88,8 @@ bool is_known_timezone(const char *zone_name)
 
 int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
 {
-    auto& tzdb = get_tzdb();
     try {
+        auto& tzdb = get_tzdb();
         auto zone = tzdb.locate_zone(zone_name);
         local_seconds seconds((std::chrono::seconds(epoch_sec)));
         auto info = zone->get_info(seconds);
@@ -88,10 +109,11 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
                 return 0;
         }
     } catch (std::runtime_error e) {
-        return INT_MAX;
+        *offset = INT_MAX;
+        return 0;
     }
 }
 
 }
-#endif // !WIN32
+#endif // !DATETIME_TARGET_WIN32
 #endif // !TARGET_OS_IPHONE

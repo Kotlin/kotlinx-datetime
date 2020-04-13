@@ -63,7 +63,8 @@ public actual open class TimeZone internal constructor(actual val id: String) {
         actual val availableZoneIds: Set<String>
             get() {
                 val set = mutableSetOf<String>()
-                val zones = available_zone_ids()!!
+                val zones = available_zone_ids()
+                    ?: throw RuntimeException("Failed to get the list of available timezones")
                 var ptr = zones
                 while (true) {
                     val cur = ptr.pointed.value ?: break
@@ -90,7 +91,13 @@ public actual open class TimeZone internal constructor(actual val id: String) {
     actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime().dateTime
 
     actual open val Instant.offset: ZoneOffset
-        get() = ZoneOffset(offset_at_instant(id, epochSeconds))
+        get() {
+            val offset = offset_at_instant(id, epochSeconds)
+            if (offset == INT_MAX) {
+                throw RuntimeException("Unable to acquire the offset at instant $this for zone ${this@TimeZone}")
+            }
+            return ZoneOffset(offset)
+        }
 
     actual fun LocalDateTime.toInstant(): Instant {
         val zoned = atZone()
@@ -102,6 +109,9 @@ public actual open class TimeZone internal constructor(actual val id: String) {
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: INT_MAX
         val transitionDuration = offset_at_datetime(id, epochSeconds, offset.ptr)
+        if (offset.value == INT_MAX) {
+            throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@TimeZone}")
+        }
         val dateTime = this@atZone.plusSeconds(transitionDuration.toLong())
         ZonedDateTime(dateTime, this@TimeZone, ZoneOffset(offset.value))
     }

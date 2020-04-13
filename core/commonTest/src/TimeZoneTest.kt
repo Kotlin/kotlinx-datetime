@@ -148,6 +148,7 @@ class TimeZoneTest {
     }
 
     // from 310bp
-    private fun createInstant(offset: TimeZone, year: Int, month: Int, day: Int, hour: Int = 0, min: Int = 0, sec: Int = 0, nano: Int = 0): Instant =
+    private fun createInstant(offset: TimeZone, year: Int, month: Int, day: Int, hour: Int = 0, min: Int = 0,
+                              sec: Int = 0, nano: Int = 0): Instant =
         LocalDateTime(year, month, day, hour, min, sec, nano).toInstant(offset)
 }

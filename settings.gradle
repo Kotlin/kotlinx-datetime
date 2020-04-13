@@ -13,5 +13,3 @@ rootProject.name = 'Kotlin-DateTime-library'
 
 include ':core'
 project(":core").name='kotlinx-datetime'
-// include ':date-cpp-library'
-// include ':date-cpp-c-wrapper'

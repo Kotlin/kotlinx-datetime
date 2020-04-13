@@ -70,7 +70,7 @@ kotlin {
 
     js {
         nodejs {
-            //            testTask { }
+//            testTask { }
         }
         compilations.all {
             kotlinOptions {
