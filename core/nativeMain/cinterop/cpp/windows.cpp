@@ -89,7 +89,7 @@ static void repopulate_timezone_cache(
         return;
     }
     cache.clear();
-    DYNAMIC_TIME_ZONE_INFORMATION dtzi;
+    DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
     next_flush = current_time + CACHE_INVALIDATION_TIMEOUT;
     for (DWORD dwResult = 0, i = 0; dwResult != ERROR_NO_MORE_ITEMS; ++i) {
         dwResult = EnumDynamicTimeZoneInformation(i, &dtzi);
@@ -135,17 +135,14 @@ representing a proper date at a given year.
 */
 static void get_transition_date(int year, const SYSTEMTIME& src, SYSTEMTIME& dst)
 {
-    // if the year is 0, this is the absolute time.
+    dst = src;
+    // if the year is not 0, this is the absolute time.
     if (src.wYear != 0) {
-        dst = src;
         return;
     }
-    // otherwise, the transition happens yearly...
+    /* otherwise, the transition happens yearly at the specified month, hour,
+       and minute at the specified day of the week. */
     dst.wYear = year;
-    // at the specified month, hour, and minute.
-    dst.wMonth = src.wMonth; dst.wHour = src.wHour; dst.wMinute = src.wMinute;
-    // at the specified day of the week.
-    dst.wDayOfWeek = src.wDayOfWeek;
     // The number of the occurrence of the specified day of week in the month,
     // or the special value "5" to denote the last such occurrence.
     unsigned int dowOccurrenceNumber = src.wDay;
@@ -248,7 +245,7 @@ static bool is_daylight_time(
 static int offset_at_systime(DYNAMIC_TIME_ZONE_INFORMATION& dtzi,
     const SYSTEMTIME& systime)
 {
-    TIME_ZONE_INFORMATION tzi;
+    TIME_ZONE_INFORMATION tzi{};
     bool result = GetTimeZoneInformationForYear(systime.wYear, &dtzi, &tzi);
     if (!result) {
         return INT_MAX;
