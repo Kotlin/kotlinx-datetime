@@ -23,7 +23,19 @@ internal val localDateParser: Parser<LocalDate>
             LocalDate(year, month, day)
         }
 
-public actual class LocalDate private constructor(actual val year: Int, actual val month: Month, actual val dayOfMonth: Int) : Comparable<LocalDate> {
+public actual class LocalDate actual constructor(actual val year: Int, actual val monthNumber: Int, actual val dayOfMonth: Int) : Comparable<LocalDate> {
+
+    init {
+        // org.threeten.bp.LocalDate#create
+        if (dayOfMonth > 28 && dayOfMonth > monthNumber.monthLength(isLeapYear(year))) {
+            if (dayOfMonth == 29) {
+                throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
+            } else {
+                throw IllegalArgumentException("Invalid date '${month.name} $dayOfMonth'")
+            }
+        }
+    }
+
     actual companion object {
         actual fun parse(isoString: String): LocalDate =
             localDateParser.parse(isoString)
@@ -62,17 +74,6 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         }
     }
 
-    // org.threeten.bp.LocalDate#create
-    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) : this(year, Month(monthNumber), dayOfMonth) {
-        if (dayOfMonth > 28 && dayOfMonth > month.length(isLeapYear(year))) {
-            if (dayOfMonth == 29) {
-                throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
-            } else {
-                throw IllegalArgumentException("Invalid date '${month.name} $dayOfMonth'")
-            }
-        }
-    }
-
     // org.threeten.bp.LocalDate#toEpochDay
     internal fun toEpochDay(): Long {
         val y = year
@@ -97,23 +98,36 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
 
     internal fun withYear(newYear: Int): LocalDate = LocalDate(newYear, monthNumber, dayOfMonth)
 
-    actual val monthNumber: Int = month.number
+    actual val month: Month
+        get() = Month(monthNumber)
 
     // org.threeten.bp.LocalDate#getDayOfWeek
-    actual val dayOfWeek: DayOfWeek = run {
-        val dow0 = floorMod(toEpochDay() + 3, 7).toInt()
-        DayOfWeek(dow0 + 1)
-    }
+    actual val dayOfWeek: DayOfWeek
+        get() {
+            val dow0 = floorMod(toEpochDay() + 3, 7).toInt()
+            return DayOfWeek(dow0 + 1)
+        }
 
     // org.threeten.bp.LocalDate#getDayOfYear
-    actual val dayOfYear: Int = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
+    actual val dayOfYear: Int
+        get() = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
 
-    actual override fun compareTo(other: LocalDate): Int =
-        compareBy<LocalDate>({ it.year }, { it.monthNumber }, { it.dayOfMonth }).compare(this, other)
+    // Several times faster than using `compareBy`
+    actual override fun compareTo(other: LocalDate): Int {
+        val y = year.compareTo(other.year)
+        if (y != 0) {
+            return y
+        }
+        val m = monthNumber.compareTo(other.monthNumber)
+        if (m != 0) {
+            return m
+        }
+        return dayOfMonth.compareTo(dayOfMonth)
+    }
 
     // org.threeten.bp.LocalDate#resolvePreviousValid
-    private fun resolvePreviousValid(year: Int, month: Month, day: Int): LocalDate {
-        val newDay = min(day, month.length(isLeapYear(year)))
+    private fun resolvePreviousValid(year: Int, month: Int, day: Int): LocalDate {
+        val newDay = min(day, month.monthLength(isLeapYear(year)))
         return LocalDate(year, month, newDay)
     }
 
@@ -123,7 +137,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
             this
         } else {
             val newYear = safeAdd(year.toLong(), yearsToAdd).toInt()
-            resolvePreviousValid(newYear, month, dayOfMonth)
+            resolvePreviousValid(newYear, monthNumber, dayOfMonth)
         }
 
     // org.threeten.bp.LocalDate#plusMonths
@@ -134,7 +148,7 @@ public actual class LocalDate private constructor(actual val year: Int, actual v
         val monthCount: Long = year * 12L + (monthNumber - 1)
         val calcMonths = monthCount + monthsToAdd // safe overflow
         val newYear: Int = /* YEAR.checkValidIntValue( */ floorDiv(calcMonths, 12).toInt()
-        val newMonth = Month(floorMod(calcMonths, 12).toInt() + 1)
+        val newMonth = floorMod(calcMonths, 12).toInt() + 1
         return resolvePreviousValid(newYear, newMonth, dayOfMonth)
     }
 

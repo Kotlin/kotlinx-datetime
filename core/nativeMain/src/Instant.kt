@@ -90,8 +90,13 @@ public actual class Instant internal constructor(internal val epochSeconds: Long
         (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
             (this.nanos - other.nanos).nanoseconds
 
-    actual override fun compareTo(other: Instant): Int =
-        compareBy<Instant>({ it.epochSeconds }, { it.nanos }).compare(this, other)
+    actual override fun compareTo(other: Instant): Int {
+        val s = epochSeconds.compareTo(other.epochSeconds)
+        if (s != 0) {
+            return s
+        }
+        return nanos.compareTo(other.nanos)
+    }
 
     override fun equals(other: Any?): Boolean =
         this === other || other is Instant && this.epochSeconds == other.epochSeconds && this.nanos == other.nanos

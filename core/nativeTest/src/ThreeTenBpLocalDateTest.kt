@@ -6,8 +6,9 @@
  * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
  */
 
-package kotlinx.datetime
+package kotlinx.datetime.test
 
+import kotlinx.datetime.*
 import kotlin.test.*
 
 class ThreeTenBpLocalDateTest {
@@ -31,9 +32,9 @@ class ThreeTenBpLocalDateTest {
 
     @Test
     fun toEpochDay() {
-        val date_0000_01_01 = -678941 - 40587.toLong()
+        val date_0000_01_01 = -678941 - 40587L
 
-        var test: LocalDate = LocalDate(0, 1, 1)
+        var test = LocalDate(0, 1, 1)
         for (i in date_0000_01_01..699999) {
             assertEquals(i, test.toEpochDay())
             test = next(test)
@@ -54,10 +55,10 @@ class ThreeTenBpLocalDateTest {
     @Test
     fun dayOfWeek() {
         var dow = DayOfWeek.MONDAY
-        for (month in Month.values()) {
-            val length = month.length(false)
+        for (month in 1..12) {
+            val length = month.monthLength(false)
             for (i in 1..length) {
-                val d = LocalDate(2007, month.number, i)
+                val d = LocalDate(2007, month, i)
                 assertSame(d.dayOfWeek, dow)
                 dow = DayOfWeek(dow.number % 7 + 1)
             }
@@ -77,7 +78,7 @@ class ThreeTenBpLocalDateTest {
             val a: LocalDate = LocalDate(y, m, d)
             var total = 0
             for (i in 1 until m) {
-                total += Month(i).length(isLeapYear(y))
+                total += i.monthLength(isLeapYear(y))
             }
             val doy = total + d
             assertEquals(a.dayOfYear, doy)
@@ -178,7 +179,7 @@ class ThreeTenBpLocalDateTest {
     private fun next(localDate: LocalDate): LocalDate {
         var date = localDate
         val newDayOfMonth: Int = date.dayOfMonth + 1
-        if (newDayOfMonth <= date.month.length(isLeapYear(date.year))) {
+        if (newDayOfMonth <= date.monthNumber.monthLength(isLeapYear(date.year))) {
             return LocalDate(date.year, date.monthNumber, newDayOfMonth)
         }
         date = LocalDate(date.year, date.monthNumber, 1)
@@ -198,6 +199,6 @@ class ThreeTenBpLocalDateTest {
         if (date.month === Month.DECEMBER) {
             date = date.withYear(date.year - 1)
         }
-        return LocalDate(date.year, date.monthNumber, date.month.length(isLeapYear(date.year)))
+        return LocalDate(date.year, date.monthNumber, date.monthNumber.monthLength(isLeapYear(date.year)))
     }
 }

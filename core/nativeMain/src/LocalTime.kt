@@ -61,8 +61,22 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
         }
     }
 
-    override fun compareTo(other: LocalTime): Int =
-        compareBy<LocalTime>({ it.hour }, { it.minute }, { it.second }, { it.nanosecond }).compare(this, other)
+    // Several times faster than using `compareBy`
+    override fun compareTo(other: LocalTime): Int {
+        val h = hour.compareTo(other.hour)
+        if (h != 0) {
+            return h
+        }
+        val m = minute.compareTo(other.minute)
+        if (m != 0) {
+            return m
+        }
+        val s = second.compareTo(other.second)
+        if (s != 0) {
+            return s
+        }
+        return nanosecond.compareTo(other.nanosecond)
+    }
 
     override fun hashCode(): Int {
         val nod: Long = toNanoOfDay()

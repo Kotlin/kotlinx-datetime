@@ -72,8 +72,7 @@ static const char *native_name_to_standard_name(const std::string& native) {
 }
 
 // The next time the timezone cache should be flushed.
-static std::chrono::time_point<std::chrono::steady_clock>
-    next_flush = std::chrono::steady_clock::now();
+static auto next_flush = std::chrono::time_point<std::chrono::steady_clock>::min();
 // The timezone cache. Access to it should be guarded with `cache_rwlock`.
 static std::unordered_map<
     std::string, DYNAMIC_TIME_ZONE_INFORMATION> cache;

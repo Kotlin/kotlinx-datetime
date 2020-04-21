@@ -10,18 +10,33 @@ package kotlinx.datetime
 
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.native.concurrent.*
 
 class DateTimeException(str: String? = null) : Exception(str)
 
 public actual open class TimeZone internal constructor(actual val id: String) {
 
+    private val asciiName = id.cstr
+
+    @ThreadLocal
     actual companion object {
+
+        private var systemTimeZoneCached: TimeZone? = null
+
         actual val SYSTEM: TimeZone
-            get() = memScoped {
-                val string = get_system_timezone() ?: throw RuntimeException("Failed to get the system timezone.")
-                val kotlinString = string.toKString()
-                free(string)
-                TimeZone(kotlinString)
+            get() {
+                val cached = systemTimeZoneCached
+                if (cached != null) {
+                    return cached
+                }
+                val systemTimeZone = memScoped {
+                    val string = get_system_timezone() ?: throw RuntimeException("Failed to get the system timezone.")
+                    val kotlinString = string.toKString()
+                    free(string)
+                    TimeZone(kotlinString)
+                }
+                systemTimeZoneCached = systemTimeZone
+                return systemTimeZone
             }
 
         actual val UTC: TimeZone = ZoneOffset.UTC
@@ -82,26 +97,26 @@ public actual open class TimeZone internal constructor(actual val id: String) {
 
     actual open val Instant.offset: ZoneOffset
         get() {
-            val offset = offset_at_instant(id, epochSeconds)
+            val offset = offset_at_instant(asciiName, epochSeconds)
             if (offset == INT_MAX) {
                 throw RuntimeException("Unable to acquire the offset at instant $this for zone ${this@TimeZone}")
             }
-            return ZoneOffset(offset)
+            return ZoneOffset.ofSeconds(offset)
         }
 
     actual fun LocalDateTime.toInstant(): Instant =
         atZone().toInstant()
 
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
-        val epochSeconds = toEpochSecond(ZoneOffset(0))
+        val epochSeconds = toEpochSecond(ZoneOffset.UTC)
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: INT_MAX
-        val transitionDuration = offset_at_datetime(id, epochSeconds, offset.ptr)
+        val transitionDuration = offset_at_datetime(asciiName, epochSeconds, offset.ptr)
         if (offset.value == INT_MAX) {
             throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@TimeZone}")
         }
         val dateTime = this@atZone.plusSeconds(transitionDuration.toLong())
-        ZonedDateTime(dateTime, this@TimeZone, ZoneOffset(offset.value))
+        ZonedDateTime(dateTime, this@TimeZone, ZoneOffset.ofSeconds(offset.value))
     }
 
     // org.threeten.bp.ZoneId#equals
@@ -116,12 +131,14 @@ public actual open class TimeZone internal constructor(actual val id: String) {
 
 }
 
-public actual class ZoneOffset internal constructor(actual val totalSeconds: Int, id: String? = null) : TimeZone(id
-    ?: zoneIdByOffset(totalSeconds)) {
+@ThreadLocal
+private var zoneOffsetCache: MutableMap<Int, ZoneOffset> = mutableMapOf()
+
+public actual class ZoneOffset internal constructor(actual val totalSeconds: Int, id: String) : TimeZone(id) {
 
     companion object {
         // org.threeten.bp.ZoneOffset#UTC
-        val UTC = ZoneOffset(0)
+        val UTC = ZoneOffset(0, "Z")
 
         // org.threeten.bp.ZoneOffset#of
         internal fun of(offsetId: String): ZoneOffset {
@@ -207,7 +224,20 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
         internal fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset {
             validate(hours, minutes, seconds)
             return if (hours == 0 && minutes == 0 && seconds == 0) UTC
-            else ZoneOffset(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+            else ofSeconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+        }
+
+        // org.threeten.bp.ZoneOffset#ofTotalSeconds
+        internal fun ofSeconds(seconds: Int): ZoneOffset {
+            if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
+                val cached = zoneOffsetCache[seconds]
+                return if (cached != null) {
+                    cached
+                } else {
+                    ZoneOffset(seconds, zoneIdByOffset(seconds)).also { zoneOffsetCache[seconds] = it }
+                }
+            }
+            return ZoneOffset(seconds, zoneIdByOffset(seconds))
         }
 
         // org.threeten.bp.ZoneOffset#parseNumber

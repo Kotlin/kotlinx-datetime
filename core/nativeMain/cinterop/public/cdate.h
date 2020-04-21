@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 // This file specifies the native interface for datetime information queries.
+#pragma once
 #include <time.h>
 #include <stdint.h>
 #include <stdbool.h>

@@ -107,6 +107,10 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
                 if (info.second.offset.count() != *offset)
                     *offset = info.first.offset.count();
                 return 0;
+            default:
+                // the pattern matching above is supposedly exhaustive
+                *offset = INT_MAX;
+                return 0;
         }
     } catch (std::runtime_error e) {
         *offset = INT_MAX;
