@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+import kotlin.math.abs
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*

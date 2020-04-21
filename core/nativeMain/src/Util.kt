@@ -7,7 +7,7 @@
  */
 package kotlinx.datetime
 
-import platform.posix.*
+import kotlin.math.abs
 
 /**
  * Calculates [a] * [b] / [c]. Returns a pair of the quotient and the remainder.

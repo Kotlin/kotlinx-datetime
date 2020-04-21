@@ -11,7 +11,6 @@ package kotlinx.datetime
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.math.*
-import kotlin.test.*
 import kotlin.time.*
 
 public actual enum class DayOfWeek {
@@ -212,7 +211,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         actual fun now(): Instant = memScoped {
             val timespecBuf = alloc<timespec>()
             val error = clock_gettime(CLOCK_REALTIME, timespecBuf.ptr)
-            assertEquals(0, error)
+            assert(error == 0)
             // according to https://en.cppreference.com/w/c/chrono/timespec,
             // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
             val seconds = timespecBuf.tv_sec.convert<Long>()
