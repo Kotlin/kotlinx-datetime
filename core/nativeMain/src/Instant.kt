@@ -202,13 +202,13 @@ actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {
             minutes.toLong() * SECONDS_PER_MINUTE,
             hours.toLong() * SECONDS_PER_HOUR))
     }
-    val localDateTime = toLocalDateTime(zone)
+    val localDateTime = with (zone) { toZonedLocalDateTime() }
     return with(period) {
         localDateTime
             .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
             .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
             .run { if (days != 0) plusDays(days.toLong()) else this }
-    }.toInstant(zone).plus(seconds, period.nanoseconds)
+    }.toInstant().plus(seconds, period.nanoseconds)
 }
 
 actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
@@ -216,10 +216,10 @@ actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
 
 actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
     when (unit) {
-        CalendarUnit.YEAR -> toLocalDateTime(zone).plusYears(value).toInstant(zone)
-        CalendarUnit.MONTH -> toLocalDateTime(zone).plusMonths(value).toInstant(zone)
-        CalendarUnit.WEEK -> toLocalDateTime(zone).plusDays(value * 7).toInstant(zone)
-        CalendarUnit.DAY -> toLocalDateTime(zone).plusDays(value).toInstant(zone)
+        CalendarUnit.YEAR -> with (zone) { toZonedLocalDateTime().plusYears(value).toInstant() }
+        CalendarUnit.MONTH -> with (zone) { toZonedLocalDateTime().plusMonths(value).toInstant() }
+        CalendarUnit.WEEK -> with (zone) { toZonedLocalDateTime().plusDays(value * 7).toInstant() }
+        CalendarUnit.DAY -> with (zone) { toZonedLocalDateTime().plusDays(value).toInstant() }
         /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
            then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
            (gotten from org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond). This, in turn,

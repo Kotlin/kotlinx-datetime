@@ -128,6 +128,15 @@ class InstantTest {
     }
 
     @Test
+    fun changingTimeZoneRules() {
+        val start = Instant.parse("1991-01-25T23:15:15.855Z")
+        val end = Instant.parse("2006-04-24T22:07:32.561Z")
+        val diff = start.periodUntil(end, TimeZone.of("Europe/Moscow"))
+        val end2 = start.plus(diff, TimeZone.of("Europe/Moscow"))
+        assertEquals(end, end2)
+    }
+
+    @Test
     fun diffInvariant() {
         repeat(1000) {
             val millis1 = Random.nextLong(2_000_000_000_000L)

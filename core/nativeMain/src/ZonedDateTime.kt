@@ -33,6 +33,9 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     }
 }
 
+internal fun ZonedDateTime.toInstant(): Instant =
+    Instant(dateTime.toEpochSecond(offset), dateTime.nanosecond)
+
 // org.threeten.bp.ZonedDateTime#until
 // This version is simplified and to be used ONLY in case you know the timezones are equal!
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =

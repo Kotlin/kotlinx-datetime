@@ -99,10 +99,8 @@ public actual open class TimeZone internal constructor(actual val id: String) {
             return ZoneOffset(offset)
         }
 
-    actual fun LocalDateTime.toInstant(): Instant {
-        val zoned = atZone()
-        return Instant(zoned.dateTime.toEpochSecond(zoned.offset), nanosecond)
-    }
+    actual fun LocalDateTime.toInstant(): Instant =
+        atZone().toInstant()
 
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
         val epochSeconds = toEpochSecond(ZoneOffset(0))
