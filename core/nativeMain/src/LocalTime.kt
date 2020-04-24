@@ -39,8 +39,8 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
-            require(secondOfDay in 0..SECONDS_PER_DAY)
-            require(nanoOfSecond in 0..1_000_000_000)
+            require(secondOfDay >= 0 && secondOfDay <= SECONDS_PER_DAY)
+            require(nanoOfSecond >= 0 && nanoOfSecond <= 1_000_000_000)
             val hours = (secondOfDay / SECONDS_PER_HOUR).toInt()
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR.toLong()
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE).toInt()

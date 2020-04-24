@@ -12,6 +12,7 @@
 #import <Foundation/NSDate.h>
 #import <Foundation/NSCalendar.h>
 #import <limits.h>
+#import <vector>
 #import <set>
 #import <string>
 #include "helper_macros.hpp"
@@ -29,11 +30,52 @@ static NSTimeZone * zone_by_name(NSString *zone_name)
 
 extern "C" {
 #include "cdate.h"
+}
 
-char * get_system_timezone()
+static std::vector<NSTimeZone *> populate()
+{
+    std::vector<NSTimeZone *> v;
+    auto names = NSTimeZone.knownTimeZoneNames;
+    for (size_t i = 0; i < names.count; ++i) {
+        v.push_back([NSTimeZone timeZoneWithName: names[i]]);
+    }
+    return v;
+}
+
+static std::vector<NSTimeZone *> zones_cache = populate();
+
+static TZID id_by_name(NSString *zone_name)
+{
+    auto abbreviations = NSTimeZone.abbreviationDictionary;
+    auto true_name = [abbreviations valueForKey: zone_name];
+    const NSString *name = zone_name;
+    if (true_name != nil) {
+        name = true_name;
+    }
+    for (size_t i = 0; i < zones_cache.size(); ++i) {
+        if ([name isEqualToString:zones_cache[i].name]) {
+            return i;
+        }
+    }
+    return TZID_INVALID;
+}
+
+static NSTimeZone *timezone_by_id(TZID id)
+{
+    try {
+        return zones_cache.at(id);
+    } catch (std::out_of_range e) {
+        return nullptr;
+    }
+}
+
+extern "C" {
+
+char * get_system_timezone(TZID *tzid)
 {
     CFTimeZoneRef zone = CFTimeZoneCopySystem(); // always succeeds
     auto name = CFTimeZoneGetName(zone);
+    *tzid = id_by_name((__bridge NSString *)name);
     CFIndex bufferSize = CFStringGetLength(name) + 1;
     char * buffer = (char *)malloc(sizeof(char) * bufferSize);
     if (buffer == nullptr) {
@@ -41,14 +83,10 @@ char * get_system_timezone()
         return nullptr;
     }
     // only fails if the name is not UTF8-encoded, which is an anomaly.
-    if (CFStringGetCString(name, buffer, bufferSize, kCFStringEncodingUTF8))
-    {
-        CFRelease(zone);
-        return buffer;
-    }
+    auto result = CFStringGetCString(name, buffer, bufferSize, kCFStringEncodingUTF8);
+    assert(result);
     CFRelease(zone);
-    free(buffer);
-    return nullptr;
+    return buffer;
 }
 
 char ** available_zone_ids()
@@ -77,25 +115,22 @@ char ** available_zone_ids()
     return zones_copy;
 }
 
-int offset_at_instant(const char *zone_name, int64_t epoch_sec)
+int offset_at_instant(TZID zone_id, int64_t epoch_sec)
 {
-    auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
-    auto zone = zone_by_name(zone_name_nsstring);
+    auto zone = timezone_by_id(zone_id);
+    if (zone == nil) { return INT_MAX; }
     auto date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
     return (int32_t)[zone secondsFromGMTForDate: date];
 }
 
-bool is_known_timezone(const char *zone_name) {
-    auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
-    return (zone_by_name(zone_name_nsstring) != nil);
+TZID timezone_by_name(const char *zone_name) {
+    return id_by_name([NSString stringWithUTF8String: zone_name]);
 }
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset) {
+int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     *offset = INT_MAX;
-    // timezone name
-    auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
     // timezone
-    auto zone = zone_by_name(zone_name_nsstring);
+    auto zone = timezone_by_id(zone_id);
     if (zone == nil) { return 0; }
     /* a date in an unspecified timezone, defined by the number of seconds since
        the start of the epoch in *that* unspecified timezone */

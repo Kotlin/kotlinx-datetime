@@ -237,6 +237,13 @@ task("downloadWindowsZonesMapping") {
                 out.println("\t{ \"$windowsName\", \"$usualName\" },")
             }
             out.println("};")
+            out.println("""static const std::unordered_map<std::string, size_t> zone_ids = {""")
+            var i = 0
+            for ((usualName, windowsName) in mapping) {
+                out.println("\t{ \"$usualName\", $i },")
+                ++i
+            }
+            out.println("};")
         }
     }
 }

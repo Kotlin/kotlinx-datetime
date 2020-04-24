@@ -15,6 +15,10 @@
 using namespace date;
 using namespace std::chrono;
 
+extern "C" {
+#include "cdate.h"
+}
+
 template <class T>
 static char * timezone_name(const T& zone)
 {
@@ -26,17 +30,36 @@ static char * timezone_name(const T& zone)
     return name_copy;
 }
 
+static const time_zone *zone_by_id(TZID id)
+{
+    auto& tzdb = get_tzdb();
+    try {
+        return &tzdb.zones.at(id);
+    } catch (std::out_of_range e) {
+        throw std::runtime_error("Invalid timezone id");
+    }
+}
+
+static TZID id_by_zone(const tzdb& db, const time_zone* tz)
+{
+    size_t id = tz - &db.zones[0];
+    if (id >= db.zones.size()) {
+        throw std::runtime_error("The time zone is not part of the tzdb");
+    }
+    return id;
+}
+
 extern "C" {
 
-#include "cdate.h"
-
-char * get_system_timezone()
+char * get_system_timezone(TZID * id)
 {
     try {
         auto& tzdb = get_tzdb();
         auto zone = tzdb.current_zone();
+        *id = id_by_zone(tzdb, zone);
         return timezone_name(*zone);
     } catch (std::runtime_error e) {
+        *id = TZID_INVALID;
         return nullptr;
     }
 }
@@ -59,15 +82,14 @@ char ** available_zone_ids()
     }
 }
 
-int offset_at_instant(const char *zone_name, int64_t epoch_sec)
+int offset_at_instant(TZID zone_id, int64_t epoch_sec)
 {
     try {
-        auto& tzdb = get_tzdb();
         /* `sys_time` is usually Unix time (UTC, not counting leap seconds).
            Starting from C++20, it is specified in the standard. */
         auto stime = sys_time<std::chrono::seconds>(
             std::chrono::seconds(epoch_sec));
-        auto zone = tzdb.locate_zone(zone_name);
+        auto zone = zone_by_id(zone_id);
         auto info = zone->get_info(stime);
         return info.offset.count();
     } catch (std::runtime_error e) {
@@ -75,22 +97,20 @@ int offset_at_instant(const char *zone_name, int64_t epoch_sec)
     }
 }
 
-bool is_known_timezone(const char *zone_name)
+TZID timezone_by_name(const char *zone_name)
 {
     try {
         auto& tzdb = get_tzdb();
-        tzdb.locate_zone(zone_name);
-        return true;
+        return id_by_zone(tzdb, tzdb.locate_zone(zone_name));
     } catch (std::runtime_error e) {
-        return false;
+        return TZID_INVALID;
     }
 }
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
+int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
 {
     try {
-        auto& tzdb = get_tzdb();
-        auto zone = tzdb.locate_zone(zone_name);
+        auto zone = zone_by_id(zone_id);
         local_seconds seconds((std::chrono::seconds(epoch_sec)));
         auto info = zone->get_info(seconds);
         switch (info.result) {
