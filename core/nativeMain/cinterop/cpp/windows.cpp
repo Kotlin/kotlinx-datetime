@@ -281,7 +281,6 @@ char * get_system_timezone()
 char ** available_zone_ids()
 {
     std::set<std::string> known_native_names, known_ids;
-    known_ids.insert("UTC");
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
     for (DWORD dwResult = 0, i = 0; dwResult != ERROR_NO_MORE_ITEMS; ++i) {
         dwResult = EnumDynamicTimeZoneInformation(i, &dtzi);

@@ -36,6 +36,13 @@ class TimeZoneTest {
     }
 
     @Test
+    fun availableZonesAreAvailable() {
+        for (zoneName in TimeZone.availableZoneIds) {
+            TimeZone.of(zoneName)
+        }
+    }
+
+    @Test
     fun of() {
         val tzm = TimeZone.of("Europe/Moscow")
         assertNotNull(tzm)
