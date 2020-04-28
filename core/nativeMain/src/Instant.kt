@@ -25,8 +25,8 @@ public actual enum class DayOfWeek {
 }
 
 // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#parse
-private val instantParser: Parser<Instant> =
-    localDateParser
+private val instantParser: Parser<Instant>
+    get() = localDateParser
         .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
         .chain(intParser(2, 2)) // hour
         .chainIgnoring(concreteCharParser(':'))

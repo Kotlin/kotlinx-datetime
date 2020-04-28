@@ -32,6 +32,14 @@ static char * timezone_name(const T& zone)
 
 static const time_zone *zone_by_id(TZID id)
 {
+    /* The `date` library provides a linked list of `tzdb` objects. `get_tzdb()`
+       always returns the head of that list. For now, the list never changes:
+       a call to `reload_tzdb()` would be required to load the updated version
+       of the timezone database. We never do this because for now (with use of
+       `date`) this operation is not even present for the configuration that
+       uses the system timezone database. If we move to C++20 support for this,
+       it may be feasible to call `reload_tzdb()` and construct a more elaborate
+       ID scheme. */
     auto& tzdb = get_tzdb();
     try {
         return &tzdb.zones.at(id);

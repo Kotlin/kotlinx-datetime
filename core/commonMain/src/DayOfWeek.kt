@@ -5,6 +5,8 @@
 
 package kotlinx.datetime
 
+import kotlin.native.concurrent.*
+
 public expect enum class DayOfWeek {
     MONDAY,
     TUESDAY,
@@ -17,6 +19,7 @@ public expect enum class DayOfWeek {
 
 public val DayOfWeek.number: Int get() = ordinal + 1
 
+@SharedImmutable
 private val allDaysOfWeek = DayOfWeek.values().asList()
 public fun DayOfWeek(number: Int): DayOfWeek {
     require(number in 1..7)

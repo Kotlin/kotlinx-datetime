@@ -18,28 +18,18 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
 
     private val asciiName = id.cstr
 
-    @ThreadLocal
     actual companion object {
 
-        private var systemTimeZoneCached: TimeZone? = null
+        @SharedImmutable
+        actual val SYSTEM: TimeZone = memScoped {
+            val tzid = alloc<TZIDVar>()
+            val string = get_system_timezone(tzid.ptr) ?: throw RuntimeException("Failed to get the system timezone.")
+            val kotlinString = string.toKString()
+            free(string)
+            TimeZone(tzid.value, kotlinString)
+        }
 
-        actual val SYSTEM: TimeZone
-            get() {
-                val cached = systemTimeZoneCached
-                if (cached != null) {
-                    return cached
-                }
-                val systemTimeZone = memScoped {
-                    val tzid = alloc<TZIDVar>()
-                    val string = get_system_timezone(tzid.ptr) ?: throw RuntimeException("Failed to get the system timezone.")
-                    val kotlinString = string.toKString()
-                    free(string)
-                    TimeZone(tzid.value, kotlinString)
-                }
-                systemTimeZoneCached = systemTimeZone
-                return systemTimeZone
-            }
-
+        @SharedImmutable
         actual val UTC: TimeZone = ZoneOffset.UTC
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
@@ -140,6 +130,7 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
 
     companion object {
         // org.threeten.bp.ZoneOffset#UTC
+        @SharedImmutable
         val UTC = ZoneOffset(0, "Z")
 
         // org.threeten.bp.ZoneOffset#of

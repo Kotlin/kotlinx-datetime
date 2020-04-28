@@ -42,7 +42,7 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
         // org.threeten.bp.LocalDate#toEpochDay
         internal fun ofEpochDay(epochDay: Long): LocalDate {
-            require(epochDay in -365243219162L..365241780471L)
+            require(epochDay >= -365243219162L && epochDay <= 365241780471L)
             var zeroDay: Long = epochDay + DAYS_0000_TO_1970
             // find the march-based year
             zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
