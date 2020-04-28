@@ -12,7 +12,20 @@
 #import <Foundation/NSDate.h>
 #import <Foundation/NSCalendar.h>
 #import <limits.h>
+#import <set>
+#import <string>
 #include "helper_macros.hpp"
+
+static NSTimeZone * zone_by_name(NSString *zone_name)
+{
+    auto abbreviations = NSTimeZone.abbreviationDictionary;
+    auto true_name = [abbreviations valueForKey: zone_name];
+    NSString *name = zone_name;
+    if (true_name != nil) {
+        name = true_name;
+    }
+    return [NSTimeZone timeZoneWithName: name];
+}
 
 extern "C" {
 #include "cdate.h"
@@ -40,28 +53,26 @@ char * get_system_timezone()
 
 char ** available_zone_ids()
 {
+    std::set<std::string> ids;
     auto zones = NSTimeZone.knownTimeZoneNames;
-    auto abbrevs = NSTimeZone.abbreviationDictionary.allKeys;
+    for (NSString * zone in zones) {
+        ids.insert(std::string([zone UTF8String]));
+    }
+    auto abbrevs = NSTimeZone.abbreviationDictionary;
+    for (NSString * key in abbrevs) {
+        if (ids.count(std::string([abbrevs[key] UTF8String]))) {
+            ids.insert(std::string([key UTF8String]));
+        }
+    }
     char ** zones_copy = (char **)malloc(
-            sizeof(char *) * (zones.count + abbrevs.count + 1));
+            sizeof(char *) * (ids.size() + 1));
     if (zones_copy == nullptr) {
         return nullptr;
     }
-    zones_copy[zones.count + abbrevs.count] = nullptr;
-    unsigned long idx = 0;
-    for (unsigned long i = 0; i < zones.count; ++i) {
-        idx = i;
-        CFIndex bufferSize = zones[i].length + 1;
-        char * buffer = (char *)malloc(bufferSize);
-        PUSH_BACK_OR_RETURN(zones_copy, idx, buffer);
-        strncpy(buffer, zones[i].UTF8String, bufferSize);
-    }
-    for (unsigned long i = 0; i < abbrevs.count; ++i) {
-        idx = zones.count + i;
-        CFIndex bufferSize = abbrevs[i].length + 1;
-        char * buffer = (char *)malloc(bufferSize);
-        PUSH_BACK_OR_RETURN(zones_copy, idx, buffer);
-        strncpy(buffer, abbrevs[i].UTF8String, bufferSize);
+    zones_copy[ids.size()] = nullptr;
+    unsigned long i = 0;
+    for (auto it = ids.begin(); it != ids.end(); ++i, ++it) {
+        PUSH_BACK_OR_RETURN(zones_copy, i, strdup(it->c_str()));
     }
     return zones_copy;
 }
@@ -69,15 +80,14 @@ char ** available_zone_ids()
 int offset_at_instant(const char *zone_name, int64_t epoch_sec)
 {
     auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
-    auto zone = [NSTimeZone timeZoneWithName: zone_name_nsstring];
+    auto zone = zone_by_name(zone_name_nsstring);
     auto date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
     return (int32_t)[zone secondsFromGMTForDate: date];
 }
 
 bool is_known_timezone(const char *zone_name) {
     auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
-    auto zone = [NSTimeZone timeZoneWithName: zone_name_nsstring];
-    return (zone != nil);
+    return (zone_by_name(zone_name_nsstring) != nil);
 }
 
 int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset) {
@@ -85,7 +95,7 @@ int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset) {
     // timezone name
     auto zone_name_nsstring = [NSString stringWithUTF8String: zone_name];
     // timezone
-    auto zone = [NSTimeZone timeZoneWithName: zone_name_nsstring];
+    auto zone = zone_by_name(zone_name_nsstring);
     if (zone == nil) { return 0; }
     /* a date in an unspecified timezone, defined by the number of seconds since
        the start of the epoch in *that* unspecified timezone */

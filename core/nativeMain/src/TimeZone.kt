@@ -62,7 +62,7 @@ public actual open class TimeZone internal constructor(actual val id: String) {
 
         actual val availableZoneIds: Set<String>
             get() {
-                val set = mutableSetOf<String>()
+                val set = mutableSetOf<String>("UTC")
                 val zones = available_zone_ids()
                     ?: throw RuntimeException("Failed to get the list of available timezones")
                 var ptr = zones
