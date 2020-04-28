@@ -78,17 +78,7 @@ public actual open class TimeZone internal constructor(actual val id: String) {
             }
     }
 
-    // org.threeten.bp.LocalDateTime#ofEpochSecond + org.threeten.bp.ZonedDateTime#create
-    internal fun Instant.toZonedLocalDateTime(): ZonedDateTime {
-        val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
-        val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
-        val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
-        val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
-        val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanos)
-        return ZonedDateTime(LocalDateTime(date, time), this@TimeZone, offset)
-    }
-
-    actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime().dateTime
+    actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime(this@TimeZone).dateTime
 
     actual open val Instant.offset: ZoneOffset
         get() {
@@ -99,10 +89,8 @@ public actual open class TimeZone internal constructor(actual val id: String) {
             return ZoneOffset(offset)
         }
 
-    actual fun LocalDateTime.toInstant(): Instant {
-        val zoned = atZone()
-        return Instant(zoned.dateTime.toEpochSecond(zoned.offset), nanosecond)
-    }
+    actual fun LocalDateTime.toInstant(): Instant =
+        atZone().toInstant()
 
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
         val epochSeconds = toEpochSecond(ZoneOffset(0))

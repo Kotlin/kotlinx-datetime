@@ -33,6 +33,20 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     }
 }
 
+internal fun ZonedDateTime.toInstant(): Instant =
+    Instant(dateTime.toEpochSecond(offset), dateTime.nanosecond)
+
+// org.threeten.bp.LocalDateTime#ofEpochSecond + org.threeten.bp.ZonedDateTime#create
+internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
+    val currentOffset = with (zone) { offset }
+    val localSecond: Long = epochSeconds + currentOffset.totalSeconds // overflow caught later
+    val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
+    val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
+    val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
+    val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanos)
+    return ZonedDateTime(LocalDateTime(date, time), zone, currentOffset)
+}
+
 // org.threeten.bp.ZonedDateTime#until
 // This version is simplified and to be used ONLY in case you know the timezones are equal!
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =

@@ -164,17 +164,15 @@ public actual class Instant internal constructor(internal val epochSeconds: Long
     }
 
     actual companion object {
-        actual fun now(): Instant {
-            return memScoped {
-                val timespecBuf = alloc<timespec>()
-                val error = clock_gettime(CLOCK_REALTIME, timespecBuf.ptr)
-                assertEquals(0, error)
-                // according to https://en.cppreference.com/w/c/chrono/timespec,
-                // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
-                val seconds = timespecBuf.tv_sec.toLong() // conversion is needed on some platforms
-                val nanosec = timespecBuf.tv_nsec.toInt()
-                Instant(seconds, nanosec)
-            }
+        actual fun now(): Instant = memScoped {
+            val timespecBuf = alloc<timespec>()
+            val error = clock_gettime(CLOCK_REALTIME, timespecBuf.ptr)
+            assertEquals(0, error)
+            // according to https://en.cppreference.com/w/c/chrono/timespec,
+            // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
+            val seconds = timespecBuf.tv_sec.toLong() // conversion is needed on some platforms
+            val nanosec = timespecBuf.tv_nsec.toInt()
+            Instant(seconds, nanosec)
         }
 
         // org.threeten.bp.Instant#ofEpochMilli
@@ -202,13 +200,13 @@ actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {
             minutes.toLong() * SECONDS_PER_MINUTE,
             hours.toLong() * SECONDS_PER_HOUR))
     }
-    val localDateTime = toLocalDateTime(zone)
+    val localDateTime = toZonedLocalDateTime(zone)
     return with(period) {
         localDateTime
             .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
             .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
             .run { if (days != 0) plusDays(days.toLong()) else this }
-    }.toInstant(zone).plus(seconds, period.nanoseconds)
+    }.toInstant().plus(seconds, period.nanoseconds)
 }
 
 actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
@@ -216,10 +214,10 @@ actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
 
 actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
     when (unit) {
-        CalendarUnit.YEAR -> toLocalDateTime(zone).plusYears(value).toInstant(zone)
-        CalendarUnit.MONTH -> toLocalDateTime(zone).plusMonths(value).toInstant(zone)
-        CalendarUnit.WEEK -> toLocalDateTime(zone).plusDays(value * 7).toInstant(zone)
-        CalendarUnit.DAY -> toLocalDateTime(zone).plusDays(value).toInstant(zone)
+        CalendarUnit.YEAR -> toZonedLocalDateTime(zone).plusYears(value).toInstant()
+        CalendarUnit.MONTH -> toZonedLocalDateTime(zone).plusMonths(value).toInstant()
+        CalendarUnit.WEEK -> toZonedLocalDateTime(zone).plusDays(value * 7).toInstant()
+        CalendarUnit.DAY -> toZonedLocalDateTime(zone).plusDays(value).toInstant()
         /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
            then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
            (gotten from org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond). This, in turn,
@@ -244,8 +242,8 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
 
 @OptIn(ExperimentalTime::class)
 actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
-    var thisLdt = with(zone) { toZonedLocalDateTime() }
-    val otherLdt = with(zone) { other.toZonedLocalDateTime() }
+    var thisLdt = toZonedLocalDateTime(zone)
+    val otherLdt = other.toZonedLocalDateTime(zone)
 
     val months = thisLdt.until(otherLdt, CalendarUnit.MONTH); thisLdt = thisLdt.plusMonths(months)
     val days = thisLdt.until(otherLdt, CalendarUnit.DAY); thisLdt = thisLdt.plusDays(days)
@@ -257,7 +255,7 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
 }
 
 actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
-    with(zone) { toZonedLocalDateTime().until(other.toZonedLocalDateTime(), unit) }
+    toZonedLocalDateTime(zone).until(other.toZonedLocalDateTime(zone), unit)
 
 actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.DAY, zone).toInt()
 actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.MONTH, zone).toInt()
