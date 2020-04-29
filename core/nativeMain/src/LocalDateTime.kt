@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
 internal val localDateTimeParser: Parser<LocalDateTime>
     get() = localDateParser

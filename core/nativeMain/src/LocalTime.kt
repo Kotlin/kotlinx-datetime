@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_TIME
 internal val localTimeParser: Parser<LocalTime>
     get() = intParser(2, 2) // hour
@@ -39,6 +40,7 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
+            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
             require(secondOfDay >= 0 && secondOfDay <= SECONDS_PER_DAY)
             require(nanoOfSecond >= 0 && nanoOfSecond <= 1_000_000_000)
             val hours = (secondOfDay / SECONDS_PER_HOUR).toInt()

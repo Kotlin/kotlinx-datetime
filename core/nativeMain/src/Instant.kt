@@ -24,6 +24,7 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#parse
 private val instantParser: Parser<Instant>
     get() = localDateParser

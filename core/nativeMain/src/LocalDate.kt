@@ -10,6 +10,7 @@ package kotlinx.datetime
 
 import kotlin.math.*
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE
 internal val localDateParser: Parser<LocalDate>
     get() = intParser(4, 10)
@@ -42,6 +43,7 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
         // org.threeten.bp.LocalDate#toEpochDay
         internal fun ofEpochDay(epochDay: Long): LocalDate {
+            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
             require(epochDay >= -365243219162L && epochDay <= 365241780471L)
             var zeroDay: Long = epochDay + DAYS_0000_TO_1970
             // find the march-based year
