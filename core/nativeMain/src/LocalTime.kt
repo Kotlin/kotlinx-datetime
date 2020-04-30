@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_TIME
 internal val localTimeParser: Parser<LocalTime>
     get() = intParser(2, 2) // hour
@@ -39,8 +40,9 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
-            require(secondOfDay in 0..SECONDS_PER_DAY)
-            require(nanoOfSecond in 0..1_000_000_000)
+            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
+            require(secondOfDay >= 0 && secondOfDay <= SECONDS_PER_DAY)
+            require(nanoOfSecond >= 0 && nanoOfSecond <= 1_000_000_000)
             val hours = (secondOfDay / SECONDS_PER_HOUR).toInt()
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR.toLong()
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE).toInt()
@@ -61,8 +63,22 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
         }
     }
 
-    override fun compareTo(other: LocalTime): Int =
-        compareBy<LocalTime>({ it.hour }, { it.minute }, { it.second }, { it.nanosecond }).compare(this, other)
+    // Several times faster than using `compareBy`
+    override fun compareTo(other: LocalTime): Int {
+        val h = hour.compareTo(other.hour)
+        if (h != 0) {
+            return h
+        }
+        val m = minute.compareTo(other.minute)
+        if (m != 0) {
+            return m
+        }
+        val s = second.compareTo(other.second)
+        if (s != 0) {
+            return s
+        }
+        return nanosecond.compareTo(other.nanosecond)
+    }
 
     override fun hashCode(): Int {
         val nod: Long = toNanoOfDay()

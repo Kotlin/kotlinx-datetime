@@ -134,7 +134,7 @@ class ThreeTenBpTimeZoneTest {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
         val zone = TimeZone.of("Europe/Paris")
         assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
-            zone, ZoneOffset(2 * 3600)), with(zone) { t.atZone() })
+            zone, ZoneOffset.ofSeconds(2 * 3600)), with(zone) { t.atZone() })
     }
 
 }

@@ -27,6 +27,9 @@
 #include "date/date.h"
 #include "helper_macros.hpp"
 #include "windows_zones.hpp"
+extern "C" {
+#include "cdate.h"
+}
 
 /* The maximum length of the registry key name for timezones. Taken from
    https://docs.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-dynamic_time_zone_information
@@ -54,6 +57,16 @@ static std::string key_to_string(const DYNAMIC_TIME_ZONE_INFORMATION& dtzi) {
     return buf;
 }
 
+/* Finds the unique number assigned to each standard name. */
+static TZID id_by_name(const std::string& name)
+{
+    try {
+        return zone_ids.at(name);
+    } catch (std::out_of_range e) {
+        return TZID_INVALID;
+    }
+}
+
 /* Returns a standard timezone name given a Windows registry key name.
    The returned C string is guaranteed to have static lifetime. */
 static const char *native_name_to_standard_name(const std::string& native) {
@@ -72,11 +85,10 @@ static const char *native_name_to_standard_name(const std::string& native) {
 }
 
 // The next time the timezone cache should be flushed.
-static std::chrono::time_point<std::chrono::steady_clock>
-    next_flush = std::chrono::steady_clock::now();
+static auto next_flush = std::chrono::time_point<std::chrono::steady_clock>::min();
 // The timezone cache. Access to it should be guarded with `cache_rwlock`.
 static std::unordered_map<
-    std::string, DYNAMIC_TIME_ZONE_INFORMATION> cache;
+    TZID, DYNAMIC_TIME_ZONE_INFORMATION> cache;
 // The read-write lock guarding access to the cache.
 static std::shared_mutex cache_rwlock;
 
@@ -89,37 +101,40 @@ static void repopulate_timezone_cache(
         return;
     }
     cache.clear();
+    std::unordered_map<std::string, DYNAMIC_TIME_ZONE_INFORMATION>
+        native_to_zones;
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
     next_flush = current_time + CACHE_INVALIDATION_TIMEOUT;
     for (DWORD dwResult = 0, i = 0; dwResult != ERROR_NO_MORE_ITEMS; ++i) {
         dwResult = EnumDynamicTimeZoneInformation(i, &dtzi);
         if (dwResult == ERROR_SUCCESS) {
-            cache[key_to_string(dtzi)] = dtzi;
+            native_to_zones[key_to_string(dtzi)] = dtzi;
+        }
+    }
+    for (auto it = standard_to_windows.begin();
+        it != standard_to_windows.end(); ++it)
+    {
+        try {
+            auto& dtzi = native_to_zones.at(it->second);
+            auto id = id_by_name(it->first);
+            cache[id] = dtzi;
+        } catch (std::out_of_range e) {
         }
     }
 }
 
-/* Populates `dtzi` with the time zone information for Windows registry key
-   `native_name`. Throws `std::out_of_range` if the name is invalid. */
-static void time_zone_by_native_name(
-    const std::string& native_name, DYNAMIC_TIME_ZONE_INFORMATION& dtzi)
-{
-    const auto current_time = std::chrono::steady_clock::now();
-    if (current_time > next_flush) {
-        repopulate_timezone_cache(current_time);
-    }
-    const std::shared_lock<std::shared_mutex> lock(cache_rwlock);
-    dtzi = cache.at(native_name);
-}
-
 /* Populates `dtzi` with the time zone information for standard timezone name
    `name`. Returns `false` if the name is invalid. */
-static bool time_zone_by_name(
-    const char *name, DYNAMIC_TIME_ZONE_INFORMATION& dtzi)
+static bool time_zone_by_id(
+    TZID id, DYNAMIC_TIME_ZONE_INFORMATION& dtzi)
 {
     try {
-        auto& native_name = standard_to_windows.at(name);
-        time_zone_by_native_name(native_name, dtzi);
+        const auto current_time = std::chrono::steady_clock::now();
+        if (current_time > next_flush) {
+            repopulate_timezone_cache(current_time);
+        }
+        const std::shared_lock<std::shared_mutex> lock(cache_rwlock);
+        dtzi = cache.at(id);
         return true;
     } catch (std::out_of_range e) {
         return false;
@@ -261,9 +276,7 @@ static int offset_at_systime(DYNAMIC_TIME_ZONE_INFORMATION& dtzi,
 
 extern "C" {
 
-#include "cdate.h"
-
-char * get_system_timezone()
+char * get_system_timezone(TZID* id)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
     auto result = GetDynamicTimeZoneInformation(&dtzi);
@@ -272,8 +285,10 @@ char * get_system_timezone()
     auto key = key_to_string(dtzi);
     auto name = native_name_to_standard_name(key);
     if (name == nullptr) {
+        *id = TZID_INVALID;
         return nullptr;
     } else {
+        *id = id_by_name(name);
         return strdup(name);
     }
 }
@@ -305,10 +320,10 @@ char ** available_zone_ids()
     return zones;
 }
 
-int offset_at_instant(const char *zone_name, int64_t epoch_sec)
+int offset_at_instant(TZID zone_id, int64_t epoch_sec)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
-    bool result = time_zone_by_name(zone_name, dtzi);
+    bool result = time_zone_by_id(zone_id, dtzi);
     if (!result) {
         return INT_MAX;
     }
@@ -317,16 +332,21 @@ int offset_at_instant(const char *zone_name, int64_t epoch_sec)
     return offset_at_systime(dtzi, systime);
 }
 
-bool is_known_timezone(const char *zone_name)
+TZID timezone_by_name(const char *zone_name)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
-    return time_zone_by_name(zone_name, dtzi);
+    TZID id = id_by_name(zone_name);
+    if (time_zone_by_id(id, dtzi)) {
+        return id;
+    } else {
+        return TZID_INVALID;
+    }
 }
 
-int offset_at_datetime(const char *zone_name, int64_t epoch_sec, int *offset)
+int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
-    bool result = time_zone_by_name(zone_name, dtzi);
+    bool result = time_zone_by_id(zone_id, dtzi);
     if (!result) {
         return INT_MAX;
     }

@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
 internal val localDateTimeParser: Parser<LocalDateTime>
     get() = localDateParser
@@ -38,8 +39,14 @@ public actual class LocalDateTime internal constructor(
     actual val second: Int get() = time.second
     actual val nanosecond: Int get() = time.nanosecond
 
-    actual override fun compareTo(other: LocalDateTime): Int =
-        compareBy<LocalDateTime>({ it.date }, { it.time }).compare(this, other)
+    // Several times faster than using `compareBy`
+    actual override fun compareTo(other: LocalDateTime): Int {
+        val d = date.compareTo(other.date)
+        if (d != 0) {
+            return d
+        }
+        return time.compareTo(other.time)
+    }
 
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDateTime && compareTo(other) == 0)

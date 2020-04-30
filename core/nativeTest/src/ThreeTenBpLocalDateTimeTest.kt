@@ -5,8 +5,9 @@
 /* Based on the ThreeTenBp project.
  * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
  */
-package kotlinx.datetime
+package kotlinx.datetime.test
 
+import kotlinx.datetime.*
 import kotlin.test.*
 
 class ThreeTenBpLocalDateTimeTest {
@@ -14,10 +15,11 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsAfterEpoch() {
         for (i in -5..4) {
             val iHours = i * 3600
-            val offset = ZoneOffset(iHours)
+            val offset = ZoneOffset.ofSeconds(iHours)
+            val iHoursL = iHours.toLong()
             for (j in 0..99999L) {
                 val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(j)
-                assertEquals(j - iHours, a.toEpochSecond(offset), "$i, $j")
+                assertEquals(j - iHoursL, a.toEpochSecond(offset))
             }
         }
     }
@@ -26,7 +28,7 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsBeforeEpoch() {
         for (i in 0..99999L) {
             val a: LocalDateTime = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(-i)
-            assertEquals(-i, a.toEpochSecond(ZoneOffset.UTC), "$i")
+            assertEquals(-i, a.toEpochSecond(ZoneOffset.UTC))
         }
     }
 
