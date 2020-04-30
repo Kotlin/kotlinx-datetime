@@ -19,6 +19,20 @@ The library provides the basic set of types for working with date and time:
 - `CalendarPeriod` to represent a difference between two instants decomposed into calendar units. The latter are
   listed in `CalendarUnit` enum.
   
+### Type use-cases
+
+Here is some basic advice on how to choose which of the date-carrying types to use in what cases:
+
+- Use `Instant` to represent a timestamp of the event that had already happened in the past (like a timestamp of 
+  a log entry) or will definitely happen in a well-defined instant of time in the future not far away from now 
+  (like an order confirmation deadline in 1 hour from now).
+- Use `LocalDateTime` to represent a time of the event that is scheduled to happen in the far future at a certain 
+  local time (like a scheduled meeting in a few months from now). You'll have to keep track of the `TimeZone` of 
+  the scheduled event separately. Try to avoid converting future events to `Instant` in advance, because time-zone 
+  rules might change unexpectedly in the future. 
+  Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
+- Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birthday).
+ 
 ## Operations
 
 With the above types you can get the following operations done.
