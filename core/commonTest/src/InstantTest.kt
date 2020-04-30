@@ -92,17 +92,21 @@ class InstantTest {
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
         assertEquals(24.hours, instant2 - instant1)
         assertEquals(24, instant1.until(instant2, CalendarUnit.HOUR, zone))
+        assertEquals(24, instant2.minus(instant1, CalendarUnit.HOUR, zone))
 
         val instant3 = instant1.plus(1, CalendarUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         assertEquals(25.hours, instant3 - instant1)
         assertEquals(1, instant1.until(instant3, CalendarUnit.DAY, zone))
         assertEquals(1, instant1.daysUntil(instant3, zone))
+        assertEquals(1, instant3.minus(instant1, CalendarUnit.DAY, zone))
 
         val period = CalendarPeriod(days = 1, hours = 1)
         val instant4 = instant1.plus(period, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant4, zone))
+        assertEquals(period, instant4.minus(instant1, zone))
+        assertEquals(26.hours, instant4.minus(instant1))
     }
 
     @OptIn(ExperimentalTime::class)

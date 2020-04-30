@@ -128,3 +128,6 @@ public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
 
 private fun Long.clampToInt(): Int =
     if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
+
+public fun Instant.minus(other: Instant, zone: TimeZone): CalendarPeriod = other.periodUntil(this, zone)
+public fun Instant.minus(other: Instant, unit: CalendarUnit, zone: TimeZone): Long = other.until(this, unit, zone)
