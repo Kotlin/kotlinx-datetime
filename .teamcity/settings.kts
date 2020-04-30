@@ -1,4 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.v2018_2.*
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.*
 
@@ -103,6 +104,18 @@ fun Project.buildAll(versionBuild: BuildType) = BuildType {
                     -:*.md
                     -:.gitignore
                 """.trimIndent()
+        }
+    }
+
+    features {
+        commitStatusPublisher {
+            publisher = github {
+                githubUrl = "https://api.github.com"
+                authType = personalToken {
+                    token = "credentialsJSON:af36802a-ccd4-401b-86b9-0b08d2dfad17"
+                }
+            }
+            param("github_oauth_user", "ilya-g")
         }
     }
 
