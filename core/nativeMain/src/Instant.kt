@@ -65,9 +65,17 @@ private val instantParser: Parser<Instant>
         }
 
 @OptIn(ExperimentalTime::class)
-public actual class Instant internal constructor(internal val epochSeconds: Long, internal val nanos: Int) : Comparable<Instant> {
+public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
-    actual fun toUnixMillis(): Long = epochSeconds * MILLIS_PER_ONE + nanos / NANOS_PER_MILLI
+    // org.threeten.bp.Instant#toEpochMilli
+    actual fun toUnixMillis(): Long =
+        if (epochSeconds >= 0) {
+            val millis: Long = safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong())
+            safeAdd(millis, nanosecondsOfSecond / NANOS_PER_MILLI.toLong())
+        } else {
+            val millis: Long = safeMultiply(epochSeconds + 1, MILLIS_PER_ONE.toLong())
+            safeSubtract(millis, MILLIS_PER_ONE.toLong() - nanosecondsOfSecond / NANOS_PER_MILLI)
+        }
 
     // org.threeten.bp.Instant#plus(long, long)
     internal fun plus(secondsToAdd: Long, nanosToAdd: Long): Instant {
@@ -77,8 +85,8 @@ public actual class Instant internal constructor(internal val epochSeconds: Long
         val epochSec: Long = safeAdd(epochSeconds, secondsToAdd)
         val newEpochSeconds = safeAdd(epochSec, (nanosToAdd / NANOS_PER_ONE))
         val newNanosToAdd = nanosToAdd % NANOS_PER_ONE
-        val nanoAdjustment = (nanos + newNanosToAdd) // safe int+NANOS_PER_ONE
-        return ofEpochSecond(newEpochSeconds, nanoAdjustment)
+        val nanoAdjustment = (nanosecondsOfSecond + newNanosToAdd) // safe int+NANOS_PER_ONE
+        return fromEpochSeconds(newEpochSeconds, nanoAdjustment)
     }
 
     actual operator fun plus(duration: Duration): Instant = duration.toComponents { epochSeconds, nanos ->
@@ -89,27 +97,27 @@ public actual class Instant internal constructor(internal val epochSeconds: Long
 
     actual operator fun minus(other: Instant): Duration =
         (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
-            (this.nanos - other.nanos).nanoseconds
+            (this.nanosecondsOfSecond - other.nanosecondsOfSecond).nanoseconds
 
     actual override fun compareTo(other: Instant): Int {
         val s = epochSeconds.compareTo(other.epochSeconds)
         if (s != 0) {
             return s
         }
-        return nanos.compareTo(other.nanos)
+        return nanosecondsOfSecond.compareTo(other.nanosecondsOfSecond)
     }
 
     override fun equals(other: Any?): Boolean =
-        this === other || other is Instant && this.epochSeconds == other.epochSeconds && this.nanos == other.nanos
+        this === other || other is Instant && this.epochSeconds == other.epochSeconds && this.nanosecondsOfSecond == other.nanosecondsOfSecond
 
     // org.threeten.bp.Instant#hashCode
     override fun hashCode(): Int =
-        (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanos
+        (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
     override fun toString(): String {
         val buf = StringBuilder()
-        val inNano: Int = nanos
+        val inNano: Int = nanosecondsOfSecond
         if (epochSeconds >= -SECONDS_0000_TO_1970) { // current era
             val zeroSecs: Long = epochSeconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
             val hi: Long = floorDiv(zeroSecs, SECONDS_PER_10000_YEARS) + 1
@@ -187,9 +195,9 @@ public actual class Instant internal constructor(internal val epochSeconds: Long
                 (floorMod(millis, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
         // org.threeten.bp.Instant#ofEpochSecond(long, long)
-        internal fun ofEpochSecond(epochSecond: Long, nanoAdjustment: Long = 0): Instant {
-            val secs = safeAdd(epochSecond, floorDiv(nanoAdjustment, NANOS_PER_ONE.toLong()))
-            val nos = floorMod(nanoAdjustment, NANOS_PER_ONE.toLong()).toInt()
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
+            val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
+            val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
         }
 

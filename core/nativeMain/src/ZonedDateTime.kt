@@ -43,7 +43,7 @@ internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
     val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
     val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
     val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
-    val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanos)
+    val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)
     return ZonedDateTime(LocalDateTime(date, time), zone, currentOffset)
 }
 

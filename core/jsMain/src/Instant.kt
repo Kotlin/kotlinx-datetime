@@ -19,6 +19,11 @@ import kotlinx.datetime.internal.JSJoda.ZoneId
 @OptIn(kotlin.time.ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
+    actual val epochSeconds: Long
+        get() = value.epochSecond().toLong()
+    actual val nanosecondsOfSecond: Int
+        get() = value.nano().toInt()
+
     public actual fun toUnixMillis(): Long = value.toEpochMilli().toLong()
 
 
@@ -51,8 +56,10 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
         actual fun parse(isoString: String): Instant =
                 Instant(jtInstant.parse(isoString))
-    }
 
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
+                Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
+    }
 }
 
 

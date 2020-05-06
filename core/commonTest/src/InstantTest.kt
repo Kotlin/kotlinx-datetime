@@ -187,6 +187,29 @@ class InstantTest {
         }
     }
 
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
+    @Test
+    fun nanosecondAdjustment() {
+        for (i in -2..2L) {
+            for (j in 0..9L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond.toLong())
+            }
+            for (j in -10..-1L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i - 1, t.epochSeconds)
+                assertEquals(j + 1000000000, t.nanosecondsOfSecond.toLong())
+            }
+            for (j in 999999990..999999999L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond.toLong())
+            }
+        }
+    }
 
     /* Based on the ThreeTenBp project.
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
