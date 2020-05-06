@@ -34,15 +34,19 @@ class ThreeTenBpInstantTest {
             val a = instants[i]
             for (j in instants.indices) {
                 val b = instants[j]
-                if (i < j) {
-                    assertEquals(true, a < b, "$a <=> $b")
-                    assertEquals(false, a == b, "$a <=> $b")
-                } else if (i > j) {
-                    assertEquals(true, a > b, "$a <=> $b")
-                    assertEquals(false, a == b, "$a <=> $b")
-                } else {
-                    assertEquals(0, a.compareTo(b), "$a <=> $b")
-                    assertEquals(true, a == b, "$a <=> $b")
+                when {
+                    i < j -> {
+                        assertTrue(a < b, "$a <=> $b")
+                        assertNotEquals(a, b, "$a <=> $b")
+                    }
+                    i > j -> {
+                        assertTrue(a > b, "$a <=> $b")
+                        assertNotEquals(a, b, "$a <=> $b")
+                    }
+                    else -> {
+                        assertEquals(0, a.compareTo(b), "$a <=> $b")
+                        assertEquals(a, b, "$a <=> $b")
+                    }
                 }
             }
         }
