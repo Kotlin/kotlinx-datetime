@@ -25,11 +25,6 @@ val JDK_8: String by project
 //    }
 //}
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.CInteropProcess> {
-    // dependsOn(":date-cpp-c-wrapper:assembleRelease")
-    // dependsOn(":date-cpp-library:assembleRelease")
-}
-
 kotlin {
     infra {
         target("macosX64")
@@ -38,6 +33,11 @@ kotlin {
         target("iosArm32")
         target("linuxX64")
         target("mingwX64")
+        target("watchosArm32")
+        target("watchosArm64")
+        target("watchosX86")
+        target("tvosArm64")
+        target("tvosX64")
     }
 
     jvm {

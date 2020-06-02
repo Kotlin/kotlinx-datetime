@@ -17,6 +17,10 @@ project(":kotlinx-datetime") {
 //    pluginManager.apply("maven-publish")
 }
 
+project(":darwin-integration") {
+    pluginManager.apply("kotlin-multiplatform")
+}
+
 infra {
     teamcity {
         bintrayUser = "%env.BINTRAY_USER%"
