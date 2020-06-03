@@ -13,10 +13,10 @@ import kotlin.test.*
 
 class ConvertersTest {
 
-    val dateFormatter = NSDateFormatter()
-    val locale = NSLocale.localeWithLocaleIdentifier("en_US_POSIX")
-    val gregorian = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierGregorian)!!
-    val utc = NSTimeZone.timeZoneForSecondsFromGMT(0)
+    private val dateFormatter = NSDateFormatter()
+    private val locale = NSLocale.localeWithLocaleIdentifier("en_US_POSIX")
+    private val gregorian = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierGregorian)!!
+    private val utc = NSTimeZone.timeZoneForSecondsFromGMT(0)
 
     init {
         dateFormatter.locale = locale
@@ -35,7 +35,7 @@ class ConvertersTest {
                 val instant = Instant.fromEpochMilliseconds(millis)
                 val date = instant.toNSDate()
                 assertEquals(instant, Instant.parse(dateFormatter.stringFromDate(date)))
-                assertEquals(instant, Instant.fromNSDate(date))
+                assertEquals(instant, date.toKotlinInstant())
             }
         }
     }
@@ -50,7 +50,7 @@ class ConvertersTest {
             }
             val nsTimeZone = timeZone.toNSTimeZone()
             assertEquals(normalizedId, nsTimeZone.name)
-            assertEquals(timeZone, TimeZone.fromNSTimeZone(nsTimeZone))
+            assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
         }
     }
 
@@ -103,7 +103,7 @@ class ConvertersTest {
         if (seconds == 0) {
             val nsTimeZone = timeZone.toNSTimeZone()
             assertEquals(hours * 3600 + minutes * 60 + seconds, nsTimeZone.secondsFromGMT.convert())
-            assertEquals(timeZone, TimeZone.fromNSTimeZone(nsTimeZone))
+            assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
         }
     }
 }

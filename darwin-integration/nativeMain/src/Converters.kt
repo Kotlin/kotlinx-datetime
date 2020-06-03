@@ -24,15 +24,15 @@ public fun Instant.toNSDate(): NSDate {
 }
 
 /**
- * Builds an [Instant] from a given [NSDate].
+ * Builds the corresponding [Instant].
  * Even though Darwin only uses millisecond precision, it is possible that [date] uses larger resolution, storing
  * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are ignored, given that they
  * are likely to be conversion artifacts.
  */
-public fun Instant.Companion.fromNSDate(date: NSDate): Instant {
-    val secs = date.timeIntervalSince1970()
+public fun NSDate.toKotlinInstant(): Instant {
+    val secs = timeIntervalSince1970()
     val millis = secs * 1000
-    return fromEpochMilliseconds(millis.toLong())
+    return Instant.fromEpochMilliseconds(millis.toLong())
 }
 
 /**
@@ -53,9 +53,9 @@ public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is ZoneOffset) {
 }
 
 /**
- * Builds a [TimeZone] from the given [NSTimeZone].
+ * Builds the corresponding [TimeZone].
  */
-public fun TimeZone.Companion.fromNSTimeZone(timeZone: NSTimeZone): TimeZone = of(timeZone.name)
+public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
 
 /**
  * Converts the given [LocalDate] to [NSDateComponents].
