@@ -68,7 +68,7 @@ private val instantParser: Parser<Instant>
 public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     // org.threeten.bp.Instant#toEpochMilli
-    actual fun toUnixMillis(): Long =
+    actual fun toEpochMilliseconds(): Long =
         if (epochSeconds >= 0) {
             val millis: Long = safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong())
             safeAdd(millis, nanosecondsOfSecond / NANOS_PER_MILLI.toLong())
@@ -184,13 +184,13 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
             assertEquals(0, error)
             // according to https://en.cppreference.com/w/c/chrono/timespec,
             // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
-            val seconds = timespecBuf.tv_sec.toLong() // conversion is needed on some platforms
+            val seconds = timespecBuf.tv_sec.convert<Long>()
             val nanosec = timespecBuf.tv_nsec.toInt()
             Instant(seconds, nanosec)
         }
 
         // org.threeten.bp.Instant#ofEpochMilli
-        actual fun fromUnixMillis(millis: Long): Instant =
+        actual fun fromEpochMilliseconds(millis: Long): Instant =
             Instant(floorDiv(millis, MILLIS_PER_ONE.toLong()),
                 (floorMod(millis, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 

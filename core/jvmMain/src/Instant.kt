@@ -20,8 +20,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     actual val nanosecondsOfSecond: Int
         get() = value.nano
 
-    public actual fun toUnixMillis(): Long = value.toEpochMilli()
-
+    public actual fun toEpochMilliseconds(): Long = value.toEpochMilli()
 
     actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         Instant(value.plusSeconds(seconds).plusNanos(nanoseconds.toLong()))
@@ -46,7 +45,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
-        actual fun fromUnixMillis(millis: Long): Instant =
+        actual fun fromEpochMilliseconds(millis: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(millis))
 
         actual fun parse(isoString: String): Instant =

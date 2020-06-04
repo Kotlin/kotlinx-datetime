@@ -74,19 +74,19 @@ class ThreeTenBpInstantTest {
 
     @Test
     fun toUnixMillis() {
-        assertEquals(Instant.fromEpochSeconds(1L, 1000000).toUnixMillis(), 1001L)
-        assertEquals(Instant.fromEpochSeconds(1L, 2000000).toUnixMillis(), 1002L)
-        assertEquals(Instant.fromEpochSeconds(1L, 567).toUnixMillis(), 1000L)
-        assertEquals(Instant.fromEpochSeconds(Long.MAX_VALUE / 1000).toUnixMillis(), Long.MAX_VALUE / 1000 * 1000)
-        assertEquals(Instant.fromEpochSeconds(Long.MIN_VALUE / 1000).toUnixMillis(), Long.MIN_VALUE / 1000 * 1000)
-        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toUnixMillis(), -1L)
-        assertEquals(Instant.fromEpochSeconds(0L, 1000000).toUnixMillis(), 1)
-        assertEquals(Instant.fromEpochSeconds(0L, 999999).toUnixMillis(), 0)
-        assertEquals(Instant.fromEpochSeconds(0L, 1).toUnixMillis(), 0)
-        assertEquals(Instant.fromEpochSeconds(0L, 0).toUnixMillis(), 0)
-        assertEquals(Instant.fromEpochSeconds(0L, -1).toUnixMillis(), -1L)
-        assertEquals(Instant.fromEpochSeconds(0L, -999999).toUnixMillis(), -1L)
-        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toUnixMillis(), -1L)
-        assertEquals(Instant.fromEpochSeconds(0L, -1000001).toUnixMillis(), -2L)
+        assertEquals(Instant.fromEpochSeconds(1L, 1000000).toEpochMilliseconds(), 1001L)
+        assertEquals(Instant.fromEpochSeconds(1L, 2000000).toEpochMilliseconds(), 1002L)
+        assertEquals(Instant.fromEpochSeconds(1L, 567).toEpochMilliseconds(), 1000L)
+        assertEquals(Instant.fromEpochSeconds(Long.MAX_VALUE / 1000).toEpochMilliseconds(), Long.MAX_VALUE / 1000 * 1000)
+        assertEquals(Instant.fromEpochSeconds(Long.MIN_VALUE / 1000).toEpochMilliseconds(), Long.MIN_VALUE / 1000 * 1000)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, 1000000).toEpochMilliseconds(), 1)
+        assertEquals(Instant.fromEpochSeconds(0L, 999999).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, 1).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, 0).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, -1).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -999999).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000001).toEpochMilliseconds(), -2L)
     }
 }
