@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetimex.darwin.converters
+package kotlinx.datetime.darwin.converters
 import kotlinx.cinterop.*
 import kotlinx.datetime.*
 import platform.Foundation.*
@@ -26,19 +26,19 @@ public fun Instant.toNSDate(): NSDate {
 /**
  * Builds the corresponding [Instant].
  * Even though Darwin only uses millisecond precision, it is possible that [date] uses larger resolution, storing
- * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are ignored, given that they
- * are likely to be conversion artifacts.
+ * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are rounded to the nearest
+ * millisecond, given that they are likely to be conversion artifacts.
  */
 public fun NSDate.toKotlinInstant(): Instant {
     val secs = timeIntervalSince1970()
-    val millis = secs * 1000
+    val millis = secs * 1000 + if (secs > 0) 0.5 else -0.5
     return Instant.fromEpochMilliseconds(millis.toLong())
 }
 
 /**
  * Converts the time zone to [NSTimeZone].
  * If the time zone is represented as a fixed number of seconds from GMT (for example, if it is the result of a call to
- * [Instant.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
+ * [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
  * [DateTimeException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
  * nearest minute.
  */

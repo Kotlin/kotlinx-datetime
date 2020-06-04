@@ -5,7 +5,6 @@
 package kotlinx.datetime.darwin.converters
 import kotlinx.cinterop.*
 import kotlinx.datetime.*
-import kotlinx.datetimex.darwin.converters.*
 import platform.Foundation.*
 import kotlin.math.*
 import kotlin.random.*
@@ -27,16 +26,19 @@ class ConvertersTest {
 
     @Test
     fun testToFromNSDate() {
+        // The first day on the Gregorian calendar. The day before it is 1582-10-04 in the Julian calendar.
+        val gregorianCalendarStart = Instant.parse("1582-10-15T00:00:00Z").toEpochMilliseconds()
         val minBoundMillis = (NSDate.distantPast.timeIntervalSince1970 * 1000 + 0.5).toLong()
         val maxBoundMillis = (NSDate.distantFuture.timeIntervalSince1970 * 1000 - 0.5).toLong()
         repeat (1000) {
-            val millis = Random.nextLong()
-            if (millis in minBoundMillis..maxBoundMillis) {
-                val instant = Instant.fromEpochMilliseconds(millis)
-                val date = instant.toNSDate()
+            val millis = Random.nextLong(minBoundMillis, maxBoundMillis)
+            val instant = Instant.fromEpochMilliseconds(millis)
+            val date = instant.toNSDate()
+            // Darwin's date printer dynamically adjusts to switching between calendars, while our Instant does not.
+            if (millis >= gregorianCalendarStart) {
                 assertEquals(instant, Instant.parse(dateFormatter.stringFromDate(date)))
-                assertEquals(instant, date.toKotlinInstant())
             }
+            assertEquals(instant, date.toKotlinInstant())
         }
     }
 
