@@ -45,8 +45,8 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
-        actual fun fromEpochMilliseconds(millis: Long): Instant =
-                Instant(jtInstant.ofEpochMilli(millis))
+        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
+                Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
         actual fun parse(isoString: String): Instant =
                 Instant(jtInstant.parse(isoString))

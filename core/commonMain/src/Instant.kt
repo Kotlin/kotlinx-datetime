@@ -26,7 +26,7 @@ public expect class Instant : Comparable<Instant> {
 
     companion object {
         fun now(): Instant
-        fun fromEpochMilliseconds(millis: Long): Instant
+        fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
         fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long = 0): Instant
         fun parse(isoString: String): Instant
     }

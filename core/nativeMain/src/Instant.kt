@@ -190,9 +190,9 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         }
 
         // org.threeten.bp.Instant#ofEpochMilli
-        actual fun fromEpochMilliseconds(millis: Long): Instant =
-            Instant(floorDiv(millis, MILLIS_PER_ONE.toLong()),
-                (floorMod(millis, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
+        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
+            Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
+                (floorMod(epochMilliseconds, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
         // org.threeten.bp.Instant#ofEpochSecond(long, long)
         actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
