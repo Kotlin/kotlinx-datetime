@@ -29,10 +29,11 @@ internal val localTimeParser: Parser<LocalTime>
                 null -> Pair(0, 0)
                 else -> Pair(secNano.first, secNano.second ?: 0)
             }
-            LocalTime(hour, minute, sec, nanosecond)
+            LocalTime.of(hour, minute, sec, nanosecond)
         }
 
-internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
+internal class LocalTime private constructor(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) :
+    Comparable<LocalTime> {
 
     companion object {
         internal fun parse(isoString: String): LocalTime =
@@ -48,6 +49,14 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE).toInt()
             val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE.toLong()
             return LocalTime(hours, minutes, second.toInt(), nanoOfSecond)
+        }
+
+        internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
+            require(hour >= 0 && hour <= 23)
+            require(minute >= 0 && minute <= 59)
+            require(second >= 0 && second <= 59)
+            require(nanosecond >= 0 && nanosecond <= 999_999_999)
+            return LocalTime(hour, minute, second, nanosecond)
         }
 
         // org.threeten.bp.LocalTime#ofNanoOfDay

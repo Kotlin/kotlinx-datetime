@@ -56,7 +56,7 @@ private val instantParser: Parser<Instant>
             }
 
             val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, CalendarUnit.DAY)
-            val localTime = LocalTime(hours, min, seconds, 0)
+            val localTime = LocalTime.of(hours, min, seconds, 0)
             val secDelta: Long = safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
             val epochDay: Long = localDate.toEpochDay()
             val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
@@ -64,8 +64,24 @@ private val instantParser: Parser<Instant>
             Instant(instantSecs, nano)
         }
 
+/**
+ * The minimum supported epoch second.
+ */
+private const val MIN_SECOND = -31557014167219200L
+
+/**
+ * The maximum supported epoch second.
+ */
+private const val MAX_SECOND = 31556889864403199L
+
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
+
+    init {
+        if (epochSeconds < MIN_SECOND || epochSeconds > MAX_SECOND) {
+            throw DateTimeException("Instant exceeds minimum or maximum instant")
+        }
+    }
 
     // org.threeten.bp.Instant#toEpochMilli
     actual fun toEpochMilliseconds(): Long =
