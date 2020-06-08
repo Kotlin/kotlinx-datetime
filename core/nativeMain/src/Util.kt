@@ -94,7 +94,7 @@ internal fun safeAdd(a: Long, b: Long): Long {
  * @return the result
  * @throws ArithmeticException if the result overflows a long
  */
-fun safeSubtract(a: Long, b: Long): Long {
+internal fun safeSubtract(a: Long, b: Long): Long {
     val result = a - b
     // check for a change of sign in the result when the inputs have the different signs
     if (a xor result < 0 && a xor b < 0) {
