@@ -58,22 +58,16 @@ class ConvertersTest {
     // from threetenbp's tests for time zones
     @Test
     fun zoneOffsetToNSTimeZone() {
-        for (i in -17..17) {
-            for (j in -59..59) {
-                if (i < 0 && j <= 0 || i > 0 && j >= 0 || i == 0) {
-                    val str = (if (i < 0 || j < 0) "-" else "+") +
-                        (abs(i) + 100).toString().substring(1) + ":" +
-                        (abs(j) + 100).toString().substring(1) + ":" +
-                        "00"
-                    val test = TimeZone.of(str)
-                    zoneOffsetCheck(test, i, j)
-                }
-            }
+        for (i in -18 * 60..18 * 60) {
+            val hours = i / 60
+            val minutes = i % 60
+            val str = (if (i < 0) "-" else "+") +
+                (abs(hours) + 100).toString().substring(1) + ":" +
+                (abs(minutes) + 100).toString().substring(1) + ":" +
+                "00"
+            val test = TimeZone.of(str)
+            zoneOffsetCheck(test, hours, minutes)
         }
-        val test1 = TimeZone.of("-18:00:00")
-        zoneOffsetCheck(test1, -18, 0)
-        val test2 = TimeZone.of("+18:00:00")
-        zoneOffsetCheck(test2, 18, 0)
     }
 
     @Test
