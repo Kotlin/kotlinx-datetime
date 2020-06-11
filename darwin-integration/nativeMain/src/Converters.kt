@@ -8,7 +8,7 @@ import kotlinx.cinterop.*
 import platform.Foundation.*
 
 /**
- * Converts the Instant to an instance of [NSDate].
+ * Converts the [Instant] to an instance of [NSDate].
  *
  * The conversion is lossy: Darwin uses millisecond precision to represent dates, and [Instant] allows for nanosecond
  * resolution.
@@ -24,7 +24,7 @@ public fun Instant.toNSDate(): NSDate {
 }
 
 /**
- * Builds the corresponding [Instant].
+ * Converts the [NSDate] to the corresponding [Instant].
  *
  * Even though Darwin only uses millisecond precision, it is possible that [date] uses larger resolution, storing
  * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are rounded to the nearest
@@ -37,7 +37,7 @@ public fun NSDate.toKotlinInstant(): Instant {
 }
 
 /**
- * Converts the time zone to [NSTimeZone].
+ * Converts the [TimeZone] to [NSTimeZone].
  *
  * If the time zone is represented as a fixed number of seconds from UTC+0 (for example, if it is the result of a call
  * to [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
@@ -55,7 +55,7 @@ public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is ZoneOffset) {
 }
 
 /**
- * Builds the corresponding [TimeZone].
+ * Converts the [NSTimeZone] to the corresponding [TimeZone].
  */
 public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
 
