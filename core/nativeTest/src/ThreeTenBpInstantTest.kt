@@ -16,19 +16,19 @@ class ThreeTenBpInstantTest {
     @Test
     fun instantComparisons() {
         val instants = arrayOf(
-            Instant.ofEpochSecond(-2L, 0),
-            Instant.ofEpochSecond(-2L, 999999998),
-            Instant.ofEpochSecond(-2L, 999999999),
-            Instant.ofEpochSecond(-1L, 0),
-            Instant.ofEpochSecond(-1L, 1),
-            Instant.ofEpochSecond(-1L, 999999998),
-            Instant.ofEpochSecond(-1L, 999999999),
-            Instant.ofEpochSecond(0L, 0),
-            Instant.ofEpochSecond(0L, 1),
-            Instant.ofEpochSecond(0L, 2),
-            Instant.ofEpochSecond(0L, 999999999),
-            Instant.ofEpochSecond(1L, 0),
-            Instant.ofEpochSecond(2L, 0)
+            Instant.fromEpochSeconds(-2L, 0),
+            Instant.fromEpochSeconds(-2L, 999999998),
+            Instant.fromEpochSeconds(-2L, 999999999),
+            Instant.fromEpochSeconds(-1L, 0),
+            Instant.fromEpochSeconds(-1L, 1),
+            Instant.fromEpochSeconds(-1L, 999999998),
+            Instant.fromEpochSeconds(-1L, 999999999),
+            Instant.fromEpochSeconds(0L, 0),
+            Instant.fromEpochSeconds(0L, 1),
+            Instant.fromEpochSeconds(0L, 2),
+            Instant.fromEpochSeconds(0L, 999999999),
+            Instant.fromEpochSeconds(1L, 0),
+            Instant.fromEpochSeconds(2L, 0)
         )
         for (i in instants.indices) {
             val a = instants[i]
@@ -50,10 +50,10 @@ class ThreeTenBpInstantTest {
 
     @Test
     fun instantEquals() {
-        val test5a: Instant = Instant.ofEpochSecond(5L, 20)
-        val test5b: Instant = Instant.ofEpochSecond(5L, 20)
-        val test5n: Instant = Instant.ofEpochSecond(5L, 30)
-        val test6: Instant = Instant.ofEpochSecond(6L, 20)
+        val test5a: Instant = Instant.fromEpochSeconds(5L, 20)
+        val test5b: Instant = Instant.fromEpochSeconds(5L, 20)
+        val test5n: Instant = Instant.fromEpochSeconds(5L, 30)
+        val test6: Instant = Instant.fromEpochSeconds(6L, 20)
         assertEquals(true, test5a == test5a)
         assertEquals(true, test5a == test5b)
         assertEquals(false, test5a == test5n)
@@ -73,20 +73,20 @@ class ThreeTenBpInstantTest {
     }
 
     @Test
-    fun toUnixMillis() {
-        assertEquals(Instant.ofEpochSecond(1L, 1000000).toUnixMillis(), 1001L)
-        assertEquals(Instant.ofEpochSecond(1L, 2000000).toUnixMillis(), 1002L)
-        assertEquals(Instant.ofEpochSecond(1L, 567).toUnixMillis(), 1000L)
-        assertEquals(Instant.ofEpochSecond(Long.MAX_VALUE / 1000).toUnixMillis(), Long.MAX_VALUE / 1000 * 1000)
-        assertEquals(Instant.ofEpochSecond(Long.MIN_VALUE / 1000).toUnixMillis(), Long.MIN_VALUE / 1000 * 1000)
-        assertEquals(Instant.ofEpochSecond(0L, -1000000).toUnixMillis(), -1L)
-        assertEquals(Instant.ofEpochSecond(0L, 1000000).toUnixMillis(), 1)
-        assertEquals(Instant.ofEpochSecond(0L, 999999).toUnixMillis(), 0)
-        assertEquals(Instant.ofEpochSecond(0L, 1).toUnixMillis(), 0)
-        assertEquals(Instant.ofEpochSecond(0L, 0).toUnixMillis(), 0)
-        assertEquals(Instant.ofEpochSecond(0L, -1).toUnixMillis(), -1L)
-        assertEquals(Instant.ofEpochSecond(0L, -999999).toUnixMillis(), -1L)
-        assertEquals(Instant.ofEpochSecond(0L, -1000000).toUnixMillis(), -1L)
-        assertEquals(Instant.ofEpochSecond(0L, -1000001).toUnixMillis(), -2L)
+    fun toEpochMilliseconds() {
+        assertEquals(Instant.fromEpochSeconds(1L, 1000000).toEpochMilliseconds(), 1001L)
+        assertEquals(Instant.fromEpochSeconds(1L, 2000000).toEpochMilliseconds(), 1002L)
+        assertEquals(Instant.fromEpochSeconds(1L, 567).toEpochMilliseconds(), 1000L)
+        assertEquals(Instant.fromEpochSeconds(Long.MAX_VALUE / 1000).toEpochMilliseconds(), Long.MAX_VALUE / 1000 * 1000)
+        assertEquals(Instant.fromEpochSeconds(Long.MIN_VALUE / 1000).toEpochMilliseconds(), Long.MIN_VALUE / 1000 * 1000)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, 1000000).toEpochMilliseconds(), 1)
+        assertEquals(Instant.fromEpochSeconds(0L, 999999).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, 1).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, 0).toEpochMilliseconds(), 0)
+        assertEquals(Instant.fromEpochSeconds(0L, -1).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -999999).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000000).toEpochMilliseconds(), -1L)
+        assertEquals(Instant.fromEpochSeconds(0L, -1000001).toEpochMilliseconds(), -2L)
     }
 }

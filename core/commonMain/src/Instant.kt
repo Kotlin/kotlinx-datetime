@@ -11,9 +11,10 @@ import kotlin.time.Duration
 @OptIn(kotlin.time.ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
 
-    // TODO: primary value properties
+    public val epochSeconds: Long
+    public val nanosecondsOfSecond: Int
 
-    public fun toUnixMillis(): Long
+    public fun toEpochMilliseconds(): Long
 
     public operator fun plus(duration: Duration): Instant
     public operator fun minus(duration: Duration): Instant
@@ -25,7 +26,8 @@ public expect class Instant : Comparable<Instant> {
 
     companion object {
         fun now(): Instant
-        fun fromUnixMillis(millis: Long): Instant
+        fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
+        fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long = 0): Instant
         fun parse(isoString: String): Instant
     }
 }

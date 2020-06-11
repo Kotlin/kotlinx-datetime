@@ -15,8 +15,12 @@ import java.time.Clock as jtClock
 @OptIn(kotlin.time.ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
-    public actual fun toUnixMillis(): Long = value.toEpochMilli()
+    actual val epochSeconds: Long
+        get() = value.epochSecond
+    actual val nanosecondsOfSecond: Int
+        get() = value.nano
 
+    public actual fun toEpochMilliseconds(): Long = value.toEpochMilli()
 
     actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         Instant(value.plusSeconds(seconds).plusNanos(nanoseconds.toLong()))
@@ -41,13 +45,15 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
-        actual fun fromUnixMillis(millis: Long): Instant =
-                Instant(jtInstant.ofEpochMilli(millis))
+        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
+                Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
         actual fun parse(isoString: String): Instant =
                 Instant(jtInstant.parse(isoString))
-    }
 
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
+                Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
+    }
 }
 
 public actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {

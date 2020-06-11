@@ -14,29 +14,29 @@ class InstantTest {
     @Test
     fun testNow() {
         val instant = Instant.now()
-        val millis = instant.toUnixMillis()
+        val millis = instant.toEpochMilliseconds()
 
         assertTrue(millis > 1_500_000_000_000L)
 
         println(instant)
-        println(instant.toUnixMillis())
+        println(instant.toEpochMilliseconds())
 
-        val millisInstant = Instant.fromUnixMillis(millis)
+        val millisInstant = Instant.fromEpochMilliseconds(millis)
 
-        assertEquals(millis, millisInstant.toUnixMillis())
+        assertEquals(millis, millisInstant.toEpochMilliseconds())
 
-        val notEqualInstant = Instant.fromUnixMillis(millis + 1)
+        val notEqualInstant = Instant.fromEpochMilliseconds(millis + 1)
         assertNotEquals(notEqualInstant, instant)
     }
 
     @OptIn(ExperimentalTime::class)
     @Test
     fun instantArithmetic() {
-        val instant = Instant.now().toUnixMillis().let { Instant.fromUnixMillis(it) } // round to millis
+        val instant = Instant.now().toEpochMilliseconds().let { Instant.fromEpochMilliseconds(it) } // round to millis
         val diffMillis = Random.nextLong(1000, 1_000_000_000)
         val diff = diffMillis.milliseconds
 
-        val nextInstant = (instant.toUnixMillis() + diffMillis).let { Instant.fromUnixMillis(it) }
+        val nextInstant = (instant.toEpochMilliseconds() + diffMillis).let { Instant.fromEpochMilliseconds(it) }
 
         assertEquals(diff, nextInstant - instant)
         assertEquals(nextInstant, instant + diff)
@@ -75,7 +75,7 @@ class InstantTest {
         instants.forEach {
             val (str, seconds, nanos) = it
             val instant = Instant.parse(str)
-            assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toUnixMillis())
+            assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
         }
     }
 
@@ -141,8 +141,8 @@ class InstantTest {
         repeat(1000) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
-            val instant1 = Instant.fromUnixMillis(millis1)
-            val instant2 = Instant.fromUnixMillis(millis2)
+            val instant1 = Instant.fromEpochMilliseconds(millis1)
+            val instant2 = Instant.fromEpochMilliseconds(millis2)
 
             val diff = instant1.periodUntil(instant2, TimeZone.SYSTEM)
             val instant3 = instant1.plus(diff, TimeZone.SYSTEM)
@@ -158,8 +158,8 @@ class InstantTest {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
             with(TimeZone.UTC) TZ@ {
-                val date1 = Instant.fromUnixMillis(millis1).toLocalDateTime().date
-                val date2 = Instant.fromUnixMillis(millis2).toLocalDateTime().date
+                val date1 = Instant.fromEpochMilliseconds(millis1).toLocalDateTime().date
+                val date2 = Instant.fromEpochMilliseconds(millis2).toLocalDateTime().date
                 fun LocalDate.instantAtStartOfDay() = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0, 0, 0).toInstant()
                 val instant1 = date1.instantAtStartOfDay()
                 val instant2 = date2.instantAtStartOfDay()
@@ -187,6 +187,29 @@ class InstantTest {
         }
     }
 
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
+    @Test
+    fun nanosecondAdjustment() {
+        for (i in -2..2L) {
+            for (j in 0..9L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond.toLong())
+            }
+            for (j in -10..-1L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i - 1, t.epochSeconds)
+                assertEquals(j + 1000000000, t.nanosecondsOfSecond.toLong())
+            }
+            for (j in 999_999_990..999_999_999L) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond.toLong())
+            }
+        }
+    }
 
     /* Based on the ThreeTenBp project.
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos

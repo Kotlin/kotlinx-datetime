@@ -87,6 +87,23 @@ internal fun safeAdd(a: Long, b: Long): Long {
 
 
 /**
+ * Safely subtracts one long from another.
+ *
+ * @param a  the first value
+ * @param b  the second value to subtract from the first
+ * @return the result
+ * @throws ArithmeticException if the result overflows a long
+ */
+internal fun safeSubtract(a: Long, b: Long): Long {
+    val result = a - b
+    // check for a change of sign in the result when the inputs have the different signs
+    if (a xor result < 0 && a xor b < 0) {
+        throw ArithmeticException("Subtraction overflows a long: $a - $b")
+    }
+    return result
+}
+
+/**
  * Safely multiply a long by an int.
  *
  * @param a  the first value
