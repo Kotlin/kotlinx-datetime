@@ -203,7 +203,7 @@ class InstantTest {
                 assertEquals(i - 1, t.epochSeconds)
                 assertEquals(j + 1000000000, t.nanosecondsOfSecond.toLong())
             }
-            for (j in 999999990..999999999L) {
+            for (j in 999_999_990..999_999_999L) {
                 val t: Instant = Instant.fromEpochSeconds(i, j)
                 assertEquals(i, t.epochSeconds)
                 assertEquals(j, t.nanosecondsOfSecond.toLong())

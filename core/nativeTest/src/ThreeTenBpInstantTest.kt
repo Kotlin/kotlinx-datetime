@@ -73,7 +73,7 @@ class ThreeTenBpInstantTest {
     }
 
     @Test
-    fun toUnixMillis() {
+    fun toEpochMilliseconds() {
         assertEquals(Instant.fromEpochSeconds(1L, 1000000).toEpochMilliseconds(), 1001L)
         assertEquals(Instant.fromEpochSeconds(1L, 2000000).toEpochMilliseconds(), 1002L)
         assertEquals(Instant.fromEpochSeconds(1L, 567).toEpochMilliseconds(), 1000L)
