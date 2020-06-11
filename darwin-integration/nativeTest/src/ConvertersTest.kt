@@ -60,23 +60,20 @@ class ConvertersTest {
     fun zoneOffsetToNSTimeZone() {
         for (i in -17..17) {
             for (j in -59..59) {
-                for (k in -59..59) {
-                    if (i < 0 && j <= 0 && k <= 0 || i > 0 && j >= 0 && k >= 0 ||
-                        i == 0 && (j < 0 && k <= 0 || j > 0 && k >= 0 || j == 0)) {
-                        val str = (if (i < 0 || j < 0 || k < 0) "-" else "+") +
-                            (abs(i) + 100).toString().substring(1) + ":" +
-                            (abs(j) + 100).toString().substring(1) + ":" +
-                            (abs(k) + 100).toString().substring(1)
-                        val test = TimeZone.of(str)
-                        zoneOffsetCheck(test, i, j, k)
-                    }
+                if (i < 0 && j <= 0 || i > 0 && j >= 0 || i == 0) {
+                    val str = (if (i < 0 || j < 0) "-" else "+") +
+                        (abs(i) + 100).toString().substring(1) + ":" +
+                        (abs(j) + 100).toString().substring(1) + ":" +
+                        "00"
+                    val test = TimeZone.of(str)
+                    zoneOffsetCheck(test, i, j)
                 }
             }
         }
         val test1 = TimeZone.of("-18:00:00")
-        zoneOffsetCheck(test1, -18, 0, 0)
+        zoneOffsetCheck(test1, -18, 0)
         val test2 = TimeZone.of("+18:00:00")
-        zoneOffsetCheck(test2, 18, 0, 0)
+        zoneOffsetCheck(test2, 18, 0)
     }
 
     @Test
@@ -100,11 +97,9 @@ class ConvertersTest {
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
-    private fun zoneOffsetCheck(timeZone: TimeZone, hours: Int, minutes: Int, seconds: Int) {
-        if (seconds == 0) {
-            val nsTimeZone = timeZone.toNSTimeZone()
-            assertEquals(hours * 3600 + minutes * 60 + seconds, nsTimeZone.secondsFromGMT.convert())
-            assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
-        }
+    private fun zoneOffsetCheck(timeZone: TimeZone, hours: Int, minutes: Int) {
+        val nsTimeZone = timeZone.toNSTimeZone()
+        assertEquals(hours * 3600 + minutes * 60, nsTimeZone.secondsFromGMT.convert())
+        assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
     }
 }

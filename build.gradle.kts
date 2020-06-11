@@ -17,7 +17,7 @@ project(":kotlinx-datetime") {
 //    pluginManager.apply("maven-publish")
 }
 
-project(":darwin-integration") {
+project(":kotlinx-datetime-darwin") {
     pluginManager.apply("kotlin-multiplatform")
 }
 

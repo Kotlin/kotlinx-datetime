@@ -9,6 +9,7 @@ import platform.Foundation.*
 
 /**
  * Converts the Instant to an instance of [NSDate].
+ *
  * The conversion is lossy: Darwin uses millisecond precision to represent dates, and [Instant] allows for nanosecond
  * resolution.
  */
@@ -24,6 +25,7 @@ public fun Instant.toNSDate(): NSDate {
 
 /**
  * Builds the corresponding [Instant].
+ *
  * Even though Darwin only uses millisecond precision, it is possible that [date] uses larger resolution, storing
  * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are rounded to the nearest
  * millisecond, given that they are likely to be conversion artifacts.
@@ -36,8 +38,9 @@ public fun NSDate.toKotlinInstant(): Instant {
 
 /**
  * Converts the time zone to [NSTimeZone].
- * If the time zone is represented as a fixed number of seconds from GMT (for example, if it is the result of a call to
- * [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
+ *
+ * If the time zone is represented as a fixed number of seconds from UTC+0 (for example, if it is the result of a call
+ * to [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
  * [DateTimeException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
  * nearest minute.
  */
@@ -58,6 +61,7 @@ public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
 
 /**
  * Converts the given [LocalDate] to [NSDateComponents].
+ *
  * Of all the fields, only the bare minimum required for uniquely identifying the date are set.
  */
 public fun LocalDate.toNSDateComponents(): NSDateComponents {
@@ -70,6 +74,7 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
 
 /**
  * Converts the given [LocalDate] to [NSDateComponents].
+ *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
  */
 public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
