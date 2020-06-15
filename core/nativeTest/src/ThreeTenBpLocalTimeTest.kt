@@ -60,12 +60,12 @@ class ThreeTenBpLocalTimeTest {
     @Test
     fun toNanoOfDaySymmetricWithFromNanoOfDay() {
         var t = LocalTime.of(0, 0, 0, 0)
-        repeat (1_000_000) {
+        repeat(1_000) {
             assertEquals(t, LocalTime.ofNanoOfDay(t.toNanoOfDay()))
             t = t.plusNanos(1)
         }
         t = LocalTime.of(0, 0, 0, 0)
-        repeat (1_000_000) {
+        repeat(1_000) {
             t = t.minusNanos(1)
             assertEquals(t, LocalTime.ofNanoOfDay(t.toNanoOfDay()))
         }
