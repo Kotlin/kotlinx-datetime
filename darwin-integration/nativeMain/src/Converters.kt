@@ -14,12 +14,10 @@ import platform.Foundation.*
  * resolution.
  */
 public fun Instant.toNSDate(): NSDate {
-    // TODO: support nanosecond precision.
-    // This is not urgent, as Darwin itself only uses millisecond precision.
-    // However, we could at least round to the nearest millisecond so that it would be true that
-    // Instant.parse(...).toNSDate() == [formatter dateFromString: ...],
-    // as Darwin does perform rounding.
-    val secs = toEpochMilliseconds() / 1000.0
+    val secs = epochSeconds * 1.0 + nanosecondsOfSecond / 1.0e9
+    if (secs < NSDate.distantPast.timeIntervalSince1970 || secs > NSDate.distantFuture.timeIntervalSince1970) {
+        throw DateTimeException("Boundaries of NSDate exceeded")
+    }
     return NSDate.dateWithTimeIntervalSince1970(secs)
 }
 
