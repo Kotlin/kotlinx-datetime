@@ -28,6 +28,7 @@ infra {
     }
     publishing {
         include(":kotlinx-datetime")
+        include(":kotlinx-datetime-darwin")
 
         bintray {
             organization = "kotlin"
