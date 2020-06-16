@@ -58,3 +58,16 @@ expect fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod
 
 /** */
 operator fun LocalDate.minus(other: LocalDate): CalendarPeriod = other.periodUntil(this)
+
+public expect fun LocalDate.daysUntil(other: LocalDate): Int
+public expect fun LocalDate.monthsUntil(other: LocalDate): Int
+public expect fun LocalDate.yearsUntil(other: LocalDate): Int
+
+public fun LocalDate.until(other: LocalDate, unit: CalendarUnit): Int = when(unit) {
+    CalendarUnit.YEAR -> yearsUntil(other)
+    CalendarUnit.MONTH -> monthsUntil(other)
+    CalendarUnit.WEEK -> daysUntil(other) / 7
+    CalendarUnit.DAY -> daysUntil(other)
+    CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND ->
+        throw UnsupportedOperationException("Only date based units can be used to express difference between LocalDate values.")
+}

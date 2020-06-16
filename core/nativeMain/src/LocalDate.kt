@@ -291,27 +291,33 @@ actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
         }
     }
 
+
+// TODO: ensure range of LocalDate fits in Int number of days
+public actual fun LocalDate.daysUntil(other: LocalDate): Int = longDaysUntil(other).toInt()
+public actual fun LocalDate.monthsUntil(other: LocalDate): Int = longMonthsUntil(other).toInt()
+public actual fun LocalDate.yearsUntil(other: LocalDate): Int = (longMonthsUntil(other) / 12).toInt()
+
 // org.threeten.bp.LocalDate#daysUntil
-internal fun LocalDate.daysUntil(other: LocalDate): Long =
+internal fun LocalDate.longDaysUntil(other: LocalDate): Long =
     other.toEpochDay() - this.toEpochDay()
 
 // org.threeten.bp.LocalDate#getProlepticMonth
 internal val LocalDate.prolepticMonth get() = (year * 12L) + (monthNumber - 1)
 
 // org.threeten.bp.LocalDate#monthsUntil
-internal fun LocalDate.monthsUntil(other: LocalDate): Long {
+internal fun LocalDate.longMonthsUntil(other: LocalDate): Long {
     val packed1: Long = prolepticMonth * 32L + dayOfMonth
     val packed2: Long = other.prolepticMonth * 32L + other.dayOfMonth
     return (packed2 - packed1) / 32
 }
 
 // org.threeten.bp.LocalDate#until(org.threeten.bp.temporal.Temporal, org.threeten.bp.temporal.TemporalUnit)
-internal fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
+internal fun LocalDate.longUntil(end: LocalDate, unit: CalendarUnit): Long =
     when (unit) {
-        CalendarUnit.DAY -> daysUntil(end)
-        CalendarUnit.WEEK -> daysUntil(end) / 7
-        CalendarUnit.MONTH -> monthsUntil(end)
-        CalendarUnit.YEAR -> monthsUntil(end) / 12
+        CalendarUnit.DAY -> longDaysUntil(end)
+        CalendarUnit.WEEK -> longDaysUntil(end) / 7
+        CalendarUnit.MONTH -> longMonthsUntil(end)
+        CalendarUnit.YEAR -> longMonthsUntil(end) / 12
         CalendarUnit.HOUR,
         CalendarUnit.MINUTE,
         CalendarUnit.SECOND,
@@ -319,7 +325,7 @@ internal fun LocalDate.until(end: LocalDate, unit: CalendarUnit): Long =
     }
 
 actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
-    val months = until(other, CalendarUnit.MONTH)
-    val days = plusMonths(months).until(other, CalendarUnit.DAY)
+    val months = longUntil(other, CalendarUnit.MONTH)
+    val days = plusMonths(months).longUntil(other, CalendarUnit.DAY)
     return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
 }

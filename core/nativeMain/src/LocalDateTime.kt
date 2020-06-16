@@ -105,10 +105,10 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
             } else if (endDate < date && other.time > time) {
                 endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
             }
-            date.until(endDate, unit)
+            date.longUntil(endDate, unit)
         }
         CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
-            var daysUntil = date.daysUntil(other.date)
+            var daysUntil = date.longDaysUntil(other.date)
             var timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
             if (daysUntil > 0 && timeUntil < 0) {
                 daysUntil--

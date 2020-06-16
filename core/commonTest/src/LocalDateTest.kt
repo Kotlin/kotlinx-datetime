@@ -96,6 +96,48 @@ class LocalDateTest {
         }
     }
 
+    // based on threetenbp test for until()
+    @Test
+    fun until() {
+        val data = listOf(
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.DAY, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.WEEK, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.DAY, 1)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.WEEK, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.DAY, 7)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.WEEK, 1)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-29"), Pair(CalendarUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-30"), Pair(CalendarUnit.MONTH, 1)),
+                Pair(Pair("2012-06-30", "2012-07-31"), Pair(CalendarUnit.MONTH, 1)))
+        for ((values, interval) in data) {
+            val (v1, v2) = values
+            val (unit, length) = interval
+            val start = LocalDate.parse(v1)
+            val end = LocalDate.parse(v2)
+            assertEquals(length, start.until(end, unit), "$v2 - $v1 = $length($unit)")
+            assertEquals(-length, end.until(start, unit), "$v1 - $v2 = -$length($unit)")
+            @Suppress("NON_EXHAUSTIVE_WHEN")
+            when (unit) {
+                CalendarUnit.YEAR -> assertEquals(length, start.yearsUntil(end))
+                CalendarUnit.MONTH -> assertEquals(length, start.monthsUntil(end))
+                CalendarUnit.WEEK -> assertEquals(length, start.daysUntil(end) / 7)
+                CalendarUnit.DAY -> assertEquals(length, start.daysUntil(end))
+            }
+        }
+
+        val d1 = LocalDate(2012, 6, 21)
+        val d2 = LocalDate(2012, 7, 21)
+
+        for (unit in listOf(CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND))
+            assertFailsWith<UnsupportedOperationException> { d1.until(d2, unit) }
+    }
+
     @Test
     fun invalidDate() {
         assertFailsWith<Throwable> { LocalDate(2007, 2, 29) }

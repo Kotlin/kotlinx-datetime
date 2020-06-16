@@ -79,3 +79,12 @@ public actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
 
     return CalendarPeriod(months / 12, months % 12, days)
 }
+
+public actual fun LocalDate.daysUntil(other: LocalDate): Int =
+        this.value.until(other.value, ChronoUnit.DAYS).toInt()
+
+public actual fun LocalDate.monthsUntil(other: LocalDate): Int =
+        this.value.until(other.value, ChronoUnit.MONTHS).toInt()
+
+public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
+        this.value.until(other.value, ChronoUnit.YEARS).toInt()

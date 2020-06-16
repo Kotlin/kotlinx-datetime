@@ -132,34 +132,6 @@ class ThreeTenBpLocalDateTest {
     }
 
     @Test
-    fun until() {
-        val data = arrayOf(
-            Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.DAY, 0)),
-            Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.WEEK, 0)),
-            Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.MONTH, 0)),
-            Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.YEAR, 0)),
-            Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.DAY, 1)),
-            Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.WEEK, 0)),
-            Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.MONTH, 0)),
-            Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.YEAR, 0)),
-            Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.DAY, 7)),
-            Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.WEEK, 1)),
-            Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.MONTH, 0)),
-            Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.YEAR, 0)),
-            Pair(Pair("2012-06-30", "2012-07-29"), Pair(CalendarUnit.MONTH, 0)),
-            Pair(Pair("2012-06-30", "2012-07-30"), Pair(CalendarUnit.MONTH, 1)),
-            Pair(Pair("2012-06-30", "2012-07-31"), Pair(CalendarUnit.MONTH, 1)))
-        for ((values, interval) in data) {
-            val (v1, v2) = values
-            val (unit, length) = interval
-            val start = LocalDate.parse(v1)
-            val end = LocalDate.parse(v2)
-            assertEquals(length, start.until(end, unit).toInt(), "$v2 - $v1 = $length($unit)")
-            assertEquals(-length, end.until(start, unit).toInt(), "$v1 - $v2 = -$length($unit)")
-        }
-    }
-
-    @Test
     fun strings() {
         val data = arrayOf(
             Pair(LocalDate(2008, 7, 5), "2008-07-05"),
