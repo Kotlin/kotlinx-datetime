@@ -90,4 +90,19 @@ class LocalDateTest {
                 println("start: $ldtBefore, end: $ldtNow, start + diff: ${ldtBefore + diff}, diff: $diff")
         }
     }
+
+    @Test
+    fun invalidTime() {
+        fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
+            LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
+        localTime(23, 59)
+        assertFailsWith<Throwable> { localTime(-1, 0) }
+        assertFailsWith<Throwable> { localTime(24, 0) }
+        assertFailsWith<Throwable> { localTime(0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 60) }
+        assertFailsWith<Throwable> { localTime(0, 0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 0, 60) }
+        assertFailsWith<Throwable> { localTime(0, 0, 0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 0, 0, 1_000_000_000) }
+    }
 }

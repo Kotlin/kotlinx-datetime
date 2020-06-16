@@ -29,10 +29,11 @@ internal val localTimeParser: Parser<LocalTime>
                 null -> Pair(0, 0)
                 else -> Pair(secNano.first, secNano.second ?: 0)
             }
-            LocalTime(hour, minute, sec, nanosecond)
+            LocalTime.of(hour, minute, sec, nanosecond)
         }
 
-internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) : Comparable<LocalTime> {
+internal class LocalTime private constructor(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) :
+    Comparable<LocalTime> {
 
     companion object {
         internal fun parse(isoString: String): LocalTime =
@@ -41,8 +42,8 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
             // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-            require(secondOfDay >= 0 && secondOfDay <= SECONDS_PER_DAY)
-            require(nanoOfSecond >= 0 && nanoOfSecond <= 1_000_000_000)
+            require(secondOfDay >= 0 && secondOfDay < SECONDS_PER_DAY)
+            require(nanoOfSecond >= 0 && nanoOfSecond < NANOS_PER_ONE)
             val hours = (secondOfDay / SECONDS_PER_HOUR).toInt()
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR.toLong()
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE).toInt()
@@ -50,8 +51,17 @@ internal class LocalTime(val hour: Int, val minute: Int, val second: Int, val na
             return LocalTime(hours, minutes, second.toInt(), nanoOfSecond)
         }
 
+        internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
+            require(hour >= 0 && hour <= 23)
+            require(minute >= 0 && minute <= 59)
+            require(second >= 0 && second <= 59)
+            require(nanosecond >= 0 && nanosecond < NANOS_PER_ONE)
+            return LocalTime(hour, minute, second, nanosecond)
+        }
+
         // org.threeten.bp.LocalTime#ofNanoOfDay
         internal fun ofNanoOfDay(nanoOfDay: Long): LocalTime {
+            require(nanoOfDay >= 0 && nanoOfDay < SECONDS_PER_DAY.toLong() * NANOS_PER_ONE)
             var newNanoOfDay = nanoOfDay
             val hours = (newNanoOfDay / NANOS_PER_HOUR).toInt()
             newNanoOfDay -= hours * NANOS_PER_HOUR

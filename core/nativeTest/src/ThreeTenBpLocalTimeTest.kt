@@ -27,7 +27,7 @@ class ThreeTenBpLocalTimeTest {
 
     @Test
     fun toSecondOfDay() {
-        var t = LocalTime(0, 0, 0, 0)
+        var t = LocalTime.of(0, 0, 0, 0)
         for (i in 0 until 24 * 60 * 60) {
             assertEquals(i, t.toSecondOfDay())
             t = t.plusSeconds(1)
@@ -36,7 +36,7 @@ class ThreeTenBpLocalTimeTest {
 
     @Test
     fun toSecondOfDaySymmetricWithFromNanoOfDay() {
-        var t = LocalTime(0, 0, 0, 0)
+        var t = LocalTime.of(0, 0, 0, 0)
         for (i in 0 until 24 * 60 * 60) {
             assertEquals(t, LocalTime.ofSecondOfDay(t.toSecondOfDay().toLong(), 0))
             t = t.plusSeconds(1)
@@ -45,12 +45,12 @@ class ThreeTenBpLocalTimeTest {
 
     @Test
     fun toNanoOfDay() {
-        var t = LocalTime(0, 0, 0, 0)
+        var t = LocalTime.of(0, 0, 0, 0)
         for (i in 0..999999) {
             assertEquals(i.toLong(), t.toNanoOfDay())
             t = t.plusNanos(1)
         }
-        t = LocalTime(0, 0, 0, 0)
+        t = LocalTime.of(0, 0, 0, 0)
         for (i in 1..1000000) {
             t = t.minusNanos(1)
             assertEquals(24 * 60 * 60 * 1000000000L - i, t.toNanoOfDay())
@@ -59,13 +59,13 @@ class ThreeTenBpLocalTimeTest {
 
     @Test
     fun toNanoOfDaySymmetricWithFromNanoOfDay() {
-        var t = LocalTime(0, 0, 0, 0)
-        for (i in 0..999999) {
+        var t = LocalTime.of(0, 0, 0, 0)
+        repeat(1_000) {
             assertEquals(t, LocalTime.ofNanoOfDay(t.toNanoOfDay()))
             t = t.plusNanos(1)
         }
-        t = LocalTime(0, 0, 0, 0)
-        for (i in 1..1000000) {
+        t = LocalTime.of(0, 0, 0, 0)
+        repeat(1_000) {
             t = t.minusNanos(1)
             assertEquals(t, LocalTime.ofNanoOfDay(t.toNanoOfDay()))
         }
@@ -74,32 +74,32 @@ class ThreeTenBpLocalTimeTest {
     @Test
     fun strings() {
         val data = arrayOf(
-            Pair(LocalTime(0, 0, 0, 0), "00:00"),
-            Pair(LocalTime(1, 0, 0, 0), "01:00"),
-            Pair(LocalTime(23, 0, 0, 0), "23:00"),
-            Pair(LocalTime(0, 1, 0, 0), "00:01"),
-            Pair(LocalTime(12, 30, 0, 0), "12:30"),
-            Pair(LocalTime(23, 59, 0, 0), "23:59"),
-            Pair(LocalTime(0, 0, 1, 0), "00:00:01"),
-            Pair(LocalTime(0, 0, 59, 0), "00:00:59"),
-            Pair(LocalTime(0, 0, 0, 100000000), "00:00:00.100"),
-            Pair(LocalTime(0, 0, 0, 10000000), "00:00:00.010"),
-            Pair(LocalTime(0, 0, 0, 1000000), "00:00:00.001"),
-            Pair(LocalTime(0, 0, 0, 100000), "00:00:00.000100"),
-            Pair(LocalTime(0, 0, 0, 10000), "00:00:00.000010"),
-            Pair(LocalTime(0, 0, 0, 1000), "00:00:00.000001"),
-            Pair(LocalTime(0, 0, 0, 100), "00:00:00.000000100"),
-            Pair(LocalTime(0, 0, 0, 10), "00:00:00.000000010"),
-            Pair(LocalTime(0, 0, 0, 1), "00:00:00.000000001"),
-            Pair(LocalTime(0, 0, 0, 999999999), "00:00:00.999999999"),
-            Pair(LocalTime(0, 0, 0, 99999999), "00:00:00.099999999"),
-            Pair(LocalTime(0, 0, 0, 9999999), "00:00:00.009999999"),
-            Pair(LocalTime(0, 0, 0, 999999), "00:00:00.000999999"),
-            Pair(LocalTime(0, 0, 0, 99999), "00:00:00.000099999"),
-            Pair(LocalTime(0, 0, 0, 9999), "00:00:00.000009999"),
-            Pair(LocalTime(0, 0, 0, 999), "00:00:00.000000999"),
-            Pair(LocalTime(0, 0, 0, 99), "00:00:00.000000099"),
-            Pair(LocalTime(0, 0, 0, 9), "00:00:00.000000009"))
+            Pair(LocalTime.of(0, 0, 0, 0), "00:00"),
+            Pair(LocalTime.of(1, 0, 0, 0), "01:00"),
+            Pair(LocalTime.of(23, 0, 0, 0), "23:00"),
+            Pair(LocalTime.of(0, 1, 0, 0), "00:01"),
+            Pair(LocalTime.of(12, 30, 0, 0), "12:30"),
+            Pair(LocalTime.of(23, 59, 0, 0), "23:59"),
+            Pair(LocalTime.of(0, 0, 1, 0), "00:00:01"),
+            Pair(LocalTime.of(0, 0, 59, 0), "00:00:59"),
+            Pair(LocalTime.of(0, 0, 0, 100000000), "00:00:00.100"),
+            Pair(LocalTime.of(0, 0, 0, 10000000), "00:00:00.010"),
+            Pair(LocalTime.of(0, 0, 0, 1000000), "00:00:00.001"),
+            Pair(LocalTime.of(0, 0, 0, 100000), "00:00:00.000100"),
+            Pair(LocalTime.of(0, 0, 0, 10000), "00:00:00.000010"),
+            Pair(LocalTime.of(0, 0, 0, 1000), "00:00:00.000001"),
+            Pair(LocalTime.of(0, 0, 0, 100), "00:00:00.000000100"),
+            Pair(LocalTime.of(0, 0, 0, 10), "00:00:00.000000010"),
+            Pair(LocalTime.of(0, 0, 0, 1), "00:00:00.000000001"),
+            Pair(LocalTime.of(0, 0, 0, 999999999), "00:00:00.999999999"),
+            Pair(LocalTime.of(0, 0, 0, 99999999), "00:00:00.099999999"),
+            Pair(LocalTime.of(0, 0, 0, 9999999), "00:00:00.009999999"),
+            Pair(LocalTime.of(0, 0, 0, 999999), "00:00:00.000999999"),
+            Pair(LocalTime.of(0, 0, 0, 99999), "00:00:00.000099999"),
+            Pair(LocalTime.of(0, 0, 0, 9999), "00:00:00.000009999"),
+            Pair(LocalTime.of(0, 0, 0, 999), "00:00:00.000000999"),
+            Pair(LocalTime.of(0, 0, 0, 99), "00:00:00.000000099"),
+            Pair(LocalTime.of(0, 0, 0, 9), "00:00:00.000000009"))
         for ((time, str) in data) {
             assertEquals(str, time.toString())
             assertEquals(time, LocalTime.parse(str))
@@ -118,7 +118,7 @@ class ThreeTenBpLocalTimeTest {
         val newHour: Int = newSofd / SECONDS_PER_HOUR
         val newMinute: Int = newSofd / SECONDS_PER_MINUTE % MINUTES_PER_HOUR
         val newSecond: Int = newSofd % SECONDS_PER_MINUTE
-        return LocalTime(newHour, newMinute, newSecond, nanosecond)
+        return LocalTime.of(newHour, newMinute, newSecond, nanosecond)
     }
 
     private fun LocalTime.plusNanos(nanosToAdd: Long): LocalTime {
@@ -132,7 +132,7 @@ class ThreeTenBpLocalTimeTest {
         }
         val newHour = (newNofd / NANOS_PER_HOUR).toInt()
         val newNano = (newNofd % NANOS_PER_ONE).toInt()
-        return LocalTime(newHour,
+        return LocalTime.of(newHour,
             (newNofd / NANOS_PER_MINUTE % MINUTES_PER_HOUR).toInt(),
             (newNofd / NANOS_PER_ONE % SECONDS_PER_MINUTE).toInt(),
             newNano)
