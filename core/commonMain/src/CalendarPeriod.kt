@@ -18,10 +18,13 @@ class CalendarPeriod(val years: Int = 0, val months: Int = 0, val days: Int = 0,
         val Int.days get() = CalendarPeriod(days = this)
     }
 
-    private fun allPositive() = years >= 0 && months >= 0 && days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 && nanoseconds >= 0
+    private fun allNotPositive() =
+            years <= 0 && months <= 0 && days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0 && nanoseconds <= 0 &&
+            (years or months or days or hours or minutes != 0 || seconds or nanoseconds != 0L)
+
 
     override fun toString(): String = buildString {
-        val sign = if (!allPositive()) { append('-'); -1 } else 1
+        val sign = if (allNotPositive()) { append('-'); -1 } else 1
         append('P')
         if (years != 0) append(years * sign).append('Y')
         if (months != 0) append(months * sign).append('M')
