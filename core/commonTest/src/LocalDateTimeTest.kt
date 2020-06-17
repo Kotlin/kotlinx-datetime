@@ -93,6 +93,21 @@ class LocalDateTimeTest {
         assertEquals("-2008-01-02T23:59:59.999999990", LocalDateTime(-2008, 1, 2, 23, 59, 59, 999999990).toString())
     }
 
+    @Test
+    fun invalidTime() {
+        fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
+            LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
+        localTime(23, 59)
+        assertFailsWith<Throwable> { localTime(-1, 0) }
+        assertFailsWith<Throwable> { localTime(24, 0) }
+        assertFailsWith<Throwable> { localTime(0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 60) }
+        assertFailsWith<Throwable> { localTime(0, 0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 0, 60) }
+        assertFailsWith<Throwable> { localTime(0, 0, 0, -1) }
+        assertFailsWith<Throwable> { localTime(0, 0, 0, 1_000_000_000) }
+    }
+
 }
 
 fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
