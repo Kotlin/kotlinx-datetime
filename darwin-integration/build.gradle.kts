@@ -20,12 +20,12 @@ kotlin {
     }
 
     sourceSets {
-        val nativeMain by getting {
-            dependencies {
-                implementation(project(":kotlinx-datetime"))
+        if (any { it.name == "nativeMain" }) {
+            val nativeMain by getting {
+                dependencies {
+                    implementation(project(":kotlinx-datetime"))
+                }
             }
-        }
-        val nativeTest by getting {
         }
     }
 
