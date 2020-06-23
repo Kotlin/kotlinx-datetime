@@ -16,7 +16,7 @@ import platform.Foundation.*
 public fun Instant.toNSDate(): NSDate {
     val secs = epochSeconds * 1.0 + nanosecondsOfSecond / 1.0e9
     if (secs < NSDate.distantPast.timeIntervalSince1970 || secs > NSDate.distantFuture.timeIntervalSince1970) {
-        throw DateTimeException("Boundaries of NSDate exceeded")
+        throw IllegalArgumentException("Boundaries of NSDate exceeded")
     }
     return NSDate.dateWithTimeIntervalSince1970(secs)
 }
@@ -43,11 +43,10 @@ public fun NSDate.toKotlinInstant(): Instant {
  * nearest minute.
  */
 public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is ZoneOffset) {
-    if (totalSeconds % 60 == 0) {
-        NSTimeZone.timeZoneForSecondsFromGMT(totalSeconds.convert())
-    } else {
-        throw DateTimeException("Lossy conversion: Darwin uses minute precision for fixed-offset time zones")
+    require (totalSeconds % 60 == 0) {
+        "Lossy conversion: Darwin uses minute precision for fixed-offset time zones"
     }
+    NSTimeZone.timeZoneForSecondsFromGMT(totalSeconds.convert())
 } else {
     NSTimeZone.timeZoneWithName(id) ?: NSTimeZone.timeZoneWithAbbreviation(id)!!
 }

@@ -65,8 +65,8 @@ class LocalDateTest {
 
         checkComponents(LocalDate.parse("2016-01-31") + 1.calendarMonths, 2016, 2, 29)
 
-        assertFailsWith<UnsupportedOperationException> { startDate + CalendarPeriod(hours = 7) }
-        assertFailsWith<UnsupportedOperationException> { startDate.plus(7, CalendarUnit.HOUR) }
+        assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) }
+        assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
     }
 
     @Test

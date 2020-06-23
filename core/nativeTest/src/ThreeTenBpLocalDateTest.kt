@@ -15,6 +15,8 @@ class ThreeTenBpLocalDateTest {
     @Test
     fun ofEpochDay() {
         val date_0000_01_01 = -678941 - 40587L
+        LocalDate.ofEpochDay(-365243219162L)
+        LocalDate.ofEpochDay(365241780471L)
         assertEquals(LocalDate(1970, 1, 1), LocalDate.ofEpochDay(0))
         assertEquals(LocalDate(0, 1, 1), LocalDate.ofEpochDay(date_0000_01_01))
         assertEquals(LocalDate(-1, 12, 31), LocalDate.ofEpochDay(date_0000_01_01 - 1))

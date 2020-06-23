@@ -29,7 +29,11 @@ internal val localTimeParser: Parser<LocalTime>
                 null -> Pair(0, 0)
                 else -> Pair(secNano.first, secNano.second ?: 0)
             }
-            LocalTime.of(hour, minute, sec, nanosecond)
+            try {
+                LocalTime.of(hour, minute, sec, nanosecond)
+            } catch (e: IllegalArgumentException) {
+                throw DateTimeFormatException(e)
+            }
         }
 
 internal class LocalTime private constructor(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) :
@@ -75,6 +79,9 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
             newNanoOfDay -= seconds * NANOS_PER_ONE
             return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt())
         }
+
+        internal val MIN = LocalTime(0, 0, 0, 0)
+        internal val MAX = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
     }
 
     // Several times faster than using `compareBy`

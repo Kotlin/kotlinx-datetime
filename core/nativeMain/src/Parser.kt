@@ -7,7 +7,8 @@ package kotlinx.datetime
 
 typealias Parser<T> = (String, Int) -> Pair<Int, T>
 
-class ParseException(message: String, position: Int) : Exception("Parse error at char $position: $message")
+private fun parseException(message: String, position: Int) =
+    DateTimeFormatException("Parse error at char $position: $message")
 
 internal enum class SignStyle {
     NO_SIGN,
@@ -34,7 +35,7 @@ internal fun <T, S> Parser<T>.chainSkipping(other: Parser<S>): Parser<S> =
 @SharedImmutable
 internal val eofParser: Parser<Unit> = { str, pos ->
     if (str.length > pos) {
-        throw ParseException("extraneous input", pos)
+        throw parseException("extraneous input", pos)
     }
     Pair(pos, Unit)
 }
@@ -56,20 +57,20 @@ internal fun digitSpanParser(minLength: Int, maxLength: Int, sign: SignStyle): P
     }
     if (spanLength < minLength) {
         if (spanLength == 0) {
-            throw ParseException("number expected", pos1)
+            throw parseException("number expected", pos1)
         } else {
-            throw ParseException("expected at least $minLength digits", pos1 + spanLength - 1)
+            throw parseException("expected at least $minLength digits", pos1 + spanLength - 1)
         }
     }
     if (spanLength > maxLength) {
-        throw ParseException("expected at most $maxLength digits", pos1 + maxLength)
+        throw parseException("expected at most $maxLength digits", pos1 + maxLength)
     }
     when (sign) {
-        SignStyle.NO_SIGN -> if (hasSign) throw ParseException("unexpected number sign", pos)
+        SignStyle.NO_SIGN -> if (hasSign) throw parseException("unexpected number sign", pos)
         SignStyle.EXCEEDS_PAD -> if (hasSign && str[pos] == '+' && spanLength == minLength) {
-            throw ParseException("unexpected sign, as the field only has $spanLength numbers", pos)
+            throw parseException("unexpected sign, as the field only has $spanLength numbers", pos)
         } else if (!hasSign && spanLength > minLength) {
-            throw ParseException("expected a sign, since the field has more than $minLength numbers", pos)
+            throw parseException("expected a sign, since the field has more than $minLength numbers", pos)
         }
     }
     Pair(pos1 + spanLength, IntRange(pos, pos1 + spanLength - 1))
@@ -104,7 +105,7 @@ internal fun fractionParser(minDigits: Int, maxDigits: Int, denominatorDigits: I
 internal fun <T> Parser<T>.or(other: Parser<T>): Parser<T> = { str, pos ->
     try {
         this(str, pos)
-    } catch (e: ParseException) {
+    } catch (e: DateTimeFormatException) {
         other(str, pos)
     }
 }
@@ -113,10 +114,10 @@ internal fun <T> optional(parser: Parser<T>): Parser<T?> = parser.or { _, pos ->
 
 internal fun concreteCharParser(requiredChar: Char): Parser<Char> = { str, pos ->
     if (str.length <= pos) {
-        throw ParseException("unexpected end of string", pos)
+        throw parseException("unexpected end of string", pos)
     }
     if (str[pos] != requiredChar) {
-        throw ParseException("expected char '$requiredChar', got '${str[pos]}", pos)
+        throw parseException("expected char '$requiredChar', got '${str[pos]}", pos)
     }
     Pair(pos + 1, requiredChar)
 }

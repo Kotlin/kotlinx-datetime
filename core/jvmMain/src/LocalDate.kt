@@ -46,7 +46,7 @@ public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
             CalendarUnit.HOUR,
             CalendarUnit.MINUTE,
             CalendarUnit.SECOND,
-            CalendarUnit.NANOSECOND -> throw UnsupportedOperationException("Only date based units can be added to LocalDate")
+            CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
         }.let(::LocalDate)
 
 public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
@@ -55,7 +55,7 @@ public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
 public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
         with(period) {
             if (hours != 0 || minutes != 0 || seconds != 0L || nanoseconds != 0L) {
-                throw UnsupportedOperationException("Only date based units can be added to LocalDate")
+                throw IllegalArgumentException("Only date based units can be added to LocalDate")
             }
 
             return@with value

@@ -55,13 +55,21 @@ private val instantParser: Parser<Instant>
                 listOf(0, hoursVal, minutesVal, secondsVal)
             }
 
+            // never fails: 9_999 years are always supported
             val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, CalendarUnit.DAY)
             val localTime = LocalTime.of(hours, min, seconds, 0)
-            val secDelta: Long = safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
+            val secDelta: Long = try {
+                safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
+            } catch (e: ArithmeticException) {
+                throw DateTimeFormatException(e)
+            }
             val epochDay: Long = localDate.toEpochDay()
             val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
-
-            Instant(instantSecs, nano)
+            try {
+                Instant(instantSecs, nano)
+            } catch (e: IllegalArgumentException) {
+                throw DateTimeFormatException(e)
+            }
         }
 
 /**
@@ -74,39 +82,56 @@ private const val MIN_SECOND = -31557014167219200L
  */
 private const val MAX_SECOND = 31556889864403199L
 
+private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
+
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     init {
-        if (epochSeconds < MIN_SECOND || epochSeconds > MAX_SECOND) {
-            throw DateTimeException("Instant exceeds minimum or maximum instant")
-        }
+        require(isValidInstantSecond(epochSeconds)) { "Instant exceeds minimum or maximum instant" }
     }
 
     // org.threeten.bp.Instant#toEpochMilli
     actual fun toEpochMilliseconds(): Long =
         if (epochSeconds >= 0) {
-            val millis: Long = safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong())
-            safeAdd(millis, nanosecondsOfSecond / NANOS_PER_MILLI.toLong())
+            try {
+                safeAdd(safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong()),
+                    nanosecondsOfSecond / NANOS_PER_MILLI.toLong())
+            } catch (e: ArithmeticException) {
+                Long.MAX_VALUE
+            }
         } else {
-            val millis: Long = safeMultiply(epochSeconds + 1, MILLIS_PER_ONE.toLong())
-            safeSubtract(millis, MILLIS_PER_ONE.toLong() - nanosecondsOfSecond / NANOS_PER_MILLI)
+            try {
+                safeSubtract(safeMultiply(epochSeconds + 1, MILLIS_PER_ONE.toLong()),
+                    MILLIS_PER_ONE.toLong() - nanosecondsOfSecond / NANOS_PER_MILLI)
+            } catch (e: ArithmeticException) {
+                Long.MIN_VALUE
+            }
         }
 
     // org.threeten.bp.Instant#plus(long, long)
+    /**
+     * @throws ArithmeticException if arithmetic overflow occurs
+     * @throws IllegalArgumentException if the boundaries of Instant are overflown
+     */
     internal fun plus(secondsToAdd: Long, nanosToAdd: Long): Instant {
         if ((secondsToAdd or nanosToAdd) == 0L) {
             return this
         }
-        val epochSec: Long = safeAdd(epochSeconds, secondsToAdd)
-        val newEpochSeconds = safeAdd(epochSec, (nanosToAdd / NANOS_PER_ONE))
+        val newEpochSeconds: Long = safeAdd(safeAdd(epochSeconds, secondsToAdd), (nanosToAdd / NANOS_PER_ONE))
         val newNanosToAdd = nanosToAdd % NANOS_PER_ONE
         val nanoAdjustment = (nanosecondsOfSecond + newNanosToAdd) // safe int+NANOS_PER_ONE
-        return fromEpochSeconds(newEpochSeconds, nanoAdjustment)
+        return fromEpochSecondsThrowing(newEpochSeconds, nanoAdjustment)
     }
 
-    actual operator fun plus(duration: Duration): Instant = duration.toComponents { epochSeconds, nanos ->
-        plus(epochSeconds, nanos.toLong())
+    actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
+        try {
+            plus(secondsToAdd, nanosecondsToAdd.toLong())
+        } catch (e: IllegalArgumentException) {
+            if (secondsToAdd > 0) MAX else MIN
+        } catch (e: ArithmeticException) {
+            if (secondsToAdd > 0) MAX else MIN
+        }
     }
 
     actual operator fun minus(duration: Duration): Instant = plus(-duration)
@@ -194,6 +219,9 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
     }
 
     actual companion object {
+        internal val MIN = Instant(MIN_SECOND, 0)
+        internal val MAX = Instant(MAX_SECOND, 999_999_999)
+
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         actual fun now(): Instant = memScoped {
             val timespecBuf = alloc<timespec>()
@@ -203,7 +231,11 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
             // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
             val seconds = timespecBuf.tv_sec.convert<Long>()
             val nanosec = timespecBuf.tv_nsec.toInt()
-            Instant(seconds, nanosec)
+            try {
+                Instant(seconds, nanosec)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalStateException("The readings from the system clock are not representable as an Instant")
+            }
         }
 
         // org.threeten.bp.Instant#ofEpochMilli
@@ -211,12 +243,25 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
             Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
                 (floorMod(epochMilliseconds, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
-        // org.threeten.bp.Instant#ofEpochSecond(long, long)
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
+        /**
+         * @throws ArithmeticException if arithmetic overflow occurs
+         * @throws IllegalArgumentException if the boundaries of Instant are overflown
+         */
+        private fun fromEpochSecondsThrowing(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
             val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
             val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
         }
+
+        // org.threeten.bp.Instant#ofEpochSecond(long, long)
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
+            try {
+                fromEpochSecondsThrowing(epochSeconds, nanosecondAdjustment)
+            } catch (e: ArithmeticException) {
+                if (epochSeconds > 0) MAX else MIN
+            } catch (e: IllegalArgumentException) {
+                if (epochSeconds > 0) MAX else MIN
+            }
 
         actual fun parse(isoString: String): Instant =
             instantParser.parse(isoString)
@@ -224,31 +269,45 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
 
 }
 
-actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {
-    // See [Instant.plus(Instant, long, CalendarUnit, TimeZone)] for an explanation of why time inside day is special
-    val seconds = with(period) {
-        safeAdd(seconds, safeAdd(
-            minutes.toLong() * SECONDS_PER_MINUTE,
-            hours.toLong() * SECONDS_PER_HOUR))
-    }
-    val localDateTime = toZonedLocalDateTime(zone)
-    return with(period) {
-        localDateTime
+private fun Instant.toZonedLocalDateTimeFailing(zone: TimeZone): ZonedDateTime = try {
+    toZonedLocalDateTime(zone)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
+}
+
+/** Check that [Instant] fits in [ZonedDateTime].
+ * This is done on the results of computations for consistency with other platforms.
+ */
+private fun Instant.check(zone: TimeZone): Instant = this@check.also {
+    toZonedLocalDateTimeFailing(zone)
+}
+
+actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant = try {
+    with(period) {
+        val withDate = toZonedLocalDateTimeFailing(zone)
             .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
             .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
             .run { if (days != 0) plusDays(days.toLong()) else this }
-    }.toInstant().plus(seconds, period.nanoseconds)
+        // See [Instant.plus(Instant, long, CalendarUnit, TimeZone)] for an explanation of time inside day being special
+        val secondsToAdd = safeAdd(seconds,
+            safeAdd(minutes.toLong() * SECONDS_PER_MINUTE, hours.toLong() * SECONDS_PER_HOUR))
+        withDate.toInstant().plus(secondsToAdd, period.nanoseconds)
+    }.check(zone)
+} catch (e: ArithmeticException) {
+    throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
 actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
     plus(value.toLong(), unit, zone)
 
-actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
+actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
     when (unit) {
-        CalendarUnit.YEAR -> toZonedLocalDateTime(zone).plusYears(value).toInstant()
-        CalendarUnit.MONTH -> toZonedLocalDateTime(zone).plusMonths(value).toInstant()
-        CalendarUnit.WEEK -> toZonedLocalDateTime(zone).plusDays(value * 7).toInstant()
-        CalendarUnit.DAY -> toZonedLocalDateTime(zone).plusDays(value).toInstant()
+        CalendarUnit.YEAR -> toZonedLocalDateTimeFailing(zone).plusYears(value).toInstant()
+        CalendarUnit.MONTH -> toZonedLocalDateTimeFailing(zone).plusMonths(value).toInstant()
+        CalendarUnit.WEEK -> toZonedLocalDateTimeFailing(zone).plusDays(safeMultiply(value, 7)).toInstant()
+        CalendarUnit.DAY -> toZonedLocalDateTimeFailing(zone).plusDays(value).toInstant()
         /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
            then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
            (gotten from org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond). This, in turn,
@@ -265,20 +324,27 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
            4 and 5 are invertible by their form: their composition adds and subtracts the offset to and from
            the unix epoch. 1-3 can then be simplified to just adding the time to the instant directly.
          */
-        CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0)
-        CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0)
-        CalendarUnit.SECOND -> plus(value, 0)
-        CalendarUnit.NANOSECOND -> plus(0, value)
+        CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0).check(zone)
+        CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0).check(zone)
+        CalendarUnit.SECOND -> plus(value, 0).check(zone)
+        CalendarUnit.NANOSECOND -> plus(0, value).check(zone)
     }
+} catch (e: ArithmeticException) {
+    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
+}
 
 @OptIn(ExperimentalTime::class)
 actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
-    var thisLdt = toZonedLocalDateTime(zone)
-    val otherLdt = other.toZonedLocalDateTime(zone)
+    var thisLdt = toZonedLocalDateTimeFailing(zone)
+    val otherLdt = other.toZonedLocalDateTimeFailing(zone)
 
-    val months = thisLdt.until(otherLdt, CalendarUnit.MONTH); thisLdt = thisLdt.plusMonths(months)
-    val days = thisLdt.until(otherLdt, CalendarUnit.DAY); thisLdt = thisLdt.plusDays(days)
-    val time = thisLdt.until(otherLdt, CalendarUnit.NANOSECOND).nanoseconds
+    val months = thisLdt.until(otherLdt, CalendarUnit.MONTH) // `until` on dates never fails
+    thisLdt = thisLdt.plusMonths(months) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val days = thisLdt.until(otherLdt, CalendarUnit.DAY) // `until` on dates never fails
+    thisLdt = thisLdt.plusDays(days) // won't throw: thisLdt + days <= otherLdt
+    val time = thisLdt.until(otherLdt, CalendarUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
         return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
@@ -286,8 +352,15 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
 }
 
 actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
-    toZonedLocalDateTime(zone).until(other.toZonedLocalDateTime(zone), unit)
+    try {
+        toZonedLocalDateTimeFailing(zone).until(other.toZonedLocalDateTimeFailing(zone), unit)
+    } catch (e: ArithmeticException) {
+        if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
+    }
 
-actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.DAY, zone).toInt()
-actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.MONTH, zone).toInt()
-actual fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.YEAR, zone).toInt()
+private fun Long.clampToInt(): Int =
+    if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
+
+actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.DAY, zone).clampToInt()
+actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.MONTH, zone).clampToInt()
+actual fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.YEAR, zone).clampToInt()
