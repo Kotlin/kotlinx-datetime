@@ -9,11 +9,24 @@
 package kotlinx.datetime
 
 internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: TimeZone, val offset: ZoneOffset) {
-    internal fun plusYears(years: Long): ZonedDateTime = resolve(dateTime.plusYears(years))
-    internal fun plusMonths(months: Long): ZonedDateTime = resolve(dateTime.plusMonths(months))
-    internal fun plusDays(days: Long): ZonedDateTime = resolve(dateTime.plusDays(days))
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
+    internal fun plusYears(years: Long): ZonedDateTime = dateTime.plusYears(years).resolve()
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
+    internal fun plusMonths(months: Long): ZonedDateTime = dateTime.plusMonths(months).resolve()
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
+    internal fun plusDays(days: Long): ZonedDateTime = dateTime.plusDays(days).resolve()
 
-    private fun resolve(dateTime: LocalDateTime): ZonedDateTime = with(zone) { dateTime.atZone(offset) }
+    // Never throws in practice
+    private fun LocalDateTime.resolve(): ZonedDateTime = with(zone) { atZone(offset) }
 
     override fun equals(other: Any?): Boolean =
         this === other || other is ZonedDateTime &&
@@ -37,18 +50,26 @@ internal fun ZonedDateTime.toInstant(): Instant =
     Instant(dateTime.toEpochSecond(offset), dateTime.nanosecond)
 
 // org.threeten.bp.LocalDateTime#ofEpochSecond + org.threeten.bp.ZonedDateTime#create
+/**
+ * @throws IllegalArgumentException if the [Instant] exceeds the boundaries of [LocalDateTime]
+ */
 internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
     val currentOffset = with (zone) { offset }
     val localSecond: Long = epochSeconds + currentOffset.totalSeconds // overflow caught later
     val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
     val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
-    val date: LocalDate = LocalDate.ofEpochDay(localEpochDay)
+    val date: LocalDate = LocalDate.ofEpochDay(localEpochDay) // may throw
     val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)
     return ZonedDateTime(LocalDateTime(date, time), zone, currentOffset)
 }
 
 // org.threeten.bp.ZonedDateTime#until
 // This version is simplified and to be used ONLY in case you know the timezones are equal!
+/**
+ * @throws ArithmeticException on arithmetic overflow
+ * @throws DateTimeArithmeticException if setting [other] to the offset of [this] leads to exceeding boundaries of
+ * [LocalDateTime].
+ */
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =
     when (unit) {
         // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
@@ -58,6 +79,12 @@ internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long
         // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
         CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
-            dateTime.until(other.dateTime.plusSeconds(offsetDiff.toLong()), unit)
+            val otherLdtAdjusted = try {
+                other.dateTime.plusSeconds(offsetDiff.toLong())
+            } catch (e: IllegalArgumentException) {
+                throw DateTimeArithmeticException(
+                    "Unable to find difference between date-times, as one of them overflowed")
+            }
+            dateTime.until(otherLdtAdjusted, unit)
         }
     }

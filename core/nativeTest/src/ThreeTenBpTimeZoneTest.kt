@@ -57,7 +57,7 @@ class ThreeTenBpTimeZoneTest {
             "-01_00", "-01;00", "-01@00", "-01:AA",
             "@01:00")
         for (v in values) {
-            assertFailsWith(DateTimeException::class, "should fail: $v") { ZoneOffset.of(v) }
+            assertFailsWith(IllegalTimeZoneException::class, "should fail: $v") { ZoneOffset.of(v) }
         }
     }
 

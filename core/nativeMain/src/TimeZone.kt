@@ -12,18 +12,15 @@ import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*
 
-class DateTimeException(str: String? = null) : Exception(str)
-
-public actual open class TimeZone internal constructor(val tzid: TZID, actual val id: String) {
-
-    private val asciiName = id.cstr
+public actual open class TimeZone internal constructor(private val tzid: TZID, actual val id: String) {
 
     actual companion object {
 
         @SharedImmutable
         actual val SYSTEM: TimeZone = memScoped {
             val tzid = alloc<TZIDVar>()
-            val string = get_system_timezone(tzid.ptr) ?: throw RuntimeException("Failed to get the system timezone.")
+            val string = get_system_timezone(tzid.ptr)
+                ?: throw RuntimeException("Failed to get the system timezone.")
             val kotlinString = string.toKString()
             free(string)
             TimeZone(tzid.value, kotlinString)
@@ -39,7 +36,7 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
                 return UTC
             }
             if (zoneId.length == 1) {
-                throw DateTimeException("Invalid zone: $zoneId")
+                throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
             }
             if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
                 return ZoneOffset.of(zoneId)
@@ -62,7 +59,7 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
             }
             val tzid = timezone_by_name(zoneId)
             if (tzid == TZID_INVALID) {
-                throw IllegalArgumentException("Invalid timezone '$zoneId'")
+                throw IllegalTimeZoneException("No timezone found with zone ID '$zoneId'")
             }
             return TimeZone(tzid, zoneId)
         }
@@ -85,7 +82,11 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
             }
     }
 
-    actual fun Instant.toLocalDateTime(): LocalDateTime = toZonedLocalDateTime(this@TimeZone).dateTime
+    actual fun Instant.toLocalDateTime(): LocalDateTime = try {
+        toZonedLocalDateTime(this@TimeZone).dateTime
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
+    }
 
     actual open val Instant.offset: ZoneOffset
         get() {
@@ -96,8 +97,7 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
             return ZoneOffset.ofSeconds(offset)
         }
 
-    actual fun LocalDateTime.toInstant(): Instant =
-        atZone().toInstant()
+    actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
 
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
         val epochSeconds = toEpochSecond(ZoneOffset.UTC)
@@ -107,7 +107,13 @@ public actual open class TimeZone internal constructor(val tzid: TZID, actual va
         if (offset.value == INT_MAX) {
             throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@TimeZone}")
         }
-        val dateTime = this@atZone.plusSeconds(transitionDuration.toLong())
+        val dateTime = try {
+            this@atZone.plusSeconds(transitionDuration.toLong())
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
+        } catch (e: ArithmeticException) {
+            throw RuntimeException("Anomalously long timezone transition gap reported", e)
+        }
         ZonedDateTime(dateTime, this@TimeZone, ZoneOffset.ofSeconds(offset.value))
     }
 
@@ -170,11 +176,12 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
                     minutes = parseNumber(offsetId, 4, true)
                     seconds = parseNumber(offsetId, 7, true)
                 }
-                else -> throw DateTimeException("Invalid ID for ZoneOffset, invalid format: $offsetId")
+                else -> throw IllegalTimeZoneException("Invalid ID for ZoneOffset, invalid format: $offsetId")
             }
             val first: Char = offsetId[0]
             if (first != '+' && first != '-') {
-                throw DateTimeException("Invalid ID for ZoneOffset, plus/minus not found when expected: $offsetId")
+                throw IllegalTimeZoneException(
+                    "Invalid ID for ZoneOffset, plus/minus not found when expected: $offsetId")
             }
             return if (first == '-') {
                 ofHoursMinutesSeconds(-hours, -minutes, -seconds)
@@ -186,30 +193,30 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
         // org.threeten.bp.ZoneOffset#validate
         private fun validate(hours: Int, minutes: Int, seconds: Int) {
             if (hours < -18 || hours > 18) {
-                throw DateTimeException("Zone offset hours not in valid range: value " + hours +
+                throw IllegalTimeZoneException("Zone offset hours not in valid range: value " + hours +
                     " is not in the range -18 to 18")
             }
             if (hours > 0) {
                 if (minutes < 0 || seconds < 0) {
-                    throw DateTimeException("Zone offset minutes and seconds must be positive because hours is positive")
+                    throw IllegalTimeZoneException("Zone offset minutes and seconds must be positive because hours is positive")
                 }
             } else if (hours < 0) {
                 if (minutes > 0 || seconds > 0) {
-                    throw DateTimeException("Zone offset minutes and seconds must be negative because hours is negative")
+                    throw IllegalTimeZoneException("Zone offset minutes and seconds must be negative because hours is negative")
                 }
             } else if (minutes > 0 && seconds < 0 || minutes < 0 && seconds > 0) {
-                throw DateTimeException("Zone offset minutes and seconds must have the same sign")
+                throw IllegalTimeZoneException("Zone offset minutes and seconds must have the same sign")
             }
             if (abs(minutes) > 59) {
-                throw DateTimeException("Zone offset minutes not in valid range: abs(value) " +
+                throw IllegalTimeZoneException("Zone offset minutes not in valid range: abs(value) " +
                     abs(minutes) + " is not in the range 0 to 59")
             }
             if (abs(seconds) > 59) {
-                throw DateTimeException("Zone offset seconds not in valid range: abs(value) " +
+                throw IllegalTimeZoneException("Zone offset seconds not in valid range: abs(value) " +
                     abs(seconds) + " is not in the range 0 to 59")
             }
             if (abs(hours) == 18 && (abs(minutes) > 0 || abs(seconds) > 0)) {
-                throw DateTimeException("Zone offset not in valid range: -18:00 to +18:00")
+                throw IllegalTimeZoneException("Zone offset not in valid range: -18:00 to +18:00")
             }
         }
 
@@ -232,12 +239,12 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
         // org.threeten.bp.ZoneOffset#parseNumber
         private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
             if (precededByColon && offsetId[pos - 1] != ':') {
-                throw DateTimeException("Invalid ID for ZoneOffset, colon not found when expected: $offsetId")
+                throw IllegalTimeZoneException("Invalid ID for ZoneOffset, colon not found when expected: $offsetId")
             }
             val ch1 = offsetId[pos]
             val ch2 = offsetId[pos + 1]
             if (ch1 < '0' || ch1 > '9' || ch2 < '0' || ch2 > '9') {
-                throw DateTimeException("Invalid ID for ZoneOffset, non numeric characters found: $offsetId")
+                throw IllegalTimeZoneException("Invalid ID for ZoneOffset, non numeric characters found: $offsetId")
             }
             return (ch1.toInt() - 48) * 10 + (ch2.toInt() - 48)
         }

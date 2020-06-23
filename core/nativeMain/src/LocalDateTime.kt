@@ -67,8 +67,20 @@ public actual class LocalDateTime internal constructor(
         return secs
     }
 
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
     internal fun plusYears(years: Long): LocalDateTime = LocalDateTime(date.plusYears(years), time)
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
     internal fun plusMonths(months: Long): LocalDateTime = LocalDateTime(date.plusMonths(months), time)
+    /**
+     * @throws IllegalArgumentException if the result exceeds the boundaries
+     * @throws ArithmeticException if arithmetic overflow occurs
+     */
     internal fun plusDays(days: Long): LocalDateTime = LocalDateTime(date.plusDays(days), time)
 
 }
@@ -83,14 +95,15 @@ actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
     with(timeZone) { offset }
 
 // org.threeten.bp.LocalDateTime#until
+/** @throws ArithmeticException on arithmetic overflow. Only possible for time-based units. */
 internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long =
     when (unit) {
         CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
             var endDate: LocalDate = other.date
             if (endDate > date && other.time < time) {
-                endDate = endDate.plusDays(-1)
+                endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
             } else if (endDate < date && other.time > time) {
-                endDate = endDate.plusDays(1)
+                endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
             }
             date.until(endDate, unit)
         }
@@ -107,8 +120,10 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
             val nanos = timeUntil
             when (unit) {
                 CalendarUnit.HOUR -> safeAdd(nanos / NANOS_PER_HOUR, safeMultiply(daysUntil, HOURS_PER_DAY.toLong()))
-                CalendarUnit.MINUTE -> safeAdd(nanos / NANOS_PER_MINUTE, safeMultiply(daysUntil, MINUTES_PER_DAY.toLong()))
-                CalendarUnit.SECOND -> safeAdd(nanos / NANOS_PER_ONE, safeMultiply(daysUntil, SECONDS_PER_DAY.toLong()))
+                CalendarUnit.MINUTE -> safeAdd(nanos / NANOS_PER_MINUTE,
+                    safeMultiply(daysUntil, MINUTES_PER_DAY.toLong()))
+                CalendarUnit.SECOND -> safeAdd(nanos / NANOS_PER_ONE,
+                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong()))
                 CalendarUnit.NANOSECOND -> safeAdd(nanos, safeMultiply(daysUntil, NANOS_PER_DAY))
                 else -> throw RuntimeException("impossible")
             }
@@ -116,12 +131,21 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
     }
 
 // org.threeten.bp.LocalDateTime#plusSeconds
+/**
+ * @throws IllegalArgumentException if the result exceeds the boundaries
+ * @throws ArithmeticException if arithmetic overflow occurs
+ */
 internal fun LocalDateTime.plusSeconds(seconds: Long): LocalDateTime =
     plusWithOverflow(date, 0, 0, seconds, 0, 1)
 
 // org.threeten.bp.LocalDateTime#plusWithOverflow
+/**
+ * @throws IllegalArgumentException if the result exceeds the boundaries
+ * @throws ArithmeticException if arithmetic overflow occurs
+ */
 internal fun LocalDateTime.plusWithOverflow(
-    newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime {
+    newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime
+{
     if (hours or minutes or seconds or nanos == 0L) {
         return LocalDateTime(newDate, time)
     }
