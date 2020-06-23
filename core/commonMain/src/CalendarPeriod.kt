@@ -10,13 +10,9 @@ import kotlin.time.ExperimentalTime
 
 typealias Period = CalendarPeriod
 
+// TODO: could be error-prone without explicitly named params
 class CalendarPeriod(val years: Int = 0, val months: Int = 0, val days: Int = 0,
                      val hours: Int = 0, val minutes: Int = 0, val seconds: Long = 0, val nanoseconds: Long = 0) {
-    object Builder {
-        val Int.years get() = CalendarPeriod(years = this)
-        val Int.months get() = CalendarPeriod(months = this)
-        val Int.days get() = CalendarPeriod(days = this)
-    }
 
     private fun allNotPositive() =
             years <= 0 && months <= 0 && days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0 && nanoseconds <= 0 &&
@@ -67,13 +63,6 @@ class CalendarPeriod(val years: Int = 0, val months: Int = 0, val days: Int = 0,
         return result
     }
 }
-
-inline fun period(builder: CalendarPeriod.Builder.() -> CalendarPeriod): CalendarPeriod = CalendarPeriod.Builder.builder()
-
-val Int.calendarDays: CalendarPeriod get() = CalendarPeriod(days = this)
-val Int.calendarMonths: CalendarPeriod get() = CalendarPeriod(months = this)
-val Int.calendarYears: CalendarPeriod get() = CalendarPeriod(years = this)
-
 
 @OptIn(ExperimentalTime::class)
 fun Duration.toCalendarPeriod(): CalendarPeriod = toComponents { hours, minutes, seconds, nanoseconds ->

@@ -59,11 +59,11 @@ class LocalDateTest {
     @Test
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
-        checkComponents(startDate + 1.calendarDays, 2016, 3, 1)
-        checkComponents(startDate + 1.calendarYears, 2017, 2, 28)
-        checkComponents(startDate + 4.calendarYears, 2020, 2, 29)
+        checkComponents(startDate.plus(1, CalendarUnit.DAY), 2016, 3, 1)
+        checkComponents(startDate.plus(1, CalendarUnit.YEAR), 2017, 2, 28)
+        checkComponents(startDate + CalendarPeriod(years = 4), 2020, 2, 29)
 
-        checkComponents(LocalDate.parse("2016-01-31") + 1.calendarMonths, 2016, 2, 29)
+        checkComponents(LocalDate.parse("2016-01-31") + CalendarPeriod(months = 1), 2016, 2, 29)
 
         assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) }
         assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
@@ -73,10 +73,9 @@ class LocalDateTest {
     fun tomorrow() {
         val today = Clock.System.todayAt(TimeZone.SYSTEM)
 
-        val nextMonthPlusDay1 = today + 1.calendarMonths + 1.calendarDays
-        val nextMonthPlusDay2 = today + (1.calendarMonths + 1.calendarDays)
-        val nextMonthPlusDay3 = today + 1.calendarDays + 1.calendarMonths
-
+        val nextMonthPlusDay1 = today.plus(1, CalendarUnit.MONTH).plus(1, CalendarUnit.DAY)
+        val nextMonthPlusDay2 = today + CalendarPeriod(months = 1, days = 1)
+        val nextMonthPlusDay3 = today.plus(1, CalendarUnit.DAY).plus(1, CalendarUnit.MONTH)
     }
 
     @Test
@@ -86,8 +85,8 @@ class LocalDateTest {
         repeat(1000) {
             val days1 = Random.nextInt(-3652..3652)
             val days2 = Random.nextInt(-3652..3652)
-            val ldtBefore = origin + days1.calendarDays
-            val ldtNow = origin + days2.calendarDays
+            val ldtBefore = origin + CalendarPeriod(days = days1)
+            val ldtNow = origin.plus(days2, CalendarUnit.DAY)
 
             val diff = ldtNow - ldtBefore
             val ldtAfter = ldtBefore + diff
