@@ -9,6 +9,11 @@ typealias Parser<T> = (String, Int) -> Pair<Int, T>
 
 class ParseException(message: String, position: Int) : Exception("Parse error at char $position: $message")
 
+internal enum class SignStyle {
+    NO_SIGN,
+    EXCEEDS_PAD
+}
+
 internal fun <T, S> Parser<T>.map(transform: (T) -> S): Parser<S> = { str, pos ->
     val (pos1, t) = this(str, pos)
     Pair(pos1, transform(t))
@@ -37,14 +42,11 @@ internal val eofParser: Parser<Unit> = { str, pos ->
 internal fun <T> Parser<T>.parse(str: String): T =
     chainIgnoring(eofParser)(str, 0).second
 
-internal fun digitSpanParser(minLength: Int?, maxLength: Int?): Parser<IntRange> = { str, pos ->
+internal fun digitSpanParser(minLength: Int, maxLength: Int, sign: SignStyle): Parser<IntRange> = { str, pos ->
     var spanLength = 0
     // index of the position after the potential sign
-    val pos1 = if (str.length > pos && (str[pos] == '-' || str[pos] == '+')) {
-        pos + 1
-    } else {
-        pos
-    }
+    val hasSign = str.length > pos && (str[pos] == '-' || str[pos] == '+')
+    val pos1 = if (hasSign) { pos + 1 } else { pos }
     for (i in pos1 until str.length) {
         if (str[i].isDigit()) {
             spanLength += 1
@@ -52,21 +54,29 @@ internal fun digitSpanParser(minLength: Int?, maxLength: Int?): Parser<IntRange>
             break
         }
     }
-    if (minLength != null && spanLength < minLength) {
+    if (spanLength < minLength) {
         if (spanLength == 0) {
             throw ParseException("number expected", pos1)
         } else {
             throw ParseException("expected at least $minLength digits", pos1 + spanLength - 1)
         }
     }
-    if (maxLength != null && spanLength > maxLength) {
+    if (spanLength > maxLength) {
         throw ParseException("expected at most $maxLength digits", pos1 + maxLength)
+    }
+    when (sign) {
+        SignStyle.NO_SIGN -> if (hasSign) throw ParseException("unexpected number sign", pos)
+        SignStyle.EXCEEDS_PAD -> if (hasSign && str[pos] == '+' && spanLength == minLength) {
+            throw ParseException("unexpected sign, as the field only has $spanLength numbers", pos)
+        } else if (!hasSign && spanLength > minLength) {
+            throw ParseException("expected a sign, since the field has more than $minLength numbers", pos)
+        }
     }
     Pair(pos1 + spanLength, IntRange(pos, pos1 + spanLength - 1))
 }
 
-internal fun intParser(minDigits: Int?, maxDigits: Int?): Parser<Int> = { str, pos ->
-    val (pos1, intRange) = digitSpanParser(minDigits, maxDigits)(str, pos)
+internal fun intParser(minDigits: Int, maxDigits: Int, sign: SignStyle = SignStyle.NO_SIGN): Parser<Int> = { str, pos ->
+    val (pos1, intRange) = digitSpanParser(minDigits, maxDigits, sign)(str, pos)
     val result = if (intRange.isEmpty()) {
         0
     } else {
@@ -77,7 +87,7 @@ internal fun intParser(minDigits: Int?, maxDigits: Int?): Parser<Int> = { str, p
 
 internal fun fractionParser(minDigits: Int, maxDigits: Int, denominatorDigits: Int): Parser<Int> = { str, pos ->
     require(denominatorDigits <= maxDigits)
-    val (pos1, intRange) = digitSpanParser(minDigits, maxDigits)(str, pos)
+    val (pos1, intRange) = digitSpanParser(minDigits, maxDigits, SignStyle.NO_SIGN)(str, pos)
     if (intRange.isEmpty()) {
         Pair(pos1, 0)
     } else {
