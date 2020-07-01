@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 
 @OptIn(kotlin.time.ExperimentalTime::class)
@@ -16,10 +17,13 @@ public expect class Instant : Comparable<Instant> {
 
     public fun toEpochMilliseconds(): Long
 
+    @ExperimentalTime
     public operator fun plus(duration: Duration): Instant
+    @ExperimentalTime
     public operator fun minus(duration: Duration): Instant
 
     // questionable
+    @ExperimentalTime
     public operator fun minus(other: Instant): Duration
 
     public override operator fun compareTo(other: Instant): Int
