@@ -59,14 +59,15 @@ class LocalDateTest {
     @Test
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
-        checkComponents(startDate.plus(1, CalendarUnit.DAY), 2016, 3, 1)
-        checkComponents(startDate.plus(1, CalendarUnit.YEAR), 2017, 2, 28)
+        checkComponents(startDate.plus(1, ChronoUnit.DAY), 2016, 3, 1)
+        checkComponents(startDate.plus(ChronoUnit.YEAR), 2017, 2, 28)
         checkComponents(startDate + CalendarPeriod(years = 4), 2020, 2, 29)
 
         checkComponents(LocalDate.parse("2016-01-31") + CalendarPeriod(months = 1), 2016, 2, 29)
 
         assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) }
         assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
+        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) }
     }
 
     @Test

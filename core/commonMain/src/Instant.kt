@@ -132,3 +132,15 @@ internal fun Long.clampToInt(): Int =
 
 public fun Instant.minus(other: Instant, zone: TimeZone): CalendarPeriod = other.periodUntil(this, zone)
 public fun Instant.minus(other: Instant, unit: CalendarUnit, zone: TimeZone): Long = other.until(this, unit, zone)
+
+
+
+public fun Instant.plus(unit: ChronoUnit, zone: TimeZone): Instant =
+        plus(unit.scale, unit.component.toCalendarUnit(), zone)
+public fun Instant.plus(value: Int, unit: ChronoUnit, zone: TimeZone): Instant =
+        plus(value * unit.scale, unit.component.toCalendarUnit(), zone)
+public fun Instant.plus(value: Long, unit: ChronoUnit, zone: TimeZone): Instant =
+        plus(value * unit.scale, unit.component.toCalendarUnit(), zone)
+
+public fun Instant.until(other: Instant, unit: ChronoUnit, zone: TimeZone): Long =
+        until(other, unit.component.toCalendarUnit(), zone) / unit.scale

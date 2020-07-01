@@ -71,3 +71,17 @@ public fun LocalDate.until(other: LocalDate, unit: CalendarUnit): Int = when(uni
     CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND ->
         throw UnsupportedOperationException("Only date based units can be used to express difference between LocalDate values.")
 }
+
+public fun LocalDate.plus(unit: ChronoUnit): LocalDate =
+        plus(unit.scale, unit.component.toCalendarUnit())
+public fun LocalDate.plus(value: Int, unit: ChronoUnit): LocalDate =
+        plus(value * unit.scale, unit.component.toCalendarUnit())
+public fun LocalDate.plus(value: Long, unit: ChronoUnit): LocalDate =
+        plus(value * unit.scale, unit.component.toCalendarUnit())
+
+public fun LocalDate.until(other: LocalDate, unit: ChronoUnit): Int = when(unit.component) {
+    TimeComponent.MONTH -> (monthsUntil(other) / unit.scale).toInt()
+    TimeComponent.DAY -> (daysUntil(other) / unit.scale).toInt()
+    TimeComponent.NANOSECOND ->
+        throw UnsupportedOperationException("Only date based units can be used to express difference between LocalDate values.")
+}

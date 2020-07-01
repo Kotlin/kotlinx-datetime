@@ -94,19 +94,28 @@ class InstantTest {
         assertEquals(24, instant1.until(instant2, CalendarUnit.HOUR, zone))
         assertEquals(24, instant2.minus(instant1, CalendarUnit.HOUR, zone))
 
-        val instant3 = instant1.plus(1, CalendarUnit.DAY, zone)
+        val instant3 = instant1.plus(ChronoUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         assertEquals(25.hours, instant3 - instant1)
         assertEquals(1, instant1.until(instant3, CalendarUnit.DAY, zone))
         assertEquals(1, instant1.daysUntil(instant3, zone))
         assertEquals(1, instant3.minus(instant1, CalendarUnit.DAY, zone))
 
+        val instant4 = instant1.plus(14, ChronoUnit.MONTH, zone)
+        checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
+        assertEquals(1, instant1.until(instant4, ChronoUnit.YEAR, zone))
+        assertEquals(4, instant1.until(instant4, ChronoUnit.QUARTER, zone))
+        assertEquals(14, instant1.until(instant4, ChronoUnit.MONTH, zone))
+        assertEquals(61, instant1.until(instant4, ChronoUnit.WEEK, zone))
+        assertEquals(366 + 31 + 30, instant1.until(instant4, ChronoUnit.DAY, zone))
+        assertEquals((366 + 31 + 30) * 24 + 1, instant1.until(instant4, ChronoUnit.HOUR, zone))
+
         val period = CalendarPeriod(days = 1, hours = 1)
-        val instant4 = instant1.plus(period, zone)
-        checkComponents(instant4.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
-        assertEquals(period, instant1.periodUntil(instant4, zone))
-        assertEquals(period, instant4.minus(instant1, zone))
-        assertEquals(26.hours, instant4.minus(instant1))
+        val instant5 = instant1.plus(period, zone)
+        checkComponents(instant5.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
+        assertEquals(period, instant1.periodUntil(instant5, zone))
+        assertEquals(period, instant5.minus(instant1, zone))
+        assertEquals(26.hours, instant5.minus(instant1))
     }
 
     @OptIn(ExperimentalTime::class)
@@ -219,7 +228,7 @@ class InstantTest {
     /* Based on the ThreeTenBp project.
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
      */
-    @ExperimentalTime
+//    @ExperimentalTime
     @Test
     fun strings() {
         assertEquals("0000-01-02T00:00:00Z", LocalDateTime(0, 1, 2, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
