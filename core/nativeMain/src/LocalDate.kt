@@ -28,9 +28,9 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
     init {
         // org.threeten.bp.LocalDate#create
-        require(year >= -999_999_999 && year <= 999_999_999)
-        require(monthNumber >= 1 && monthNumber <= 12)
-        require(dayOfMonth >= 1 && dayOfMonth <= 31)
+        require(year >= -999_999_999 && year <= 999_999_999) { "Invalid date: the year is out of range" }
+        require(monthNumber >= 1 && monthNumber <= 12) { "Invalid date: month is a number between 1 and 12, got $monthNumber" }
+        require(dayOfMonth >= 1 && dayOfMonth <= 31) { "Invalid date: day of month is a number between 1 and 31, got $dayOfMonth" }
         if (dayOfMonth > 28 && dayOfMonth > monthNumber.monthLength(isLeapYear(year))) {
             if (dayOfMonth == 29) {
                 throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
