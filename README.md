@@ -24,7 +24,7 @@ explicitly take a time-zone information as parameter to clearly state that their
 rules which are subject to change at any time.
 
 The library is based on the ISO 8601 international standard, other ways to represent dates and times are out of
-its scope. Internationalization (such as locale-specific month and day names) are out the scope, too. 
+its scope. Internationalization (such as locale-specific month and day names) is out the scope, too. 
 
 ## Types
 
