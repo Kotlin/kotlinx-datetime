@@ -29,6 +29,7 @@ public expect class Instant : Comparable<Instant> {
     public override operator fun compareTo(other: Instant): Int
 
     companion object {
+        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         fun now(): Instant
         fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
         fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long = 0): Instant

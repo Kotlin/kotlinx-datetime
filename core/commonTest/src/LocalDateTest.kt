@@ -71,7 +71,7 @@ class LocalDateTest {
 
     @Test
     fun tomorrow() {
-        val today = Instant.now().toLocalDateTime(TimeZone.SYSTEM).date
+        val today = Clock.System.todayAt(TimeZone.SYSTEM)
 
         val nextMonthPlusDay1 = today + 1.calendarMonths + 1.calendarDays
         val nextMonthPlusDay2 = today + (1.calendarMonths + 1.calendarDays)

@@ -11,15 +11,14 @@ import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 public interface Clock {
-    fun now(): Instant
+    public fun now(): Instant
 
-    object System : Clock {
-        override fun now(): Instant = Instant.now()
+    public object System : Clock {
+        override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
     }
 
-    companion object {
-        // TODO: decide on how to provide system Clock
-        val SYSTEM = System
+    public companion object {
+
     }
 }
 

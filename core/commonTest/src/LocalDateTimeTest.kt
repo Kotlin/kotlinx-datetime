@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.Clock
 import kotlin.test.*
 import kotlin.time.*
 
@@ -60,7 +61,7 @@ class LocalDateTimeTest {
 
     @Test
     fun getCurrentHMS() {
-        with(Instant.now().toLocalDateTime(TimeZone.SYSTEM)) {
+        with(Clock.System.now().toLocalDateTime(TimeZone.SYSTEM)) {
             println("${hour}h ${minute}m")
         }
     }

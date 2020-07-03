@@ -194,6 +194,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
     }
 
     actual companion object {
+        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         actual fun now(): Instant = memScoped {
             val timespecBuf = alloc<timespec>()
             val error = clock_gettime(CLOCK_REALTIME, timespecBuf.ptr)

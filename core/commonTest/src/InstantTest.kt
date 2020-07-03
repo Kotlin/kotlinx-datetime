@@ -5,6 +5,7 @@
 
 package kotlinx.datetime.test
 import kotlinx.datetime.*
+import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
@@ -13,7 +14,7 @@ class InstantTest {
 
     @Test
     fun testNow() {
-        val instant = Instant.now()
+        val instant = Clock.System.now()
         val millis = instant.toEpochMilliseconds()
 
         assertTrue(millis > 1_500_000_000_000L)
@@ -32,7 +33,7 @@ class InstantTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun instantArithmetic() {
-        val instant = Instant.now().toEpochMilliseconds().let { Instant.fromEpochMilliseconds(it) } // round to millis
+        val instant = Clock.System.now().toEpochMilliseconds().let { Instant.fromEpochMilliseconds(it) } // round to millis
         val diffMillis = Random.nextLong(1000, 1_000_000_000)
         val diff = diffMillis.milliseconds
 
@@ -47,7 +48,7 @@ class InstantTest {
 
     @Test
     fun instantToLocalDTConversion() {
-        val now = Instant.now()
+        val now = Clock.System.now()
         println(now.toLocalDateTime(TimeZone.UTC))
         println(now.toLocalDateTime(TimeZone.SYSTEM))
     }
