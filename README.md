@@ -7,6 +7,25 @@
 
 A multiplatform Kotlin library for working with date and time.
 
+## Design overview
+
+There are a few guiding principles in the design of `kotlinx-datetime`. First of all, it is pragmatic, focused
+on the most common problems developers face every day (pun intended) when working with dates and times. It is not
+all-encompassing and lacks some domain-specific utilities that special-purpose applications might need.
+We chose convenience over generality, so the API surface this library provides is as minimal as possible
+to meet the use-cases.
+
+The library puts a clear boundary between physical time of an instant and a local, time-zone dependent civil time, 
+consisting of components such as year, month, etc that people use when talking about time. 
+We intentionally avoid entities in the library that mix both together and could be misused.
+However, there are convenience operations that take, for example, a physical instant and perform a calendar-based 
+adjustment (such as adding a month); all such operation
+explicitly take a time-zone information as parameter to clearly state that their result depends on the civil time-zone
+rules which are subject to change at any time.
+
+The library is based on the ISO 8601 international standard, other ways to represent dates and times are out of
+its scope. Internationalization (such as locale-specific month and day names) is out the scope, too. 
+
 ## Types
 
 The library provides the basic set of types for working with date and time:
@@ -188,6 +207,12 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 - [`js-joda`](https://js-joda.github.io/js-joda/) library in JS;
 - based on [ThreeTen backport project](https://www.threeten.org/threetenbp/) in Native.
 
+## Known/open issues, work TBD
+
+* Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
+* Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
+  formats that are used in practice (in particular, various RFCs).
+* An alternative JVM implementation for Android might be needed.  
 
 ## Building
 
