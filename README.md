@@ -212,8 +212,6 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 * Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
 * Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
   formats that are used in practice (in particular, various RFCs).
-* `plus` operation on a pair of `Instant` and `CalendarPeriod` is ill-specified and may encourage people to erroneously 
-  mix physical and civil time, such as using `CalendarPeriod` to represent physical time intervals instead of `Duration`.  
 * An alternative JVM implementation for Android might be needed.  
 
 ## Building
