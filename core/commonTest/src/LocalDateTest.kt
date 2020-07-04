@@ -59,15 +59,15 @@ class LocalDateTest {
     @Test
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
-        checkComponents(startDate.plus(1, ChronoUnit.DAY), 2016, 3, 1)
-        checkComponents(startDate.plus(ChronoUnit.YEAR), 2017, 2, 28)
+        checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)
+        checkComponents(startDate.plus(DateTimeUnit.YEAR), 2017, 2, 28)
         checkComponents(startDate + CalendarPeriod(years = 4), 2020, 2, 29)
 
         checkComponents(LocalDate.parse("2016-01-31") + CalendarPeriod(months = 1), 2016, 2, 29)
 
         assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) }
         assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
-        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) }
+//        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) } // won't compile
     }
 
     @Test
@@ -100,21 +100,21 @@ class LocalDateTest {
     @Test
     fun until() {
         val data = listOf(
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.DAY, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.WEEK, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(CalendarUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.DAY, 1)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.WEEK, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(CalendarUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.DAY, 7)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.WEEK, 1)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(CalendarUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-29"), Pair(CalendarUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-30"), Pair(CalendarUnit.MONTH, 1)),
-                Pair(Pair("2012-06-30", "2012-07-31"), Pair(CalendarUnit.MONTH, 1)))
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.DAY, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.WEEK, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.DAY, 1)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.WEEK, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.DAY, 7)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.WEEK, 1)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.YEAR, 0)),
+                Pair(Pair("2012-06-30", "2012-07-29"), Pair(DateTimeUnit.MONTH, 0)),
+                Pair(Pair("2012-06-30", "2012-07-30"), Pair(DateTimeUnit.MONTH, 1)),
+                Pair(Pair("2012-06-30", "2012-07-31"), Pair(DateTimeUnit.MONTH, 1)))
         for ((values, interval) in data) {
             val (v1, v2) = values
             val (unit, length) = interval
@@ -122,12 +122,12 @@ class LocalDateTest {
             val end = LocalDate.parse(v2)
             assertEquals(length, start.until(end, unit), "$v2 - $v1 = $length($unit)")
             assertEquals(-length, end.until(start, unit), "$v1 - $v2 = -$length($unit)")
-            @Suppress("NON_EXHAUSTIVE_WHEN")
+            @Suppress("NON_EXHAUSTIVE_WHEN_ON_SEALED_CLASS")
             when (unit) {
-                CalendarUnit.YEAR -> assertEquals(length, start.yearsUntil(end))
-                CalendarUnit.MONTH -> assertEquals(length, start.monthsUntil(end))
-                CalendarUnit.WEEK -> assertEquals(length, start.daysUntil(end) / 7)
-                CalendarUnit.DAY -> assertEquals(length, start.daysUntil(end))
+                DateTimeUnit.YEAR -> assertEquals(length, start.yearsUntil(end))
+                DateTimeUnit.MONTH -> assertEquals(length, start.monthsUntil(end))
+                DateTimeUnit.WEEK -> assertEquals(length, start.daysUntil(end) / 7)
+                DateTimeUnit.DAY -> assertEquals(length, start.daysUntil(end))
             }
         }
 

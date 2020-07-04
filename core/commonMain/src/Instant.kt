@@ -135,12 +135,14 @@ public fun Instant.minus(other: Instant, unit: CalendarUnit, zone: TimeZone): Lo
 
 
 
-public fun Instant.plus(unit: ChronoUnit, zone: TimeZone): Instant =
-        plus(unit.scale, unit.component.toCalendarUnit(), zone)
-public fun Instant.plus(value: Int, unit: ChronoUnit, zone: TimeZone): Instant =
-        plus(value * unit.scale, unit.component.toCalendarUnit(), zone)
-public fun Instant.plus(value: Long, unit: ChronoUnit, zone: TimeZone): Instant =
-        plus(value * unit.scale, unit.component.toCalendarUnit(), zone)
+public fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(unit.calendarScale, unit.calendarUnit, zone)
+public fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(value * unit.calendarScale, unit.calendarUnit, zone)
+public fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(value * unit.calendarScale, unit.calendarUnit, zone)
 
-public fun Instant.until(other: Instant, unit: ChronoUnit, zone: TimeZone): Long =
-        until(other, unit.component.toCalendarUnit(), zone) / unit.scale
+public fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
+        until(other, unit.calendarUnit, zone) / unit.calendarScale
+
+public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)

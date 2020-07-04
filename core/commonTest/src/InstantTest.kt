@@ -94,21 +94,25 @@ class InstantTest {
         assertEquals(24, instant1.until(instant2, CalendarUnit.HOUR, zone))
         assertEquals(24, instant2.minus(instant1, CalendarUnit.HOUR, zone))
 
-        val instant3 = instant1.plus(ChronoUnit.DAY, zone)
+        val instant3 = instant1.plus(DateTimeUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         assertEquals(25.hours, instant3 - instant1)
         assertEquals(1, instant1.until(instant3, CalendarUnit.DAY, zone))
         assertEquals(1, instant1.daysUntil(instant3, zone))
         assertEquals(1, instant3.minus(instant1, CalendarUnit.DAY, zone))
 
-        val instant4 = instant1.plus(14, ChronoUnit.MONTH, zone)
+        val instant4 = instant1.plus(14, DateTimeUnit.MONTH, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
-        assertEquals(1, instant1.until(instant4, ChronoUnit.YEAR, zone))
-        assertEquals(4, instant1.until(instant4, ChronoUnit.QUARTER, zone))
-        assertEquals(14, instant1.until(instant4, ChronoUnit.MONTH, zone))
-        assertEquals(61, instant1.until(instant4, ChronoUnit.WEEK, zone))
-        assertEquals(366 + 31 + 30, instant1.until(instant4, ChronoUnit.DAY, zone))
-        assertEquals((366 + 31 + 30) * 24 + 1, instant1.until(instant4, ChronoUnit.HOUR, zone))
+        assertEquals(1, instant1.until(instant4, DateTimeUnit.YEAR, zone))
+        assertEquals(4, instant1.until(instant4, DateTimeUnit.QUARTER, zone))
+        assertEquals(14, instant1.until(instant4, DateTimeUnit.MONTH, zone))
+        assertEquals(61, instant1.until(instant4, DateTimeUnit.WEEK, zone))
+        assertEquals(366 + 31 + 30, instant1.until(instant4, DateTimeUnit.DAY, zone))
+        assertEquals((366 + 31 + 30) * 24 + 1, instant1.until(instant4, DateTimeUnit.HOUR, zone))
+
+        for (timeUnit in listOf(DateTimeUnit.SECOND, DateTimeUnit.MINUTE, DateTimeUnit.HOUR)) {
+            assertEquals(instant4 - instant1, timeUnit.duration * instant4.minus(instant1, timeUnit, zone).toDouble())
+        }
 
         val period = CalendarPeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
