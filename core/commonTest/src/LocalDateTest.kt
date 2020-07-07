@@ -92,17 +92,16 @@ class LocalDateTest {
     }
 
     @Test
-    fun invalidTime() {
-        fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
-            LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
-        localTime(23, 59)
-        assertFailsWith<Throwable> { localTime(-1, 0) }
-        assertFailsWith<Throwable> { localTime(24, 0) }
-        assertFailsWith<Throwable> { localTime(0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 60) }
-        assertFailsWith<Throwable> { localTime(0, 0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 0, 60) }
-        assertFailsWith<Throwable> { localTime(0, 0, 0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 0, 0, 1_000_000_000) }
+    fun invalidDate() {
+        assertFailsWith<Throwable> { LocalDate(2007, 2, 29) }
+        LocalDate(2008, 2, 29)
+        assertFailsWith<Throwable> { LocalDate(2007, 4, 31) }
+        assertFailsWith<Throwable> { LocalDate(2007, 1, 0) }
+        assertFailsWith<Throwable> { LocalDate(2007,1, 32) }
+        assertFailsWith<Throwable> { LocalDate(Int.MIN_VALUE, 1, 1) }
+        assertFailsWith<Throwable> { LocalDate(2007, 1, 32) }
+        assertFailsWith<Throwable> { LocalDate(2007, 0, 1) }
+        assertFailsWith<Throwable> { LocalDate(2007, 13, 1) }
     }
+
 }

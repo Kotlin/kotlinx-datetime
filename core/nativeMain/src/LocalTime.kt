@@ -52,10 +52,14 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
         }
 
         internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
-            require(hour >= 0 && hour <= 23)
-            require(minute >= 0 && minute <= 59)
-            require(second >= 0 && second <= 59)
-            require(nanosecond >= 0 && nanosecond < NANOS_PER_ONE)
+            fun check(value: Int, lower: Int, upper: Int, str: String) =
+                require(value >= lower && value <= upper) {
+                    "Invalid time: $str must be a number between $lower and $upper, got $value"
+                }
+            check(hour, 0, 23, "hour")
+            check(minute, 0, 59, "minute")
+            check(second, 0, 59, "second")
+            check(nanosecond, 0, NANOS_PER_ONE - 1, "nanosecond")
             return LocalTime(hour, minute, second, nanosecond)
         }
 
