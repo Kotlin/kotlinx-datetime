@@ -88,7 +88,7 @@ class InstantTest {
         val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
-        val instant2 = instant1.plus(CalendarPeriod(hours = 24), zone)
+        val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
         assertEquals(24.hours, instant2 - instant1)
         assertEquals(24, instant1.until(instant2, CalendarUnit.HOUR, zone))
@@ -114,7 +114,7 @@ class InstantTest {
             assertEquals(instant4 - instant1, timeUnit.duration * instant4.minus(instant1, timeUnit, zone).toDouble())
         }
 
-        val period = CalendarPeriod(days = 1, hours = 1)
+        val period = DateTimePeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
         checkComponents(instant5.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant5, zone))

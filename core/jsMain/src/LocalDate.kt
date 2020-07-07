@@ -56,12 +56,8 @@ public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
 
 
 
-public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
+public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
         with(period) {
-            if (hours != 0 || minutes != 0 || seconds != 0L || nanoseconds != 0L) {
-                throw IllegalArgumentException("Only date based units can be added to LocalDate")
-            }
-
             return@with value
                     .run { if (years != 0 && months == 0) plusYears(years) else this }
                     .run { if (months != 0) plusMonths(years.toDouble() * 12 + months) else this }
@@ -71,13 +67,13 @@ public actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
 
 
 
-public actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
+public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     var startD = this.value
     val endD = other.value
     val months = startD.until(endD, ChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
     val days = startD.until(endD, ChronoUnit.DAYS).toInt()
 
-    return CalendarPeriod(months / 12, months % 12, days)
+    return DatePeriod(months / 12, months % 12, days)
 }
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =

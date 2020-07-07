@@ -282,7 +282,7 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
     toZonedLocalDateTimeFailing(zone)
 }
 
-actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant = try {
+actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedLocalDateTimeFailing(zone)
             .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
@@ -336,7 +336,7 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
 }
 
 @OptIn(ExperimentalTime::class)
-actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
+actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     var thisLdt = toZonedLocalDateTimeFailing(zone)
     val otherLdt = other.toZonedLocalDateTimeFailing(zone)
 
@@ -347,7 +347,7 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
     val time = thisLdt.until(otherLdt, CalendarUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
     }
 }
 

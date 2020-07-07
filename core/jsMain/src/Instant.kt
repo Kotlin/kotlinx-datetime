@@ -63,7 +63,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 }
 
 
-public actual fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant {
+public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant {
     val thisZdt = this.value.atZone(zone.zoneId)
     return with(period) {
         thisZdt
@@ -102,7 +102,7 @@ public actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone):
         }.let(::Instant)
 
 @OptIn(ExperimentalTime::class)
-public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod {
+public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     var thisZdt = this.value.atZone(zone.zoneId)
     val otherZdt = other.value.atZone(zone.zoneId)
 
@@ -111,7 +111,7 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarP
     val time = thisZdt.until(otherZdt, ChronoUnit.NANOS).toDouble().nanoseconds
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
     }
 }
 

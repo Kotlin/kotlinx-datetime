@@ -61,11 +61,11 @@ class LocalDateTest {
         val startDate = LocalDate(2016, 2, 29)
         checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)
         checkComponents(startDate.plus(DateTimeUnit.YEAR), 2017, 2, 28)
-        checkComponents(startDate + CalendarPeriod(years = 4), 2020, 2, 29)
+        checkComponents(startDate + DatePeriod(years = 4), 2020, 2, 29)
 
-        checkComponents(LocalDate.parse("2016-01-31") + CalendarPeriod(months = 1), 2016, 2, 29)
+        checkComponents(LocalDate.parse("2016-01-31") + DatePeriod(months = 1), 2016, 2, 29)
 
-        assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) }
+//        assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) } // won't compile
         assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
 //        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) } // won't compile
     }
@@ -75,7 +75,7 @@ class LocalDateTest {
         val today = Clock.System.todayAt(TimeZone.SYSTEM)
 
         val nextMonthPlusDay1 = today.plus(1, CalendarUnit.MONTH).plus(1, CalendarUnit.DAY)
-        val nextMonthPlusDay2 = today + CalendarPeriod(months = 1, days = 1)
+        val nextMonthPlusDay2 = today + DatePeriod(months = 1, days = 1)
         val nextMonthPlusDay3 = today.plus(1, CalendarUnit.DAY).plus(1, CalendarUnit.MONTH)
     }
 
@@ -86,7 +86,7 @@ class LocalDateTest {
         repeat(1000) {
             val days1 = Random.nextInt(-3652..3652)
             val days2 = Random.nextInt(-3652..3652)
-            val ldtBefore = origin + CalendarPeriod(days = days1)
+            val ldtBefore = origin + DatePeriod(days = days1)
             val ldtNow = origin.plus(days2, CalendarUnit.DAY)
 
             val diff = ldtNow - ldtBefore

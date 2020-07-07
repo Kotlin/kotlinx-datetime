@@ -74,7 +74,7 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
  */
-public expect fun Instant.plus(period: CalendarPeriod, zone: TimeZone): Instant
+public expect fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
@@ -89,7 +89,7 @@ public expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone):
 /**
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): CalendarPeriod
+public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod
 
 /**
  * The return value is clamped to [Long.MAX_VALUE] or [Long.MIN_VALUE] if [unit] is more granular than
@@ -130,7 +130,7 @@ public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
 internal fun Long.clampToInt(): Int =
     if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
 
-public fun Instant.minus(other: Instant, zone: TimeZone): CalendarPeriod = other.periodUntil(this, zone)
+public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other.periodUntil(this, zone)
 public fun Instant.minus(other: Instant, unit: CalendarUnit, zone: TimeZone): Long = other.until(this, unit, zone)
 
 

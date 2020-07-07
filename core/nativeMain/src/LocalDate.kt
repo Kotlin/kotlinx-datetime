@@ -273,12 +273,8 @@ actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
 actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
     plus(value.toLong(), unit)
 
-actual operator fun LocalDate.plus(period: CalendarPeriod): LocalDate =
+actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     with(period) {
-        require (hours == 0 && minutes == 0 && seconds == 0L && nanoseconds == 0L) {
-            "Only date based units can be added to LocalDate"
-        }
-
         try {
             this@plus
                 .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
@@ -324,8 +320,8 @@ internal fun LocalDate.longUntil(end: LocalDate, unit: CalendarUnit): Long =
         CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Unsupported unit: $unit")
     }
 
-actual fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod {
+actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = longUntil(other, CalendarUnit.MONTH)
     val days = plusMonths(months).longUntil(other, CalendarUnit.DAY)
-    return CalendarPeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
+    return DatePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
 }

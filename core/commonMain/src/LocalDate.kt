@@ -51,13 +51,13 @@ expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
  * @throws DateTimeArithmeticException if arithmetic overflow occurs or the boundaries of [LocalDate] are exceeded at
  * any point in intermediate computations.
  */
-expect operator fun LocalDate.plus(period: CalendarPeriod): LocalDate
+expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
 
 /** */
-expect fun LocalDate.periodUntil(other: LocalDate): CalendarPeriod
+expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
 
 /** */
-operator fun LocalDate.minus(other: LocalDate): CalendarPeriod = other.periodUntil(this)
+operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(this)
 
 public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
