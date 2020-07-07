@@ -54,7 +54,7 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
         internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
             fun check(value: Int, lower: Int, upper: Int, str: String) =
                 require(value >= lower && value <= upper) {
-                    "Invalid time: $str is a number between $lower and $upper, got $value"
+                    "Invalid time: $str must be a number between $lower and $upper, got $value"
                 }
             check(hour, 0, 23, "hour")
             check(minute, 0, 59, "minute")
