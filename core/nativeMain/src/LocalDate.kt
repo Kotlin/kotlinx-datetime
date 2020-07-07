@@ -13,7 +13,7 @@ import kotlin.math.*
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE
 internal val localDateParser: Parser<LocalDate>
-    get() = intParser(4, 10)
+    get() = intParser(4, 10, SignStyle.EXCEEDS_PAD)
         .chainIgnoring(concreteCharParser('-'))
         .chain(intParser(2, 2))
         .chainIgnoring(concreteCharParser('-'))

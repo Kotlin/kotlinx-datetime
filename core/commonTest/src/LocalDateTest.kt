@@ -42,6 +42,11 @@ class LocalDateTest {
         checkParsedComponents("2019-10-01", 2019, 10, 1, 2, 274)
         checkParsedComponents("2016-02-29", 2016, 2, 29, 1, 60)
         checkParsedComponents("2017-10-01", 2017, 10, 1,  7, 274)
+        assertFailsWith<Throwable> { LocalDate.parse("102017-10-01") }
+        assertFailsWith<Throwable> { LocalDate.parse("2017--10-01") }
+        assertFailsWith<Throwable> { LocalDate.parse("2017-+10-01") }
+        assertFailsWith<Throwable> { LocalDate.parse("2017-10-+01") }
+        assertFailsWith<Throwable> { LocalDate.parse("2017-10--01") }
     }
 
     @Test
