@@ -77,11 +77,7 @@ char * get_system_timezone(TZID *tzid)
     auto name = CFTimeZoneGetName(zone);
     *tzid = id_by_name((__bridge NSString *)name);
     CFIndex bufferSize = CFStringGetLength(name) + 1;
-    char * buffer = (char *)malloc(sizeof(char) * bufferSize);
-    if (buffer == nullptr) {
-        CFRelease(zone);
-        return nullptr;
-    }
+    char * buffer = check_allocation((char *)malloc(sizeof(char) * bufferSize));
     // only fails if the name is not UTF8-encoded, which is an anomaly.
     auto result = CFStringGetCString(name, buffer, bufferSize, kCFStringEncodingUTF8);
     assert(result);
@@ -102,15 +98,12 @@ char ** available_zone_ids()
             ids.insert(std::string([key UTF8String]));
         }
     }
-    char ** zones_copy = (char **)malloc(
-            sizeof(char *) * (ids.size() + 1));
-    if (zones_copy == nullptr) {
-        return nullptr;
-    }
+    char ** zones_copy = check_allocation(
+        (char **)malloc(sizeof(char *) * (ids.size() + 1)));
     zones_copy[ids.size()] = nullptr;
     unsigned long i = 0;
     for (auto it = ids.begin(); it != ids.end(); ++i, ++it) {
-        PUSH_BACK_OR_RETURN(zones_copy, i, strdup(it->c_str()));
+        zones_copy[i] = check_allocation(strdup(it->c_str()));
     }
     return zones_copy;
 }

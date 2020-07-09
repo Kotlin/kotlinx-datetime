@@ -4,9 +4,8 @@
  */
 // This file specifies the native interface for datetime information queries.
 #pragma once
-#include <time.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <stddef.h>
 
 typedef size_t TZID;
 const size_t TZID_INVALID = SIZE_MAX;

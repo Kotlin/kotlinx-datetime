@@ -289,7 +289,7 @@ char * get_system_timezone(TZID* id)
         return nullptr;
     } else {
         *id = id_by_name(name);
-        return strdup(name);
+        return check_allocation(strdup(name));
     }
 }
 
@@ -310,11 +310,12 @@ char ** available_zone_ids()
             known_ids.insert(it->first);
         }
     }
-    char ** zones = (char **)malloc(sizeof(char *) * (known_ids.size() + 1));
+    char ** zones = check_allocation(
+        (char **)malloc(sizeof(char *) * (known_ids.size() + 1)));
     zones[known_ids.size()] = nullptr;
     unsigned int i = 0;
     for (auto it = known_ids.begin(); it != known_ids.end(); ++it) {
-        PUSH_BACK_OR_RETURN(zones, i, strdup(it->c_str()));
+        zones[i] = check_allocation(strdup(it->c_str()));
         ++i;
     }
     return zones;
