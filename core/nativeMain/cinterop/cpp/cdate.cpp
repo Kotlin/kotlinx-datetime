@@ -23,8 +23,8 @@ template <class T>
 static char * timezone_name(const T& zone)
 {
     auto name = zone.name();
-    char * name_copy = (char *)malloc(sizeof(char) * (name.size() + 1));
-    if (name_copy == nullptr) { return nullptr; }
+    char * name_copy = check_allocation(
+        (char *)malloc(sizeof(char) * (name.size() + 1)));
     name_copy[name.size()] = '\0';
     name.copy(name_copy, name.size());
     return name_copy;
@@ -77,12 +77,11 @@ char ** available_zone_ids()
     try {
         auto& tzdb = get_tzdb();
         auto& zones = tzdb.zones;
-        char ** zones_copy = (char **)malloc(
-                sizeof(char *) * (zones.size() + 1));
-        if (zones_copy == nullptr) { return nullptr; }
+        char ** zones_copy = check_allocation(
+            (char **)malloc(sizeof(char *) * (zones.size() + 1)));
         zones_copy[zones.size()] = nullptr;
         for (unsigned long i = 0; i < zones.size(); ++i) {
-            PUSH_BACK_OR_RETURN(zones_copy, i, timezone_name(zones[i]));
+            zones_copy[i] = timezone_name(zones[i]);
         }
         return zones_copy;
     } catch (std::runtime_error e) {
