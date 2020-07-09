@@ -105,7 +105,8 @@ public expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZo
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.daysUntil(other: Instant, zone: TimeZone): Int
+public fun Instant.daysUntil(other: Instant, zone: TimeZone): Int =
+    until(other, CalendarUnit.DAY, zone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -113,7 +114,8 @@ public expect fun Instant.daysUntil(other: Instant, zone: TimeZone): Int
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int
+public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
+    until(other, CalendarUnit.MONTH, zone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -121,4 +123,8 @@ public expect fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int
+public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
+    until(other, CalendarUnit.YEAR, zone).clampToInt()
+
+private fun Long.clampToInt(): Int =
+    if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()

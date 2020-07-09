@@ -357,10 +357,3 @@ actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Lo
     } catch (e: ArithmeticException) {
         if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
     }
-
-private fun Long.clampToInt(): Int =
-    if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
-
-actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.DAY, zone).clampToInt()
-actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.MONTH, zone).clampToInt()
-actual fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int = until(other, CalendarUnit.YEAR, zone).clampToInt()
