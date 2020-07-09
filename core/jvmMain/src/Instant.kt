@@ -116,7 +116,3 @@ private fun CalendarUnit.toChronoUnit(): ChronoUnit = when(this) {
     CalendarUnit.SECOND -> ChronoUnit.SECONDS
     CalendarUnit.NANOSECOND -> ChronoUnit.NANOS
 }
-
-actual fun Instant.daysUntil(other: Instant, zone: TimeZone): Int = until(other, ChronoUnit.DAYS, zone.zoneId).toInt()
-actual fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int = until(other, ChronoUnit.MONTHS, zone.zoneId).toInt()
-actual fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int = until(other, ChronoUnit.YEARS, zone.zoneId).toInt()
