@@ -40,18 +40,19 @@ private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate =
         when (unit) {
             CalendarUnit.YEAR -> this.value.plusYears(value)
             CalendarUnit.MONTH -> this.value.plusMonths(value)
-            CalendarUnit.WEEK -> this.value.plusWeeks(value)
             CalendarUnit.DAY -> this.value.plusDays(value)
             CalendarUnit.HOUR,
             CalendarUnit.MINUTE,
             CalendarUnit.SECOND,
+            CalendarUnit.MILLISECOND,
+            CalendarUnit.MICROSECOND,
             CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
         }.let(::LocalDate)
 
-public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
+internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
         plusNumber(value.toDouble(), unit)
 
-public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
+internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
         plusNumber(value, unit)
 
 

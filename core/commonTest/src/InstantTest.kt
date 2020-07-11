@@ -91,15 +91,15 @@ class InstantTest {
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
         assertEquals(24.hours, instant2 - instant1)
-        assertEquals(24, instant1.until(instant2, CalendarUnit.HOUR, zone))
-        assertEquals(24, instant2.minus(instant1, CalendarUnit.HOUR, zone))
+        assertEquals(24, instant1.until(instant2, DateTimeUnit.HOUR, zone))
+        assertEquals(24, instant2.minus(instant1, DateTimeUnit.HOUR, zone))
 
         val instant3 = instant1.plus(DateTimeUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         assertEquals(25.hours, instant3 - instant1)
-        assertEquals(1, instant1.until(instant3, CalendarUnit.DAY, zone))
+        assertEquals(1, instant1.until(instant3, DateTimeUnit.DAY, zone))
         assertEquals(1, instant1.daysUntil(instant3, zone))
-        assertEquals(1, instant3.minus(instant1, CalendarUnit.DAY, zone))
+        assertEquals(1, instant3.minus(instant1, DateTimeUnit.DAY, zone))
 
         val instant4 = instant1.plus(14, DateTimeUnit.MONTH, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
@@ -110,8 +110,10 @@ class InstantTest {
         assertEquals(366 + 31 + 30, instant1.until(instant4, DateTimeUnit.DAY, zone))
         assertEquals((366 + 31 + 30) * 24 + 1, instant1.until(instant4, DateTimeUnit.HOUR, zone))
 
-        for (timeUnit in listOf(DateTimeUnit.SECOND, DateTimeUnit.MINUTE, DateTimeUnit.HOUR)) {
-            assertEquals(instant4 - instant1, timeUnit.duration * instant4.minus(instant1, timeUnit, zone).toDouble())
+        for (timeUnit in listOf(DateTimeUnit.MICROSECOND, DateTimeUnit.MILLISECOND, DateTimeUnit.SECOND, DateTimeUnit.MINUTE, DateTimeUnit.HOUR)) {
+            val diff = instant4.minus(instant1, timeUnit, zone)
+            assertEquals(instant4 - instant1, timeUnit.duration * diff.toDouble())
+            assertEquals(instant4, instant1.plus(diff, timeUnit, zone))
         }
 
         val period = DateTimePeriod(days = 1, hours = 1)

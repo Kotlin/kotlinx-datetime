@@ -73,11 +73,11 @@ internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =
     when (unit) {
         // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
+        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> {
             dateTime.until(other.dateTime, unit)
         }
         // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
-        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
+        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.MILLISECOND, CalendarUnit.MICROSECOND, CalendarUnit.NANOSECOND -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
             val otherLdtAdjusted = try {
                 other.dateTime.plusSeconds(offsetDiff.toLong())

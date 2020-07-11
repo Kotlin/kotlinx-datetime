@@ -125,13 +125,3 @@ operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
         this.days + other.days
 )
 
-enum class CalendarUnit {
-    YEAR,
-    MONTH,
-    WEEK,
-    DAY,
-    HOUR,
-    MINUTE,
-    SECOND,
-    NANOSECOND
-}

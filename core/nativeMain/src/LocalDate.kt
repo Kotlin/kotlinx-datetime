@@ -249,13 +249,12 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
     }
 }
 
-actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
+internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
     when (unit) {
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> try {
+        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> try {
             when (unit) {
                 CalendarUnit.YEAR -> plusYears(value)
                 CalendarUnit.MONTH -> plusMonths(value)
-                CalendarUnit.WEEK -> plusWeeks(value)
                 CalendarUnit.DAY -> plusDays(value)
                 else -> throw RuntimeException("impossible")
             }
@@ -267,10 +266,12 @@ actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
         CalendarUnit.HOUR,
         CalendarUnit.MINUTE,
         CalendarUnit.SECOND,
+        CalendarUnit.MILLISECOND,
+        CalendarUnit.MICROSECOND,
         CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
     }
 
-actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
+internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
     plus(value.toLong(), unit)
 
 actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
@@ -311,12 +312,13 @@ internal fun LocalDate.longMonthsUntil(other: LocalDate): Long {
 internal fun LocalDate.longUntil(end: LocalDate, unit: CalendarUnit): Long =
     when (unit) {
         CalendarUnit.DAY -> longDaysUntil(end)
-        CalendarUnit.WEEK -> longDaysUntil(end) / 7
         CalendarUnit.MONTH -> longMonthsUntil(end)
         CalendarUnit.YEAR -> longMonthsUntil(end) / 12
         CalendarUnit.HOUR,
         CalendarUnit.MINUTE,
         CalendarUnit.SECOND,
+        CalendarUnit.MILLISECOND,
+        CalendarUnit.MICROSECOND,
         CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Unsupported unit: $unit")
     }
 

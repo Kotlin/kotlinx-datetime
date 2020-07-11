@@ -36,6 +36,14 @@ sealed class DateTimeUnit {
                     calendarUnit = CalendarUnit.SECOND
                     calendarScale = nanoseconds / 1_000_000_000
                 }
+                nanoseconds % 1_000_000 == 0L -> {
+                    calendarUnit = CalendarUnit.MILLISECOND
+                    calendarScale = nanoseconds / 1_000_000
+                }
+                nanoseconds % 1_000 == 0L -> {
+                    calendarUnit = CalendarUnit.MICROSECOND
+                    calendarScale = nanoseconds / 1_000
+                }
                 else -> {
                     calendarUnit = CalendarUnit.NANOSECOND
                     calendarScale = nanoseconds
@@ -103,4 +111,17 @@ sealed class DateTimeUnit {
         val YEAR = MONTH * 12
         val CENTURY = YEAR * 100
     }
+}
+
+
+internal enum class CalendarUnit {
+    YEAR,
+    MONTH,
+    DAY,
+    HOUR,
+    MINUTE,
+    SECOND,
+    MILLISECOND,
+    MICROSECOND,
+    NANOSECOND
 }

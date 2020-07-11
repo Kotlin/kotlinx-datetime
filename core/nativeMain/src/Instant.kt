@@ -299,14 +299,13 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
+internal actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
     plus(value.toLong(), unit, zone)
 
-actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
+internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
     when (unit) {
         CalendarUnit.YEAR -> toZonedLocalDateTimeFailing(zone).plusYears(value).toInstant()
         CalendarUnit.MONTH -> toZonedLocalDateTimeFailing(zone).plusMonths(value).toInstant()
-        CalendarUnit.WEEK -> toZonedLocalDateTimeFailing(zone).plusDays(safeMultiply(value, 7)).toInstant()
         CalendarUnit.DAY -> toZonedLocalDateTimeFailing(zone).plusDays(value).toInstant()
         /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
            then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
@@ -327,6 +326,8 @@ actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instan
         CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0).check(zone)
         CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0).check(zone)
         CalendarUnit.SECOND -> plus(value, 0).check(zone)
+        CalendarUnit.MILLISECOND -> plus(value / MILLIS_PER_ONE, (value % MILLIS_PER_ONE) * NANOS_PER_MILLI).check(zone)
+        CalendarUnit.MICROSECOND -> plus(value / MICROS_PER_ONE, (value % MICROS_PER_ONE) * NANOS_PER_MICRO).check(zone)
         CalendarUnit.NANOSECOND -> plus(0, value).check(zone)
     }
 } catch (e: ArithmeticException) {
@@ -351,7 +352,7 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     }
 }
 
-actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
+internal actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
     try {
         toZonedLocalDateTimeFailing(zone).until(other.toZonedLocalDateTimeFailing(zone), unit)
     } catch (e: ArithmeticException) {

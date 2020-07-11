@@ -71,18 +71,19 @@ public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant 
     }.toInstant().let(::Instant)
 }
 
-public actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
+internal actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
         plus(value.toLong(), unit, zone)
 
-public actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
+internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
         when (unit) {
             CalendarUnit.YEAR -> this.value.atZone(zone.zoneId).plusYears(value).toInstant()
             CalendarUnit.MONTH -> this.value.atZone(zone.zoneId).plusMonths(value).toInstant()
-            CalendarUnit.WEEK -> this.value.atZone(zone.zoneId).plusWeeks(value).toInstant()
             CalendarUnit.DAY -> this.value.atZone(zone.zoneId).plusDays(value).toInstant()
             CalendarUnit.HOUR -> this.value.atZone(zone.zoneId).plusHours(value).toInstant()
             CalendarUnit.MINUTE -> this.value.atZone(zone.zoneId).plusMinutes(value).toInstant()
             CalendarUnit.SECOND -> this.value.plusSeconds(value)
+            CalendarUnit.MILLISECOND -> this.value.plusMillis(value)
+            CalendarUnit.MICROSECOND -> this.value.plusSeconds(value / 1_000_000).plusNanos((value % 1_000_000) * 1000)
             CalendarUnit.NANOSECOND -> this.value.plusNanos(value)
         }.let(::Instant)
 
@@ -100,7 +101,7 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
     }
 }
 
-actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
+internal actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
         until(other, unit.toChronoUnit(), zone.zoneId)
 
 private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long =
@@ -109,10 +110,11 @@ private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long 
 private fun CalendarUnit.toChronoUnit(): ChronoUnit = when(this) {
     CalendarUnit.YEAR -> ChronoUnit.YEARS
     CalendarUnit.MONTH -> ChronoUnit.MONTHS
-    CalendarUnit.WEEK -> ChronoUnit.WEEKS
     CalendarUnit.DAY -> ChronoUnit.DAYS
     CalendarUnit.HOUR -> ChronoUnit.HOURS
     CalendarUnit.MINUTE -> ChronoUnit.MINUTES
     CalendarUnit.SECOND -> ChronoUnit.SECONDS
+    CalendarUnit.MILLISECOND -> ChronoUnit.MILLIS
+    CalendarUnit.MICROSECOND -> ChronoUnit.MICROS
     CalendarUnit.NANOSECOND -> ChronoUnit.NANOS
 }

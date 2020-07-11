@@ -38,13 +38,13 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
  * @throws IllegalArgumentException if the calendar unit is not date-based.
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-expect fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate
+internal expect fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate
 
 /**
  * @throws IllegalArgumentException if the calendar unit is not date-based.
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
+internal expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
 
 /**
  * @throws IllegalArgumentException if [period] has non-zero time (as opposed to date) components.
@@ -62,15 +62,6 @@ operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(t
 public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 public expect fun LocalDate.yearsUntil(other: LocalDate): Int
-
-public fun LocalDate.until(other: LocalDate, unit: CalendarUnit): Int = when(unit) {
-    CalendarUnit.YEAR -> yearsUntil(other)
-    CalendarUnit.MONTH -> monthsUntil(other)
-    CalendarUnit.WEEK -> daysUntil(other) / 7
-    CalendarUnit.DAY -> daysUntil(other)
-    CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND ->
-        throw UnsupportedOperationException("Only date based units can be used to express difference between LocalDate values.")
-}
 
 public fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(unit.calendarScale, unit.calendarUnit)

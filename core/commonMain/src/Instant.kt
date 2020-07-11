@@ -79,12 +79,12 @@ public expect fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
+internal expect fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant
+internal expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
@@ -97,7 +97,7 @@ public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long
+internal expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -131,7 +131,6 @@ internal fun Long.clampToInt(): Int =
     if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
 
 public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other.periodUntil(this, zone)
-public fun Instant.minus(other: Instant, unit: CalendarUnit, zone: TimeZone): Long = other.until(this, unit, zone)
 
 
 

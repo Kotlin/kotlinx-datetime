@@ -98,7 +98,7 @@ actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
 /** @throws ArithmeticException on arithmetic overflow. Only possible for time-based units. */
 internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long =
     when (unit) {
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.WEEK, CalendarUnit.DAY -> {
+        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> {
             var endDate: LocalDate = other.date
             if (endDate > date && other.time < time) {
                 endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
@@ -107,7 +107,7 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
             }
             date.longUntil(endDate, unit)
         }
-        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND -> {
+        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.MILLISECOND, CalendarUnit.MICROSECOND, CalendarUnit.NANOSECOND -> {
             var daysUntil = date.longDaysUntil(other.date)
             var timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
             if (daysUntil > 0 && timeUntil < 0) {
@@ -124,6 +124,10 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long
                     safeMultiply(daysUntil, MINUTES_PER_DAY.toLong()))
                 CalendarUnit.SECOND -> safeAdd(nanos / NANOS_PER_ONE,
                     safeMultiply(daysUntil, SECONDS_PER_DAY.toLong()))
+                CalendarUnit.MILLISECOND -> safeAdd(nanos / NANOS_PER_MILLI,
+                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong() * MILLIS_PER_ONE))
+                CalendarUnit.MICROSECOND -> safeAdd(nanos / NANOS_PER_MICRO,
+                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong() * MICROS_PER_ONE))
                 CalendarUnit.NANOSECOND -> safeAdd(nanos, safeMultiply(daysUntil, NANOS_PER_DAY))
                 else -> throw RuntimeException("impossible")
             }

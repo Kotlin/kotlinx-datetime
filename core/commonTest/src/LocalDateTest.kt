@@ -66,7 +66,6 @@ class LocalDateTest {
         checkComponents(LocalDate.parse("2016-01-31") + DatePeriod(months = 1), 2016, 2, 29)
 
 //        assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) } // won't compile
-        assertFailsWith<IllegalArgumentException> { startDate.plus(7, CalendarUnit.HOUR) }
 //        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) } // won't compile
     }
 
@@ -74,9 +73,9 @@ class LocalDateTest {
     fun tomorrow() {
         val today = Clock.System.todayAt(TimeZone.SYSTEM)
 
-        val nextMonthPlusDay1 = today.plus(1, CalendarUnit.MONTH).plus(1, CalendarUnit.DAY)
+        val nextMonthPlusDay1 = today.plus(DateTimeUnit.MONTH).plus(1, DateTimeUnit.DAY)
         val nextMonthPlusDay2 = today + DatePeriod(months = 1, days = 1)
-        val nextMonthPlusDay3 = today.plus(1, CalendarUnit.DAY).plus(1, CalendarUnit.MONTH)
+        val nextMonthPlusDay3 = today.plus(DateTimeUnit.DAY).plus(1, DateTimeUnit.MONTH)
     }
 
     @Test
@@ -89,7 +88,7 @@ class LocalDateTest {
             val days1 = Random.nextInt(-3652..3652)
             val days2 = Random.nextInt(-3652..3652)
             val ldtBefore = origin + DatePeriod(days = days1)
-            val ldtNow = origin.plus(days2, CalendarUnit.DAY)
+            val ldtNow = origin.plus(days2, DateTimeUnit.DAY)
 
             val diff = ldtNow - ldtBefore
             val ldtAfter = ldtBefore + diff
@@ -133,11 +132,6 @@ class LocalDateTest {
             }
         }
 
-        val d1 = LocalDate(2012, 6, 21)
-        val d2 = LocalDate(2012, 7, 21)
-
-        for (unit in listOf(CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.NANOSECOND))
-            assertFailsWith<UnsupportedOperationException> { d1.until(d2, unit) }
     }
 
     @Test
