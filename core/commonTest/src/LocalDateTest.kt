@@ -82,6 +82,8 @@ class LocalDateTest {
     @Test
     fun diffInvariant() {
         val origin = LocalDate(2001, 1, 1)
+        assertEquals(origin, origin.plus(0, DateTimeUnit.DAY))
+        assertEquals(origin, origin.plus(DatePeriod(days = 0)))
 
         repeat(1000) {
             val days1 = Random.nextInt(-3652..3652)

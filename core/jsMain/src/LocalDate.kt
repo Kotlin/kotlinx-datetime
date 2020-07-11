@@ -49,7 +49,7 @@ private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate =
         }.let(::LocalDate)
 
 public actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
-        plusNumber(value, unit)
+        plusNumber(value.toDouble(), unit)
 
 public actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
         plusNumber(value, unit)
