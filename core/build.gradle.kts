@@ -108,6 +108,9 @@ kotlin {
                 extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
             }
         }
+        compilations["test"].kotlinOptions {
+            freeCompilerArgs += listOf("-trw")
+        }
     }
 
     sourceSets.all {
