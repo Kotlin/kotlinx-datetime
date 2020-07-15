@@ -9,7 +9,6 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.nanoseconds
 
-// TODO: toString
 sealed class DateTimeUnit {
 
     abstract operator fun times(scalar: Int): DateTimeUnit
@@ -60,6 +59,8 @@ sealed class DateTimeUnit {
                 this === other || (other is TimeBased && this.nanoseconds == other.nanoseconds)
 
         override fun hashCode(): Int = nanoseconds.toInt() xor (nanoseconds shr Int.SIZE_BITS).toInt()
+
+        override fun toString(): String = formatToString(calendarScale, calendarUnit.toString())
     }
 
     sealed class DateBased : DateTimeUnit() {
@@ -78,6 +79,11 @@ sealed class DateTimeUnit {
                     this === other || (other is DayBased && this.days == other.days)
 
             override fun hashCode(): Int = days xor 0x10000
+
+            override fun toString(): String = if (days % 7 == 0)
+                formatToString(days / 7, "WEEK")
+            else
+                formatToString(days, "DAY")
         }
         class MonthBased(val months: Int) : DateBased() {
             init {
@@ -93,9 +99,18 @@ sealed class DateTimeUnit {
                     this === other || (other is MonthBased && this.months == other.months)
 
             override fun hashCode(): Int = months xor 0x20000
+
+            override fun toString(): String = when {
+                months % 12_00 == 0 -> formatToString(months / 12_00, "CENTURY")
+                months % 12 == 0 -> formatToString(months / 12, "YEAR")
+                months % 3 == 0 -> formatToString(months / 3, "QUARTER")
+                else -> formatToString(months, "MONTH")
+            }
         }
     }
 
+    protected fun formatToString(value: Int, unit: String): String = if (value == 1) unit else "$value-$unit"
+    protected fun formatToString(value: Long, unit: String): String = if (value == 1L) unit else "$value-$unit"
 
     companion object {
         val NANOSECOND = TimeBased(nanoseconds = 1)
