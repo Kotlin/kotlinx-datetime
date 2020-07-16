@@ -24,7 +24,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     override fun toString(): String = zoneId.toString()
 
     actual companion object {
-        actual val SYSTEM: TimeZone = ZoneId.systemDefault().let(::TimeZone)
+        actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
         actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
         actual fun of(zoneId: String): TimeZone = ZoneId.of(zoneId).let(::TimeZone)
         actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds().toSet()

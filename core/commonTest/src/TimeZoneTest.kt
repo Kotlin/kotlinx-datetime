@@ -20,7 +20,11 @@ class TimeZoneTest {
 
     @Test
     fun system() {
-        println(TimeZone.SYSTEM)
+        val tz = TimeZone.currentSystemDefault()
+        println(tz)
+        val offset = Clock.System.now().offsetAt(tz)
+        assertTrue(offset.totalSeconds in -18 * 60 * 60 .. 18 * 60 * 60)
+        // assertTrue(tz.id.contains('/')) // does not work on build agents, whose timezone is "UTC"
         // TODO: decide how to assert system tz properties
     }
 
@@ -31,7 +35,7 @@ class TimeZoneTest {
         allTzIds.forEach(::println)
 
         assertNotEquals(0, allTzIds.size)
-        assertTrue(TimeZone.SYSTEM.id in allTzIds)
+        assertTrue(TimeZone.currentSystemDefault().id in allTzIds)
         assertTrue("UTC" in allTzIds)
     }
 

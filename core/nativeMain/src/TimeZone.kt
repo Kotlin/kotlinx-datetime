@@ -16,8 +16,7 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
 
     actual companion object {
 
-        @SharedImmutable
-        actual val SYSTEM: TimeZone = memScoped {
+        actual fun currentSystemDefault(): TimeZone = memScoped {
             val tzid = alloc<TZIDVar>()
             val string = get_system_timezone(tzid.ptr)
                 ?: throw RuntimeException("Failed to get the system timezone.")

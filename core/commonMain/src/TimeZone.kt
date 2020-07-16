@@ -13,7 +13,7 @@ public expect open class TimeZone {
          * @throws RuntimeException if the name of the system time-zone is invalid or the time-zone specified as the
          * system one cannot be found.
          */
-        val SYSTEM: TimeZone
+        fun currentSystemDefault(): TimeZone
         val UTC: TimeZone
 
         /**
