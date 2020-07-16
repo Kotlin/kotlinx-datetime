@@ -31,12 +31,15 @@ its scope. Internationalization (such as locale-specific month and day names) is
 The library provides the basic set of types for working with date and time:
 
 - `Instant` to represent a moment on the UTC-SLS time scale;
+- `Clock` to obtain the current instant;
 - `LocalDateTime` to represent date and time components without a reference to the particular time zone; 
 - `LocalDate` to represent the components of date only;
 - `TimeZone` and `ZoneOffset` provide time zone information to convert between `Instant` and `LocalDateTime`;
 - `Month` and `DayOfWeek` enums;
-- `CalendarPeriod` to represent a difference between two instants decomposed into calendar units. The latter are
-  listed in `CalendarUnit` enum.
+- `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
+- `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
+it represents a difference between two LocalDate values decomposed into date units.
+- `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations on `Instant` and `LocalDate`. 
   
 ### Type use-cases
 
@@ -50,7 +53,7 @@ Here is some basic advice on how to choose which of the date-carrying types to u
   the scheduled event separately. Try to avoid converting future events to `Instant` in advance, because time-zone 
   rules might change unexpectedly in the future. 
   Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
-- Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birthday).
+- Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birth date).
  
 ## Operations
 
@@ -60,11 +63,21 @@ With the above types you can get the following operations done.
 ### Getting the current moment of time
 
 The current moment of time can be captured with the `Instant` type. 
-Use `Instant.now()` function in its companion object.
+To obtain an `Instant` corresponding to the current moment of time, 
+use `now()` function of the `Clock` interface:
 
 ```kotlin
-val currentMoment = Instant.now()
+val clock: Clock = ...
+val currentMoment = clock.now()
 ```
+
+An instance of `Clock` can be injected through the function/class parameters, 
+or you can use its default implementation `Clock.System` that represents the system clock:
+
+```kotlin
+val currentMoment = Clock.System.now()
+```
+
 
 ### Converting an instant to local date and time components
 
@@ -75,9 +88,9 @@ that represents date and time components without a reference to the particular t
 The `TimeZone` type provides the rules to convert instants from and to date/time components.
 
 ```kotlin
-val currentMoment: Instant = Instant.now()
+val currentMoment: Instant = Clock.System.now()
 val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
-val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.SYSTEM)
+val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 ```
 
 `LocalDateTime` instance exposes familiar components of the Gregorian calendar: 
@@ -111,8 +124,10 @@ val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(TimeZone.of("UTC+3"))
 by converting it to `LocalDateTime` and taking its `date` property.
 
 ```kotlin
-val now: Instant = Instant.now()
-val today: LocalDate = now.toLocalDateTime(TimeZone.SYSTEM).date
+val now: Instant = Clock.System.now()
+val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
+// or more short
+val today: LocalDate = Clock.System.todayAt(TimeZone.currentSystemDefault())
 ```
 Note, that today's date really depends on the time zone in which you're observing the current moment.
 
@@ -134,7 +149,7 @@ the `parse` function in companion object is used to parse a string representatio
 
 
 ```kotlin
-val instantNow = Instant.now()
+val instantNow = Clock.System.now()
 instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
 val instantBefore = Instant.parse("2010-06-01T22:19:44.475Z")
 ```
@@ -155,7 +170,7 @@ where it feels more convenient:
 ### Instant arithmetic
 
 ```kotlin
-val now = Instant.now()
+val now = Clock.System.now()
 val instantInThePast: Instant = Instant.parse("2020-01-01T00:00:00Z")
 val durationSinceThen: Duration = now - instantInThePast
 val equidistantInstantInTheFuture: Instant = now + durationSinceThen
@@ -167,25 +182,26 @@ This type holds the amount of time that can be represented in different time uni
 To get the calendar difference between two instants you can use `Instant.periodUntil(Instant, TimeZone)` function.
 
 ```kotlin
-val period: CalendarPeriod = instantInThePast.periodUntil(Instant.now(), TimeZone.UTC)
+val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.UTC)
 ```
 
-`CalendarPeriod` represents a difference between two particular moments as a sum of calendar components, 
+`DateTimePeriod` represents a difference between two particular moments as a sum of calendar components, 
 like "2 years, 3 months, 10 days, and 22 hours".
 
-The difference can be calculated as an integer amount of specified calendar units:
+The difference can be calculated as an integer amount of specified date or time units:
 
 ```kotlin
-val diffInMonths = instantInThePast.until(Instant.now(), CalendarUnit.MONTH, TimeZone.UTC)
+val diffInMonths = instantInThePast.until(Clock.System.now(), DateTimeUnit.MONTH, TimeZone.UTC)
 ```
 There are also shortcuts `yearsUntil(...)`, `monthsUntil(...)`, and `daysUntil(...)`.
 
-A particular amount of calendar units or a calendar period can be added to an `Instant` with the `plus` function:
+A particular amount of date/time units or a date/time period can be added to an `Instant` with the `plus` function:
 
 ```kotlin
-val now = Instant.now()
-val tomorrow = now.plus(1, CalendarUnit.DAY, TimeZone.SYSTEM)
-val threeYearsAndAMonthLater = now.plus(CalendarPeriod(years = 3, months = 1), TimeZone.SYSTEM)
+val now = Clock.System.now()
+val systemTZ = TimeZone.currentSystemDefault()
+val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
+val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
 ```
 
 Note that `plus` and `...until` operations require `TimeZone` as a parameter because the calendar interval between 
@@ -193,26 +209,32 @@ two particular instants can be different, when calculated in different time zone
 
 ### Date arithmetic
 
-The similar operations with calendar units are provided for `LocalDate` type:
+The similar operations with date units are provided for `LocalDate` type:
 
-- `LocalDate.plus(number, CalendarUnit)`
-- `LocalDate.plus(CalendarPeriod)`
-- `LocalDate.periodUntil(LocalDate)` and `LocalDate.minus(LocalDate)`
+- `LocalDate.plus(number, DateTimeUnit.DateBased)`
+- `LocalDate.plus(DatePeriod)`
+- `LocalDate.until(LocalDate, DateTimeUnit.DateBased)` and the shortcuts `yearsUntil`, `monthUntil`, `daysUntil`
+- `LocalDate.periodUntil(LocalDate): DatePeriod` and `LocalDate.minus(LocalDate): DatePeriod`
+
+Notice that instead of general `DateTimeUnit` and `DateTimePeriod` we're using their subtypes
+`DateTimeUnit.DateBased` and `DatePeriod` respectively. This allows preventing the situations when
+time components are being added to a date at compile time.
 
 ## Implementation
 
 The implementation of date/time types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
 
-- [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API in JVM;
-- [`js-joda`](https://js-joda.github.io/js-joda/) library in JS;
-- based on [ThreeTen backport project](https://www.threeten.org/threetenbp/) in Native.
+- in JVM: [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API;
+- in JS: [`js-joda`](https://js-joda.github.io/js-joda/) library;
+- in Native: based on [ThreeTen backport project](https://www.threeten.org/threetenbp/)
+  - time zone support is provided by [date](https://github.com/HowardHinnant/date/) C++ library;
 
 ## Known/open issues, work TBD
 
-* Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
-* Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
+- [x] Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
+- [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
   formats that are used in practice (in particular, various RFCs).
-* An alternative JVM implementation for Android might be needed.  
+- [ ] An alternative JVM implementation for Android might be needed.  
 
 ## Building
 
