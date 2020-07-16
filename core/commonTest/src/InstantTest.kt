@@ -323,6 +323,16 @@ class InstantTest {
         assertEquals("+19999-12-31T23:59:59.000000009Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9).toInstant(TimeZone.UTC).toString())
     }
 
+    @Test
+    fun distantPastAndFuture() {
+        val distantFutureString = "+100000-01-01T00:00:00Z"
+        val distantPastString = "-100001-12-31T23:59:59.999999999Z"
+        assertEquals(distantFutureString, Instant.DISTANT_FUTURE.toString())
+        assertEquals(Instant.DISTANT_FUTURE, distantFutureString.toInstant())
+        assertEquals(distantPastString, Instant.DISTANT_PAST.toString())
+        assertEquals(Instant.DISTANT_PAST, distantPastString.toInstant())
+    }
+
 }
 
 @OptIn(ExperimentalTime::class)
