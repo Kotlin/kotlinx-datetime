@@ -71,9 +71,6 @@ public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant 
     }.toInstant().let(::Instant)
 }
 
-internal actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
-        plus(value.toLong(), unit, zone)
-
 internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
         when (unit) {
             CalendarUnit.YEAR -> this.value.atZone(zone.zoneId).plusYears(value).toInstant()
@@ -101,8 +98,8 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
     }
 }
 
-internal actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
-        until(other, unit.toChronoUnit(), zone.zoneId)
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
+        until(other, unit.calendarUnit.toChronoUnit(), zone.zoneId) / unit.calendarScale
 
 private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long =
         this.value.atZone(zone).until(other.value.atZone(zone), unit)

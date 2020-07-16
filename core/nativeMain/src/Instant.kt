@@ -299,9 +299,6 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-internal actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
-    plus(value.toLong(), unit, zone)
-
 internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
     when (unit) {
         CalendarUnit.YEAR -> toZonedLocalDateTimeFailing(zone).plusYears(value).toInstant()
@@ -352,9 +349,10 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     }
 }
 
-internal actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
     try {
-        toZonedLocalDateTimeFailing(zone).until(other.toZonedLocalDateTimeFailing(zone), unit)
+        // TODO: inline 'until' here and simplify operation for time-based units
+        toZonedLocalDateTimeFailing(zone).until(other.toZonedLocalDateTimeFailing(zone), unit.calendarUnit) / unit.calendarScale
     } catch (e: ArithmeticException) {
         if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
     }

@@ -79,11 +79,6 @@ public expect fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-internal expect fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant
-
-/**
- * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
- */
 internal expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant
 
 /**
@@ -97,7 +92,7 @@ public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-internal expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long
+public expect fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -106,7 +101,7 @@ internal expect fun Instant.until(other: Instant, unit: CalendarUnit, zone: Time
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
 public fun Instant.daysUntil(other: Instant, zone: TimeZone): Int =
-    until(other, CalendarUnit.DAY, zone).clampToInt()
+    until(other, DateTimeUnit.DAY, zone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -115,7 +110,7 @@ public fun Instant.daysUntil(other: Instant, zone: TimeZone): Int =
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
 public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
-    until(other, CalendarUnit.MONTH, zone).clampToInt()
+    until(other, DateTimeUnit.MONTH, zone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -124,7 +119,7 @@ public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
 public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
-    until(other, CalendarUnit.YEAR, zone).clampToInt()
+    until(other, DateTimeUnit.YEAR, zone).clampToInt()
 
 // TODO: move to internal utils
 internal fun Long.clampToInt(): Int =
@@ -133,15 +128,24 @@ internal fun Long.clampToInt(): Int =
 public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other.periodUntil(this, zone)
 
 
-
+/**
+ * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ */
 public fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
         plus(unit.calendarScale, unit.calendarUnit, zone)
+
+// TODO: safeMultiply
+/**
+ * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ */
 public fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
         plus(value * unit.calendarScale, unit.calendarUnit, zone)
+
+/**
+ * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ */
 public fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
         plus(value * unit.calendarScale, unit.calendarUnit, zone)
 
-public fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
-        until(other, unit.calendarUnit, zone) / unit.calendarScale
 
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)

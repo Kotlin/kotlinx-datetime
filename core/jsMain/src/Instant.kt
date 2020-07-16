@@ -77,19 +77,6 @@ public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant 
     }.toInstant().let(::Instant)
 }
 
-internal actual fun Instant.plus(value: Int, unit: CalendarUnit, zone: TimeZone): Instant =
-        when (unit) {
-            CalendarUnit.YEAR -> this.value.atZone(zone.zoneId).plusYears(value).toInstant()
-            CalendarUnit.MONTH -> this.value.atZone(zone.zoneId).plusMonths(value).toInstant()
-            CalendarUnit.DAY -> this.value.atZone(zone.zoneId).plusDays(value).let { it as ZonedDateTime }.toInstant()
-            CalendarUnit.HOUR -> this.value.atZone(zone.zoneId).plusHours(value).toInstant()
-            CalendarUnit.MINUTE -> this.value.atZone(zone.zoneId).plusMinutes(value).toInstant()
-            CalendarUnit.SECOND -> this.value.plusSeconds(value)
-            CalendarUnit.MILLISECOND -> this.value.plusMillis(value)
-            CalendarUnit.MICROSECOND -> this.value.plusNanos(value * 1000)
-            CalendarUnit.NANOSECOND -> this.value.plusNanos(value)
-        }.let(::Instant)
-
 internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
         when (unit) {
             CalendarUnit.YEAR -> this.value.atZone(zone.zoneId).plusYears(value).toInstant()
@@ -116,9 +103,8 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
         return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
     }
 }
-
-internal actual fun Instant.until(other: Instant, unit: CalendarUnit, zone: TimeZone): Long =
-        until(other, unit.toChronoUnit(), zone.zoneId)
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
+        until(other, unit.calendarUnit.toChronoUnit(), zone.zoneId) / unit.calendarScale
 
 private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long =
         this.value.atZone(zone).until(other.value.atZone(zone), unit).toLong()
