@@ -62,7 +62,7 @@ class ThreeTenBpLocalDateTest {
             for (i in 1..length) {
                 val d = LocalDate(2007, month, i)
                 assertSame(d.dayOfWeek, dow)
-                dow = DayOfWeek(dow.number % 7 + 1)
+                dow = DayOfWeek(dow.isoDayNumber % 7 + 1)
             }
         }
     }

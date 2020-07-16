@@ -17,11 +17,11 @@ public expect enum class DayOfWeek {
     SUNDAY;
 }
 
-public val DayOfWeek.number: Int get() = ordinal + 1
+public val DayOfWeek.isoDayNumber: Int get() = ordinal + 1
 
 @SharedImmutable
 private val allDaysOfWeek = DayOfWeek.values().asList()
-public fun DayOfWeek(number: Int): DayOfWeek {
-    require(number in 1..7)
-    return allDaysOfWeek[number - 1]
+public fun DayOfWeek(isoDayNumber: Int): DayOfWeek {
+    require(isoDayNumber in 1..7)
+    return allDaysOfWeek[isoDayNumber - 1]
 }

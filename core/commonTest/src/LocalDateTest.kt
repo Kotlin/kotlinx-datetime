@@ -22,7 +22,7 @@ class LocalDateTest {
         assertEquals(month, value.monthNumber)
         assertEquals(Month(month), value.month)
         assertEquals(day, value.dayOfMonth)
-        if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number)
+        if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.isoDayNumber)
         if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear)
 
         val fromComponents = LocalDate(year, month, day)
@@ -31,7 +31,7 @@ class LocalDateTest {
 
     fun checkLocalDateTimePart(date: LocalDate, datetime: LocalDateTime) {
         checkEquals(date, datetime.date)
-        checkComponents(date, datetime.year, datetime.monthNumber, datetime.dayOfMonth, datetime.dayOfWeek.number, datetime.dayOfYear)
+        checkComponents(date, datetime.year, datetime.monthNumber, datetime.dayOfMonth, datetime.dayOfWeek.isoDayNumber, datetime.dayOfYear)
     }
 
     @Test

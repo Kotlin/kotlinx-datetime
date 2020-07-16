@@ -120,7 +120,7 @@ fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour:
     assertEquals(minute, value.minute, "minutes")
     assertEquals(second, value.second, "seconds")
     assertEquals(nanosecond, value.nanosecond, "nanoseconds")
-    if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.number, "weekday")
+    if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.isoDayNumber, "weekday")
     if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear, "day of year")
 
     val fromComponents = LocalDateTime(year, month, day, hour, minute, second, nanosecond)
