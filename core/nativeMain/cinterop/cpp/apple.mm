@@ -28,6 +28,16 @@ static NSTimeZone * zone_by_name(NSString *zone_name)
     return [NSTimeZone timeZoneWithName: name];
 }
 
+static NSDate * dateWithTimeIntervalSince1970Saturating(int64_t epoch_sec)
+{
+    auto date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
+    if ([date timeIntervalSinceDate:[NSDate distantPast]] < 0)
+        date = [NSDate distantPast];
+    else if ([date timeIntervalSinceDate:[NSDate distantFuture]] > 0)
+        date = [NSDate distantFuture];
+    return date;
+}
+
 extern "C" {
 #include "cdate.h"
 }
@@ -154,7 +164,7 @@ int offset_at_instant(TZID zone_id, int64_t epoch_sec)
 {
     auto zone = timezone_by_id(zone_id);
     if (zone == nil) { return INT_MAX; }
-    auto date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
+    auto date = dateWithTimeIntervalSince1970Saturating(epoch_sec);
     return (int32_t)[zone secondsFromGMTForDate: date];
 }
 
@@ -169,7 +179,7 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     if (zone == nil) { return 0; }
     /* a date in an unspecified timezone, defined by the number of seconds since
        the start of the epoch in *that* unspecified timezone */
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
+    auto date = dateWithTimeIntervalSince1970Saturating(epoch_sec);
     // The Gregorian calendar.
     NSCalendar *gregorian = [NSCalendar
         calendarWithIdentifier:NSCalendarIdentifierGregorian];
@@ -189,7 +199,7 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     /* `dateFromComponents` automatically corrects the date to avoid gaps. We
        need to learn which adjustments it performed. */
     int result = (int)((int64_t)[newDate timeIntervalSince1970] +
-      (int64_t)*offset - epoch_sec);
+      (int64_t)*offset - (int64_t)[date timeIntervalSince1970]);
     return result;
 }
 
