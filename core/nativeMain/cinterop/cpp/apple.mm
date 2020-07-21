@@ -180,19 +180,19 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     /* a date in an unspecified timezone, defined by the number of seconds since
        the start of the epoch in *that* unspecified timezone */
     auto date = dateWithTimeIntervalSince1970Saturating(epoch_sec);
-    // The Gregorian calendar.
-    NSCalendar *gregorian = [NSCalendar
-        calendarWithIdentifier:NSCalendarIdentifierGregorian];
-    if (gregorian == nil) { return 0; }
+    // The ISO8601 calendar.
+    NSCalendar *iso8601 = [NSCalendar
+        calendarWithIdentifier: NSCalendarIdentifierISO8601];
+    if (iso8601 == nil) { return 0; }
     // The UTC time zone
     NSTimeZone *utc = [NSTimeZone timeZoneForSecondsFromGMT: 0];
     /* Now, we say that the date that we initially meant is `date`, only with
        the context of being in a timezone `zone`. */
-    NSDateComponents *dateComponents = [gregorian
+    NSDateComponents *dateComponents = [iso8601
         componentsInTimeZone: utc
         fromDate: date];
     dateComponents.timeZone = zone;
-    NSDate *newDate = [gregorian dateFromComponents:dateComponents];
+    NSDate *newDate = [iso8601 dateFromComponents:dateComponents];
     if (newDate == nil) { return 0; }
     // we now know the offset of that timezone at this time.
     *offset = (int)[zone secondsFromGMTForDate: newDate];
