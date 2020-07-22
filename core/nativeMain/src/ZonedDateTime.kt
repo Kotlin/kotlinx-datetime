@@ -13,17 +13,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plusYears(years: Long): ZonedDateTime = dateTime.plusYears(years).resolve()
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusMonths(months: Long): ZonedDateTime = dateTime.plusMonths(months).resolve()
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusDays(days: Long): ZonedDateTime = dateTime.plusDays(days).resolve()
+    internal fun plus(value: Long, unit: DateTimeUnit.DateBased): ZonedDateTime = dateTime.plus(value, unit).resolve()
 
     // Never throws in practice
     private fun LocalDateTime.resolve(): ZonedDateTime = with(zone) { atZone(offset) }
@@ -71,15 +61,12 @@ internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
  * [LocalDateTime].
  */
 
-// TODO: use DateTimeUnit
-internal fun ZonedDateTime.until(other: ZonedDateTime, unit: CalendarUnit): Long =
+internal fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit): Long =
     when (unit) {
         // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> {
-            dateTime.until(other.dateTime, unit)
-        }
+        is DateTimeUnit.DateBased -> dateTime.until(other.dateTime, unit)
         // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
-        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.MILLISECOND, CalendarUnit.MICROSECOND, CalendarUnit.NANOSECOND -> {
+        is DateTimeUnit.TimeBased -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
             val otherLdtAdjusted = try {
                 other.dateTime.plusSeconds(offsetDiff.toLong())

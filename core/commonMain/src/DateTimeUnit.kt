@@ -140,3 +140,16 @@ internal enum class CalendarUnit {
     MICROSECOND,
     NANOSECOND
 }
+
+internal val CalendarUnit.dateTimeUnit: DateTimeUnit
+    get() = when (this) {
+        CalendarUnit.YEAR -> DateTimeUnit.YEAR
+        CalendarUnit.MONTH -> DateTimeUnit.MONTH
+        CalendarUnit.DAY -> DateTimeUnit.DAY
+        CalendarUnit.HOUR -> DateTimeUnit.HOUR
+        CalendarUnit.MINUTE -> DateTimeUnit.MINUTE
+        CalendarUnit.SECOND -> DateTimeUnit.SECOND
+        CalendarUnit.MILLISECOND -> DateTimeUnit.MILLISECOND
+        CalendarUnit.MICROSECOND -> DateTimeUnit.MICROSECOND
+        CalendarUnit.NANOSECOND -> DateTimeUnit.NANOSECOND
+    }

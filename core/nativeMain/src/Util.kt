@@ -10,13 +10,63 @@ package kotlinx.datetime
 import platform.posix.*
 
 /**
- * All code from here was taken from various places of https://github.com/ThreeTen/threetenbp with few changes
+ * Calculates [a] * [b] / [c].
+ *
+ * @throws ArithmeticException if the result overflows a long
+ */
+internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Long {
+    val ad = a / c
+    val am = a % c
+    val bd = b / c
+    val bm = b % c
+    /**
+     * a = (a / c) * c + (a % c)
+     * b = (b / c) * c + (b % c)
+     * (a * b) / c = (((a / c) * c + (a % c)) * ((b / c) * c + (b % c))) / c
+     *             = ((a / c) * (b / c) * c^2 + ((b % c) * (a / c) + (a % c) * (b / c)) * c + (a % c) * (b % c)) / c
+     *             = (a / c) * (b / c) * c + (b % c) * (a / c) + (a % c) * (b / c) + ((a % c) * (b % c)) / c
+     */
+    return safeAdd(safeMultiply(safeMultiply(ad, bd), c),
+        safeAdd(safeAdd(safeMultiply(bm, ad), safeMultiply(am, bd)), safeMultiply(am, bm) / c))
+}
+
+/**
+ * Calculates [a] * [b] / [c].
+ *
+ * @throws ArithmeticException if the result overflows a long
+ */
+internal fun multiplyAndRemainder(a: Long, b: Long, c: Long): Long =
+    safeMultiply(a % c, b % c) % c
+
+/**
+ * Calculates ([d] * [n] + [r]) / [m], where [n] > 0 and |[r]| < [n].
+ *
+ * @throws ArithmeticException if the result overflows a long
+ */
+internal fun multiplyAddAndDivide(d: Long, n: Long, r: Long, m: Long): Long {
+    var md = d
+    var mr = r
+    // make sure [md] and [mr] have the same sign
+    if (d > 0 && r < 0) {
+        md--
+        mr += n
+    } else if (d < 0 && r > 0) {
+        md++
+        mr -= n
+    }
+    if (md == 0L) {
+        return mr / m
+    }
+    return safeAdd(multiplyAndDivide(md, n, m),
+        safeAdd(mr / m, safeAdd(mr % m, multiplyAndRemainder(md, n, m)) / m))
+}
+
+/**
+ * All code below was taken from various places of https://github.com/ThreeTen/threetenbp with few changes
  */
 
 internal const val NANOS_PER_MILLI = 1_000_000
-internal const val NANOS_PER_MICRO = 1_000
 internal const val MILLIS_PER_ONE = 1_000
-internal const val MICROS_PER_ONE = 1_000_000
 internal const val NANOS_PER_ONE = 1_000_000_000
 
 /**

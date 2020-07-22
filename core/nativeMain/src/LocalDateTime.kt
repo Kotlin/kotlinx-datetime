@@ -71,18 +71,8 @@ public actual class LocalDateTime internal constructor(
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plusYears(years: Long): LocalDateTime = LocalDateTime(date.plusYears(years), time)
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusMonths(months: Long): LocalDateTime = LocalDateTime(date.plusMonths(months), time)
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusDays(days: Long): LocalDateTime = LocalDateTime(date.plusDays(days), time)
-
+    internal fun plus(value: Long, unit: DateTimeUnit.DateBased): LocalDateTime =
+        LocalDateTime(date.plusDateTimeUnit(value, unit), time)
 }
 
 actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
@@ -95,44 +85,26 @@ actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
     with(timeZone) { offset }
 
 // org.threeten.bp.LocalDateTime#until
-/** @throws ArithmeticException on arithmetic overflow. Only possible for time-based units. */
-internal fun LocalDateTime.until(other: LocalDateTime, unit: CalendarUnit): Long =
-    when (unit) {
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> {
-            var endDate: LocalDate = other.date
-            if (endDate > date && other.time < time) {
-                endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
-            } else if (endDate < date && other.time > time) {
-                endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
-            }
-            date.longUntil(endDate, unit)
-        }
-        CalendarUnit.HOUR, CalendarUnit.MINUTE, CalendarUnit.SECOND, CalendarUnit.MILLISECOND, CalendarUnit.MICROSECOND, CalendarUnit.NANOSECOND -> {
-            var daysUntil = date.longDaysUntil(other.date)
-            var timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
-            if (daysUntil > 0 && timeUntil < 0) {
-                daysUntil--
-                timeUntil += NANOS_PER_DAY
-            } else if (daysUntil < 0 && timeUntil > 0) {
-                daysUntil++
-                timeUntil -= NANOS_PER_DAY
-            }
-            val nanos = timeUntil
-            when (unit) {
-                CalendarUnit.HOUR -> safeAdd(nanos / NANOS_PER_HOUR, safeMultiply(daysUntil, HOURS_PER_DAY.toLong()))
-                CalendarUnit.MINUTE -> safeAdd(nanos / NANOS_PER_MINUTE,
-                    safeMultiply(daysUntil, MINUTES_PER_DAY.toLong()))
-                CalendarUnit.SECOND -> safeAdd(nanos / NANOS_PER_ONE,
-                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong()))
-                CalendarUnit.MILLISECOND -> safeAdd(nanos / NANOS_PER_MILLI,
-                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong() * MILLIS_PER_ONE))
-                CalendarUnit.MICROSECOND -> safeAdd(nanos / NANOS_PER_MICRO,
-                    safeMultiply(daysUntil, SECONDS_PER_DAY.toLong() * MICROS_PER_ONE))
-                CalendarUnit.NANOSECOND -> safeAdd(nanos, safeMultiply(daysUntil, NANOS_PER_DAY))
-                else -> throw RuntimeException("impossible")
-            }
-        }
+internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
+    var endDate: LocalDate = other.date
+    if (endDate > date && other.time < time) {
+        endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
+    } else if (endDate < date && other.time > time) {
+        endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
     }
+    return when (unit) {
+        is DateTimeUnit.DateBased.MonthBased -> date.longMonthsUntil(endDate) / unit.months
+        is DateTimeUnit.DateBased.DayBased -> date.longDaysUntil(endDate) / unit.days
+    }
+}
+
+// org.threeten.bp.LocalDateTime#until
+/** @throws ArithmeticException on arithmetic overflow. */
+internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBased): Long {
+    val daysUntil = date.longDaysUntil(other.date)
+    val timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
+    return multiplyAddAndDivide(daysUntil, NANOS_PER_DAY, timeUntil, unit.nanoseconds)
+}
 
 // org.threeten.bp.LocalDateTime#plusSeconds
 /**
