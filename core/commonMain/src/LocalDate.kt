@@ -69,9 +69,19 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 public fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(unit.calendarScale, unit.calendarUnit)
 public fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
-        plus(value * unit.calendarScale, unit.calendarUnit)
+        try {
+            plus(safeMultiply(value.toLong(), unit.calendarScale), unit.calendarUnit)
+        } catch (e: Exception) {
+            if (e !is ArithmeticException) throw e
+            throw DateTimeArithmeticException(e)
+        }
 public fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
-        plus(value * unit.calendarScale, unit.calendarUnit)
+        try {
+            plus(safeMultiply(value, unit.calendarScale), unit.calendarUnit)
+        } catch (e: Exception) {
+            if (e !is ArithmeticException) throw e
+            throw DateTimeArithmeticException(e)
+        }
 
 public fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
     is DateTimeUnit.DateBased.MonthBased -> (monthsUntil(other) / unit.months).toInt()

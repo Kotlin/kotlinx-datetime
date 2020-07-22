@@ -110,18 +110,18 @@ fun Duration.toDateTimePeriod(): DateTimePeriod = toComponents { hours, minutes,
 }
 
 operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = DateTimePeriod(
-        this.years + other.years,
-        this.months + other.months,
-        this.days + other.days,
-        this.hours + other.hours,
-        this.minutes + other.minutes,
-        this.seconds + other.seconds,
-        this.nanoseconds + other.nanoseconds
+        safeAdd(this.years, other.years),
+        safeAdd(this.months, other.months),
+        safeAdd(this.days, other.days),
+        safeAdd(this.hours, other.hours),
+        safeAdd(this.minutes, other.minutes),
+        safeAdd(this.seconds, other.seconds),
+        safeAdd(this.nanoseconds, other.nanoseconds)
 )
 
 operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
-        this.years + other.years,
-        this.months + other.months,
-        this.days + other.days
+        safeAdd(this.years, other.years),
+        safeAdd(this.months, other.months),
+        safeAdd(this.days, other.days)
 )
 

@@ -5,6 +5,8 @@
 @file:JvmName("LocalDateTimeJvmKt")
 package kotlinx.datetime
 
+import java.time.DateTimeException
+import java.time.format.DateTimeParseException
 import java.time.LocalDateTime as jtLocalDateTime
 
 
@@ -14,7 +16,11 @@ public actual typealias DayOfWeek = java.time.DayOfWeek
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-            this(jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond))
+            this(try {
+                jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+            } catch (e: DateTimeException) {
+                throw IllegalArgumentException(e)
+            })
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
@@ -40,8 +46,10 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value)
 
     actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime {
-            return jtLocalDateTime.parse(isoString).let(::LocalDateTime)
+        public actual fun parse(isoString: String): LocalDateTime = try {
+            jtLocalDateTime.parse(isoString).let(::LocalDateTime)
+        } catch (e: DateTimeParseException) {
+            throw DateTimeFormatException(e)
         }
 
         internal actual val MIN: LocalDateTime = LocalDateTime(jtLocalDateTime.MIN)
@@ -51,8 +59,11 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 }
 
 
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-        jtLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
+    jtLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+} catch (e: DateTimeException) {
+    throw DateTimeArithmeticException(e)
+}
 
 public actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
         timeZone.zoneId.rules.getOffset(this.value).let(::ZoneOffset)

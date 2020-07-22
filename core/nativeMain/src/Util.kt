@@ -176,8 +176,6 @@ internal const val HOURS_PER_DAY = 24
  */
 internal const val SECONDS_PER_DAY: Int = SECONDS_PER_HOUR * HOURS_PER_DAY
 
-internal const val MINUTES_PER_DAY: Int = MINUTES_PER_HOUR * HOURS_PER_DAY
-
 internal const val NANOS_PER_MINUTE: Long = NANOS_PER_ONE * SECONDS_PER_MINUTE.toLong()
 
 internal const val NANOS_PER_HOUR = NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
@@ -193,7 +191,7 @@ internal const val SECONDS_0000_TO_1970 = (146097L * 5L - (30L * 365L + 7L)) * 8
  * Safely adds two long values.
  * throws [ArithmeticException] if the result overflows a long
  */
-internal fun safeAdd(a: Long, b: Long): Long {
+internal actual fun safeAdd(a: Long, b: Long): Long {
     val sum = a + b
     // check for a change of sign in the result when the inputs have the same sign
     if ((a xor sum) < 0 && (a xor b) >= 0) {
@@ -206,30 +204,13 @@ internal fun safeAdd(a: Long, b: Long): Long {
  * Safely adds two int values.
  * throws [ArithmeticException] if the result overflows an int
  */
-internal fun safeAdd(a: Int, b: Int): Int {
+internal actual fun safeAdd(a: Int, b: Int): Int {
     val sum = a + b
     // check for a change of sign in the result when the inputs have the same sign
     if ((a xor sum) < 0 && (a xor b) >= 0) {
         throw ArithmeticException("Addition overflows an int: $a + $b")
     }
     return sum
-}
-
-/**
- * Safely subtracts one long from another.
- *
- * @param a  the first value
- * @param b  the second value to subtract from the first
- * @return the result
- * @throws ArithmeticException if the result overflows a long
- */
-internal fun safeSubtract(a: Long, b: Long): Long {
-    val result = a - b
-    // check for a change of sign in the result when the inputs have the different signs
-    if (a xor result < 0 && a xor b < 0) {
-        throw ArithmeticException("Subtraction overflows a long: $a - $b")
-    }
-    return result
 }
 
 /**
@@ -240,7 +221,7 @@ internal fun safeSubtract(a: Long, b: Long): Long {
  * @return the new total
  * @throws ArithmeticException if the result overflows a long
  */
-internal fun safeMultiply(a: Long, b: Long): Long {
+internal actual fun safeMultiply(a: Long, b: Long): Long {
     if (b == 1L) {
         return a
     }
@@ -265,7 +246,7 @@ internal fun safeMultiply(a: Long, b: Long): Long {
  * @return the new total
  * @throws ArithmeticException if the result overflows an int
  */
-internal fun safeMultiply(a: Int, b: Int): Int {
+internal actual fun safeMultiply(a: Int, b: Int): Int {
     val total = a.toLong() * b.toLong()
     if (total < Int.MIN_VALUE || total > Int.MAX_VALUE) {
         throw ArithmeticException("Multiplication overflows an int: $a * $b")

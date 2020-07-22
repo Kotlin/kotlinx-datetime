@@ -50,7 +50,7 @@ sealed class DateTimeUnit {
             }
         }
 
-        override fun times(scalar: Int): TimeBased = TimeBased(nanoseconds * scalar) // TODO: prevent overflow
+        override fun times(scalar: Int): TimeBased = TimeBased(safeMultiply(nanoseconds, scalar.toLong()))
 
         @ExperimentalTime
         val duration: Duration = nanoseconds.nanoseconds
@@ -70,7 +70,7 @@ sealed class DateTimeUnit {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
             }
 
-            override fun times(scalar: Int): DayBased = DayBased(days * scalar)
+            override fun times(scalar: Int): DayBased = DayBased(safeMultiply(days, scalar))
 
             internal override val calendarUnit: CalendarUnit get() = CalendarUnit.DAY
             internal override val calendarScale: Long get() = days.toLong()
@@ -90,7 +90,7 @@ sealed class DateTimeUnit {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }
             }
 
-            override fun times(scalar: Int): MonthBased = MonthBased(months * scalar)
+            override fun times(scalar: Int): MonthBased = MonthBased(safeMultiply(months, scalar))
 
             internal override val calendarUnit: CalendarUnit get() = CalendarUnit.MONTH
             internal override val calendarScale: Long get() = months.toLong()

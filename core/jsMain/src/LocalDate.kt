@@ -10,8 +10,11 @@ import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
-        public actual fun parse(isoString: String): LocalDate {
-            return jtLocalDate.parse(isoString).let(::LocalDate)
+        public actual fun parse(isoString: String): LocalDate = try {
+            jtLocalDate.parse(isoString).let(::LocalDate)
+        } catch (e: Throwable) {
+            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
+            throw e
         }
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
@@ -19,7 +22,12 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
-            this(jtLocalDate.of(year, monthNumber, dayOfMonth))
+            this(try {
+                jtLocalDate.of(year, monthNumber, dayOfMonth)
+            } catch (e: Throwable) {
+                if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
+                throw e
+            })
 
     public actual val year: Int get() = value.year().toInt()
     public actual val monthNumber: Int get() = value.monthValue().toInt()
@@ -39,18 +47,23 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 }
 
 
-private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate =
-        when (unit) {
-            CalendarUnit.YEAR -> this.value.plusYears(value)
-            CalendarUnit.MONTH -> this.value.plusMonths(value)
-            CalendarUnit.DAY -> this.value.plusDays(value)
-            CalendarUnit.HOUR,
-            CalendarUnit.MINUTE,
-            CalendarUnit.SECOND,
-            CalendarUnit.MILLISECOND,
-            CalendarUnit.MICROSECOND,
-            CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
-        }.let(::LocalDate)
+private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate = try {
+
+    when (unit) {
+        CalendarUnit.YEAR -> this.value.plusYears(value)
+        CalendarUnit.MONTH -> this.value.plusMonths(value)
+        CalendarUnit.DAY -> this.value.plusDays(value)
+        CalendarUnit.HOUR,
+        CalendarUnit.MINUTE,
+        CalendarUnit.SECOND,
+        CalendarUnit.MILLISECOND,
+        CalendarUnit.MICROSECOND,
+        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
+    }.let(::LocalDate)
+} catch (e: Throwable) {
+    if (e.isJodaDateTimeException() || e.isJodaArithmeticException()) throw DateTimeArithmeticException(e)
+    throw e
+}
 
 internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
         plusNumber(value.toDouble(), unit)
@@ -60,14 +73,18 @@ internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
 
 
 
-public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
-        with(period) {
-            return@with value
-                    .run { if (years != 0 && months == 0) plusYears(years) else this }
-                    .run { if (months != 0) plusMonths(years.toDouble() * 12 + months) else this }
-                    .run { if (days != 0) plusDays(days) else this }
+public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
+    with(period) {
+        return@with value
+                .run { if (years != 0 && months == 0) plusYears(years) else this }
+                .run { if (months != 0) plusMonths(years.toDouble() * 12 + months) else this }
+                .run { if (days != 0) plusDays(days) else this }
 
-        }.let(::LocalDate)
+    }.let(::LocalDate)
+} catch (e: Throwable) {
+    if (e.isJodaDateTimeException() || e.isJodaArithmeticException()) throw DateTimeArithmeticException(e)
+    throw e
+}
 
 
 

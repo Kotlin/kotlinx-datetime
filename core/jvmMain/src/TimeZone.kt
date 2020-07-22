@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
 
@@ -27,7 +28,15 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     actual companion object {
         actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
         actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
-        actual fun of(zoneId: String): TimeZone = ZoneId.of(zoneId).let(::TimeZone)
+
+        actual fun of(zoneId: String): TimeZone = try {
+            // TODO: Return ZoneOffset for j.t.ZoneOffset
+            ZoneId.of(zoneId).let(::TimeZone)
+        } catch (e: Exception) {
+            if (e is DateTimeException) throw IllegalTimeZoneException(e)
+            throw e
+        }
+
         actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
     }
 }

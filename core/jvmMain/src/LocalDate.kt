@@ -5,14 +5,18 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import java.time.DateTimeException
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
 
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
-        public actual fun parse(isoString: String): LocalDate {
-            return jtLocalDate.parse(isoString).let(::LocalDate)
+        public actual fun parse(isoString: String): LocalDate = try {
+            jtLocalDate.parse(isoString).let(::LocalDate)
+        } catch (e: DateTimeParseException) {
+            throw DateTimeFormatException(e)
         }
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
@@ -20,7 +24,11 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
-            this(jtLocalDate.of(year, monthNumber, dayOfMonth))
+            this(try {
+                jtLocalDate.of(year, monthNumber, dayOfMonth)
+            } catch (e: DateTimeException) {
+                throw IllegalArgumentException(e)
+            })
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
@@ -40,30 +48,47 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 }
 
 
-internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
-        when (unit) {
-            CalendarUnit.YEAR -> this.value.plusYears(value)
-            CalendarUnit.MONTH -> this.value.plusMonths(value)
-            CalendarUnit.DAY -> this.value.plusDays(value)
-            CalendarUnit.HOUR,
-            CalendarUnit.MINUTE,
-            CalendarUnit.SECOND,
-            CalendarUnit.MILLISECOND,
-            CalendarUnit.MICROSECOND,
-            CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
-        }.let(::LocalDate)
+internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate = try {
+    when (unit) {
+        CalendarUnit.YEAR -> this.value.plusYears(value)
+        CalendarUnit.MONTH -> this.value.plusMonths(value)
+        CalendarUnit.DAY -> ofEpochDayChecked(safeAdd(this.value.toEpochDay(), value))
+        CalendarUnit.HOUR,
+        CalendarUnit.MINUTE,
+        CalendarUnit.SECOND,
+        CalendarUnit.MILLISECOND,
+        CalendarUnit.MICROSECOND,
+        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
+    }.let(::LocalDate)
+} catch(e: Exception) {
+    if (e is DateTimeException || e is ArithmeticException)
+        throw DateTimeArithmeticException("The result of adding $value of $unit to $this is out of LocalDate range.")
+    else
+        throw e
+}
+private val minEpochDay = java.time.LocalDate.MIN.toEpochDay()
+private val maxEpochDay = java.time.LocalDate.MAX.toEpochDay()
+private fun ofEpochDayChecked(epochDay: Long): java.time.LocalDate {
+    // LocalDate.ofEpochDay doesn't actually check that the argument doesn't overflow year calculation
+    if (epochDay !in minEpochDay..maxEpochDay)
+        throw DateTimeException("The resulting day $epochDay is out of supported LocalDate range.")
+    return java.time.LocalDate.ofEpochDay(epochDay)
+}
 
 internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
         plus(value.toLong(), unit)
 
-public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
-        with(period) {
-            return@with value
-                    .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-                    .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
-                    .run { if (days != 0) plusDays(days.toLong()) else this }
+public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
+    with(period) {
+        return@with value
+                .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
+                .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                .run { if (days != 0) plusDays(days.toLong()) else this }
 
-        }.let(::LocalDate)
+    }.let(::LocalDate)
+} catch (e: DateTimeException) {
+    throw DateTimeArithmeticException("The result of adding $value to $this is out of LocalDate range.")
+}
 
 
 public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {

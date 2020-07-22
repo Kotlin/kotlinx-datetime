@@ -26,7 +26,14 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     actual companion object {
         actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
         actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
-        actual fun of(zoneId: String): TimeZone = ZoneId.of(zoneId).let(::TimeZone)
+
+        actual fun of(zoneId: String): TimeZone = try {
+            ZoneId.of(zoneId).let(::TimeZone)
+        } catch (e: Throwable) {
+            if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
+            throw e
+        }
+
         actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds().toSet()
     }
 }

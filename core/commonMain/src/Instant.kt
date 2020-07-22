@@ -124,10 +124,6 @@ public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
 public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
     until(other, DateTimeUnit.YEAR, zone).clampToInt()
 
-// TODO: move to internal utils
-internal fun Long.clampToInt(): Int =
-    if (this > Int.MAX_VALUE) Int.MAX_VALUE else if (this < Int.MIN_VALUE) Int.MIN_VALUE else toInt()
-
 public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other.periodUntil(this, zone)
 
 
@@ -137,18 +133,25 @@ public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other
 public fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
         plus(unit.calendarScale, unit.calendarUnit, zone)
 
-// TODO: safeMultiply
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 public fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
-        plus(value * unit.calendarScale, unit.calendarUnit, zone)
+        try {
+            plus(safeMultiply(value.toLong(), unit.calendarScale), unit.calendarUnit, zone)
+        } catch (e: ArithmeticException) {
+            throw DateTimeArithmeticException(e)
+        }
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 public fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
-        plus(value * unit.calendarScale, unit.calendarUnit, zone)
+        try {
+            plus(safeMultiply(value, unit.calendarScale), unit.calendarUnit, zone)
+        } catch (e: ArithmeticException) {
+            throw DateTimeArithmeticException(e)
+        }
 
 
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)

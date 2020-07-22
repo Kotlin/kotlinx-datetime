@@ -6,7 +6,9 @@
 
 package kotlinx.datetime
 
+import java.time.DateTimeException
 import java.time.ZoneId
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
 import java.time.Instant as jtInstant
@@ -20,10 +22,19 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     actual val nanosecondsOfSecond: Int
         get() = value.nano
 
-    public actual fun toEpochMilliseconds(): Long = value.toEpochMilli()
+    public actual fun toEpochMilliseconds(): Long = try {
+        value.toEpochMilli()
+    } catch (e: ArithmeticException) {
+        if (value.isAfter(java.time.Instant.EPOCH)) Long.MAX_VALUE else Long.MIN_VALUE
+    }
 
     actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
-        Instant(value.plusSeconds(seconds).plusNanos(nanoseconds.toLong()))
+        try {
+            Instant(value.plusSeconds(seconds).plusNanos(nanoseconds.toLong()))
+        } catch (e: java.lang.Exception) {
+            if (e !is ArithmeticException && e !is DateTimeException) throw e
+            if (duration.isPositive()) MAX else MIN
+        }
     }
 
     actual operator fun minus(duration: Duration): Instant = plus(-duration)
@@ -49,48 +60,70 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        actual fun parse(isoString: String): Instant =
-                Instant(jtInstant.parse(isoString))
+        actual fun parse(isoString: String): Instant = try {
+            Instant(jtInstant.parse(isoString))
+        } catch (e: DateTimeParseException) {
+            throw DateTimeFormatException(e)
+        }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
-                Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
+            Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
+        } catch (e: Exception) {
+            if (e !is ArithmeticException && e !is DateTimeException) throw e
+            if (epochSeconds > 0) MAX else MIN
+        }
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
     }
 }
 
-public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant {
-    val thisZdt = this.value.atZone(zone.zoneId)
-    return with(period) {
-        thisZdt
-                .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-                .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
-                .run { if (days != 0) plusDays(days.toLong()) else this }
-                .run { if (hours != 0) plusHours(hours.toLong()) else this }
-                .run { if (minutes != 0) plusMinutes(minutes.toLong()) else this }
-                .run { if (seconds != 0L) plusSeconds(seconds) else this }
-                .run { if (nanoseconds != 0L) plusNanos(nanoseconds) else this }
-    }.toInstant().let(::Instant)
+private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {
+    value.atZone(zone.zoneId)
+} catch (e: DateTimeException) {
+    throw DateTimeArithmeticException(e)
 }
 
-internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
-        when (unit) {
-            CalendarUnit.YEAR -> this.value.atZone(zone.zoneId).plusYears(value).toInstant()
-            CalendarUnit.MONTH -> this.value.atZone(zone.zoneId).plusMonths(value).toInstant()
-            CalendarUnit.DAY -> this.value.atZone(zone.zoneId).plusDays(value).toInstant()
-            CalendarUnit.HOUR -> this.value.atZone(zone.zoneId).plusHours(value).toInstant()
-            CalendarUnit.MINUTE -> this.value.atZone(zone.zoneId).plusMinutes(value).toInstant()
-            CalendarUnit.SECOND -> this.value.plusSeconds(value)
-            CalendarUnit.MILLISECOND -> this.value.plusMillis(value)
-            CalendarUnit.MICROSECOND -> this.value.plusSeconds(value / 1_000_000).plusNanos((value % 1_000_000) * 1000)
-            CalendarUnit.NANOSECOND -> this.value.plusNanos(value)
-        }.let(::Instant)
+public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant {
+    try {
+        val thisZdt = atZone(zone)
+        return with(period) {
+            thisZdt
+                    .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
+                    .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                    .run { if (days != 0) plusDays(days.toLong()) else this }
+                    .run { if (hours != 0) plusHours(hours.toLong()) else this }
+                    .run { if (minutes != 0) plusMinutes(minutes.toLong()) else this }
+                    .run { if (seconds != 0L) plusSeconds(seconds) else this }
+                    .run { if (nanoseconds != 0L) plusNanos(nanoseconds) else this }
+        }.toInstant().let(::Instant)
+    } catch (e: DateTimeException) {
+        throw DateTimeArithmeticException(e)
+    }
+}
+
+internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
+    val thisZdt = atZone(zone)
+    when (unit) {
+        CalendarUnit.YEAR -> thisZdt.plusYears(value).toInstant()
+        CalendarUnit.MONTH -> thisZdt.plusMonths(value).toInstant()
+        CalendarUnit.DAY -> thisZdt.plusDays(value).toInstant()
+        CalendarUnit.HOUR -> thisZdt.plusHours(value).toInstant()
+        CalendarUnit.MINUTE -> thisZdt.plusMinutes(value).toInstant()
+        CalendarUnit.SECOND -> this.value.plusSeconds(value).also { it.atZone(zone.zoneId) }
+        CalendarUnit.MILLISECOND -> this.value.plusMillis(value).also { it.atZone(zone.zoneId) }
+        CalendarUnit.MICROSECOND -> this.value.plusSeconds(value / 1_000_000).plusNanos((value % 1_000_000) * 1000).also { it.atZone(zone.zoneId) }
+        CalendarUnit.NANOSECOND -> this.value.plusNanos(value).also { it.atZone(zone.zoneId) }
+    }.let(::Instant)
+} catch (e: Throwable) {
+    if (e !is DateTimeException && e !is ArithmeticException) throw e
+    throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
+}
 
 @OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
-    var thisZdt = this.value.atZone(zone.zoneId)
-    val otherZdt = other.value.atZone(zone.zoneId)
+    var thisZdt = this.atZone(zone)
+    val otherZdt = other.atZone(zone)
 
     val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
@@ -104,8 +137,13 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
         until(other, unit.calendarUnit.toChronoUnit(), zone.zoneId) / unit.calendarScale
 
-private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long =
-        this.value.atZone(zone).until(other.value.atZone(zone), unit)
+private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long = try {
+    this.value.atZone(zone).until(other.value.atZone(zone), unit)
+} catch (e: DateTimeException) {
+    throw DateTimeArithmeticException(e)
+} catch (e: ArithmeticException) {
+    if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
+}
 
 private fun CalendarUnit.toChronoUnit(): ChronoUnit = when(this) {
     CalendarUnit.YEAR -> ChronoUnit.YEARS
