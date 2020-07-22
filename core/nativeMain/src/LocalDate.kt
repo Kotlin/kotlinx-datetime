@@ -92,13 +92,16 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
             return LocalDate(year, month, dom)
         }
+
+        internal actual val MIN = LocalDate(YEAR_MIN, 1, 1)
+        internal actual val MAX = LocalDate(YEAR_MAX, 12, 31)
     }
 
     // org.threeten.bp.LocalDate#toEpochDay
     internal fun toEpochDay(): Long {
-        val y = year
+        val y = year.toLong()
         val m = monthNumber
-        var total = 0
+        var total = 0L
         total += 365 * y
         if (y >= 0) {
             total += (y + 3) / 4 - (y + 99) / 100 + (y + 399) / 400

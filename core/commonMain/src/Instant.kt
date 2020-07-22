@@ -62,6 +62,9 @@ public expect class Instant : Comparable<Instant> {
          * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */
         fun parse(isoString: String): Instant
+
+        internal val MIN: Instant
+        internal val MAX: Instant
     }
 }
 

@@ -219,8 +219,8 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
     }
 
     actual companion object {
-        internal val MIN = Instant(MIN_SECOND, 0)
-        internal val MAX = Instant(MAX_SECOND, 999_999_999)
+        internal actual val MIN = Instant(MIN_SECOND, 0)
+        internal actual val MAX = Instant(MAX_SECOND, 999_999_999)
 
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         actual fun now(): Instant = memScoped {
@@ -289,10 +289,14 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
             .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
             .run { if (days != 0) plusDays(days.toLong()) else this }
         // See [Instant.plus(Instant, long, CalendarUnit, TimeZone)] for an explanation of time inside day being special
-        val secondsToAdd = safeAdd(seconds,
-            safeAdd(minutes.toLong() * SECONDS_PER_MINUTE, hours.toLong() * SECONDS_PER_HOUR))
-        withDate.toInstant().plus(secondsToAdd, period.nanoseconds)
-    }.check(zone)
+        withDate.toInstant()
+            .run { if (hours != 0)
+                plus(hours.toLong() * SECONDS_PER_HOUR, 0).check(zone) else this }
+            .run { if (minutes != 0)
+                plus(minutes.toLong() * SECONDS_PER_MINUTE, 0).check(zone) else this }
+            .run { if (seconds != 0L) plus(seconds, 0).check(zone) else this }
+            .run { if (nanoseconds != 0L) plus(0, nanoseconds).check(zone) else this }
+    }
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
 } catch (e: IllegalArgumentException) {
@@ -320,12 +324,12 @@ internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone
            4 and 5 are invertible by their form: their composition adds and subtracts the offset to and from
            the unix epoch. 1-3 can then be simplified to just adding the time to the instant directly.
          */
-        CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0).check(zone)
-        CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0).check(zone)
-        CalendarUnit.SECOND -> plus(value, 0).check(zone)
-        CalendarUnit.MILLISECOND -> plus(value / MILLIS_PER_ONE, (value % MILLIS_PER_ONE) * NANOS_PER_MILLI).check(zone)
-        CalendarUnit.MICROSECOND -> plus(value / MICROS_PER_ONE, (value % MICROS_PER_ONE) * NANOS_PER_MICRO).check(zone)
-        CalendarUnit.NANOSECOND -> plus(0, value).check(zone)
+        CalendarUnit.HOUR -> check(zone).plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0).check(zone)
+        CalendarUnit.MINUTE -> check(zone).plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0).check(zone)
+        CalendarUnit.SECOND -> check(zone).plus(value, 0).check(zone)
+        CalendarUnit.MILLISECOND -> check(zone).plus(value / MILLIS_PER_ONE, (value % MILLIS_PER_ONE) * NANOS_PER_MILLI).check(zone)
+        CalendarUnit.MICROSECOND -> check(zone).plus(value / MICROS_PER_ONE, (value % MICROS_PER_ONE) * NANOS_PER_MICRO).check(zone)
+        CalendarUnit.NANOSECOND -> check(zone).plus(0, value).check(zone)
     }
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
