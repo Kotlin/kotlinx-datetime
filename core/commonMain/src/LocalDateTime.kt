@@ -14,6 +14,9 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * exceeded.
          */
         public fun parse(isoString: String): LocalDateTime
+
+        internal val MIN: LocalDateTime
+        internal val MAX: LocalDateTime
     }
 
     /**

@@ -23,6 +23,9 @@ class LocalDateTimeTest {
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
 
+        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("x") }
+        assertFailsWith<DateTimeFormatException> { "+1000000000-03-26T04:00:00".toLocalDateTime() }
+
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
          */
@@ -41,6 +44,8 @@ class LocalDateTimeTest {
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(1.hours + 7.minutes - 15.seconds + 400100.microseconds, diff)
+        assertFailsWith<DateTimeArithmeticException> { (Instant.MAX - 3.days).toLocalDateTime(TimeZone.UTC) }
+        assertFailsWith<DateTimeArithmeticException> { (Instant.MIN + 6.hours).toLocalDateTime(TimeZone.UTC) }
     }
 
     @OptIn(ExperimentalTime::class)
@@ -57,6 +62,7 @@ class LocalDateTimeTest {
         val instant = Instant.parse("2019-10-01T18:43:15.100500Z")
         val datetime = instant.toLocalDateTime(TimeZone.UTC)
         checkComponents(datetime, 2019, 10, 1, 18, 43, 15, 100500000)
+        assertFailsWith<DateTimeArithmeticException> { Instant.MAX.toLocalDateTime(TimeZone.UTC) }
     }
 
     @Test
@@ -99,14 +105,14 @@ class LocalDateTimeTest {
         fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
             LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
         localTime(23, 59)
-        assertFailsWith<Throwable> { localTime(-1, 0) }
-        assertFailsWith<Throwable> { localTime(24, 0) }
-        assertFailsWith<Throwable> { localTime(0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 60) }
-        assertFailsWith<Throwable> { localTime(0, 0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 0, 60) }
-        assertFailsWith<Throwable> { localTime(0, 0, 0, -1) }
-        assertFailsWith<Throwable> { localTime(0, 0, 0, 1_000_000_000) }
+        assertFailsWith<IllegalArgumentException> { localTime(-1, 0) }
+        assertFailsWith<IllegalArgumentException> { localTime(24, 0) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, -1) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, 60) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, 0, -1) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, 0, 60) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, 0, 0, -1) }
+        assertFailsWith<IllegalArgumentException> { localTime(0, 0, 0, 1_000_000_000) }
     }
 
 }

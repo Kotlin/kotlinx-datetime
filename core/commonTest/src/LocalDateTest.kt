@@ -42,11 +42,13 @@ class LocalDateTest {
         checkParsedComponents("2019-10-01", 2019, 10, 1, 2, 274)
         checkParsedComponents("2016-02-29", 2016, 2, 29, 1, 60)
         checkParsedComponents("2017-10-01", 2017, 10, 1,  7, 274)
-        assertFailsWith<Throwable> { LocalDate.parse("102017-10-01") }
-        assertFailsWith<Throwable> { LocalDate.parse("2017--10-01") }
-        assertFailsWith<Throwable> { LocalDate.parse("2017-+10-01") }
-        assertFailsWith<Throwable> { LocalDate.parse("2017-10-+01") }
-        assertFailsWith<Throwable> { LocalDate.parse("2017-10--01") }
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("102017-10-01") }
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017--10-01") }
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-+10-01") }
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-10-+01") }
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-10--01") }
+        // this date is currently larger than the largest representable one any of the platforms:
+        assertFailsWith<DateTimeFormatException> { LocalDate.parse("+1000000000-10-01") }
     }
 
     @Test
@@ -65,7 +67,7 @@ class LocalDateTest {
 
         checkComponents(LocalDate.parse("2016-01-31") + DatePeriod(months = 1), 2016, 2, 29)
 
-//        assertFailsWith<IllegalArgumentException> { startDate + CalendarPeriod(hours = 7) } // won't compile
+//        assertFailsWith<IllegalArgumentException> { startDate + DateTimePeriod(hours = 7) } // won't compile
 //        assertFailsWith<IllegalArgumentException> { startDate.plus(7, ChronoUnit.MINUTE) } // won't compile
     }
 
@@ -136,15 +138,42 @@ class LocalDateTest {
 
     @Test
     fun invalidDate() {
-        assertFailsWith<Throwable> { LocalDate(2007, 2, 29) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 2, 29) }
         LocalDate(2008, 2, 29)
-        assertFailsWith<Throwable> { LocalDate(2007, 4, 31) }
-        assertFailsWith<Throwable> { LocalDate(2007, 1, 0) }
-        assertFailsWith<Throwable> { LocalDate(2007,1, 32) }
-        assertFailsWith<Throwable> { LocalDate(Int.MIN_VALUE, 1, 1) }
-        assertFailsWith<Throwable> { LocalDate(2007, 1, 32) }
-        assertFailsWith<Throwable> { LocalDate(2007, 0, 1) }
-        assertFailsWith<Throwable> { LocalDate(2007, 13, 1) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 4, 31) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 1, 0) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007,1, 32) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(Int.MIN_VALUE, 1, 1) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 1, 32) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 0, 1) }
+        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 13, 1) }
+    }
+
+    @Test
+    fun testArithmeticThrowing() {
+        // LocalDate.plus(Long, DateTimeUnit)
+        LocalDate.MAX.plus(-1, DateTimeUnit.DAY)
+        LocalDate.MIN.plus(1, DateTimeUnit.DAY)
+        // Arithmetic overflow
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(Long.MAX_VALUE, DateTimeUnit.YEAR) }
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(Long.MAX_VALUE - 2, DateTimeUnit.YEAR) }
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MIN_VALUE, DateTimeUnit.YEAR) }
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MIN_VALUE + 2, DateTimeUnit.YEAR) }
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MAX_VALUE, DateTimeUnit.DAY) }
+        // Exceeding the boundaries of LocalDate
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(1, DateTimeUnit.YEAR) }
+        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(-1, DateTimeUnit.YEAR) }
+
+        // LocalDate.plus(DatePeriod)
+        LocalDate.MAX.plus(DatePeriod(years = -2, months = 12, days = 31))
+        // Exceeding the boundaries in result
+        assertFailsWith<DateTimeArithmeticException> {
+            LocalDate.MAX.plus(DatePeriod(years = -2, months = 24, days = 1))
+        }
+        // Exceeding the boundaries in intermediate computations
+        assertFailsWith<DateTimeArithmeticException> {
+            LocalDate.MAX.plus(DatePeriod(years = -2, months = 25, days = -1000))
+        }
     }
 
 }

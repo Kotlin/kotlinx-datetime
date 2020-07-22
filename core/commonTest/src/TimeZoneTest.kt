@@ -53,8 +53,8 @@ class TimeZoneTest {
         assertEquals("Europe/Moscow", tzm.id)
         // TODO: Check known offsets from UTC for particular moments
 
-        // TODO: assert exception type?
-        assertFails { TimeZone.of("Mars/Standard") }
+        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("Mars/Standard") }
+        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("UTC+X") }
 
     }
 

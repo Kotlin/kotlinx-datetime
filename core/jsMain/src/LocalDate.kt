@@ -13,6 +13,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         public actual fun parse(isoString: String): LocalDate {
             return jtLocalDate.parse(isoString).let(::LocalDate)
         }
+
+        internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
+        internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :

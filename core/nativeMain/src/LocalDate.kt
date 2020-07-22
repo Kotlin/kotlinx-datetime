@@ -92,6 +92,9 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
             return LocalDate(yearEst, month, dom)
         }
+
+        internal actual val MIN = LocalDate(YEAR_MIN, 1, 1)
+        internal actual val MAX = LocalDate(YEAR_MAX, 12, 31)
     }
 
     // org.threeten.bp.LocalDate#toEpochDay

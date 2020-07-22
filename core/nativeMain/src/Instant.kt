@@ -205,8 +205,8 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
     }
 
     actual companion object {
-        internal val MIN = Instant(MIN_SECOND, 0)
-        internal val MAX = Instant(MAX_SECOND, 999_999_999)
+        internal actual val MIN = Instant(MIN_SECOND, 0)
+        internal actual val MAX = Instant(MAX_SECOND, 999_999_999)
 
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         actual fun now(): Instant = memScoped {
@@ -276,9 +276,13 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
             .run { if (years != 0 && months == 0) plus(years, DateTimeUnit.YEAR) else this }
             .run { if (months != 0) plus(safeAdd(safeMultiply(years, 12), months), DateTimeUnit.MONTH) else this }
             .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
-        val secondsToAdd = safeAdd(seconds,
-            safeAdd(minutes.toLong() * SECONDS_PER_MINUTE, hours.toLong() * SECONDS_PER_HOUR))
-        withDate.toInstant().plus(secondsToAdd, period.nanoseconds)
+        withDate.toInstant()
+            .run { if (hours != 0)
+                plus(hours.toLong() * SECONDS_PER_HOUR, 0).check(zone) else this }
+            .run { if (minutes != 0)
+                plus(minutes.toLong() * SECONDS_PER_MINUTE, 0).check(zone) else this }
+            .run { if (seconds != 0L) plus(seconds, 0).check(zone) else this }
+            .run { if (nanoseconds != 0L) plus(0, nanoseconds).check(zone) else this }
     }.check(zone)
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)

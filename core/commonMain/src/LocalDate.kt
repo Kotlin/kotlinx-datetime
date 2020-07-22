@@ -11,6 +11,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          */
         public fun parse(isoString: String): LocalDate
+
+        internal val MIN: LocalDate
+        internal val MAX: LocalDate
     }
 
     /**
