@@ -107,7 +107,7 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
             throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@TimeZone}")
         }
         val dateTime = try {
-            this@atZone.plusSeconds(transitionDuration.toLong())
+            this@atZone.plusSeconds(transitionDuration)
         } catch (e: IllegalArgumentException) {
             throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
         } catch (e: ArithmeticException) {

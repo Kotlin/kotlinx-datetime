@@ -13,7 +13,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plus(value: Long, unit: DateTimeUnit.DateBased): ZonedDateTime = dateTime.plus(value, unit).resolve()
+    internal fun plus(value: Int, unit: DateTimeUnit.DateBased): ZonedDateTime = dateTime.plus(value, unit).resolve()
 
     // Never throws in practice
     private fun LocalDateTime.resolve(): ZonedDateTime = with(zone) { atZone(offset) }
@@ -46,8 +46,8 @@ internal fun ZonedDateTime.toInstant(): Instant =
 internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
     val currentOffset = with (zone) { offset }
     val localSecond: Long = epochSeconds + currentOffset.totalSeconds // overflow caught later
-    val localEpochDay: Long = floorDiv(localSecond, SECONDS_PER_DAY.toLong())
-    val secsOfDay: Long = floorMod(localSecond, SECONDS_PER_DAY.toLong())
+    val localEpochDay = floorDiv(localSecond, SECONDS_PER_DAY.toLong()).toInt()
+    val secsOfDay = floorMod(localSecond, SECONDS_PER_DAY.toLong()).toInt()
     val date: LocalDate = LocalDate.ofEpochDay(localEpochDay) // may throw
     val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)
     return ZonedDateTime(LocalDateTime(date, time), zone, currentOffset)
@@ -64,12 +64,12 @@ internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit): Long =
     when (unit) {
         // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
-        is DateTimeUnit.DateBased -> dateTime.until(other.dateTime, unit)
+        is DateTimeUnit.DateBased -> dateTime.until(other.dateTime, unit).toLong()
         // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
         is DateTimeUnit.TimeBased -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
             val otherLdtAdjusted = try {
-                other.dateTime.plusSeconds(offsetDiff.toLong())
+                other.dateTime.plusSeconds(offsetDiff)
             } catch (e: IllegalArgumentException) {
                 throw DateTimeArithmeticException(
                     "Unable to find difference between date-times, as one of them overflowed")

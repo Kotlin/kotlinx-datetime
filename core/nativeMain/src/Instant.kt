@@ -63,7 +63,7 @@ private val instantParser: Parser<Instant>
             } catch (e: ArithmeticException) {
                 throw DateTimeFormatException(e)
             }
-            val epochDay: Long = localDate.toEpochDay()
+            val epochDay = localDate.toEpochDay().toLong()
             val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
             try {
                 Instant(instantSecs, nano)
@@ -75,12 +75,12 @@ private val instantParser: Parser<Instant>
 /**
  * The minimum supported epoch second.
  */
-private const val MIN_SECOND = -31557014167219200L
+private const val MIN_SECOND = -31619119219200L // -1000000-01-01T00:00:00Z
 
 /**
  * The maximum supported epoch second.
  */
-private const val MAX_SECOND = 31556889864403199L
+private const val MAX_SECOND = 31494816403199L // +1000000-12-31T23:59:59
 
 private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
 
@@ -93,21 +93,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
 
     // org.threeten.bp.Instant#toEpochMilli
     actual fun toEpochMilliseconds(): Long =
-        if (epochSeconds >= 0) {
-            try {
-                safeAdd(safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong()),
-                    nanosecondsOfSecond / NANOS_PER_MILLI.toLong())
-            } catch (e: ArithmeticException) {
-                Long.MAX_VALUE
-            }
-        } else {
-            try {
-                safeSubtract(safeMultiply(epochSeconds + 1, MILLIS_PER_ONE.toLong()),
-                    MILLIS_PER_ONE.toLong() - nanosecondsOfSecond / NANOS_PER_MILLI)
-            } catch (e: ArithmeticException) {
-                Long.MIN_VALUE
-            }
-        }
+        epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
     // org.threeten.bp.Instant#plus(long, long)
     /**
@@ -240,7 +226,9 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
 
         // org.threeten.bp.Instant#ofEpochMilli
         actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
-            Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
+            if (epochMilliseconds < MIN_SECOND * MILLIS_PER_ONE) MIN
+            else if (epochMilliseconds > MAX_SECOND * MILLIS_PER_ONE) MAX
+            else Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
                 (floorMod(epochMilliseconds, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
 
         /**
@@ -285,9 +273,9 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedLocalDateTimeFailing(zone)
-            .run { if (years != 0 && months == 0) plus(years.toLong(), DateTimeUnit.YEAR) else this }
-            .run { if (months != 0) plus(years * 12L + months.toLong(), DateTimeUnit.MONTH) else this }
-            .run { if (days != 0) plus(days.toLong(), DateTimeUnit.DAY) else this }
+            .run { if (years != 0 && months == 0) plus(years, DateTimeUnit.YEAR) else this }
+            .run { if (months != 0) plus(safeAdd(safeMultiply(years, 12), months), DateTimeUnit.MONTH) else this }
+            .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
         val secondsToAdd = safeAdd(seconds,
             safeAdd(minutes.toLong() * SECONDS_PER_MINUTE, hours.toLong() * SECONDS_PER_HOUR))
         withDate.toInstant().plus(secondsToAdd, period.nanoseconds)
@@ -303,9 +291,13 @@ internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone
 
 internal fun Instant.plusDateTimeUnit(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
     when (unit) {
-        is DateTimeUnit.DateBased -> toZonedLocalDateTimeFailing(zone).plus(value, unit).toInstant()
-        is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-            (seconds, nanoseconds) -> check(zone).plus(seconds, nanoseconds).check(zone)
+        is DateTimeUnit.DateBased -> {
+            if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)
+                throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
+            toZonedLocalDateTimeFailing(zone).plus(value.toInt(), unit).toInstant()
+        }
+        is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
+            check(zone).plus(seconds, nanoseconds).check(zone)
         }
     }
 } catch (e: ArithmeticException) {
@@ -319,14 +311,14 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     var thisLdt = toZonedLocalDateTimeFailing(zone)
     val otherLdt = other.toZonedLocalDateTimeFailing(zone)
 
-    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
+    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH).toInt() // `until` on dates never fails
     thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
+    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY).toInt() // `until` on dates never fails
     thisLdt = thisLdt.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
     val time = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+        return DateTimePeriod((months / 12), (months % 12), days, hours, minutes, seconds.toLong(), nanoseconds.toLong())
     }
 }
 
@@ -334,6 +326,7 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZo
     when (unit) {
         is DateTimeUnit.DateBased ->
             toZonedLocalDateTimeFailing(zone).dateTime.until(other.toZonedLocalDateTimeFailing(zone).dateTime, unit)
+                .toLong()
         is DateTimeUnit.TimeBased -> {
             check(zone); other.check(zone)
             try {

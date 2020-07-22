@@ -14,9 +14,11 @@ import kotlin.test.*
 class ThreeTenBpLocalDateTest {
     @Test
     fun ofEpochDay() {
-        val date_0000_01_01 = -678941 - 40587L
-        LocalDate.ofEpochDay(-365243219162L)
-        LocalDate.ofEpochDay(365241780471L)
+        val date_0000_01_01 = -678941 - 40587
+        val minDate = LocalDate(YEAR_MIN, 1, 1)
+        assertEquals(minDate, LocalDate.ofEpochDay(minDate.toEpochDay()))
+        val maxDate = LocalDate(YEAR_MAX, 12, 31)
+        assertEquals(maxDate, LocalDate.ofEpochDay(maxDate.toEpochDay()))
         assertEquals(LocalDate(1970, 1, 1), LocalDate.ofEpochDay(0))
         assertEquals(LocalDate(0, 1, 1), LocalDate.ofEpochDay(date_0000_01_01))
         assertEquals(LocalDate(-1, 12, 31), LocalDate.ofEpochDay(date_0000_01_01 - 1))
@@ -34,7 +36,7 @@ class ThreeTenBpLocalDateTest {
 
     @Test
     fun toEpochDay() {
-        val date_0000_01_01 = -678941 - 40587L
+        val date_0000_01_01 = -678941 - 40587
 
         var test = LocalDate(0, 1, 1)
         for (i in date_0000_01_01..699999) {
@@ -142,8 +144,8 @@ class ThreeTenBpLocalDateTest {
             Pair(LocalDate(-9999, 12, 31), "-9999-12-31"),
             Pair(LocalDate(10000, 1, 1), "+10000-01-01"),
             Pair(LocalDate(-10000, 1, 1), "-10000-01-01"),
-            Pair(LocalDate(12345678, 1, 1), "+12345678-01-01"),
-            Pair(LocalDate(-12345678, 1, 1), "-12345678-01-01"))
+            Pair(LocalDate(123456, 1, 1), "+123456-01-01"),
+            Pair(LocalDate(-123456, 1, 1), "-123456-01-01"))
         for ((date, str) in data) {
             assertEquals(date, LocalDate.parse(str))
             assertEquals(str, date.toString())
