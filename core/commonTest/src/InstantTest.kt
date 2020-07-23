@@ -57,7 +57,7 @@ class InstantTest {
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
      */
     @Test
-    fun instantParsing() {
+    fun parseIsoString() {
         val instants = arrayOf(
             Triple("1970-01-01T00:00:00Z", 0, 0),
             Triple("1970-01-01t00:00:00Z", 0, 0),
@@ -78,8 +78,12 @@ class InstantTest {
             val instant = Instant.parse(str)
             assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
         }
-    }
 
+        assertInvalidFormat { Instant.parse("x") }
+        assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
+        // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
+        assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
+    }
 
     @OptIn(ExperimentalTime::class)
     @Test
@@ -296,29 +300,29 @@ class InstantTest {
         assertEquals("+19999-12-31T23:59:59.000000009Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9).toInstant(TimeZone.UTC).toString())
     }
 
+}
+
+@OptIn(ExperimentalTime::class)
+class InstantRangeTest {
+    private val UTC = TimeZone.UTC
+    private val maxValidInstant = LocalDateTime.MAX.toInstant(UTC)
+    private val minValidInstant = LocalDateTime.MIN.toInstant(UTC)
+
     private val largePositiveLongs = listOf(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE - 50)
     private val largeNegativeLongs = listOf(Long.MIN_VALUE, Long.MIN_VALUE + 1, Long.MIN_VALUE + 50)
-    @OptIn(ExperimentalTime::class)
+
     private val largePositiveInstants = listOf(Instant.MAX, Instant.MAX - 1.seconds, Instant.MAX - 50.seconds)
-    @OptIn(ExperimentalTime::class)
     private val largeNegativeInstants = listOf(Instant.MIN, Instant.MIN + 1.seconds, Instant.MIN + 50.seconds)
+
     private val smallInstants = listOf(
         Instant.fromEpochMilliseconds(0),
         Instant.fromEpochMilliseconds(1003),
         Instant.fromEpochMilliseconds(253112)
     )
 
-    @Test
-    fun testParsingThrowing() {
-        assertFailsWith<DateTimeFormatException> { Instant.parse("x") }
-        assertFailsWith<DateTimeFormatException> { Instant.parse("12020-12-31T23:59:59.000000000Z") }
-        // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
-        assertFailsWith<DateTimeFormatException> { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
-    }
 
-    @ExperimentalTime
     @Test
-    fun testConstructorAccessorClamping() {
+    fun epochMillisecondsClamping() {
         // toEpochMilliseconds()/fromEpochMilliseconds()
         // assuming that ranges of Long (representing a number of milliseconds) and Instant are not just overlapping,
         // but one is included in the other.
@@ -332,7 +336,7 @@ class InstantTest {
             }
             for (milliseconds in largePositiveLongs + largeNegativeLongs) {
                 assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
-                    "$milliseconds")
+                        "$milliseconds")
             }
         } else {
             /* Any Instant is representable as a number of milliseconds in Long */
@@ -344,9 +348,13 @@ class InstantTest {
             }
             for (instant in largePositiveInstants + smallInstants + largeNegativeInstants) {
                 assertEquals(instant.epochSeconds,
-                    Instant.fromEpochMilliseconds(instant.toEpochMilliseconds()).epochSeconds, "$instant")
+                        Instant.fromEpochMilliseconds(instant.toEpochMilliseconds()).epochSeconds, "$instant")
             }
         }
+    }
+
+    @Test
+    fun epochSecondsClamping() {
         // fromEpochSeconds
         // On all platforms Long.MAX_VALUE of seconds is not a valid instant.
         for (seconds in largePositiveLongs) {
@@ -360,121 +368,106 @@ class InstantTest {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
-    fun testArithmeticClamping() {
-        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
-            assertEquals(Instant.MAX, instant + Duration.INFINITE)
-        }
-        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
-            assertEquals(Instant.MIN, instant - Duration.INFINITE)
+    fun durationArithmeticClamping() {
+        val longDurations = listOf(Duration.INFINITE, Double.MAX_VALUE.nanoseconds, Long.MAX_VALUE.seconds)
+
+        for (duration in longDurations) {
+            for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+                assertEquals(Instant.MAX, instant + duration)
+            }
+            for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+                assertEquals(Instant.MIN, instant - duration)
+            }
         }
         assertEquals(Instant.MAX, (Instant.MAX - 4.seconds) + 5.seconds)
         assertEquals(Instant.MIN, (Instant.MIN + 10.seconds) - 12.seconds)
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
-    fun testCalendarArithmeticThrowing() {
-        val maxValidInstant = LocalDateTime.MAX.toInstant(TimeZone.UTC)
-        val minValidInstant = LocalDateTime.MIN.toInstant(TimeZone.UTC)
-
+    fun periodArithmeticOutOfRange() {
         // Instant.plus(DateTimePeriod(), TimeZone)
         // Arithmetic overflow
         for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(DateTimePeriod(seconds = Long.MAX_VALUE), TimeZone.UTC)
-            }
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(DateTimePeriod(seconds = Long.MIN_VALUE), TimeZone.UTC)
-            }
+            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MAX_VALUE), UTC) }
+            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MIN_VALUE), UTC) }
         }
         // Overflowing a LocalDateTime in input
-        maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), TimeZone.UTC)
-        minValidInstant.plus(DateTimePeriod(nanoseconds = 1), TimeZone.UTC)
-        assertFailsWith<DateTimeArithmeticException> {
-            (maxValidInstant + 1.nanoseconds).plus(DateTimePeriod(nanoseconds = -2), TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            (minValidInstant - 1.nanoseconds).plus(DateTimePeriod(nanoseconds = 2), TimeZone.UTC)
-        }
+        maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC)
+        minValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC)
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(DateTimePeriod(nanoseconds = -2), UTC) }
+        assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(DateTimePeriod(nanoseconds = 2), UTC) }
         // Overflowing a LocalDateTime in result
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(DateTimePeriod(nanoseconds = 1), TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            minValidInstant.plus(DateTimePeriod(nanoseconds = -1), TimeZone.UTC)
-        }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC) }
+        assertArithmeticFails { minValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC) }
         // Overflowing a LocalDateTime in intermediate computations
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(DateTimePeriod(seconds = 1, nanoseconds = -1_000_000_001), TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(DateTimePeriod(hours = 1, minutes = -61), TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(DateTimePeriod(days = 1, hours = -48), TimeZone.UTC)
-        }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(seconds = 1, nanoseconds = -1_000_000_001), UTC) }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(hours = 1, minutes = -61), UTC) }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(days = 1, hours = -48), UTC) }
+    }
 
+    @Test
+    fun unitArithmeticOutOfRange() {
         // Instant.plus(Long, DateTimeUnit, TimeZone)
         // Arithmetic overflow
         for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(Long.MAX_VALUE, DateTimeUnit.SECOND, TimeZone.UTC)
-            }
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(Long.MIN_VALUE, DateTimeUnit.SECOND, TimeZone.UTC)
-            }
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(Long.MAX_VALUE, DateTimeUnit.YEAR, TimeZone.UTC)
-            }
-            assertFailsWith<DateTimeArithmeticException>("$instant") {
-                instant.plus(Long.MIN_VALUE, DateTimeUnit.YEAR, TimeZone.UTC)
-            }
+            assertArithmeticFails("$instant") { instant.plus(Long.MAX_VALUE, DateTimeUnit.SECOND, UTC) }
+            assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.SECOND, UTC) }
+            assertArithmeticFails("$instant") { instant.plus(Long.MAX_VALUE, DateTimeUnit.YEAR, UTC) }
+            assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.YEAR, UTC) }
         }
         // Overflowing a LocalDateTime in input
-        maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        minValidInstant.plus(1, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        assertFailsWith<DateTimeArithmeticException> {
-            (maxValidInstant + 1.nanoseconds).plus(-2, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            (minValidInstant - 1.nanoseconds).plus(2, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
+        maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
+        minValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC)
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(-2, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(2, DateTimeUnit.NANOSECOND, UTC) }
         // Overflowing a LocalDateTime in result
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(1, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.plus(1, DateTimeUnit.YEAR, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            minValidInstant.plus(-1, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            minValidInstant.plus(-1, DateTimeUnit.YEAR, TimeZone.UTC)
-        }
-
-        // Instant.periodUntil
-        maxValidInstant.periodUntil(minValidInstant, TimeZone.UTC)
-        assertFailsWith<DateTimeArithmeticException> {
-            (maxValidInstant + 1.nanoseconds).periodUntil(minValidInstant, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.periodUntil(minValidInstant - 1.nanoseconds, TimeZone.UTC)
-        }
-
-        // Instant.until
-        // Arithmetic overflow
-        assertEquals(Long.MAX_VALUE, minValidInstant.until(maxValidInstant, DateTimeUnit.NANOSECOND, TimeZone.UTC))
-        assertEquals(Long.MIN_VALUE, maxValidInstant.until(minValidInstant, DateTimeUnit.NANOSECOND, TimeZone.UTC))
-        // Overflowing a LocalDateTime in input
-        assertFailsWith<DateTimeArithmeticException> {
-            (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
-        assertFailsWith<DateTimeArithmeticException> {
-            maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND, TimeZone.UTC)
-        }
+        assertArithmeticFails { maxValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { maxValidInstant.plus(1, DateTimeUnit.YEAR, UTC) }
+        assertArithmeticFails { minValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { minValidInstant.plus(-1, DateTimeUnit.YEAR, UTC) }
     }
 
+    @Test
+    fun periodUntilOutOfRange() {
+        // Instant.periodUntil
+        maxValidInstant.periodUntil(minValidInstant, UTC)
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).periodUntil(minValidInstant, UTC) }
+        assertArithmeticFails { maxValidInstant.periodUntil(minValidInstant - 1.nanoseconds, UTC) }
+    }
+
+    @Test
+    fun unitsUntilClamping() {
+        // Arithmetic overflow of the resulting number
+        assertEquals(Long.MAX_VALUE, minValidInstant.until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC))
+        assertEquals(Long.MIN_VALUE, maxValidInstant.until(minValidInstant, DateTimeUnit.NANOSECOND, UTC))
+    }
+
+    @Test
+    fun unitsUntilOutOfRange() {
+        // Instant.until
+        // Overflowing a LocalDateTime in input
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND, UTC) }
+    }
 }
+
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.InlineOnly
+inline fun <T> assertArithmeticFails(message: String? = null, f: () -> T) {
+    assertFailsWith<DateTimeArithmeticException>(message) {
+        val result = f()
+        fail(result.toString())
+    }
+}
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.InlineOnly
+inline fun <T> assertInvalidFormat(message: String? = null, f: () -> T) {
+    assertFailsWith<DateTimeFormatException>(message) {
+        val result = f()
+        fail(result.toString())
+    }
+}
+

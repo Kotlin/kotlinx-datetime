@@ -101,7 +101,10 @@ class LocalDateTimeTest {
     }
 
     @Test
-    fun invalidTime() {
+    fun constructInvalidDate() = checkInvalidDate { year, month, day -> LocalDateTime(year, month, day, 0, 0, 0, 0).date }
+
+    @Test
+    fun constructInvalidTime() {
         fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
             LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
         localTime(23, 59)

@@ -35,20 +35,20 @@ class LocalDateTest {
     }
 
     @Test
-    fun localDateParsing() {
+    fun parseIsoString() {
         fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, dayOfWeek: Int, dayOfYear: Int) {
             checkComponents(LocalDate.parse(value), year, month, day, dayOfWeek, dayOfYear)
         }
         checkParsedComponents("2019-10-01", 2019, 10, 1, 2, 274)
         checkParsedComponents("2016-02-29", 2016, 2, 29, 1, 60)
-        checkParsedComponents("2017-10-01", 2017, 10, 1,  7, 274)
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("102017-10-01") }
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017--10-01") }
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-+10-01") }
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-10-+01") }
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("2017-10--01") }
+        checkParsedComponents("2017-10-01", 2017, 10, 1, 7, 274)
+        assertInvalidFormat { LocalDate.parse("102017-10-01") }
+        assertInvalidFormat { LocalDate.parse("2017--10-01") }
+        assertInvalidFormat { LocalDate.parse("2017-+10-01") }
+        assertInvalidFormat { LocalDate.parse("2017-10-+01") }
+        assertInvalidFormat { LocalDate.parse("2017-10--01") }
         // this date is currently larger than the largest representable one any of the platforms:
-        assertFailsWith<DateTimeFormatException> { LocalDate.parse("+1000000000-10-01") }
+        assertInvalidFormat { LocalDate.parse("+1000000000-10-01") }
     }
 
     @Test
@@ -137,43 +137,60 @@ class LocalDateTest {
     }
 
     @Test
-    fun invalidDate() {
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 2, 29) }
-        LocalDate(2008, 2, 29)
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 4, 31) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 1, 0) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007,1, 32) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(Int.MIN_VALUE, 1, 1) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 1, 32) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 0, 1) }
-        assertFailsWith<IllegalArgumentException> { LocalDate(2007, 13, 1) }
-    }
+    fun constructInvalidDate() = checkInvalidDate(::LocalDate)
 
     @Test
-    fun testArithmeticThrowing() {
+    fun unitArithmeticOutOfRange() {
         // LocalDate.plus(Long, DateTimeUnit)
         LocalDate.MAX.plus(-1, DateTimeUnit.DAY)
         LocalDate.MIN.plus(1, DateTimeUnit.DAY)
         // Arithmetic overflow
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(Long.MAX_VALUE, DateTimeUnit.YEAR) }
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(Long.MAX_VALUE - 2, DateTimeUnit.YEAR) }
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MIN_VALUE, DateTimeUnit.YEAR) }
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MIN_VALUE + 2, DateTimeUnit.YEAR) }
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(Long.MAX_VALUE, DateTimeUnit.DAY) }
+        assertArithmeticFails { LocalDate.MAX.plus(Long.MAX_VALUE, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MAX.plus(Long.MAX_VALUE - 2, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MIN.plus(Long.MIN_VALUE, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MIN.plus(Long.MIN_VALUE + 2, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MIN.plus(Long.MAX_VALUE, DateTimeUnit.DAY) }
         // Exceeding the boundaries of LocalDate
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MAX.plus(1, DateTimeUnit.YEAR) }
-        assertFailsWith<DateTimeArithmeticException> { LocalDate.MIN.plus(-1, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MAX.plus(1, DateTimeUnit.YEAR) }
+        assertArithmeticFails { LocalDate.MIN.plus(-1, DateTimeUnit.YEAR) }
+    }
 
+    @Test
+    fun periodArithmeticOutOfRange() {
         // LocalDate.plus(DatePeriod)
         LocalDate.MAX.plus(DatePeriod(years = -2, months = 12, days = 31))
         // Exceeding the boundaries in result
-        assertFailsWith<DateTimeArithmeticException> {
+        assertArithmeticFails {
             LocalDate.MAX.plus(DatePeriod(years = -2, months = 24, days = 1))
         }
         // Exceeding the boundaries in intermediate computations
-        assertFailsWith<DateTimeArithmeticException> {
+        assertArithmeticFails {
             LocalDate.MAX.plus(DatePeriod(years = -2, months = 25, days = -1000))
         }
     }
 
+    @Test
+    fun unitsUntilClamping() {
+        val diffInYears = LocalDate.MIN.until(LocalDate.MAX, DateTimeUnit.YEAR)
+        if (diffInYears > Int.MAX_VALUE / 365) {
+            assertEquals(Int.MAX_VALUE, LocalDate.MIN.until(LocalDate.MAX, DateTimeUnit.DAY))
+            assertEquals(Int.MIN_VALUE, LocalDate.MAX.until(LocalDate.MIN, DateTimeUnit.DAY))
+        }
+    }
+}
+
+
+
+fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 2, 29) }
+    constructor(2008, 2, 29).let { date ->
+        assertEquals(29, date.dayOfMonth)
+    }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 4, 31) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 0) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007,1, 32) }
+    assertFailsWith<IllegalArgumentException> { constructor(Int.MIN_VALUE, 1, 1) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 32) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 0, 1) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 13, 1) }
 }
