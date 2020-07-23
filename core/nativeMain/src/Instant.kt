@@ -304,9 +304,9 @@ internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone
 internal fun Instant.plusDateTimeUnit(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
     when (unit) {
         is DateTimeUnit.DateBased -> toZonedLocalDateTimeFailing(zone).plus(value, unit).toInstant()
-        is DateTimeUnit.TimeBased -> check(zone).plus(
-            multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()),
-            multiplyAndRemainder(value, unit.nanoseconds, NANOS_PER_ONE.toLong())).check(zone)
+        is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
+            (d, r) -> check(zone).plus(d, r).check(zone)
+        }
     }
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)

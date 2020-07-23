@@ -10,33 +10,70 @@ package kotlinx.datetime
 import platform.posix.*
 
 /**
- * Calculates [a] * [b] / [c].
+ * Calculates [a] * [b] / [c]. Returns a pair of the dividend and the remainder.
  *
  * @throws ArithmeticException if the result overflows a long
  */
-internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Long {
-    val ad = a / c
-    val am = a % c
-    val bd = b / c
-    val bm = b % c
-    /**
-     * a = (a / c) * c + (a % c)
-     * b = (b / c) * c + (b % c)
-     * (a * b) / c = (((a / c) * c + (a % c)) * ((b / c) * c + (b % c))) / c
-     *             = ((a / c) * (b / c) * c^2 + ((b % c) * (a / c) + (a % c) * (b / c)) * c + (a % c) * (b % c)) / c
-     *             = (a / c) * (b / c) * c + (b % c) * (a / c) + (a % c) * (b / c) + ((a % c) * (b % c)) / c
-     */
-    return safeAdd(safeMultiply(safeMultiply(ad, bd), c),
-        safeAdd(safeAdd(safeMultiply(bm, ad), safeMultiply(am, bd)), safeMultiply(am, bm) / c))
-}
+internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
+    try {
+        return safeMultiply(a, b).let { Pair(it / c, it % c) }
+    } catch (e: ArithmeticException) {
+        // this body is intentionally left blank
+    }
+    inline fun low(x: Long) = x and 0xffffffff
+    inline fun high(x: Long) = (x shr 32) and 0xffffffff
+    val ma = if (a < 0) -a else a
+    val mb = if (b < 0) -b else b
 
-/**
- * Calculates [a] * [b] / [c].
- *
- * @throws ArithmeticException if the result overflows a long
- */
-internal fun multiplyAndRemainder(a: Long, b: Long, c: Long): Long =
-    safeMultiply(a % c, b % c) % c
+    /* a * b = (ah * 2^32 + al) * (bh * 2^32 + bl) = ah * bh * 2^64 + (ah * bl + al * bh) * 2^32 + al * bl
+             = x * 2^64 + y * 2^32 + z = xh * 2^96 + (xl + yh) * 2^64 + (yl + zh) * 2^32 + zl
+             = r1 * 2^96 | r2 * 2^64 | r3 * 2^32 | r4
+             = abh * 2^64 | abl */
+    // a, b in [0; 2^63)
+    val al = low(ma) // [0; 2^32)
+    val ah = high(ma) // [0; 2^31)
+    val bl = low(mb) // [0; 2^32)
+    val bh = high(mb) // [0; 2^31)
+
+    val x = ah * bh // [0; 2^62 - 2^32 + 1]
+    // these are interpreted as negative, but the arithmetic is 2's complement, so bitwise it works as on unsigned longs
+    val y = ah * bl + al * bh // [0; 2^64 - 3 * 2^32 + 2] // [0; 2 * (2^32 - 1) * (2^31 - 1)]
+    val z = al * bl // [0; 2^64 - 2^33 + 1]
+
+    val r4 = low(z)
+    val r3c = low(y) + high(z)
+    val r3 = low(r3c)
+    val r2c = high(r3c) + low(x) + high(y)
+    val r2 = low(r2c)
+    val r1 = high(r2c) + high(x)
+
+    val abl = (r3 shl 32) or r4
+    val abh = (r1 shl 32) or r2
+
+    /** For [bit] in [0; 63], return bit #[bit] of [value], counting from the least significant bit */
+    inline fun indexBit(value: Long, bit: Int) = (value shr bit) and 1
+
+    // Simple long division
+    var q = 0L
+    var r = 0L
+    // invariant: r < c <= Long.MAX_VALUE < 2^63
+    for (bitNo in 127 downTo 0) {
+        // bit #bitNo of the numerator
+        val nextBit = if (bitNo < 64) indexBit(abl, bitNo) else indexBit(abh, bitNo - 64)
+        // left-shift R by one bit, setting the least significant bit to nextBit
+        r = (r shl 1) or nextBit
+        // if (R >= c). If R < 0, R >= 2^63 > Long.MAX_VALUE >= c
+        if (r >= c || r < 0) {
+            r -= c
+            // set bit #bitNo of Q to 1
+            if (bitNo < 63)
+                q = q or (1L shl bitNo)
+            else
+                throw ArithmeticException("The result of a multiplication followed by division overflows a long")
+        }
+    }
+    return Pair(if (a < 0 && b < 0 || a > 0 && b > 0) q else -q, r)
+}
 
 /**
  * Calculates ([d] * [n] + [r]) / [m], where [n] > 0 and |[r]| < [n].
@@ -57,8 +94,8 @@ internal fun multiplyAddAndDivide(d: Long, n: Long, r: Long, m: Long): Long {
     if (md == 0L) {
         return mr / m
     }
-    return safeAdd(multiplyAndDivide(md, n, m),
-        safeAdd(mr / m, safeAdd(mr % m, multiplyAndRemainder(md, n, m)) / m))
+    val (rd, rr) = multiplyAndDivide(md, n, m)
+    return safeAdd(rd, safeAdd(mr / m, safeAdd(mr % m, rr) / m))
 }
 
 /**
