@@ -11,6 +11,7 @@ import platform.posix.*
 
 /**
  * Calculates [a] * [b] / [c]. Returns a pair of the dividend and the remainder.
+ * [c] must be greater than zero.
  *
  * @throws ArithmeticException if the result overflows a long
  */
@@ -20,38 +21,58 @@ internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
     } catch (e: ArithmeticException) {
         // this body is intentionally left blank
     }
+    /* Not just optimizations: this is needed for multiplyAndDivide(Long.MIN_VALUE, x, x) to work. */
+    if (b == c) return Pair(a, 0)
+    if (a == c) return Pair(b, 0)
+
     inline fun low(x: Long) = x and 0xffffffff
     inline fun high(x: Long) = (x shr 32) and 0xffffffff
-    val ma = if (a < 0) -a else a
-    val mb = if (b < 0) -b else b
 
-    /* a * b = (ah * 2^32 + al) * (bh * 2^32 + bl) = ah * bh * 2^64 + (ah * bl + al * bh) * 2^32 + al * bl
-             = x * 2^64 + y * 2^32 + z = xh * 2^96 + (xl + yh) * 2^64 + (yl + zh) * 2^32 + zl
+    /* a * b = (ae * 2^64 + ah * 2^32 + al) * (be * 2^64 + bh * 2^32 + bl)
+             = ae * be * 2^128 + (ae * bh + ah * be) * 2^96 + (ae * bl + ah * bh + al * be) * 2^64
+               + (ah * bl + al * bh) * 2^32 + al * bl
+             = 0 + w * 2^96 + x * 2^64 + y * 2^32 + z = xh * 2^96 + (xl + yh) * 2^64 + (yl + zh) * 2^32 + zl
              = r1 * 2^96 | r2 * 2^64 | r3 * 2^32 | r4
              = abh * 2^64 | abl */
-    // a, b in [0; 2^63)
-    val al = low(ma) // [0; 2^32)
-    val ah = high(ma) // [0; 2^31)
-    val bl = low(mb) // [0; 2^32)
-    val bh = high(mb) // [0; 2^31)
+    // a, b in [0; 2^64)
 
-    val x = ah * bh // [0; 2^62 - 2^32 + 1]
-    // these are interpreted as negative, but the arithmetic is 2's complement, so bitwise it works as on unsigned longs
-    val y = ah * bl + al * bh // [0; 2^64 - 3 * 2^32 + 2] // [0; 2 * (2^32 - 1) * (2^31 - 1)]
-    val z = al * bl // [0; 2^64 - 2^33 + 1]
+    // sign extensions to 128 bits:
+    val ae = if (a >= 0) 0L else -1L // all ones or all zeros
+    val be = if (b >= 0) 0L else -1L // all ones or all zeros
+
+    val al = low(a) // [0; 2^32)
+    val ah = high(a) // [0; 2^32)
+    val bl = low(b) // [0; 2^32)
+    val bh = high(b) // [0; 2^32)
+
+    val w = ae * bh + ah * be // we will only use the lower 32 bits of this value, so overflow is fine
+    val x = ae * bl + ah * bh + al * be // may overflow, but overflow here goes beyond 128 bit
+    val y1 = ah * bl
+    val y2 = al * bh
+    val z = al * bl
 
     val r4 = low(z)
-    val r3c = low(y) + high(z)
+    val r3c = low(y1) + low(y2) + high(z)
     val r3 = low(r3c)
-    val r2c = high(r3c) + low(x) + high(y)
+    val r2c = high(r3c) + low(x) + high(y1) + high(y2)
     val r2 = low(r2c)
-    val r1 = high(r2c) + high(x)
+    val r1 = high(r2c) + high(x) + low(w)
 
-    val abl = (r3 shl 32) or r4
-    val abh = (r1 shl 32) or r2
+    var abl = (r3 shl 32) or r4
+    var abh = (r1 shl 32) or r2
 
     /** For [bit] in [0; 63], return bit #[bit] of [value], counting from the least significant bit */
     inline fun indexBit(value: Long, bit: Int) = (value shr bit) and 1
+
+    val sign = if (indexBit(abh, 63) == 1L) -1 else 1
+
+    if (sign == -1) {
+        // negate, so that we operate on a positive number
+        abl = abl.inv() + 1
+        abh = abh.inv()
+        if (abl == 0L) // abl overflowed
+            abh += 1
+    }
 
     // Simple long division
     var q = 0L
@@ -72,11 +93,11 @@ internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
                 throw ArithmeticException("The result of a multiplication followed by division overflows a long")
         }
     }
-    return Pair(if (a < 0 && b < 0 || a > 0 && b > 0) q else -q, r)
+    return Pair(sign * q, sign * r)
 }
 
 /**
- * Calculates ([d] * [n] + [r]) / [m], where [n] > 0 and |[r]| < [n].
+ * Calculates ([d] * [n] + [r]) / [m], where [n], [m] > 0 and |[r]| <= [n].
  *
  * @throws ArithmeticException if the result overflows a long
  */
