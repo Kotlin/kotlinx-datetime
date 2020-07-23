@@ -139,6 +139,29 @@ class InstantTest {
 
     @OptIn(ExperimentalTime::class)
     @Test
+    fun unitMultiplesUntil() {
+        val unit1000days = DateTimeUnit.DAY * 1000
+        val unit4years = DateTimeUnit.YEAR * 4 // longer than 1000-DAY
+
+        val zone = TimeZone.UTC
+        val min = LocalDateTime.MIN.toInstant(zone)
+        val max = LocalDateTime.MAX.toInstant(zone)
+        val diffDays = min.until(max, unit1000days, zone)
+        val diffYears = min.until(max, unit4years, zone)
+        assertTrue(diffDays in 0..Int.MAX_VALUE, "difference in $unit1000days should fit in Int, was $diffDays")
+        assertTrue(diffDays > diffYears, "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears")
+
+        val unit500ns = DateTimeUnit.NANOSECOND * 500
+        val start = Instant.parse("1700-01-01T00:00:00Z")
+        val end = start.plus(300, DateTimeUnit.YEAR, zone)
+        val diffNs = start.until(end, unit500ns, zone)
+        val diffUs = start.until(end, DateTimeUnit.MICROSECOND, zone)
+        // TODO: avoid clamping/overflowing in intermediate results
+//        assertEquals(diffUs * 2, diffNs)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")
         val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)

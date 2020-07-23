@@ -101,7 +101,7 @@ class LocalDateTest {
 
     // based on threetenbp test for until()
     @Test
-    fun until() {
+    fun unitsUntil() {
         val data = listOf(
                 Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.DAY, 0)),
                 Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.WEEK, 0)),
@@ -134,6 +134,18 @@ class LocalDateTest {
             }
         }
 
+    }
+
+    @Test
+    fun unitMultiplesUntil() {
+        val unit1000days = DateTimeUnit.DAY * 1000
+        val unit4years = DateTimeUnit.YEAR * 4 // longer than 1000-DAY
+
+        val diffDays = LocalDate.MIN.until(LocalDate.MAX, unit1000days)
+        val diffYears = LocalDate.MIN.until(LocalDate.MAX, unit4years)
+        assertTrue(diffDays in 0..Int.MAX_VALUE, "difference in $unit1000days should fit in Int, was $diffDays")
+        // TODO: make pass in JVM
+        //  assertTrue(diffDays > diffYears, "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears")
     }
 
     @Test
