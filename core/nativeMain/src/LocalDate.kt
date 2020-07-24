@@ -147,7 +147,7 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
         if (m != 0) {
             return m
         }
-        return dayOfMonth.compareTo(dayOfMonth)
+        return dayOfMonth.compareTo(other.dayOfMonth)
     }
 
     // org.threeten.bp.LocalDate#resolvePreviousValid

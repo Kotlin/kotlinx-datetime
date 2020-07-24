@@ -122,6 +122,15 @@ class InstantTest {
         assertEquals(period, instant1.periodUntil(instant5, zone))
         assertEquals(period, instant5.minus(instant1, zone))
         assertEquals(26.hours, instant5.minus(instant1))
+
+        val instant6 = instant1.plus(23, DateTimeUnit.HOUR, zone)
+        checkComponents(instant6.toLocalDateTime(zone), 2019, 10, 28, 0, 59)
+        assertEquals(23.hours, instant6 - instant1)
+        assertEquals(23, instant1.until(instant6, DateTimeUnit.HOUR, zone))
+        assertEquals(23, instant6.minus(instant1, DateTimeUnit.HOUR, zone))
+        assertEquals(0, instant1.until(instant6, DateTimeUnit.DAY, zone))
+        assertEquals(0, instant6.until(instant1, DateTimeUnit.DAY, zone))
+        assertEquals(0, instant6.minus(instant1, DateTimeUnit.DAY, zone))
     }
 
     @OptIn(ExperimentalTime::class)
