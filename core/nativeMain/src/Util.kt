@@ -10,7 +10,7 @@ package kotlinx.datetime
 import platform.posix.*
 
 /**
- * Calculates [a] * [b] / [c]. Returns a pair of the dividend and the remainder.
+ * Calculates [a] * [b] / [c]. Returns a pair of the quotient and the remainder.
  * [c] must be greater than zero.
  *
  * @throws ArithmeticException if the result overflows a long
@@ -45,10 +45,13 @@ internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
     val bl = low(b) // [0; 2^32)
     val bh = high(b) // [0; 2^32)
 
+    /* even though the language operates on signed Long values, we can add and multiply them as if they were unsigned
+    due to the fact that they are encoded as 2's complement (hence the need to use sign extensions). The only operation
+    here where sign matters is division. */
     val w = ae * bh + ah * be // we will only use the lower 32 bits of this value, so overflow is fine
     val x = ae * bl + ah * bh + al * be // may overflow, but overflow here goes beyond 128 bit
     val y1 = ah * bl
-    val y2 = al * bh
+    val y2 = al * bh // y is split into y1 and y2 because y1 + y2 may overflow 2^64, which loses information
     val z = al * bl
 
     val r4 = low(z)
@@ -56,10 +59,12 @@ internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
     val r3 = low(r3c)
     val r2c = high(r3c) + low(x) + high(y1) + high(y2)
     val r2 = low(r2c)
+    /* If r1 overflows 2^32 - 1, it's because of sign extension: we don't lose any significant bits because multiplying
+    [0; 2^64) by [0; 2^64) may never exceed 2^128 - 1. */
     val r1 = high(r2c) + high(x) + low(w)
 
-    var abl = (r3 shl 32) or r4
-    var abh = (r1 shl 32) or r2
+    var abl = (r3 shl 32) or r4 // low 64 bits of a * b
+    var abh = (r1 shl 32) or r2 // high 64 bits of a * b
 
     /** For [bit] in [0; 63], return bit #[bit] of [value], counting from the least significant bit */
     inline fun indexBit(value: Long, bit: Int) = (value shr bit) and 1
@@ -74,10 +79,12 @@ internal fun multiplyAndDivide(a: Long, b: Long, c: Long): Pair<Long, Long> {
             abh += 1
     }
 
-    // Simple long division
+    /* The resulting quotient. This division is unsigned, so if the result doesn't fit in 63 bits, it means that
+    overflow occurred. */
     var q = 0L
+    // The remainder, always less than c and so fits in a Long.
     var r = 0L
-    // invariant: r < c <= Long.MAX_VALUE < 2^63
+    // Simple long division algorithm
     for (bitNo in 127 downTo 0) {
         // bit #bitNo of the numerator
         val nextBit = if (bitNo < 64) indexBit(abl, bitNo) else indexBit(abh, bitNo - 64)

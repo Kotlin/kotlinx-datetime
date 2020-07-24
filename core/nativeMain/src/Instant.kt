@@ -305,7 +305,7 @@ internal fun Instant.plusDateTimeUnit(value: Long, unit: DateTimeUnit, zone: Tim
     when (unit) {
         is DateTimeUnit.DateBased -> toZonedLocalDateTimeFailing(zone).plus(value, unit).toInstant()
         is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-            (d, r) -> check(zone).plus(d, r).check(zone)
+            (seconds, nanoseconds) -> check(zone).plus(seconds, nanoseconds).check(zone)
         }
     }
 } catch (e: ArithmeticException) {
