@@ -56,7 +56,7 @@ private val instantParser: Parser<Instant>
             }
 
             // never fails: 9_999 years are always supported
-            val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, CalendarUnit.DAY)
+            val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, DateTimeUnit.DAY)
             val localTime = LocalTime.of(hours, min, seconds, 0)
             val secDelta: Long = try {
                 safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
@@ -285,10 +285,9 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedLocalDateTimeFailing(zone)
-            .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-            .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
-            .run { if (days != 0) plusDays(days.toLong()) else this }
-        // See [Instant.plus(Instant, long, CalendarUnit, TimeZone)] for an explanation of time inside day being special
+            .run { if (years != 0 && months == 0) plus(years.toLong(), DateTimeUnit.YEAR) else this }
+            .run { if (months != 0) plus(years * 12L + months.toLong(), DateTimeUnit.MONTH) else this }
+            .run { if (days != 0) plus(days.toLong(), DateTimeUnit.DAY) else this }
         val secondsToAdd = safeAdd(seconds,
             safeAdd(minutes.toLong() * SECONDS_PER_MINUTE, hours.toLong() * SECONDS_PER_HOUR))
         withDate.toInstant().plus(secondsToAdd, period.nanoseconds)
@@ -299,33 +298,15 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
+internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
+    plusDateTimeUnit(value, unit.dateTimeUnit, zone)
+
+internal fun Instant.plusDateTimeUnit(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
     when (unit) {
-        CalendarUnit.YEAR -> toZonedLocalDateTimeFailing(zone).plusYears(value).toInstant()
-        CalendarUnit.MONTH -> toZonedLocalDateTimeFailing(zone).plusMonths(value).toInstant()
-        CalendarUnit.DAY -> toZonedLocalDateTimeFailing(zone).plusDays(value).toInstant()
-        /* From org.threeten.bp.ZonedDateTime#plusHours: the time is added to the raw LocalDateTime,
-           then org.threeten.bp.ZonedDateTime#create is called on the absolute instant
-           (gotten from org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond). This, in turn,
-           finds an applicable offset and builds the local representation of the zoned datetime.
-           If we then feed the result to org.threeten.bp.chrono.ChronoZonedDateTime#toInstant, it simply
-           builds the instant with org.threeten.bp.chrono.ChronoZonedDateTime#toEpochSecond, which, once
-           more, finds the absolute instant. Thus, we can summarize the composition of `atZone`, `plusHours`
-           and `toInstant` like this:
-           1. An absolute instant is converted to a zoned datetime by adding an offset;
-           2. Time is added to a datetime, ignoring the offset;
-           3. Using the know offset, it is converted to an absolute instant;
-           4. The instant is adapted to a zoned datetime representation;
-           5. The zoned datetime is converted to an absolute instant.
-           4 and 5 are invertible by their form: their composition adds and subtracts the offset to and from
-           the unix epoch. 1-3 can then be simplified to just adding the time to the instant directly.
-         */
-        CalendarUnit.HOUR -> plus(safeMultiply(value, SECONDS_PER_HOUR.toLong()), 0).check(zone)
-        CalendarUnit.MINUTE -> plus(safeMultiply(value, SECONDS_PER_MINUTE.toLong()), 0).check(zone)
-        CalendarUnit.SECOND -> plus(value, 0).check(zone)
-        CalendarUnit.MILLISECOND -> plus(value / MILLIS_PER_ONE, (value % MILLIS_PER_ONE) * NANOS_PER_MILLI).check(zone)
-        CalendarUnit.MICROSECOND -> plus(value / MICROS_PER_ONE, (value % MICROS_PER_ONE) * NANOS_PER_MICRO).check(zone)
-        CalendarUnit.NANOSECOND -> plus(0, value).check(zone)
+        is DateTimeUnit.DateBased -> toZonedLocalDateTimeFailing(zone).plus(value, unit).toInstant()
+        is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
+            (seconds, nanoseconds) -> check(zone).plus(seconds, nanoseconds).check(zone)
+        }
     }
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
@@ -338,11 +319,11 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     var thisLdt = toZonedLocalDateTimeFailing(zone)
     val otherLdt = other.toZonedLocalDateTimeFailing(zone)
 
-    val months = thisLdt.until(otherLdt, CalendarUnit.MONTH) // `until` on dates never fails
-    thisLdt = thisLdt.plusMonths(months) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt.until(otherLdt, CalendarUnit.DAY) // `until` on dates never fails
-    thisLdt = thisLdt.plusDays(days) // won't throw: thisLdt + days <= otherLdt
-    val time = thisLdt.until(otherLdt, CalendarUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
+    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
+    thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
+    thisLdt = thisLdt.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
+    val time = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
         return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
@@ -350,9 +331,18 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
-    try {
-        // TODO: inline 'until' here and simplify operation for time-based units
-        toZonedLocalDateTimeFailing(zone).until(other.toZonedLocalDateTimeFailing(zone), unit.calendarUnit) / unit.calendarScale
-    } catch (e: ArithmeticException) {
-        if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
+    when (unit) {
+        is DateTimeUnit.DateBased ->
+            toZonedLocalDateTimeFailing(zone).dateTime.until(other.toZonedLocalDateTimeFailing(zone).dateTime, unit)
+        is DateTimeUnit.TimeBased -> {
+            check(zone); other.check(zone)
+            try {
+                multiplyAddAndDivide(other.epochSeconds - epochSeconds,
+                    NANOS_PER_ONE.toLong(),
+                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
+                    unit.nanoseconds)
+            } catch (e: ArithmeticException) {
+                if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
+            }
+        }
     }

@@ -186,9 +186,12 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
         }
         val monthCount: Long = year * 12L + (monthNumber - 1)
         val calcMonths = safeAdd(monthCount, monthsToAdd)
-        val newYear: Int = floorDiv(calcMonths, 12).toInt()
+        val newYear = floorDiv(calcMonths, 12)
+        if (newYear < Int.MIN_VALUE || newYear > Int.MAX_VALUE) {
+            throw ArithmeticException("Addition overflows an Int")
+        }
         val newMonth = floorMod(calcMonths, 12).toInt() + 1
-        return resolvePreviousValid(newYear, newMonth, dayOfMonth)
+        return resolvePreviousValid(newYear.toInt(), newMonth, dayOfMonth)
     }
 
     // org.threeten.bp.LocalDate#plusWeeks
@@ -250,25 +253,20 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 }
 
 internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
-    when (unit) {
-        CalendarUnit.YEAR, CalendarUnit.MONTH, CalendarUnit.DAY -> try {
-            when (unit) {
-                CalendarUnit.YEAR -> plusYears(value)
-                CalendarUnit.MONTH -> plusMonths(value)
-                CalendarUnit.DAY -> plusDays(value)
-                else -> throw RuntimeException("impossible")
-            }
-        } catch (e: ArithmeticException) {
-            throw DateTimeArithmeticException("Arithmetic overflow when adding a value to a date", e)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeArithmeticException("Boundaries of LocalDate exceeded when adding a value", e)
+    if (unit.dateTimeUnit is DateTimeUnit.DateBased)
+        plusDateTimeUnit(value, unit.dateTimeUnit as DateTimeUnit.DateBased)
+    else throw IllegalArgumentException("Only date based units can be added to LocalDate")
+
+internal fun LocalDate.plusDateTimeUnit(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
+    try {
+        when (unit) {
+            is DateTimeUnit.DateBased.DayBased -> plusDays(safeMultiply(value, unit.days.toLong()))
+            is DateTimeUnit.DateBased.MonthBased -> plusMonths(safeMultiply(value, unit.months.toLong()))
         }
-        CalendarUnit.HOUR,
-        CalendarUnit.MINUTE,
-        CalendarUnit.SECOND,
-        CalendarUnit.MILLISECOND,
-        CalendarUnit.MICROSECOND,
-        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
+    } catch (e: ArithmeticException) {
+        throw DateTimeArithmeticException("Arithmetic overflow when adding a value to a date", e)
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Boundaries of LocalDate exceeded when adding a value", e)
     }
 
 internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
@@ -279,8 +277,8 @@ actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
         try {
             this@plus
                 .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-                .run { if (months != 0) this.plusMonths(years * 12L + months.toLong()) else this }
-                .run { if (days != 0) this.plusDays(days.toLong()) else this }
+                .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                .run { if (days != 0) plusDays(days.toLong()) else this }
         } catch (e: ArithmeticException) {
             throw DateTimeArithmeticException("Arithmetic overflow when adding a period to a date", e)
         } catch (e: IllegalArgumentException) {
@@ -308,22 +306,8 @@ internal fun LocalDate.longMonthsUntil(other: LocalDate): Long {
     return (packed2 - packed1) / 32
 }
 
-// org.threeten.bp.LocalDate#until(org.threeten.bp.temporal.Temporal, org.threeten.bp.temporal.TemporalUnit)
-internal fun LocalDate.longUntil(end: LocalDate, unit: CalendarUnit): Long =
-    when (unit) {
-        CalendarUnit.DAY -> longDaysUntil(end)
-        CalendarUnit.MONTH -> longMonthsUntil(end)
-        CalendarUnit.YEAR -> longMonthsUntil(end) / 12
-        CalendarUnit.HOUR,
-        CalendarUnit.MINUTE,
-        CalendarUnit.SECOND,
-        CalendarUnit.MILLISECOND,
-        CalendarUnit.MICROSECOND,
-        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Unsupported unit: $unit")
-    }
-
 actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
-    val months = longUntil(other, CalendarUnit.MONTH)
-    val days = plusMonths(months).longUntil(other, CalendarUnit.DAY)
+    val months = longMonthsUntil(other)
+    val days = plusMonths(months).longDaysUntil(other)
     return DatePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
 }
