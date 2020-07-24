@@ -38,7 +38,7 @@ class ThreeTenBpLocalTimeTest {
     fun toSecondOfDaySymmetricWithFromNanoOfDay() {
         var t = LocalTime.of(0, 0, 0, 0)
         for (i in 0 until 24 * 60 * 60) {
-            assertEquals(t, LocalTime.ofSecondOfDay(t.toSecondOfDay().toLong(), 0))
+            assertEquals(t, LocalTime.ofSecondOfDay(t.toSecondOfDay(), 0))
             t = t.plusSeconds(1)
         }
     }

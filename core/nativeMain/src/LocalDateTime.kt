@@ -61,7 +61,7 @@ public actual class LocalDateTime internal constructor(
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: ZoneOffset): Long {
-        val epochDay: Long = date.toEpochDay()
+        val epochDay = date.toEpochDay().toLong()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
         secs -= offset.totalSeconds
         return secs
@@ -71,7 +71,7 @@ public actual class LocalDateTime internal constructor(
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plus(value: Long, unit: DateTimeUnit.DateBased): LocalDateTime =
+    internal fun plus(value: Int, unit: DateTimeUnit.DateBased): LocalDateTime =
         LocalDateTime(date.plusDateTimeUnit(value, unit), time)
 }
 
@@ -85,7 +85,7 @@ actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
     with(timeZone) { offset }
 
 // org.threeten.bp.LocalDateTime#until
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
+internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Int {
     var endDate: LocalDate = other.date
     if (endDate > date && other.time < time) {
         endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
@@ -93,51 +93,35 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBa
         endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
     }
     return when (unit) {
-        is DateTimeUnit.DateBased.MonthBased -> date.longMonthsUntil(endDate) / unit.months
-        is DateTimeUnit.DateBased.DayBased -> date.longDaysUntil(endDate) / unit.days
+        is DateTimeUnit.DateBased.MonthBased -> date.monthsUntil(endDate) / unit.months
+        is DateTimeUnit.DateBased.DayBased -> date.daysUntil(endDate) / unit.days
     }
 }
 
 // org.threeten.bp.LocalDateTime#until
 /** @throws ArithmeticException on arithmetic overflow. */
 internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBased): Long {
-    val daysUntil = date.longDaysUntil(other.date)
+    val daysUntil = date.daysUntil(other.date)
     val timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
-    return multiplyAddAndDivide(daysUntil, NANOS_PER_DAY, timeUntil, unit.nanoseconds)
+    return multiplyAddAndDivide(daysUntil.toLong(), NANOS_PER_DAY, timeUntil, unit.nanoseconds)
 }
-
-// org.threeten.bp.LocalDateTime#plusSeconds
-/**
- * @throws IllegalArgumentException if the result exceeds the boundaries
- * @throws ArithmeticException if arithmetic overflow occurs
- */
-internal fun LocalDateTime.plusSeconds(seconds: Long): LocalDateTime =
-    plusWithOverflow(date, 0, 0, seconds, 0, 1)
 
 // org.threeten.bp.LocalDateTime#plusWithOverflow
 /**
  * @throws IllegalArgumentException if the result exceeds the boundaries
  * @throws ArithmeticException if arithmetic overflow occurs
  */
-internal fun LocalDateTime.plusWithOverflow(
-    newDate: LocalDate, hours: Long, minutes: Long, seconds: Long, nanos: Long, sign: Int): LocalDateTime
+internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
 {
-    if (hours or minutes or seconds or nanos == 0L) {
-        return LocalDateTime(newDate, time)
+    if (seconds == 0) {
+        return this
     }
-    var totDays = nanos / NANOS_PER_DAY + //   max/24*60*60*1B
-        seconds / SECONDS_PER_DAY + //   max/24*60*60
-        minutes / MINUTES_PER_DAY + //   max/24*60
-        hours / HOURS_PER_DAY //   max/24
-    totDays *= sign.toLong() // total max*0.4237...
-    var totNanos: Long = nanos % NANOS_PER_DAY + //   max  86400000000000
-        seconds % SECONDS_PER_DAY * NANOS_PER_ONE + //   max  86400000000000
-        minutes % MINUTES_PER_DAY * NANOS_PER_MINUTE + //   max  86400000000000
-        hours % HOURS_PER_DAY * NANOS_PER_HOUR //   max  86400000000000
-    val curNoD: Long = time.toNanoOfDay() //   max  86400000000000
-    totNanos = totNanos * sign + curNoD // total 432000000000000
-    totDays += floorDiv(totNanos, NANOS_PER_DAY)
-    val newNoD: Long = floorMod(totNanos, NANOS_PER_DAY)
-    val newTime: LocalTime = if (newNoD == curNoD) time else LocalTime.ofNanoOfDay(newNoD)
-    return LocalDateTime(newDate.plusDays(totDays), newTime)
+    val currentNanoOfDay = time.toNanoOfDay() // at most a day
+    val totalNanos: Long = seconds % SECONDS_PER_DAY * NANOS_PER_ONE.toLong() + // at most a day
+        currentNanoOfDay
+    val totalDays = seconds / SECONDS_PER_DAY + // max/24*60*60 < max * 0.000012
+        floorDiv(totalNanos, NANOS_PER_DAY) // max 2 days
+    val newNanoOfDay: Long = floorMod(totalNanos, NANOS_PER_DAY)
+    val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
+    return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
 }

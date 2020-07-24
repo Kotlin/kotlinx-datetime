@@ -152,14 +152,14 @@ internal const val MINUTES_PER_HOUR = 60
 /**
  * The number of days in a 400 year cycle.
  */
-internal const val DAYS_PER_CYCLE: Long = 146097
+internal const val DAYS_PER_CYCLE = 146097
 
 /**
  * The number of days from year zero to year 1970.
  * There are five 400 year cycles from year zero to 2000.
  * There are 7 leap years from 1970 to 2000.
  */
-internal const val DAYS_0000_TO_1970: Long = (DAYS_PER_CYCLE * 5L) - (30L * 365L + 7L)
+internal const val DAYS_0000_TO_1970 = DAYS_PER_CYCLE * 5 - (30 * 365 + 7)
 
 // days in a 400 year cycle = 146097
 // days in a 10,000 year cycle = 146097 * 25
@@ -202,6 +202,18 @@ internal fun safeAdd(a: Long, b: Long): Long {
     return sum
 }
 
+/**
+ * Safely adds two int values.
+ * throws [ArithmeticException] if the result overflows an int
+ */
+internal fun safeAdd(a: Int, b: Int): Int {
+    val sum = a + b
+    // check for a change of sign in the result when the inputs have the same sign
+    if ((a xor sum) < 0 && (a xor b) >= 0) {
+        throw ArithmeticException("Addition overflows an int: $a + $b")
+    }
+    return sum
+}
 
 /**
  * Safely subtracts one long from another.
@@ -221,7 +233,7 @@ internal fun safeSubtract(a: Long, b: Long): Long {
 }
 
 /**
- * Safely multiply a long by an int.
+ * Safely multiply a long by a long.
  *
  * @param a  the first value
  * @param b  the second value
@@ -229,21 +241,36 @@ internal fun safeSubtract(a: Long, b: Long): Long {
  * @throws ArithmeticException if the result overflows a long
  */
 internal fun safeMultiply(a: Long, b: Long): Long {
-    when (b) {
-        -1L -> {
-            if (a == Long.MIN_VALUE) {
-                throw ArithmeticException("Multiplication overflows a long: $a * $b")
-            }
-            return -a
-        }
-        0L -> return 0L
-        1L -> return a
+    if (b == 1L) {
+        return a
+    }
+    if (a == 1L) {
+        return b
+    }
+    if (a == 0L || b == 0L) {
+        return 0
     }
     val total = a * b
-    if (total / b != a) {
+    if (total / b != a || a == Long.MIN_VALUE && b == -1L || b == Long.MIN_VALUE && a == -1L) {
         throw ArithmeticException("Multiplication overflows a long: $a * $b")
     }
     return total
+}
+
+/**
+ * Safely multiply an int by an int.
+ *
+ * @param a  the first value
+ * @param b  the second value
+ * @return the new total
+ * @throws ArithmeticException if the result overflows an int
+ */
+internal fun safeMultiply(a: Int, b: Int): Int {
+    val total = a.toLong() * b.toLong()
+    if (total < Int.MIN_VALUE || total > Int.MAX_VALUE) {
+        throw ArithmeticException("Multiplication overflows an int: $a * $b")
+    }
+    return total.toInt()
 }
 
 /**
@@ -260,9 +287,23 @@ internal fun safeMultiply(a: Long, b: Long): Long {
  * @param b  the divisor
  * @return the floor division
  */
-internal fun floorDiv(a: Long, b: Long): Long {
-    return if (a >= 0) a / b else (a + 1) / b - 1
-}
+internal fun floorDiv(a: Long, b: Long): Long = if (a >= 0) a / b else (a + 1) / b - 1
+
+/**
+ * Returns the floor division.
+ * <p>
+ * This returns {@code 0} for {@code floorDiv(0, 4)}.<br />
+ * This returns {@code -1} for {@code floorDiv(-1, 4)}.<br />
+ * This returns {@code -1} for {@code floorDiv(-2, 4)}.<br />
+ * This returns {@code -1} for {@code floorDiv(-3, 4)}.<br />
+ * This returns {@code -1} for {@code floorDiv(-4, 4)}.<br />
+ * This returns {@code -2} for {@code floorDiv(-5, 4)}.<br />
+ *
+ * @param a  the dividend
+ * @param b  the divisor
+ * @return the floor division
+ */
+internal fun floorDiv(a: Int, b: Int): Int = if (a >= 0) a / b else (a + 1) / b - 1
 
 /**
  * Returns the floor modulus.
@@ -278,9 +319,23 @@ internal fun floorDiv(a: Long, b: Long): Long {
  * @param b  the divisor
  * @return the floor modulus (positive)
  */
-internal fun floorMod(a: Long, b: Long): Long {
-    return (a % b + b) % b
-}
+internal fun floorMod(a: Long, b: Long): Long = (a % b + b) % b
+
+/**
+ * Returns the floor modulus.
+ *
+ *
+ * This returns `0` for `floorMod(0, 4)`.<br></br>
+ * This returns `1` for `floorMod(-1, 4)`.<br></br>
+ * This returns `2` for `floorMod(-2, 4)`.<br></br>
+ * This returns `3` for `floorMod(-3, 4)`.<br></br>
+ * This returns `0` for `floorMod(-4, 4)`.<br></br>
+ *
+ * @param a  the dividend
+ * @param b  the divisor
+ * @return the floor modulus (positive)
+ */
+internal fun floorMod(a: Int, b: Int): Int = (a % b + b) % b
 
 // org.threeten.bp.ZoneOffset#buildId
 internal fun zoneIdByOffset(totalSeconds: Int): String {

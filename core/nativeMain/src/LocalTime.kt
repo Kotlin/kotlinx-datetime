@@ -44,15 +44,15 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
             localTimeParser.parse(isoString)
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
-        internal fun ofSecondOfDay(secondOfDay: Long, nanoOfSecond: Int): LocalTime {
+        internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
             // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
             require(secondOfDay >= 0 && secondOfDay < SECONDS_PER_DAY)
             require(nanoOfSecond >= 0 && nanoOfSecond < NANOS_PER_ONE)
-            val hours = (secondOfDay / SECONDS_PER_HOUR).toInt()
-            val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR.toLong()
-            val minutes = (secondWithoutHours / SECONDS_PER_MINUTE).toInt()
-            val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE.toLong()
-            return LocalTime(hours, minutes, second.toInt(), nanoOfSecond)
+            val hours = (secondOfDay / SECONDS_PER_HOUR)
+            val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR
+            val minutes = (secondWithoutHours / SECONDS_PER_MINUTE)
+            val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE
+            return LocalTime(hours, minutes, second, nanoOfSecond)
         }
 
         internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
