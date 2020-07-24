@@ -165,14 +165,14 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
-                implementation(npm("js-joda", "core",  "1.12.0"))
+                implementation(npm("@js-joda/core",  "3.0.0"))
             }
         }
 
         val jsTest by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-test-js")
-                implementation(npm("js-joda", "timezone", "2.2.0"))
+                implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 

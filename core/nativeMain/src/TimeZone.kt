@@ -26,7 +26,6 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
             TimeZone(tzid.value, kotlinString)
         }
 
-        @SharedImmutable
         actual val UTC: TimeZone = ZoneOffset.UTC
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
@@ -136,7 +135,6 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
 
     companion object {
         // org.threeten.bp.ZoneOffset#UTC
-        @SharedImmutable
         val UTC = ZoneOffset(0, "Z")
 
         // org.threeten.bp.ZoneOffset#of

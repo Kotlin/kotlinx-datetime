@@ -15,6 +15,11 @@ kotlin {
         target("tvosX64")
     }
 
+    if (System.getProperty("idea.active")?.toBoolean() == true) {
+        // workaround: add jvm target for non-Mac hosts during IDEA import to avoid 'no targets' error
+        jvm()
+    }
+
     sourceSets.all {
         kotlin.setSrcDirs(listOf("$name/src"))
     }
