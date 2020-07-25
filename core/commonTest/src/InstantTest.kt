@@ -89,36 +89,42 @@ class InstantTest {
     @Test
     fun instantCalendarArithmetic() {
         val zone = TimeZone.of("Europe/Berlin")
+
+        fun expectBetween(instant1: Instant, instant2: Instant, expected: Long, unit: DateTimeUnit) {
+            assertEquals(expected, instant1.until(instant2, unit, zone), "i1.until(i2)")
+            assertEquals(expected, -instant2.until(instant1, unit, zone), "i2.until(i1)")
+            assertEquals(expected, instant2.minus(instant1, unit, zone), "i2.minus(i1)")
+            assertEquals(expected, -instant1.minus(instant2, unit, zone), "i1.minus(i2)")
+
+            for (timeUnit in listOf(DateTimeUnit.MICROSECOND, DateTimeUnit.MILLISECOND, DateTimeUnit.SECOND, DateTimeUnit.MINUTE, DateTimeUnit.HOUR)) {
+                val diff = instant2.minus(instant1, timeUnit, zone)
+                assertEquals(instant2 - instant1, timeUnit.duration * diff.toDouble())
+                assertEquals(instant2, instant1.plus(diff, timeUnit, zone))
+            }
+        }
+
         val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
-        assertEquals(24.hours, instant2 - instant1)
-        assertEquals(24, instant1.until(instant2, DateTimeUnit.HOUR, zone))
-        assertEquals(24, instant2.minus(instant1, DateTimeUnit.HOUR, zone))
+        expectBetween(instant1, instant2, 24, DateTimeUnit.HOUR)
 
         val instant3 = instant1.plus(DateTimeUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
-        assertEquals(25.hours, instant3 - instant1)
-        assertEquals(1, instant1.until(instant3, DateTimeUnit.DAY, zone))
+        expectBetween(instant1, instant3, 25, DateTimeUnit.HOUR)
+        expectBetween(instant1, instant3, 1, DateTimeUnit.DAY)
         assertEquals(1, instant1.daysUntil(instant3, zone))
-        assertEquals(1, instant3.minus(instant1, DateTimeUnit.DAY, zone))
 
         val instant4 = instant1.plus(14, DateTimeUnit.MONTH, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
-        assertEquals(1, instant1.until(instant4, DateTimeUnit.YEAR, zone))
-        assertEquals(4, instant1.until(instant4, DateTimeUnit.QUARTER, zone))
-        assertEquals(14, instant1.until(instant4, DateTimeUnit.MONTH, zone))
-        assertEquals(61, instant1.until(instant4, DateTimeUnit.WEEK, zone))
-        assertEquals(366 + 31 + 30, instant1.until(instant4, DateTimeUnit.DAY, zone))
-        assertEquals((366 + 31 + 30) * 24 + 1, instant1.until(instant4, DateTimeUnit.HOUR, zone))
+        expectBetween(instant1, instant4, 1, DateTimeUnit.YEAR)
+        expectBetween(instant1, instant4, 4, DateTimeUnit.QUARTER)
+        expectBetween(instant1, instant4, 14, DateTimeUnit.MONTH)
+        expectBetween(instant1, instant4, 61, DateTimeUnit.WEEK)
+        expectBetween(instant1, instant4, 366 + 31 + 30, DateTimeUnit.DAY)
+        expectBetween(instant1, instant4, (366 + 31 + 30) * 24 + 1, DateTimeUnit.HOUR)
 
-        for (timeUnit in listOf(DateTimeUnit.MICROSECOND, DateTimeUnit.MILLISECOND, DateTimeUnit.SECOND, DateTimeUnit.MINUTE, DateTimeUnit.HOUR)) {
-            val diff = instant4.minus(instant1, timeUnit, zone)
-            assertEquals(instant4 - instant1, timeUnit.duration * diff.toDouble())
-            assertEquals(instant4, instant1.plus(diff, timeUnit, zone))
-        }
 
         val period = DateTimePeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
@@ -129,12 +135,20 @@ class InstantTest {
 
         val instant6 = instant1.plus(23, DateTimeUnit.HOUR, zone)
         checkComponents(instant6.toLocalDateTime(zone), 2019, 10, 28, 0, 59)
-        assertEquals(23.hours, instant6 - instant1)
-        assertEquals(23, instant1.until(instant6, DateTimeUnit.HOUR, zone))
-        assertEquals(23, instant6.minus(instant1, DateTimeUnit.HOUR, zone))
-        assertEquals(0, instant1.until(instant6, DateTimeUnit.DAY, zone))
-        assertEquals(0, instant6.until(instant1, DateTimeUnit.DAY, zone))
-        assertEquals(0, instant6.minus(instant1, DateTimeUnit.DAY, zone))
+        expectBetween(instant1, instant6, 23, DateTimeUnit.HOUR)
+        expectBetween(instant1, instant6, 0, DateTimeUnit.DAY)
+    }
+
+    @Test
+    fun addingMultiplesOf2_32() {
+        val pow2_32 = 1L shl 32
+        val instant1 = Instant.fromEpochSeconds(0)
+        val instant2 = instant1.plus(pow2_32, DateTimeUnit.NANOSECOND, TimeZone.UTC)
+        assertEquals(pow2_32 / NANOS_PER_ONE, instant2.epochSeconds)
+        assertEquals(pow2_32 % NANOS_PER_ONE, instant2.nanosecondsOfSecond.toLong())
+
+        val instant3 = instant1.plus(pow2_32, DateTimeUnit.SECOND, TimeZone.UTC)
+        assertEquals(pow2_32, instant3.epochSeconds)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -156,8 +170,11 @@ class InstantTest {
         val end = start.plus(300, DateTimeUnit.YEAR, zone)
         val diffNs = start.until(end, unit500ns, zone)
         val diffUs = start.until(end, DateTimeUnit.MICROSECOND, zone)
-        // TODO: avoid clamping/overflowing in intermediate results
+        // TODO: avoid clamping/overflowing in intermediate results in JVM
 //        assertEquals(diffUs * 2, diffNs)
+
+//        assertEquals(end, start.plus(diffNs, unit500ns, zone))
+        assertEquals(start, end.plus(-diffUs, DateTimeUnit.MICROSECOND, zone))
     }
 
     @OptIn(ExperimentalTime::class)
