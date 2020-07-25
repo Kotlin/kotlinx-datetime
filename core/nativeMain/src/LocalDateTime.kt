@@ -75,7 +75,7 @@ public actual class LocalDateTime internal constructor(
      * @throws ArithmeticException if arithmetic overflow occurs
      */
     internal fun plus(value: Int, unit: DateTimeUnit.DateBased): LocalDateTime =
-        LocalDateTime(date.plusDateTimeUnit(value, unit), time)
+        LocalDateTime(date.plus(value, unit), time)
 }
 
 actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =

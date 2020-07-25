@@ -37,20 +37,8 @@ public expect class LocalDate : Comparable<LocalDate> {
  */
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
-/**
- * @throws IllegalArgumentException if the calendar unit is not date-based.
- * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- */
-internal expect fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate
 
 /**
- * @throws IllegalArgumentException if the calendar unit is not date-based.
- * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- */
-internal expect fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate
-
-/**
- * @throws IllegalArgumentException if [period] has non-zero time (as opposed to date) components.
  * @throws DateTimeArithmeticException if arithmetic overflow occurs or the boundaries of [LocalDate] are exceeded at
  * any point in intermediate computations.
  */
@@ -66,24 +54,22 @@ public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 
-public fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
-        plus(unit.calendarScale, unit.calendarUnit)
-public fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
-        try {
-            plus(safeMultiply(value.toLong(), unit.calendarScale), unit.calendarUnit)
-        } catch (e: Exception) {
-            if (e !is ArithmeticException) throw e
-            throw DateTimeArithmeticException(e)
-        }
-public fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
-        try {
-            plus(safeMultiply(value, unit.calendarScale), unit.calendarUnit)
-        } catch (e: Exception) {
-            if (e !is ArithmeticException) throw e
-            throw DateTimeArithmeticException(e)
-        }
+/**
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
+
+/**
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
+
+/**
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 
 public fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.DateBased.MonthBased -> (monthsUntil(other) / unit.months).toInt()
-    is DateTimeUnit.DateBased.DayBased -> (daysUntil(other) / unit.days).toInt()
+    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
+    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
 }

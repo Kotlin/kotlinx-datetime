@@ -91,11 +91,6 @@ public fun String.toInstant(): Instant = Instant.parse(this)
 public expect fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant
 
 /**
- * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
- */
-internal expect fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant
-
-/**
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod
@@ -141,28 +136,17 @@ public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
-        plus(unit.calendarScale, unit.calendarUnit, zone)
+public expect fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
-        try {
-            plus(safeMultiply(value.toLong(), unit.calendarScale), unit.calendarUnit, zone)
-        } catch (e: ArithmeticException) {
-            throw DateTimeArithmeticException(e)
-        }
+public expect fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
-        try {
-            plus(safeMultiply(value, unit.calendarScale), unit.calendarUnit, zone)
-        } catch (e: ArithmeticException) {
-            throw DateTimeArithmeticException(e)
-        }
+public expect fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant
 
 
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)

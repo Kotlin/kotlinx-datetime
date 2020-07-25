@@ -46,31 +46,20 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value).toInt()
 }
 
+public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plusNumber(1, unit)
+public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
+public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
 
-private fun LocalDate.plusNumber(value: Number, unit: CalendarUnit): LocalDate = try {
-
-    when (unit) {
-        CalendarUnit.YEAR -> this.value.plusYears(value)
-        CalendarUnit.MONTH -> this.value.plusMonths(value)
-        CalendarUnit.DAY -> this.value.plusDays(value)
-        CalendarUnit.HOUR,
-        CalendarUnit.MINUTE,
-        CalendarUnit.SECOND,
-        CalendarUnit.MILLISECOND,
-        CalendarUnit.MICROSECOND,
-        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
-    }.let(::LocalDate)
-} catch (e: Throwable) {
-    if (e.isJodaDateTimeException() || e.isJodaArithmeticException()) throw DateTimeArithmeticException(e)
-    throw e
-}
-
-internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
-        plusNumber(value.toDouble(), unit)
-
-internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
-        plusNumber(value, unit)
-
+private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): LocalDate =
+        try {
+            when (unit) {
+                is DateTimeUnit.DateBased.DayBased -> this.value.plusDays(value.toDouble() * unit.days)
+                is DateTimeUnit.DateBased.MonthBased -> this.value.plusMonths(value.toDouble() * unit.months)
+            }.let(::LocalDate)
+        } catch (e: Throwable) {
+            if (!e.isJodaDateTimeException() && !e.isJodaArithmeticException()) throw e
+            throw DateTimeArithmeticException("The result of adding $value of $unit to $this is out of LocalDate range.", e)
+        }
 
 
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {

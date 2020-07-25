@@ -295,10 +295,11 @@ actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant =
-    plusDateTimeUnit(value, unit.dateTimeUnit, zone)
-
-internal fun Instant.plusDateTimeUnit(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
+public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
+    plus(1L, unit, zone)
+public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
+    plus(value.toLong(), unit, zone)
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
     when (unit) {
         is DateTimeUnit.DateBased -> {
             if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)

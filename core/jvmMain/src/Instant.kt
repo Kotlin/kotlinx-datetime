@@ -14,7 +14,7 @@ import kotlin.time.*
 import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
-@OptIn(kotlin.time.ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     actual val epochSeconds: Long
@@ -105,23 +105,31 @@ public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant 
     }
 }
 
-internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
-    val thisZdt = atZone(zone)
-    when (unit) {
-        CalendarUnit.YEAR -> thisZdt.plusYears(value).toInstant()
-        CalendarUnit.MONTH -> thisZdt.plusMonths(value).toInstant()
-        CalendarUnit.DAY -> thisZdt.plusDays(value).toInstant()
-        CalendarUnit.HOUR -> thisZdt.plusHours(value).toInstant()
-        CalendarUnit.MINUTE -> thisZdt.plusMinutes(value).toInstant()
-        CalendarUnit.SECOND -> this.value.plusSeconds(value).also { it.atZone(zone.zoneId) }
-        CalendarUnit.MILLISECOND -> this.value.plusMillis(value).also { it.atZone(zone.zoneId) }
-        CalendarUnit.MICROSECOND -> this.value.plusSeconds(value / 1_000_000).plusNanos((value % 1_000_000) * 1000).also { it.atZone(zone.zoneId) }
-        CalendarUnit.NANOSECOND -> this.value.plusNanos(value).also { it.atZone(zone.zoneId) }
-    }.let(::Instant)
-} catch (e: Throwable) {
-    if (e !is DateTimeException && e !is ArithmeticException) throw e
-    throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
-}
+public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(1L, unit, zone)
+
+public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(value.toLong(), unit, zone)
+
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
+        try {
+            val thisZdt = atZone(zone)
+            when (unit) {
+                is DateTimeUnit.TimeBased -> {
+                    multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
+                        (d, r) -> this.value.plusSeconds(d).plusNanos(r).also { it.atZone(zone.zoneId) }
+                    }
+                }
+                is DateTimeUnit.DateBased.DayBased ->
+                    thisZdt.plusDays(safeMultiply(value, unit.days.toLong())).toInstant()
+                is DateTimeUnit.DateBased.MonthBased ->
+                    thisZdt.plusMonths(safeMultiply(value, unit.months.toLong())).toInstant()
+            }.let(::Instant)
+        } catch (e: Exception) {
+            if (e !is DateTimeException && e !is ArithmeticException) throw e
+            throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
+        }
+
 
 @OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {

@@ -18,7 +18,7 @@ import kotlinx.datetime.internal.JSJoda.LocalTime
 import kotlin.math.nextTowards
 import kotlin.math.truncate
 
-@OptIn(kotlin.time.ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     actual val epochSeconds: Long
@@ -26,11 +26,12 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     actual val nanosecondsOfSecond: Int
         get() = value.nano().toInt()
 
-    public actual fun toEpochMilliseconds(): Long = epochSeconds * 1000 + nanosecondsOfSecond / 1_000_000
+    public actual fun toEpochMilliseconds(): Long =
+            epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
     actual operator fun plus(duration: Duration): Instant {
         val addSeconds = truncate(duration.inSeconds)
-        val addNanos = (duration.inNanoseconds % 1e9).toInt()
+        val addNanos = (duration.inNanoseconds % NANOS_PER_ONE).toInt()
         return try {
             Instant(plusFix(addSeconds, addNanos))
         } catch (e: Throwable) {
@@ -67,7 +68,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 Instant(jtClock.systemUTC().instant())
 
         actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant = try {
-            fromEpochSeconds(epochMilliseconds / 1000, epochMilliseconds % 1000 * 1000_000)
+            fromEpochSeconds(epochMilliseconds / MILLIS_PER_ONE, epochMilliseconds % MILLIS_PER_ONE * NANOS_PER_MILLI)
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
             if (epochMilliseconds > 0) MAX else MIN
@@ -141,23 +142,46 @@ private fun ZonedDateTime.plusNanosFix(nanoseconds: Long): ZonedDateTime {
 
 private fun jtInstant.atZone(zone: TimeZone): ZonedDateTime = atZone(zone.zoneId)
 
-internal actual fun Instant.plus(value: Long, unit: CalendarUnit, zone: TimeZone): Instant = try {
-    val thisZdt = this.value.atZone(zone)
-    when (unit) {
-        CalendarUnit.YEAR -> thisZdt.plusYears(value).toInstant()
-        CalendarUnit.MONTH -> thisZdt.plusMonths(value).toInstant()
-        CalendarUnit.DAY -> thisZdt.plusDays(value).let { it as ZonedDateTime }.toInstant()
-        CalendarUnit.HOUR -> thisZdt.plusHours(value).toInstant()
-        CalendarUnit.MINUTE -> thisZdt.plusMinutes(value).toInstant()
-        CalendarUnit.SECOND -> this.plusFix(value.toDouble(), 0)
-        CalendarUnit.MILLISECOND -> this.plusFix((value / 1_000).toDouble(), (value % 1_000).toInt() * 1_000_000).also { it.atZone(zone) }
-        CalendarUnit.MICROSECOND -> this.plusFix((value / 1_000_000).toDouble(), (value % 1_000_000).toInt() * 1000).also { it.atZone(zone) }
-        CalendarUnit.NANOSECOND -> this.plusFix((value / 1_000_000_000).toDouble(), (value % 1_000_000_000).toInt()).also { it.atZone(zone) }
-    }.let(::Instant)
-} catch (e: Throwable) {
-    if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
-    throw e
-}
+public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
+        plus(1, unit, zone)
+
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
+        try {
+            val thisZdt = this.value.atZone(zone)
+            when (unit) {
+                is DateTimeUnit.TimeBased -> {
+                    multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
+                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).also { it.atZone(zone.zoneId) }
+                    }
+                }
+                is DateTimeUnit.DateBased.DayBased ->
+                    (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
+                is DateTimeUnit.DateBased.MonthBased ->
+                    thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
+            }.let(::Instant)
+        } catch (e: Throwable) {
+            if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
+            throw e
+        }
+
+public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
+        try {
+            val thisZdt = this.value.atZone(zone)
+            when (unit) {
+                is DateTimeUnit.TimeBased -> {
+                    multiplyAndDivide(value.toLong(), unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
+                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).also { it.atZone(zone.zoneId) }
+                    }
+                }
+                is DateTimeUnit.DateBased.DayBased ->
+                    (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
+                is DateTimeUnit.DateBased.MonthBased ->
+                    thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
+            }.let(::Instant)
+        } catch (e: Throwable) {
+            if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
+            throw e
+        }
 
 @OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod = try {
@@ -183,11 +207,11 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZo
             this.value.atZone(zone)
             other.value.atZone(zone)
             try {
-                // TODO: use fused multiplyAddDivide
-                safeAdd(
-                        safeMultiply(other.epochSeconds - this.epochSeconds, LocalTime.NANOS_PER_SECOND.toLong()),
-                        (other.nanosecondsOfSecond - this.nanosecondsOfSecond).toLong()
-                ) / unit.nanoseconds
+                multiplyAddAndDivide(
+                        (other.value.epochSecond().toDouble() - this.value.epochSecond().toDouble()).toLong(),
+                        NANOS_PER_ONE.toLong(),
+                        (other.nanosecondsOfSecond - this.nanosecondsOfSecond).toLong(),
+                        unit.nanoseconds)
             } catch (e: ArithmeticException) {
                 if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
             }

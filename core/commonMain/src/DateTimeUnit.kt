@@ -64,7 +64,7 @@ sealed class DateTimeUnit {
     }
 
     sealed class DateBased : DateTimeUnit() {
-        // TODO: investigate how to move subclasses to ChronoUnit scope
+        // TODO: investigate how to move subclasses up to DateTimeUnit scope
         class DayBased(val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
@@ -141,15 +141,3 @@ internal enum class CalendarUnit {
     NANOSECOND
 }
 
-internal val CalendarUnit.dateTimeUnit: DateTimeUnit
-    get() = when (this) {
-        CalendarUnit.YEAR -> DateTimeUnit.YEAR
-        CalendarUnit.MONTH -> DateTimeUnit.MONTH
-        CalendarUnit.DAY -> DateTimeUnit.DAY
-        CalendarUnit.HOUR -> DateTimeUnit.HOUR
-        CalendarUnit.MINUTE -> DateTimeUnit.MINUTE
-        CalendarUnit.SECOND -> DateTimeUnit.SECOND
-        CalendarUnit.MILLISECOND -> DateTimeUnit.MILLISECOND
-        CalendarUnit.MICROSECOND -> DateTimeUnit.MICROSECOND
-        CalendarUnit.NANOSECOND -> DateTimeUnit.NANOSECOND
-    }

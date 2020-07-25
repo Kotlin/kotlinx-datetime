@@ -48,24 +48,27 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 }
 
 
-internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate = try {
-    when (unit) {
-        CalendarUnit.YEAR -> this.value.plusYears(value)
-        CalendarUnit.MONTH -> this.value.plusMonths(value)
-        CalendarUnit.DAY -> ofEpochDayChecked(safeAdd(this.value.toEpochDay(), value))
-        CalendarUnit.HOUR,
-        CalendarUnit.MINUTE,
-        CalendarUnit.SECOND,
-        CalendarUnit.MILLISECOND,
-        CalendarUnit.MICROSECOND,
-        CalendarUnit.NANOSECOND -> throw IllegalArgumentException("Only date based units can be added to LocalDate")
-    }.let(::LocalDate)
-} catch(e: Exception) {
-    if (e is DateTimeException || e is ArithmeticException)
-        throw DateTimeArithmeticException("The result of adding $value of $unit to $this is out of LocalDate range.")
-    else
-        throw e
-}
+public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
+        plus(1L, unit)
+
+public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
+        plus(value.toLong(), unit)
+
+public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
+        try {
+            when (unit) {
+                is DateTimeUnit.DateBased.DayBased -> {
+                    val addDays: Long = safeMultiply(value, unit.days.toLong())
+                    ofEpochDayChecked(safeAdd(this.value.toEpochDay(), addDays))
+                }
+                is DateTimeUnit.DateBased.MonthBased ->
+                    this.value.plusMonths(safeMultiply(value, unit.months.toLong()))
+            }.let(::LocalDate)
+        } catch (e: Exception) {
+            if (e !is DateTimeException && e !is ArithmeticException) throw e
+            throw DateTimeArithmeticException("The result of adding $value of $unit to $this is out of LocalDate range.", e)
+        }
+
 private val minEpochDay = java.time.LocalDate.MIN.toEpochDay()
 private val maxEpochDay = java.time.LocalDate.MAX.toEpochDay()
 private fun ofEpochDayChecked(epochDay: Long): java.time.LocalDate {
@@ -74,9 +77,6 @@ private fun ofEpochDayChecked(epochDay: Long): java.time.LocalDate {
         throw DateTimeException("The resulting day $epochDay is out of supported LocalDate range.")
     return java.time.LocalDate.ofEpochDay(epochDay)
 }
-
-internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
-        plus(value.toLong(), unit)
 
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {

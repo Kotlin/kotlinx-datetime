@@ -242,17 +242,10 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
     }
 }
 
-internal actual fun LocalDate.plus(value: Long, unit: CalendarUnit): LocalDate =
-    if (value > Int.MAX_VALUE || value < Int.MIN_VALUE)
-        throw DateTimeArithmeticException("Can't add a Long to a LocalDate")
-    else plus(value.toInt(), unit)
+public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
+        plus(1, unit)
 
-internal actual fun LocalDate.plus(value: Int, unit: CalendarUnit): LocalDate =
-    if (unit.dateTimeUnit !is DateTimeUnit.DateBased)
-        throw IllegalArgumentException("Only date based units can be added to LocalDate")
-    else plusDateTimeUnit(value, unit.dateTimeUnit as DateTimeUnit.DateBased)
-
-internal fun LocalDate.plusDateTimeUnit(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
+public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
     try {
         when (unit) {
             is DateTimeUnit.DateBased.DayBased -> plusDays(safeMultiply(value, unit.days))
@@ -263,6 +256,11 @@ internal fun LocalDate.plusDateTimeUnit(value: Int, unit: DateTimeUnit.DateBased
     } catch (e: IllegalArgumentException) {
         throw DateTimeArithmeticException("Boundaries of LocalDate exceeded when adding a value", e)
     }
+
+public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
+        if (value > Int.MAX_VALUE || value < Int.MIN_VALUE)
+            throw DateTimeArithmeticException("Can't add a Long to a LocalDate") // TODO: less specific message
+        else plus(value.toInt(), unit)
 
 actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     with(period) {
