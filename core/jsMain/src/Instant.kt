@@ -200,31 +200,20 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = try {
-    when (unit) {
-        is DateTimeUnit.DateBased ->
-            this.value.atZone(zone).until(other.value.atZone(zone), unit.calendarUnit.toChronoUnit()).toLong() / unit.calendarScale
+    val thisZdt = this.value.atZone(zone)
+    val otherZdt = other.value.atZone(zone)
+    when(unit) {
         is DateTimeUnit.TimeBased -> {
-            this.value.atZone(zone)
-            other.value.atZone(zone)
-            try {
-                multiplyAddAndDivide(
-                        (other.value.epochSecond().toDouble() - this.value.epochSecond().toDouble()).toLong(),
-                        NANOS_PER_ONE.toLong(),
-                        (other.nanosecondsOfSecond - this.nanosecondsOfSecond).toLong(),
-                        unit.nanoseconds)
-            } catch (e: ArithmeticException) {
-                if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
-            }
+            multiplyAddAndDivide(other.epochSeconds - epochSeconds,
+                    NANOS_PER_ONE.toLong(),
+                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
+                    unit.nanoseconds)
         }
+        is DateTimeUnit.DateBased.DayBased -> (thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble() / unit.days).toLong()
+        is DateTimeUnit.DateBased.MonthBased -> (thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble() / unit.months).toLong()
     }
+} catch (e: ArithmeticException) {
+    if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
-}
-
-
-private fun CalendarUnit.toChronoUnit(): ChronoUnit = when(this) {
-    CalendarUnit.YEAR -> ChronoUnit.YEARS
-    CalendarUnit.MONTH -> ChronoUnit.MONTHS
-    CalendarUnit.DAY -> ChronoUnit.DAYS
-    else -> error("CalendarUnit $this should not be used")
 }

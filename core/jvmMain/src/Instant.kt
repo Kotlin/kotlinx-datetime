@@ -145,25 +145,22 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
     }
 }
 
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
-        until(other, unit.calendarUnit.toChronoUnit(), zone.zoneId) / unit.calendarScale
-
-private fun Instant.until(other: Instant, unit: ChronoUnit, zone: ZoneId): Long = try {
-    this.value.atZone(zone).until(other.value.atZone(zone), unit)
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = try {
+    val thisZdt = this.atZone(zone)
+    val otherZdt = other.atZone(zone)
+    when(unit) {
+        is DateTimeUnit.TimeBased -> {
+            multiplyAddAndDivide(other.epochSeconds - epochSeconds,
+                    NANOS_PER_ONE.toLong(),
+                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
+                    unit.nanoseconds)
+        }
+        is DateTimeUnit.DateBased.DayBased -> thisZdt.until(otherZdt, ChronoUnit.DAYS) / unit.days
+        is DateTimeUnit.DateBased.MonthBased -> thisZdt.until(otherZdt, ChronoUnit.MONTHS) / unit.months
+    }
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 } catch (e: ArithmeticException) {
     if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
 }
 
-private fun CalendarUnit.toChronoUnit(): ChronoUnit = when(this) {
-    CalendarUnit.YEAR -> ChronoUnit.YEARS
-    CalendarUnit.MONTH -> ChronoUnit.MONTHS
-    CalendarUnit.DAY -> ChronoUnit.DAYS
-    CalendarUnit.HOUR -> ChronoUnit.HOURS
-    CalendarUnit.MINUTE -> ChronoUnit.MINUTES
-    CalendarUnit.SECOND -> ChronoUnit.SECONDS
-    CalendarUnit.MILLISECOND -> ChronoUnit.MILLIS
-    CalendarUnit.MICROSECOND -> ChronoUnit.MICROS
-    CalendarUnit.NANOSECOND -> ChronoUnit.NANOS
-}

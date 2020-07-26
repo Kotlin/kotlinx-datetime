@@ -170,10 +170,9 @@ class InstantTest {
         val end = start.plus(300, DateTimeUnit.YEAR, zone)
         val diffNs = start.until(end, unit500ns, zone)
         val diffUs = start.until(end, DateTimeUnit.MICROSECOND, zone)
-        // TODO: avoid clamping/overflowing in intermediate results in JVM
-//        assertEquals(diffUs * 2, diffNs)
+        assertEquals(diffUs * 2, diffNs)
 
-//        assertEquals(end, start.plus(diffNs, unit500ns, zone))
+        assertEquals(end, start.plus(diffNs, unit500ns, zone))
         assertEquals(start, end.plus(-diffUs, DateTimeUnit.MICROSECOND, zone))
     }
 

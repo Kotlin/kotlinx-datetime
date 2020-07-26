@@ -13,12 +13,9 @@ sealed class DateTimeUnit {
 
     abstract operator fun times(scalar: Int): DateTimeUnit
 
-    internal abstract val calendarUnit: CalendarUnit
-    internal abstract val calendarScale: Long
-
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
-        internal override val calendarUnit: CalendarUnit
-        internal override val calendarScale: Long
+        internal val calendarUnit: CalendarUnit
+        internal val calendarScale: Long
 
         init {
             require(nanoseconds > 0) { "Unit duration must be positive, but was $nanoseconds ns." }
@@ -72,9 +69,6 @@ sealed class DateTimeUnit {
 
             override fun times(scalar: Int): DayBased = DayBased(safeMultiply(days, scalar))
 
-            internal override val calendarUnit: CalendarUnit get() = CalendarUnit.DAY
-            internal override val calendarScale: Long get() = days.toLong()
-
             override fun equals(other: Any?): Boolean =
                     this === other || (other is DayBased && this.days == other.days)
 
@@ -91,9 +85,6 @@ sealed class DateTimeUnit {
             }
 
             override fun times(scalar: Int): MonthBased = MonthBased(safeMultiply(months, scalar))
-
-            internal override val calendarUnit: CalendarUnit get() = CalendarUnit.MONTH
-            internal override val calendarScale: Long get() = months.toLong()
 
             override fun equals(other: Any?): Boolean =
                     this === other || (other is MonthBased && this.months == other.months)
