@@ -86,6 +86,11 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     return DatePeriod(months / 12, months % 12, days)
 }
 
+public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
+    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
+    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
+}
+
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.DAYS).toInt()
 

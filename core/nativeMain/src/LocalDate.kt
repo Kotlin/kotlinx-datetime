@@ -276,6 +276,11 @@ actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
         }
     }
 
+public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
+    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
+    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
+}
+
 // org.threeten.bp.LocalDate#daysUntil
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
     other.toEpochDay() - this.toEpochDay()

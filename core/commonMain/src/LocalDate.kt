@@ -50,6 +50,8 @@ expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
 /** */
 operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(this)
 
+public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int
+
 public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 public expect fun LocalDate.yearsUntil(other: LocalDate): Int
@@ -68,8 +70,3 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
-
-public fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
-    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
-}

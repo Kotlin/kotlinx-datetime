@@ -144,8 +144,7 @@ class LocalDateTest {
         val diffDays = LocalDate.MIN.until(LocalDate.MAX, unit1000days)
         val diffYears = LocalDate.MIN.until(LocalDate.MAX, unit4years)
         assertTrue(diffDays in 0..Int.MAX_VALUE, "difference in $unit1000days should fit in Int, was $diffDays")
-        // TODO: make pass in JVM
-        //  assertTrue(diffDays > diffYears, "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears")
+        assertTrue(diffDays > diffYears, "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears")
     }
 
     @Test
