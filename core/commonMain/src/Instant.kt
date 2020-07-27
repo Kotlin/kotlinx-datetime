@@ -73,6 +73,12 @@ public expect class Instant : Comparable<Instant> {
     }
 }
 
+public val Instant.isDistantPast
+    get() = this <= Instant.DISTANT_PAST
+
+public val Instant.isDistantFuture
+    get() = this >= Instant.DISTANT_FUTURE
+
 /**
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
  */
