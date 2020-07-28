@@ -97,7 +97,7 @@ public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
 
 /**
  * The return value is clamped to [Long.MAX_VALUE] or [Long.MIN_VALUE] if [unit] is more granular than
- * [CalendarUnit.DAY] and the result is too large.
+ * [DateTimeUnit.DAY] and the result is too large.
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */

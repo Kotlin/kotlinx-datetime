@@ -14,35 +14,36 @@ sealed class DateTimeUnit {
     abstract operator fun times(scalar: Int): DateTimeUnit
 
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
-        internal val calendarUnit: CalendarUnit
-        internal val calendarScale: Long
+        private val unitName: String
+        private val unitScale: Long
 
         init {
             require(nanoseconds > 0) { "Unit duration must be positive, but was $nanoseconds ns." }
+            // find a concise string representation for the unit with this duration
             when {
                 nanoseconds % 3600_000_000_000 == 0L -> {
-                    calendarUnit = CalendarUnit.HOUR
-                    calendarScale = nanoseconds / 3600_000_000_000
+                    unitName = "HOUR"
+                    unitScale = nanoseconds / 3600_000_000_000
                 }
                 nanoseconds % 60_000_000_000 == 0L -> {
-                    calendarUnit = CalendarUnit.MINUTE
-                    calendarScale = nanoseconds / 60_000_000_000
+                    unitName = "MINUTE"
+                    unitScale = nanoseconds / 60_000_000_000
                 }
                 nanoseconds % 1_000_000_000 == 0L -> {
-                    calendarUnit = CalendarUnit.SECOND
-                    calendarScale = nanoseconds / 1_000_000_000
+                    unitName = "SECOND"
+                    unitScale = nanoseconds / 1_000_000_000
                 }
                 nanoseconds % 1_000_000 == 0L -> {
-                    calendarUnit = CalendarUnit.MILLISECOND
-                    calendarScale = nanoseconds / 1_000_000
+                    unitName = "MILLISECOND"
+                    unitScale = nanoseconds / 1_000_000
                 }
                 nanoseconds % 1_000 == 0L -> {
-                    calendarUnit = CalendarUnit.MICROSECOND
-                    calendarScale = nanoseconds / 1_000
+                    unitName = "MICROSECOND"
+                    unitScale = nanoseconds / 1_000
                 }
                 else -> {
-                    calendarUnit = CalendarUnit.NANOSECOND
-                    calendarScale = nanoseconds
+                    unitName = "NANOSECOND"
+                    unitScale = nanoseconds
                 }
             }
         }
@@ -57,7 +58,7 @@ sealed class DateTimeUnit {
 
         override fun hashCode(): Int = nanoseconds.toInt() xor (nanoseconds shr Int.SIZE_BITS).toInt()
 
-        override fun toString(): String = formatToString(calendarScale, calendarUnit.toString())
+        override fun toString(): String = formatToString(unitScale, unitName)
     }
 
     sealed class DateBased : DateTimeUnit() {
@@ -118,17 +119,3 @@ sealed class DateTimeUnit {
         val CENTURY = YEAR * 100
     }
 }
-
-
-internal enum class CalendarUnit {
-    YEAR,
-    MONTH,
-    DAY,
-    HOUR,
-    MINUTE,
-    SECOND,
-    MILLISECOND,
-    MICROSECOND,
-    NANOSECOND
-}
-
