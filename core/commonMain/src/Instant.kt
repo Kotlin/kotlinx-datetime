@@ -8,7 +8,6 @@ package kotlinx.datetime
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-
 @OptIn(kotlin.time.ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
 
@@ -63,10 +62,22 @@ public expect class Instant : Comparable<Instant> {
          */
         fun parse(isoString: String): Instant
 
+        // -100001-12-31T23:59:59.999999999Z
+        val DISTANT_PAST: Instant
+
+        // +100000-01-01T00:00:00Z
+        val DISTANT_FUTURE: Instant
+
         internal val MIN: Instant
         internal val MAX: Instant
     }
 }
+
+public val Instant.isDistantPast
+    get() = this <= Instant.DISTANT_PAST
+
+public val Instant.isDistantFuture
+    get() = this >= Instant.DISTANT_FUTURE
 
 /**
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
@@ -155,3 +166,6 @@ public fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instan
 
 
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)
+
+internal const val DISTANT_PAST_SECONDS = -3217862419201
+internal const val DISTANT_FUTURE_SECONDS = 3093527980800
