@@ -140,18 +140,19 @@ private fun ZonedDateTime.plusNanosFix(nanoseconds: Long): ZonedDateTime {
     }
 }
 
-private fun jtInstant.atZone(zone: TimeZone): ZonedDateTime = atZone(zone.zoneId)
+private fun Instant.atZone(zone: TimeZone): ZonedDateTime = value.atZone(zone.zoneId)
+private fun jtInstant.checkZone(zone: TimeZone): jtInstant = apply { atZone(zone.zoneId) }
 
 public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
         plus(1, unit, zone)
 
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
         try {
-            val thisZdt = this.value.atZone(zone)
+            val thisZdt = this.atZone(zone)
             when (unit) {
                 is DateTimeUnit.TimeBased -> {
                     multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).also { it.atZone(zone.zoneId) }
+                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).checkZone(zone)
                     }
                 }
                 is DateTimeUnit.DateBased.DayBased ->
@@ -166,11 +167,11 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone):
 
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
         try {
-            val thisZdt = this.value.atZone(zone)
+            val thisZdt = this.atZone(zone)
             when (unit) {
                 is DateTimeUnit.TimeBased -> {
                     multiplyAndDivide(value.toLong(), unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).also { it.atZone(zone.zoneId) }
+                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).checkZone(zone)
                     }
                 }
                 is DateTimeUnit.DateBased.DayBased ->
@@ -200,8 +201,8 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = try {
-    val thisZdt = this.value.atZone(zone)
-    val otherZdt = other.value.atZone(zone)
+    val thisZdt = this.atZone(zone)
+    val otherZdt = other.atZone(zone)
     when(unit) {
         is DateTimeUnit.TimeBased -> {
             multiplyAddAndDivide(other.epochSeconds - epochSeconds,
