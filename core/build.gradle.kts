@@ -86,6 +86,15 @@ kotlin {
 //        }
     }
 
+    sourceSets.all {
+        kotlin.setSrcDirs(listOf("$name/src"))
+        resources.setSrcDirs(listOf("$name/resources"))
+        languageSettings.apply {
+            //            progressiveMode = true
+            useExperimentalAnnotation("kotlin.Experimental")
+        }
+    }
+
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
         compilations["main"].cinterops {
             create("date") {
@@ -108,19 +117,14 @@ kotlin {
                 extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
             }
         }
+        compilations["main"].defaultSourceSet {
+            kotlin.srcDir("nativeMain/cinterop_actuals")
+        }
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
         }
     }
 
-    sourceSets.all {
-        kotlin.setSrcDirs(listOf("$name/src"))
-        resources.setSrcDirs(listOf("$name/resources"))
-        languageSettings.apply {
-            //            progressiveMode = true
-            useExperimentalAnnotation("kotlin.Experimental")
-        }
-    }
 
     sourceSets {
         commonMain {
@@ -177,10 +181,19 @@ kotlin {
         }
 
         val nativeMain by getting {
+            dependsOn(commonMain.get())
         }
 
         val nativeTest by getting {
         }
+
+//        val mingwX64Main by getting {
+//            kotlin.srcDir("nativeMain/cinterop_actuals")
+//        }
+//
+//        val linuxX64Main by getting {
+//            kotlin.srcDir("nativeMain/cinterop_actuals")
+//        }
     }
 }
 

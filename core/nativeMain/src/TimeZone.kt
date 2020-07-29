@@ -13,6 +13,16 @@ import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*
 
+
+internal typealias TZIDVar = kotlinx.cinterop.ULongVarOf<kotlinx.datetime.TZID>
+internal typealias TZID = platform.posix.size_t
+internal expect val TZID_INVALID: TZID
+internal expect fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>?
+internal expect fun get_system_timezone(id: kotlinx.cinterop.CValuesRef<kotlinx.datetime.TZIDVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?): kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>?
+internal expect fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */, offset: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.IntVar /* = kotlinx.cinterop.IntVarOf<kotlin.Int> */>?): kotlin.Int
+internal expect fun offset_at_instant(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Int
+internal expect fun timezone_by_name(zone_name: kotlin.String?): kotlinx.datetime.TZID /* = kotlin.ULong */
+
 public actual open class TimeZone internal constructor(private val tzid: TZID, actual val id: String) {
 
     actual companion object {
