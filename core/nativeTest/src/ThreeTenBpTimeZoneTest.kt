@@ -137,4 +137,17 @@ class ThreeTenBpTimeZoneTest {
             zone, ZoneOffset.ofSeconds(2 * 3600)), with(zone) { t.atZone() })
     }
 
+    @Test
+    fun atStartOfDay() {
+        val paris = TimeZone.of("Europe/Paris")
+        assertEquals(LocalDateTime(2008, 6, 30, 0, 0, 0, 0).toInstant(paris),
+            paris.atStartOfDay(LocalDate(2008, 6, 30)), "paris")
+        val gaza = TimeZone.of("Asia/Gaza")
+        assertEquals(LocalDateTime(2007, 4, 1, 1, 0, 0, 0).toInstant(gaza),
+            gaza.atStartOfDay(LocalDate(2007, 4, 1)), "gaza")
+        val fixed = TimeZone.of("UTC+14")
+        assertEquals(LocalDateTime(2007, 4, 1, 0, 0, 0, 0).toInstant(fixed),
+            fixed.atStartOfDay(LocalDate(2007, 4, 1)), "fixed")
+    }
+
 }

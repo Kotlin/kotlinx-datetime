@@ -22,6 +22,9 @@ internal actual fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cint
 internal actual fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */, offset: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.IntVar /* = kotlinx.cinterop.IntVarOf<kotlin.Int> */>?): kotlin.Int =
         kotlinx.datetime.internal.offset_at_datetime(zone, epoch_sec, offset)
 
+internal actual fun at_start_of_day(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Long =
+    kotlinx.datetime.internal.at_start_of_day(zone, epoch_sec)
+
 internal actual fun offset_at_instant(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Int =
         kotlinx.datetime.internal.offset_at_instant(zone, epoch_sec)
 

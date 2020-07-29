@@ -8,7 +8,12 @@
 #include <stddef.h>
 
 typedef size_t TZID;
-const size_t TZID_INVALID = SIZE_MAX;
+const TZID TZID_INVALID = SIZE_MAX;
+
+enum GAP_HANDLING {
+    GAP_HANDLING_MOVE_FORWARD,
+    GAP_HANDLING_NEXT_CORRECT,
+};
 
 /* Returns a string that must be freed by the caller, or null.
    If something is returned, `id` has the id of the timezone. */
@@ -31,3 +36,5 @@ TZID timezone_by_name(const char *zone_name);
    case the time does not exist, having fallen in the gap.
    In case of an error, "offset" is set to INT_MAX. */
 int offset_at_datetime(TZID zone, int64_t epoch_sec, int *offset);
+
+int64_t at_start_of_day(TZID zone, int64_t midnight_epoch_sec);

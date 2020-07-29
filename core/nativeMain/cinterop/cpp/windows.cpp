@@ -212,23 +212,28 @@ static int64_t systemtime_to_unix_time(const SYSTEMTIME& systime)
         SECS_BETWEEN_1601_1970;
 }
 
+struct TRANSITIONS_INFO {
+    TIME_ZONE_INFORMATION tzi;
+    SYSTEMTIME standard_local;
+    SYSTEMTIME daylight_local;
+};
+
 /* Checks whether the daylight saving time is in effect at the given time.
    `tzi` could be calculated here, but is passed along to avoid recomputing
    it. */
 static bool is_daylight_time(
     const DYNAMIC_TIME_ZONE_INFORMATION& dtzi,
-    const TIME_ZONE_INFORMATION& tzi,
+    TRANSITIONS_INFO& trans,
     const SYSTEMTIME& time)
 {
     // it means that daylight saving time is not supported at all
-    if (tzi.StandardDate.wMonth == 0) {
+    if (trans.tzi.StandardDate.wMonth == 0) {
         return false;
     }
     /* translate the "date" values stored in `tzi` into real dates of
        transitions to and from the daylight saving time. */
-    SYSTEMTIME standard_local, daylight_local;
-    get_transition_date(time.wYear, tzi.StandardDate, standard_local);
-    get_transition_date(time.wYear, tzi.DaylightDate, daylight_local);
+    get_transition_date(time.wYear, trans.tzi.StandardDate, trans.standard_local);
+    get_transition_date(time.wYear, trans.tzi.DaylightDate, trans.daylight_local);
     /* Two things happen here:
         * All the relevant dates are converted to a number of ticks an some
           unified scale, counted in seconds. This is done so that we are able
@@ -239,10 +244,10 @@ static bool is_daylight_time(
           time, as seen by a person that is currently on the daylight saving
           time. So, in order for the dates to be on the same scale, the biases
           that are assumed to be currently active are negated. */
-    int64_t standard = systemtime_to_ticks(standard_local) /
-        WINDOWS_TICKS_PER_SEC + (tzi.Bias + tzi.DaylightBias) * 60;
-    int64_t daylight = systemtime_to_ticks(daylight_local) /
-        WINDOWS_TICKS_PER_SEC + (tzi.Bias + tzi.StandardBias) * 60;
+    int64_t standard = systemtime_to_ticks(trans.standard_local) /
+        WINDOWS_TICKS_PER_SEC + (trans.tzi.Bias + trans.tzi.DaylightBias) * 60;
+    int64_t daylight = systemtime_to_ticks(trans.daylight_local) /
+        WINDOWS_TICKS_PER_SEC + (trans.tzi.Bias + trans.tzi.StandardBias) * 60;
     int64_t time_secs = systemtime_to_ticks(time) /
         WINDOWS_TICKS_PER_SEC;
     /* Maybe `else` is never hit, but I've seen no indication of that assumption
@@ -258,18 +263,18 @@ static bool is_daylight_time(
 
 // Get the UTC offset for a given timezone at a given time.
 static int offset_at_systime(DYNAMIC_TIME_ZONE_INFORMATION& dtzi,
+    TRANSITIONS_INFO& ts,
     const SYSTEMTIME& systime)
 {
-    TIME_ZONE_INFORMATION tzi{};
-    bool result = GetTimeZoneInformationForYear(systime.wYear, &dtzi, &tzi);
+    bool result = GetTimeZoneInformationForYear(systime.wYear, &dtzi, &ts.tzi);
     if (!result) {
         return INT_MAX;
     }
-    auto bias = tzi.Bias;
-    if (is_daylight_time(dtzi, tzi, systime)) {
-        bias += tzi.DaylightBias;
+    auto bias = ts.tzi.Bias;
+    if (is_daylight_time(dtzi, ts, systime)) {
+        bias += ts.tzi.DaylightBias;
     } else {
-        bias += tzi.StandardBias;
+        bias += ts.tzi.StandardBias;
     }
     return -bias * 60;
 }
@@ -330,7 +335,8 @@ int offset_at_instant(TZID zone_id, int64_t epoch_sec)
     }
     SYSTEMTIME systime;
     unix_time_to_systemtime(epoch_sec, systime);
-    return offset_at_systime(dtzi, systime);
+    TRANSITIONS_INFO ts{};
+    return offset_at_systime(dtzi, ts, systime);
 }
 
 TZID timezone_by_name(const char *zone_name)
@@ -344,7 +350,8 @@ TZID timezone_by_name(const char *zone_name)
     }
 }
 
-int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
+static int offset_at_datetime_impl(TZID zone_id, int64_t epoch_sec, int *offset,
+GAP_HANDLING gap_handling)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};
     bool result = time_zone_by_id(zone_id, dtzi);
@@ -354,7 +361,8 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
     SYSTEMTIME localtime, utctime, adjusted;
     unix_time_to_systemtime(epoch_sec, localtime);
     TzSpecificLocalTimeToSystemTimeEx(&dtzi, &localtime, &utctime);
-    *offset = offset_at_systime(dtzi, utctime);
+    TRANSITIONS_INFO trans{};
+    *offset = offset_at_systime(dtzi, trans, utctime);
     SystemTimeToTzSpecificLocalTimeEx(&dtzi, &utctime, &adjusted);
     /* We don't use `epoch_sec` instead of `systemtime_to_unix_time(localtime)
     because `unix_time_to_systemtime(epoch_sec, localtime)` above could
@@ -364,8 +372,55 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
     result to return: timezone database information outside of [1970; current
     time) is not accurate anyway, and WinAPI supports dates in years [1601;
     30827], which should be enough for all practical purposes. */
-    return (int)(systemtime_to_unix_time(adjusted) -
+    const auto transition_duration = (int)(systemtime_to_unix_time(adjusted) -
         systemtime_to_unix_time(localtime));
+    if (transition_duration == 0)
+        return 0;
+    switch (gap_handling) {
+        case GAP_HANDLING_MOVE_FORWARD:
+            return transition_duration;
+        case GAP_HANDLING_NEXT_CORRECT:
+        /* Let x, y in {daylight, standard}
+           If a gap happened, then
+               xEnd + xOffset < utctime < yBegin + yOffset
+           What we need to return is
+               yBegin + yOffset - epoch_sec
+           To learn whether we crossed from daylight to standard or vice versa:
+               xEnd = yBegin - epsilon => yOffset + epsilon > xOffset
+           Thus, we crossed from the lower offset to the bigger one. So,
+           return (daylight.offset > standard.offset ?
+                   daylight.begin + daylight.offset :
+                   standard.begin + standard.offset) - epoch_sec */
+            if (trans.tzi.DaylightBias < trans.tzi.StandardBias) {
+                return systemtime_to_unix_time(trans.daylight_local)
+                    + trans.tzi.StandardBias - trans.tzi.DaylightBias
+                    - epoch_sec + 1;
+            } else {
+                return systemtime_to_unix_time(trans.standard_local)
+                    + trans.tzi.DaylightBias - trans.tzi.StandardBias
+                    - epoch_sec + 1;
+            }
+        default:
+            // impossible
+            *offset = INT_MAX;
+            return 0;
+    }
+}
+
+int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
+{
+    return offset_at_datetime_impl(zone_id, epoch_sec, offset,
+        GAP_HANDLING_MOVE_FORWARD);
+}
+
+int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec)
+{
+    int offset = 0;
+    int trans = offset_at_datetime_impl(zone_id, epoch_sec, &offset,
+        GAP_HANDLING_NEXT_CORRECT);
+    if (offset == INT_MAX)
+        return LONG_MAX;
+    return epoch_sec - offset + trans;
 }
 
 }

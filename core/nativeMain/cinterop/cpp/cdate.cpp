@@ -12,6 +12,7 @@
 #include "date/date.h"
 #include "date/tz.h"
 #include "helper_macros.hpp"
+#include <cstring>
 using namespace date;
 using namespace std::chrono;
 
@@ -48,12 +49,7 @@ extern "C" {
 template <class T>
 static char * timezone_name(const T& zone)
 {
-    auto name = zone.name();
-    char * name_copy = check_allocation(
-        (char *)malloc(sizeof(char) * (name.size() + 1)));
-    name_copy[name.size()] = '\0';
-    name.copy(name_copy, name.size());
-    return name_copy;
+    return strdup(zone.name().c_str());
 }
 
 static const time_zone *zone_by_id(TZID id)
@@ -139,21 +135,33 @@ TZID timezone_by_name(const char *zone_name)
     }
 }
 
-int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
+static int offset_at_datetime_impl(TZID zone_id, seconds sec, int *offset,
+GAP_HANDLING gap_handling)
 {
     try {
         auto zone = zone_by_id(zone_id);
-        local_seconds seconds(saturating(epoch_sec));
+        local_seconds seconds(sec);
         auto info = zone->get_info(seconds);
         switch (info.result) {
             case local_info::unique:
                 *offset = info.first.offset.count();
                 return 0;
             case local_info::nonexistent: {
-                auto trans_duration = info.second.offset.count() -
-                    info.first.offset.count();
                 *offset = info.second.offset.count();
-                return trans_duration;
+                switch (gap_handling) {
+                    case GAP_HANDLING_MOVE_FORWARD:
+                        return info.second.offset.count() -
+                            info.first.offset.count();
+                    case GAP_HANDLING_NEXT_CORRECT: {
+                        return duration_cast<std::chrono::seconds>(
+                            info.second.begin.time_since_epoch()).count() -
+                            sec.count() + info.second.offset.count();
+                    }
+                    default:
+                        // impossible
+                        *offset = INT_MAX;
+                        return 0;
+                }
             }
             case local_info::ambiguous:
                 if (info.second.offset.count() != *offset)
@@ -168,6 +176,25 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
         *offset = INT_MAX;
         return 0;
     }
+}
+
+int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
+{
+    return offset_at_datetime_impl(zone_id, saturating(epoch_sec), offset,
+        GAP_HANDLING_MOVE_FORWARD);
+}
+
+int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec)
+{
+    int offset = 0;
+    int trans = offset_at_datetime_impl(zone_id, saturating(epoch_sec), &offset,
+        GAP_HANDLING_NEXT_CORRECT);
+    if (offset == INT_MAX)
+        return LONG_MAX;
+    if (epoch_sec > max_available_instant || epoch_sec < min_available_instant) {
+        trans = 0;
+    }
+    return epoch_sec - offset + trans;
 }
 
 }

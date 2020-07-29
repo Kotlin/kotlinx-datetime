@@ -172,6 +172,22 @@ TZID timezone_by_name(const char *zone_name) {
     return id_by_name([NSString stringWithUTF8String: zone_name]);
 }
 
+static NSDate *system_date_by_local_date(NSTimeZone *zone, NSDate *local_date) {
+    // The Gregorian calendar.
+    NSCalendar *iso8601 = [NSCalendar
+        calendarWithIdentifier: NSCalendarIdentifierISO8601];
+    if (iso8601 == nil) { return nil; }
+    // The UTC time zone
+    NSTimeZone *utc = [NSTimeZone timeZoneForSecondsFromGMT: 0];
+    /* Now, we say that the date that we initially meant is `date`, only with
+       the context of being in a timezone `zone`. */
+    NSDateComponents *dateComponents = [iso8601
+        componentsInTimeZone: utc
+        fromDate: local_date];
+    dateComponents.timeZone = zone;
+    return [iso8601 dateFromComponents:dateComponents];
+}
+
 int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     *offset = INT_MAX;
     // timezone
@@ -179,20 +195,8 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     if (zone == nil) { return 0; }
     /* a date in an unspecified timezone, defined by the number of seconds since
        the start of the epoch in *that* unspecified timezone */
-    auto date = dateWithTimeIntervalSince1970Saturating(epoch_sec);
-    // The ISO8601 calendar.
-    NSCalendar *iso8601 = [NSCalendar
-        calendarWithIdentifier: NSCalendarIdentifierISO8601];
-    if (iso8601 == nil) { return 0; }
-    // The UTC time zone
-    NSTimeZone *utc = [NSTimeZone timeZoneForSecondsFromGMT: 0];
-    /* Now, we say that the date that we initially meant is `date`, only with
-       the context of being in a timezone `zone`. */
-    NSDateComponents *dateComponents = [iso8601
-        componentsInTimeZone: utc
-        fromDate: date];
-    dateComponents.timeZone = zone;
-    NSDate *newDate = [iso8601 dateFromComponents:dateComponents];
+    NSDate *date = dateWithTimeIntervalSince1970Saturating(epoch_sec);
+    NSDate *newDate = system_date_by_local_date(zone, date);
     if (newDate == nil) { return 0; }
     // we now know the offset of that timezone at this time.
     *offset = (int)[zone secondsFromGMTForDate: newDate];
@@ -201,6 +205,29 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset) {
     int result = (int)((int64_t)[newDate timeIntervalSince1970] +
       (int64_t)*offset - (int64_t)[date timeIntervalSince1970]);
     return result;
+}
+
+int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec) {
+    // timezone
+    auto zone = timezone_by_id(zone_id);
+    if (zone == nil) { return INT_MAX; }
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970: epoch_sec];
+    NSDate *newDate = system_date_by_local_date(zone, date);
+    if (newDate == nil) { return INT_MAX; }
+    int offset = (int)[zone secondsFromGMTForDate: newDate];
+    /* if `epoch_sec` is not in the range supported by Darwin, assume that it
+       is the correct local time for the midnight and just convert it to
+       the system time. */
+    if ([date timeIntervalSinceDate:[NSDate distantPast]] < 0 ||
+        [date timeIntervalSinceDate:[NSDate distantFuture]] > 0)
+        return epoch_sec - offset;
+    // The ISO-8601 calendar.
+    NSCalendar *iso8601 = [NSCalendar
+        calendarWithIdentifier: NSCalendarIdentifierISO8601];
+    iso8601.timeZone = zone;
+    // start of the day denoted by `newDate`
+    NSDate *midnight = [iso8601 startOfDayForDate: newDate];
+    return (int64_t)([midnight timeIntervalSince1970]);
 }
 
 }

@@ -19,6 +19,7 @@ internal typealias TZID = platform.posix.size_t
 internal expect val TZID_INVALID: TZID
 internal expect fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>?
 internal expect fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */, offset: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.IntVar /* = kotlinx.cinterop.IntVarOf<kotlin.Int> */>?): kotlin.Int
+internal expect fun at_start_of_day(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Long
 internal expect fun offset_at_instant(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Int
 internal expect fun timezone_by_name(zone_name: kotlin.String?): kotlinx.datetime.TZID /* = kotlin.ULong */
 
@@ -99,6 +100,16 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
         }
 
     actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
+
+    internal open fun atStartOfDay(date: LocalDate): Instant = memScoped {
+        val ldt = LocalDateTime(date, LocalTime.MIN)
+        val epochSeconds = ldt.toEpochSecond(ZoneOffset.UTC)
+        val midnightInstantSeconds = at_start_of_day(tzid, epochSeconds)
+        if (midnightInstantSeconds == Long.MAX_VALUE) {
+            throw RuntimeException("Unable to acquire the time of start of day at $date for zone $this")
+        }
+        Instant(midnightInstantSeconds, 0)
+    }
 
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
         val epochSeconds = toEpochSecond(ZoneOffset.UTC)
@@ -249,6 +260,9 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
             return (ch1.toInt() - 48) * 10 + (ch2.toInt() - 48)
         }
     }
+
+    internal override fun atStartOfDay(date: LocalDate): Instant =
+        LocalDateTime(date, LocalTime.MIN).atZone(null).toInstant()
 
     internal override fun LocalDateTime.atZone(preferred: ZoneOffset?): ZonedDateTime =
         ZonedDateTime(this@atZone, this@ZoneOffset, this@ZoneOffset)
