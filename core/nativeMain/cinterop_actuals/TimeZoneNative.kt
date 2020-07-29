@@ -4,11 +4,20 @@
  */
 package kotlinx.datetime
 
+import kotlinx.cinterop.*
+import platform.posix.free
+
+internal actual fun getCurrentSystemDefaultTimeZone(): TimeZone = memScoped {
+    val tzid = alloc<kotlinx.datetime.internal.TZIDVar>()
+    val string = kotlinx.datetime.internal.get_system_timezone(tzid.ptr)
+            ?: throw RuntimeException("Failed to get the system timezone.")
+    val kotlinString = string.toKString()
+    free(string)
+    TimeZone(tzid.value, kotlinString)
+}
+
 internal actual fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>? =
         kotlinx.datetime.internal.available_zone_ids()
-
-internal actual fun get_system_timezone(id: kotlinx.cinterop.CValuesRef<kotlinx.datetime.TZIDVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?): kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>? =
-        kotlinx.datetime.internal.get_system_timezone(id)
 
 internal actual fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */, offset: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.IntVar /* = kotlinx.cinterop.IntVarOf<kotlin.Int> */>?): kotlin.Int =
         kotlinx.datetime.internal.offset_at_datetime(zone, epoch_sec, offset)
