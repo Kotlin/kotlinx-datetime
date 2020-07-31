@@ -23,7 +23,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for [month] and
      * [year].
      */
-    public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int)
+    public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
     public val year: Int
     public val monthNumber: Int

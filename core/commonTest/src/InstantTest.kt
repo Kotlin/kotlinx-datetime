@@ -103,7 +103,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59).toInstant(zone)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)

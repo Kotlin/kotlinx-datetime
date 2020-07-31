@@ -101,7 +101,7 @@ class LocalDateTimeTest {
     }
 
     @Test
-    fun constructInvalidDate() = checkInvalidDate { year, month, day -> LocalDateTime(year, month, day, 0, 0, 0, 0).date }
+    fun constructInvalidDate() = checkInvalidDate { year, month, day -> LocalDateTime(year, month, day, 0, 0).date }
 
     @Test
     fun constructInvalidTime() {
