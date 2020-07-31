@@ -59,6 +59,14 @@ class LocalDateTest {
     }
 
     @Test
+    fun atTime() {
+        val date = LocalDate(2016, 2, 29)
+        val datetime = date.atTime(12, 1, 59)
+        checkComponents(datetime, 2016, 2, 29, 12, 1, 59)
+        checkLocalDateTimePart(date, datetime)
+    }
+
+    @Test
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
         checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)
