@@ -356,7 +356,16 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
     TzSpecificLocalTimeToSystemTimeEx(&dtzi, &localtime, &utctime);
     *offset = offset_at_systime(dtzi, utctime);
     SystemTimeToTzSpecificLocalTimeEx(&dtzi, &utctime, &adjusted);
-    return (int)(systemtime_to_unix_time(adjusted) - epoch_sec);
+    /* We don't use `epoch_sec` instead of `systemtime_to_unix_time(localtime)
+    because `unix_time_to_systemtime(epoch_sec, localtime)` above could
+    overflow the range of instants representable in WinAPI, and then the
+    difference from `epoch_sec` would be large, potentially causing problems.
+    If it happened, we don't return an error as we don't really care which
+    result to return: timezone database information outside of [1970; current
+    time) is not accurate anyway, and WinAPI supports dates in years [1601;
+    30827], which should be enough for all practical purposes. */
+    return (int)(systemtime_to_unix_time(adjusted) -
+        systemtime_to_unix_time(localtime));
 }
 
 }

@@ -15,6 +15,32 @@
 using namespace date;
 using namespace std::chrono;
 
+static int64_t first_instant_of_year(const year& yr) {
+    return sys_seconds{sys_days{yr/January/1}}.time_since_epoch().count();
+}
+/* This constant represents the earliest moment that our system recognizes;
+everything earlier than that is considered the same moment.
+This doesn't make us lose any precision in computations, as timezone
+information doesn't make sense to use at that time, as there were no
+timezones, and even the calendars were all different.
+The reason for this explicit check is that the years that are considered
+valid by the "date" library are [-32767; 32767], and library crashes if
+it sees a date in year -32768 or earlier. */
+static const int64_t min_available_instant =
+    first_instant_of_year(++year::min());
+// Lack of this check didn't cause any problems yet, but why not add it too?
+static const int64_t max_available_instant =
+    first_instant_of_year(--year::max());
+
+static seconds saturating(int64_t epoch_sec)
+{
+    if (epoch_sec < min_available_instant)
+        epoch_sec = min_available_instant;
+    else if (epoch_sec > max_available_instant)
+        epoch_sec = max_available_instant;
+    return seconds(epoch_sec);
+}
+
 extern "C" {
 #include "cdate.h"
 }
@@ -94,8 +120,7 @@ int offset_at_instant(TZID zone_id, int64_t epoch_sec)
     try {
         /* `sys_time` is usually Unix time (UTC, not counting leap seconds).
            Starting from C++20, it is specified in the standard. */
-        auto stime = sys_time<std::chrono::seconds>(
-            std::chrono::seconds(epoch_sec));
+        auto stime = sys_time<std::chrono::seconds>(saturating(epoch_sec));
         auto zone = zone_by_id(zone_id);
         auto info = zone->get_info(stime);
         return info.offset.count();
@@ -118,7 +143,7 @@ int offset_at_datetime(TZID zone_id, int64_t epoch_sec, int *offset)
 {
     try {
         auto zone = zone_by_id(zone_id);
-        local_seconds seconds((std::chrono::seconds(epoch_sec)));
+        local_seconds seconds(saturating(epoch_sec));
         auto info = zone->get_info(seconds);
         switch (info.result) {
             case local_info::unique:
