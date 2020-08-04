@@ -67,6 +67,25 @@ class LocalDateTest {
     }
 
     @Test
+    fun atStartOfDay() {
+        val paris = TimeZone.of("Europe/Paris")
+        val parisDate = LocalDate(2008, 6, 30)
+        assertEquals(parisDate.atTime(0, 0).toInstant(paris),
+                parisDate.atStartOfDayIn(paris), "paris")
+
+        // TODO: Find another TZ transition that works in Windows
+//        val gaza = TimeZone.of("Asia/Gaza")
+//        val gazaDate = LocalDate(2007, 4, 1)
+//        assertEquals(gazaDate.atTime(1, 0).toInstant(gaza),
+//                gazaDate.atStartOfDayIn(gaza), "gaza")
+
+        val fixed = TimeZone.of("UTC+14")
+        val fixedDate = LocalDate(2007, 4, 1)
+        assertEquals(fixedDate.atTime(0, 0).toInstant(fixed),
+                fixedDate.atStartOfDayIn(fixed), "fixed")
+    }
+
+    @Test
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
         checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)

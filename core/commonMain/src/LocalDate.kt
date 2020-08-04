@@ -40,6 +40,7 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
     LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
 
+public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if arithmetic overflow occurs or the boundaries of [LocalDate] are exceeded at

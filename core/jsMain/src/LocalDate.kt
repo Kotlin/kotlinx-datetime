@@ -46,6 +46,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value).toInt()
 }
 
+public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
+        this.value.atStartOfDay(timeZone.zoneId).toInstant().let(::Instant)
+
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plusNumber(1, unit)
 public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
