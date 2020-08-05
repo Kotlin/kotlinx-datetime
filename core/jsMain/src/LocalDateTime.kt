@@ -54,16 +54,3 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
 }
 
-
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
-    jtLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
-} catch (e: Throwable) {
-    if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
-    throw e
-}
-
-public actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
-        timeZone.zoneId.rules().offsetOfInstant(this.value).let(::ZoneOffset)
-
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-        this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)

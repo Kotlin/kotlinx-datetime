@@ -78,15 +78,6 @@ public actual class LocalDateTime internal constructor(
         LocalDateTime(date.plus(value, unit), time)
 }
 
-actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    with(timeZone) { toLocalDateTime() }
-
-actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-    with(timeZone) { toInstant() }
-
-actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
-    with(timeZone) { offset }
-
 // org.threeten.bp.LocalDateTime#until
 internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Int {
     var endDate: LocalDate = other.date

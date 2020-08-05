@@ -280,3 +280,17 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
     override fun equals(other: Any?): Boolean =
         this === other || other is ZoneOffset && totalSeconds == other.totalSeconds
 }
+
+
+
+public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
+        with(timeZone) { toLocalDateTime() }
+
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
+        with(timeZone) { toInstant() }
+
+public actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
+        with(timeZone) { offset }
+
+public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
+        timeZone.atStartOfDay(this)

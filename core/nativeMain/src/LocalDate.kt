@@ -242,9 +242,6 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
     }
 }
 
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
-        timeZone.atStartOfDay(this)
-
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1, unit)
 

@@ -46,14 +46,3 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  */
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
-/**
- * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
- */
-public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
-
-/** */
-public expect fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset
-
-/** */
-public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
-
