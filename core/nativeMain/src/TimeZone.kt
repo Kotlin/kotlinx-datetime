@@ -289,7 +289,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         with(timeZone) { toInstant() }
 
-public actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
+public actual fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
         with(timeZone) { offset }
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =

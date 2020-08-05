@@ -13,7 +13,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual val Instant.offset: ZoneOffset get() = offsetAt(this@TimeZone)
+    public actual val Instant.offset: ZoneOffset get() = offsetIn(this@TimeZone)
     public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
 
     override fun equals(other: Any?): Boolean =
@@ -52,7 +52,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw e
 }
 
-public actual fun Instant.offsetAt(timeZone: TimeZone): ZoneOffset =
+public actual fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
         timeZone.zoneId.rules().offsetOfInstant(this.value).let(::ZoneOffset)
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
