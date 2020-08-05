@@ -36,7 +36,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
     override fun hashCode(): Int = value.hashCode().toInt()
 
-    override fun toString(): String = value.toString()
+    actual override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value).toInt()
 

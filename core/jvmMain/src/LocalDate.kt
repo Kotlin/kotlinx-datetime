@@ -42,7 +42,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     override fun hashCode(): Int = value.hashCode()
 
-    override fun toString(): String = value.toString()
+    actual override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
 }

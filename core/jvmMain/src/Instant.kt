@@ -49,7 +49,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     override fun hashCode(): Int = value.hashCode()
 
-    override fun toString(): String = value.toString()
+    actual override fun toString(): String = value.toString()
 
     public actual companion object {
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)

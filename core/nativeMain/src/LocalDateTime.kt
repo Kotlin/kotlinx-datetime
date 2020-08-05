@@ -60,7 +60,7 @@ public actual class LocalDateTime internal constructor(
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    override fun toString(): String = date.toString() + 'T' + time.toString()
+    actual override fun toString(): String = date.toString() + 'T' + time.toString()
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: ZoneOffset): Long {

@@ -216,7 +216,7 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
     }
 
     // org.threeten.bp.LocalDate#toString
-    override fun toString(): String {
+    actual override fun toString(): String {
         val yearValue = year
         val monthValue: Int = monthNumber
         val dayValue: Int = dayOfMonth

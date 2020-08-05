@@ -141,7 +141,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
-    override fun toString(): String {
+    actual override fun toString(): String {
         val buf = StringBuilder()
         val inNano: Int = nanosecondsOfSecond
         if (epochSeconds >= -SECONDS_0000_TO_1970) { // current era
