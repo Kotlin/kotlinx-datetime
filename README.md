@@ -48,11 +48,15 @@ Here is some basic advice on how to choose which of the date-carrying types to u
 - Use `Instant` to represent a timestamp of the event that had already happened in the past (like a timestamp of 
   a log entry) or will definitely happen in a well-defined instant of time in the future not far away from now 
   (like an order confirmation deadline in 1 hour from now).
+  
 - Use `LocalDateTime` to represent a time of the event that is scheduled to happen in the far future at a certain 
   local time (like a scheduled meeting in a few months from now). You'll have to keep track of the `TimeZone` of 
   the scheduled event separately. Try to avoid converting future events to `Instant` in advance, because time-zone 
-  rules might change unexpectedly in the future. 
+  rules might change unexpectedly in the future. In this [blog post](https://codeblog.jonskeet.uk/2019/03/27/storing-utc-is-not-a-silver-bullet/), you can read more about why it's not always 
+  a good idea to use `Instant` everywhere.
+  
   Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
+  
 - Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birth date).
  
 ## Operations
