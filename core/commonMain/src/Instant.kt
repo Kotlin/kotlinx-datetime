@@ -8,7 +8,7 @@ package kotlinx.datetime
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-@OptIn(kotlin.time.ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
 
     /** */
@@ -88,12 +88,12 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
  */
-public expect fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant
+public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod
+public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
 
 /**
  * The return value is clamped to [Long.MAX_VALUE] or [Long.MIN_VALUE] if [unit] is more granular than
@@ -101,7 +101,7 @@ public expect fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long
+public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -109,8 +109,8 @@ public expect fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZo
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public fun Instant.daysUntil(other: Instant, zone: TimeZone): Int =
-    until(other, DateTimeUnit.DAY, zone).clampToInt()
+public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
+        until(other, DateTimeUnit.DAY, timeZone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -118,8 +118,8 @@ public fun Instant.daysUntil(other: Instant, zone: TimeZone): Int =
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
-    until(other, DateTimeUnit.MONTH, zone).clampToInt()
+public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
+        until(other, DateTimeUnit.MONTH, timeZone).clampToInt()
 
 /**
  * The return value is clamped to [Int.MAX_VALUE] or [Int.MIN_VALUE] if the result would otherwise cause an arithmetic
@@ -127,29 +127,31 @@ public fun Instant.monthsUntil(other: Instant, zone: TimeZone): Int =
  *
  * @throws DateTimeArithmeticException if this [Instant] or [other] is too large to fit in [LocalDateTime].
  */
-public fun Instant.yearsUntil(other: Instant, zone: TimeZone): Int =
-    until(other, DateTimeUnit.YEAR, zone).clampToInt()
+public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
+        until(other, DateTimeUnit.YEAR, timeZone).clampToInt()
 
-public fun Instant.minus(other: Instant, zone: TimeZone): DateTimePeriod = other.periodUntil(this, zone)
+public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
+        other.periodUntil(this, timeZone)
 
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant
+public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant
+public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public expect fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant
+public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 
-public fun Instant.minus(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = other.until(this, unit, zone)
+public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+        other.until(this, unit, timeZone)
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800

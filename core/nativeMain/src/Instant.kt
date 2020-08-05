@@ -273,39 +273,39 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
     toZonedLocalDateTimeFailing(zone)
 }
 
-actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant = try {
+actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
-        val withDate = toZonedLocalDateTimeFailing(zone)
+        val withDate = toZonedLocalDateTimeFailing(timeZone)
             .run { if (years != 0 && months == 0) plus(years, DateTimeUnit.YEAR) else this }
             .run { if (months != 0) plus(safeAdd(safeMultiply(years, 12), months), DateTimeUnit.MONTH) else this }
             .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
         withDate.toInstant()
             .run { if (hours != 0)
-                plus(hours.toLong() * SECONDS_PER_HOUR, 0).check(zone) else this }
+                plus(hours.toLong() * SECONDS_PER_HOUR, 0).check(timeZone) else this }
             .run { if (minutes != 0)
-                plus(minutes.toLong() * SECONDS_PER_MINUTE, 0).check(zone) else this }
-            .run { if (seconds != 0L) plus(seconds, 0).check(zone) else this }
-            .run { if (nanoseconds != 0L) plus(0, nanoseconds).check(zone) else this }
-    }.check(zone)
+                plus(minutes.toLong() * SECONDS_PER_MINUTE, 0).check(timeZone) else this }
+            .run { if (seconds != 0L) plus(seconds, 0).check(timeZone) else this }
+            .run { if (nanoseconds != 0L) plus(0, nanoseconds).check(timeZone) else this }
+    }.check(timeZone)
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
 } catch (e: IllegalArgumentException) {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
-    plus(1L, unit, zone)
-public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
-    plus(value.toLong(), unit, zone)
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant = try {
+public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(1L, unit, timeZone)
+public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(value.toLong(), unit, timeZone)
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
     when (unit) {
         is DateTimeUnit.DateBased -> {
             if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)
                 throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
-            toZonedLocalDateTimeFailing(zone).plus(value.toInt(), unit).toInstant()
+            toZonedLocalDateTimeFailing(timeZone).plus(value.toInt(), unit).toInstant()
         }
         is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
-            check(zone).plus(seconds, nanoseconds).check(zone)
+            check(timeZone).plus(seconds, nanoseconds).check(timeZone)
         }
     }
 } catch (e: ArithmeticException) {
@@ -315,9 +315,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone):
 }
 
 @OptIn(ExperimentalTime::class)
-actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
-    var thisLdt = toZonedLocalDateTimeFailing(zone)
-    val otherLdt = other.toZonedLocalDateTimeFailing(zone)
+actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+    var thisLdt = toZonedLocalDateTimeFailing(timeZone)
+    val otherLdt = other.toZonedLocalDateTimeFailing(timeZone)
 
     val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH).toInt() // `until` on dates never fails
     thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
@@ -330,13 +330,13 @@ actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
     }
 }
 
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long =
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
     when (unit) {
         is DateTimeUnit.DateBased ->
-            toZonedLocalDateTimeFailing(zone).dateTime.until(other.toZonedLocalDateTimeFailing(zone).dateTime, unit)
+            toZonedLocalDateTimeFailing(timeZone).dateTime.until(other.toZonedLocalDateTimeFailing(timeZone).dateTime, unit)
                 .toLong()
         is DateTimeUnit.TimeBased -> {
-            check(zone); other.check(zone)
+            check(timeZone); other.check(timeZone)
             try {
                 multiplyAddAndDivide(other.epochSeconds - epochSeconds,
                     NANOS_PER_ONE.toLong(),

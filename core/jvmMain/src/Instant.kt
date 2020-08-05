@@ -86,9 +86,9 @@ private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {
     throw DateTimeArithmeticException(e)
 }
 
-public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant {
+public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant {
     try {
-        val thisZdt = atZone(zone)
+        val thisZdt = atZone(timeZone)
         return with(period) {
             thisZdt
                     .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
@@ -104,19 +104,19 @@ public actual fun Instant.plus(period: DateTimePeriod, zone: TimeZone): Instant 
     }
 }
 
-public actual fun Instant.plus(unit: DateTimeUnit, zone: TimeZone): Instant =
-        plus(1L, unit, zone)
+public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
+        plus(1L, unit, timeZone)
 
-public actual fun Instant.plus(value: Int, unit: DateTimeUnit, zone: TimeZone): Instant =
-        plus(value.toLong(), unit, zone)
+public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+        plus(value.toLong(), unit, timeZone)
 
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone): Instant =
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
         try {
-            val thisZdt = atZone(zone)
+            val thisZdt = atZone(timeZone)
             when (unit) {
                 is DateTimeUnit.TimeBased -> {
                     multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.value.plusSeconds(d).plusNanos(r).also { it.atZone(zone.zoneId) }
+                        (d, r) -> this.value.plusSeconds(d).plusNanos(r).also { it.atZone(timeZone.zoneId) }
                     }
                 }
                 is DateTimeUnit.DateBased.DayBased ->
@@ -131,9 +131,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, zone: TimeZone):
 
 
 @OptIn(ExperimentalTime::class)
-public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimePeriod {
-    var thisZdt = this.atZone(zone)
-    val otherZdt = other.atZone(zone)
+public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+    var thisZdt = this.atZone(timeZone)
+    val otherZdt = other.atZone(timeZone)
 
     val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
@@ -144,9 +144,9 @@ public actual fun Instant.periodUntil(other: Instant, zone: TimeZone): DateTimeP
     }
 }
 
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, zone: TimeZone): Long = try {
-    val thisZdt = this.atZone(zone)
-    val otherZdt = other.atZone(zone)
+public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
+    val thisZdt = this.atZone(timeZone)
+    val otherZdt = other.atZone(timeZone)
     when(unit) {
         is DateTimeUnit.TimeBased -> {
             multiplyAddAndDivide(other.epochSeconds - epochSeconds,
