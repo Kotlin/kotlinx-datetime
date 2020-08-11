@@ -90,14 +90,13 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
         throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
     }
 
-    actual open val Instant.offset: ZoneOffset
-        get() {
-            val offset = offset_at_instant(tzid, epochSeconds)
-            if (offset == INT_MAX) {
-                throw RuntimeException("Unable to acquire the offset at instant $this for zone ${this@TimeZone}")
-            }
-            return ZoneOffset.ofSeconds(offset)
+    internal open fun offsetAtImpl(instant: Instant): ZoneOffset {
+        val offset = offset_at_instant(tzid, instant.epochSeconds)
+        if (offset == INT_MAX) {
+            throw RuntimeException("Unable to acquire the offset at instant $instant for zone $this")
         }
+        return ZoneOffset.ofSeconds(offset)
+    }
 
     actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
 
@@ -267,8 +266,7 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
     internal override fun LocalDateTime.atZone(preferred: ZoneOffset?): ZonedDateTime =
         ZonedDateTime(this@atZone, this@ZoneOffset, this@ZoneOffset)
 
-    override val Instant.offset: ZoneOffset
-        get() = this@ZoneOffset
+    override fun offsetAtImpl(instant: Instant): ZoneOffset = this
 
     // org.threeten.bp.ZoneOffset#toString
     override fun toString(): String = id
@@ -281,16 +279,14 @@ public actual class ZoneOffset internal constructor(actual val totalSeconds: Int
         this === other || other is ZoneOffset && totalSeconds == other.totalSeconds
 }
 
-
+public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
+        offsetAtImpl(instant)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
         with(timeZone) { toLocalDateTime() }
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         with(timeZone) { toInstant() }
-
-public actual fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
-        with(timeZone) { offset }
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
         timeZone.atStartOfDay(this)

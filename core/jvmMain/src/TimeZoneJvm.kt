@@ -18,7 +18,6 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual val Instant.offset: ZoneOffset get() = offsetIn(this@TimeZone)
     public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
 
     override fun equals(other: Any?): Boolean =
@@ -50,15 +49,14 @@ public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): T
     actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 }
 
+public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
+        zoneId.rules.getOffset(instant.value).let(::ZoneOffset)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
     java.time.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }
-
-public actual fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
-        timeZone.zoneId.rules.getOffset(this.value).let(::ZoneOffset)
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)

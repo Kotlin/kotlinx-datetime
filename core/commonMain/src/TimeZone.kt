@@ -33,9 +33,6 @@ public expect open class TimeZone {
     public fun Instant.toLocalDateTime(): LocalDateTime
 
     /** */
-    public val Instant.offset: ZoneOffset
-
-    /** */
     public fun LocalDateTime.toInstant(): Instant
 }
 
@@ -43,8 +40,7 @@ public expect class ZoneOffset : TimeZone {
     val totalSeconds: Int
 }
 
-public fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
-        instant.offsetIn(this) // TODO: make the other way around
+public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
 
 /**
  * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
@@ -52,7 +48,8 @@ public fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
 /** */
-public expect fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset
+public fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
+        timeZone.offsetAt(this)
 
 /** */
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant

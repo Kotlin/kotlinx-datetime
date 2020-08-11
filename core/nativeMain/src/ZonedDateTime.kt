@@ -44,7 +44,7 @@ internal fun ZonedDateTime.toInstant(): Instant =
  * @throws IllegalArgumentException if the [Instant] exceeds the boundaries of [LocalDateTime]
  */
 internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
-    val currentOffset = with (zone) { offset }
+    val currentOffset = offsetIn(zone)
     val localSecond: Long = epochSeconds + currentOffset.totalSeconds // overflow caught later
     val localEpochDay = floorDiv(localSecond, SECONDS_PER_DAY.toLong()).toInt()
     val secsOfDay = floorMod(localSecond, SECONDS_PER_DAY.toLong()).toInt()
