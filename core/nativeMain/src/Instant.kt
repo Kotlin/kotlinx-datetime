@@ -171,8 +171,8 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
             if (hi < 0) {
                 when {
                     ldt.year == -10000 -> {
-                        buf.deleteCharAt(pos)
-                        buf.deleteCharAt(pos)
+                        buf.deleteAt(pos)
+                        buf.deleteAt(pos)
                         buf.insert(pos, (hi - 1).toString())
                     }
                     lo == 0L -> {

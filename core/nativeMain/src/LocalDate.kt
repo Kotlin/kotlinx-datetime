@@ -224,9 +224,9 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
         val buf = StringBuilder(10)
         if (absYear < 1000) {
             if (yearValue < 0) {
-                buf.append(yearValue - 10000).deleteCharAt(1)
+                buf.append(yearValue - 10000).deleteAt(1)
             } else {
-                buf.append(yearValue + 10000).deleteCharAt(0)
+                buf.append(yearValue + 10000).deleteAt(0)
             }
         } else {
             if (yearValue > 9999) {
