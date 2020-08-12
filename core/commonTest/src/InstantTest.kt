@@ -103,7 +103,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59).toInstant(zone)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -232,9 +232,8 @@ class InstantTest {
             with(TimeZone.UTC) TZ@ {
                 val date1 = Instant.fromEpochMilliseconds(millis1).toLocalDateTime().date
                 val date2 = Instant.fromEpochMilliseconds(millis2).toLocalDateTime().date
-                fun LocalDate.instantAtStartOfDay() = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0, 0, 0).toInstant()
-                val instant1 = date1.instantAtStartOfDay()
-                val instant2 = date2.instantAtStartOfDay()
+                val instant1 = date1.atStartOfDayIn(this@TZ)
+                val instant2 = date2.atStartOfDayIn(this@TZ)
 
                 val diff1 = instant1.periodUntil(instant2, this@TZ)
                 val diff2 = date1.periodUntil(date2)

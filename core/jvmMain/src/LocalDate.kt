@@ -30,6 +30,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
                 throw IllegalArgumentException(e)
             })
 
+    public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
+
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month

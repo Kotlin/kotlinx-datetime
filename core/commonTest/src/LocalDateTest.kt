@@ -54,13 +54,13 @@ class LocalDateTest {
     @Test
     fun localDateTimePart() {
         val datetime = LocalDateTime.parse("2016-02-29T23:59")
-        val date = LocalDate(2016, 2, 29)
+        val date = LocalDate(2016, Month.FEBRUARY, 29)
         checkLocalDateTimePart(date, datetime)
     }
 
     @Test
     fun atTime() {
-        val date = LocalDate(2016, 2, 29)
+        val date = LocalDate(2016, Month.FEBRUARY, 29)
         val datetime = date.atTime(12, 1, 59)
         checkComponents(datetime, 2016, 2, 29, 12, 1, 59)
         checkLocalDateTimePart(date, datetime)

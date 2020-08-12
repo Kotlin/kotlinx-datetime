@@ -106,7 +106,7 @@ class LocalDateTimeTest {
     @Test
     fun constructInvalidTime() {
         fun localTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
-            LocalDateTime(2020, 1, 1, hour, minute, second, nanosecond)
+            LocalDateTime(2020, Month.JANUARY, 1, hour, minute, second, nanosecond)
         localTime(23, 59)
         assertFailsWith<IllegalArgumentException> { localTime(-1, 0) }
         assertFailsWith<IllegalArgumentException> { localTime(24, 0) }

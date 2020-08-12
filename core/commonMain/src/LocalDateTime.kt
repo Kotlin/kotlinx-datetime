@@ -49,6 +49,24 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
+    /**
+     * Constructs a [LocalDateTime] instance from the given date and time components.
+     *
+     * The supported ranges of components:
+     * - [year] the range is platform dependent, but at least is enough to represent dates of all instants between
+     *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+     * - [month] all values of the [Month] enum
+     * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
+     * - [hour] `0..23`
+     * - [minute] `0..59`
+     * - [second] `0..59`
+     * - [nanosecond] `0..999_999_999`
+     *
+     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [month] and
+     * [year].
+     */
+    public constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
+
     /** Returns the year component of the date. */
     public val year: Int
     /** Returns the number-of-month (1..12) component of the date. */

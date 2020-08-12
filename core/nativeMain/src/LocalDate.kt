@@ -50,6 +50,8 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
         }
     }
 
+    public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
+
     actual companion object {
         actual fun parse(isoString: String): LocalDate =
             localDateParser.parse(isoString)

@@ -31,6 +31,9 @@ public actual class LocalDateTime internal constructor(
     actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, monthNumber, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
 
+    public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+        this(LocalDate(year, month, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
+
     actual val year: Int get() = date.year
     actual val monthNumber: Int get() = date.monthNumber
     actual val month: Month get() = date.month
