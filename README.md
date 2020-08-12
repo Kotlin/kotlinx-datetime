@@ -7,6 +7,8 @@
 
 A multiplatform Kotlin library for working with date and time.
 
+See [Using in your projects](#using-in-your-projects) for the instructions how to setup a dependency in your project.
+
 ## Design overview
 
 There are a few guiding principles in the design of `kotlinx-datetime`. First of all, it is pragmatic, focused
@@ -239,6 +241,82 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 - [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
   formats that are used in practice (in particular, various RFCs).
 - [ ] An alternative JVM implementation for Android might be needed.  
+
+## Using in your projects
+
+> Note that the library is experimental, and the API is subject to change.
+
+The library is published to [kotlinx](https://bintray.com/kotlin/kotlinx/kotlinx.datetime) bintray repository<!-- and available in jcenter as well-->.
+
+The library depends on the Kotlin Standard Library not lower than `1.4.0`.
+
+### Gradle
+
+- Add the bintray repository:
+
+```kotlin
+repositories {
+    maven(url = "https://kotlin.bintray.com/kotlinx/") // soon will be just jcenter()
+}
+```
+
+- In multiplatform projects, add a dependency to the commonMain source set dependencies
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+             dependencies {
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.0")
+             }
+        }
+    }
+}
+```
+
+- To use the library in a single-platform project, add a dependency to the dependencies block.
+
+```groovy
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.0")
+}
+```
+
+### Maven
+
+- Add the bintray repository to the `<repositories>` section.
+
+```xml
+<repository>
+    <snapshots>
+        <enabled>false</enabled>
+    </snapshots>
+    <id>kotlinx</id>
+    <name>kotlinx</name>
+    <url>https://kotlin.bintray.com/kotlinx/</url>
+</repository>
+```
+<!--
+```xml
+<repository>
+    <snapshots>
+        <enabled>false</enabled>
+    </snapshots>
+    <id>jcenter</id>
+    <name>jcenter</name>
+    <url>https://jcenter.bintray.com/</url>
+</repository>
+```
+-->
+
+- Add a dependency to the `<dependencies>` element. Note that you need to use the platform-specific `-jvm` artifact in Maven.
+
+```xml
+<dependency>
+    <groupId>org.jetbrains.kotlinx</groupId>
+    <artifactId>kotlinx-datetime-jvm</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
 
 ## Building
 
