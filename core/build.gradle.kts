@@ -1,7 +1,3 @@
-/*
- * Copyright 2019-2020 JetBrains s.r.o.
- * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
- */
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -173,7 +169,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
-                implementation(npm("@js-joda/core",  "3.0.0"))
+                implementation(npm("@js-joda/core",  "3.1.0"))
             }
         }
 

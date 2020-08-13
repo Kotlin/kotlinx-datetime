@@ -14,7 +14,6 @@ import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
 import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
-import kotlin.math.nextTowards
 import kotlin.math.truncate
 
 @OptIn(ExperimentalTime::class)
@@ -105,38 +104,12 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
                 .run { if (days != 0) plusDays(days) as ZonedDateTime else this }
                 .run { if (hours != 0) plusHours(hours) else this }
                 .run { if (minutes != 0) plusMinutes(minutes) else this }
-                .run { plusSecondsFix(seconds) }
-                .run { plusNanosFix(nanoseconds) }
+                .run { if (seconds != 0L) plusSeconds(seconds.toDouble()) else this }
+                .run { if (nanoseconds != 0L) plusNanos(nanoseconds.toDouble()) else this }
     }.toInstant().let(::Instant)
 }    catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
-}
-
-// workaround for https://github.com/js-joda/js-joda/issues/431
-private fun ZonedDateTime.plusSecondsFix(seconds: Long): ZonedDateTime {
-    val value = seconds.toDouble()
-    return when {
-        value == 0.0 -> this
-        (value.unsafeCast<Int>() or 0) != 0 -> plusSeconds(value)
-        else -> {
-            val valueLittleLess = value.nextTowards(0.0)
-            plusSeconds(valueLittleLess).plusSeconds(value - valueLittleLess)
-        }
-    }
-}
-
-// workaround for https://github.com/js-joda/js-joda/issues/431
-private fun ZonedDateTime.plusNanosFix(nanoseconds: Long): ZonedDateTime {
-    val value = nanoseconds.toDouble()
-    return when {
-        value == 0.0 -> this
-        (value.unsafeCast<Int>() or 0) != 0 -> plusNanos(value)
-        else -> {
-            val valueLittleLess = value.nextTowards(0.0)
-            plusNanos(valueLittleLess).plusNanos(value - valueLittleLess)
-        }
-    }
 }
 
 private fun Instant.atZone(zone: TimeZone): ZonedDateTime = value.atZone(zone.zoneId)
