@@ -144,8 +144,8 @@ val knownDate = LocalDate(2020, 2, 21)
 
 ### Converting instant to and from unix time
 
-An `Instant` can be converted to unix millisecond time with the `toUnixMillis()` function.
-To convert back use `Instant.fromUnixMillis(Long)` companion object function.
+An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
+To convert back, use `Instant.fromEpochMilliseconds(Long)` companion object function.
 
 ### Converting instant and local date/time to and from string
 
