@@ -256,7 +256,9 @@ The library depends on the Kotlin Standard Library not lower than `1.4.0`.
 
 ```kotlin
 repositories {
-    maven(url = "https://kotlin.bintray.com/kotlinx/") // soon will be just jcenter()
+    maven {
+            url 'https://kotlin.bintray.com/kotlinx/'
+        }    // soon will be just jcenter()
 }
 ```
 
