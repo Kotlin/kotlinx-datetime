@@ -255,11 +255,25 @@ The library depends on the Kotlin Standard Library not lower than `1.4.0`.
 - Add the bintray repository:
 
 ```kotlin
+
+Groovy  DSL
+
 repositories {
     maven {
             url 'https://kotlin.bintray.com/kotlinx/'
-        }    // soon will be just jcenter()
+        }   
+}   // soon will be just jcenter()
+
+
+kotlin  DSL
+
+repositories {
+    maven(url = "https://kotlin.bintray.com/kotlinx/") // soon will be just jcenter()
 }
+
+
+
+
 ```
 
 - In multiplatform projects, add a dependency to the commonMain source set dependencies
