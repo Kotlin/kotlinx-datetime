@@ -490,6 +490,22 @@ class InstantRangeTest {
     }
 
     @Test
+    fun timeBasedUnitArithmeticOutOfRange() {
+        // Instant.plus(Long, DateTimeUnit.TimeBased)
+        // Arithmetic overflow
+        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+            assertEquals(Instant.MAX, instant.plus(Long.MAX_VALUE, DateTimeUnit.SECOND))
+            assertEquals(Instant.MIN, instant.plus(Long.MIN_VALUE, DateTimeUnit.SECOND))
+        }
+        // Overflow of Instant boundaries
+        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+            assertEquals(Instant.MAX, instant.plus(Instant.MAX.epochSeconds - instant.epochSeconds + 1, DateTimeUnit.SECOND))
+            assertEquals(Instant.MIN, instant.plus(Instant.MIN.epochSeconds - instant.epochSeconds - 1, DateTimeUnit.SECOND))
+        }
+    }
+
+
+    @Test
     fun periodUntilOutOfRange() {
         // Instant.periodUntil
         maxValidInstant.periodUntil(minValidInstant, UTC)
@@ -502,6 +518,8 @@ class InstantRangeTest {
         // Arithmetic overflow of the resulting number
         assertEquals(Long.MAX_VALUE, minValidInstant.until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC))
         assertEquals(Long.MIN_VALUE, maxValidInstant.until(minValidInstant, DateTimeUnit.NANOSECOND, UTC))
+        assertEquals(Long.MAX_VALUE, minValidInstant.until(maxValidInstant, DateTimeUnit.NANOSECOND))
+        assertEquals(Long.MIN_VALUE, maxValidInstant.until(minValidInstant, DateTimeUnit.NANOSECOND))
     }
 
     @Test
@@ -510,6 +528,9 @@ class InstantRangeTest {
         // Overflowing a LocalDateTime in input
         assertArithmeticFails { (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC) }
         assertArithmeticFails { maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND, UTC) }
+        // Overloads without a TimeZone should not fail on overflowing a LocalDateTime
+        (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
+        maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
     }
 }
 

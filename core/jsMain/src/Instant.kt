@@ -150,9 +150,7 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
             val thisZdt = this.atZone(timeZone)
             when (unit) {
                 is DateTimeUnit.TimeBased -> {
-                    multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).checkZone(timeZone)
-                    }
+                    plus(value, unit).value.checkZone(timeZone)
                 }
                 is DateTimeUnit.DateBased.DayBased ->
                     (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
@@ -168,11 +166,8 @@ public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
         try {
             val thisZdt = this.atZone(timeZone)
             when (unit) {
-                is DateTimeUnit.TimeBased -> {
-                    multiplyAndDivide(value.toLong(), unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.plusFix(d.toDouble(), r.toInt()).checkZone(timeZone)
-                    }
-                }
+                is DateTimeUnit.TimeBased ->
+                    plus(value.toLong(), unit).value.checkZone(timeZone)
                 is DateTimeUnit.DateBased.DayBased ->
                     (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
                 is DateTimeUnit.DateBased.MonthBased ->
@@ -182,6 +177,18 @@ public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
             if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
             throw e
         }
+
+actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    try {
+        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
+            Instant(plusFix(d.toDouble(), r.toInt()))
+        }
+    } catch (e: Throwable) {
+        if (!e.isJodaDateTimeException()) {
+            throw e
+        }
+        if (value > 0) Instant.MAX else Instant.MIN
+    }
 
 @OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod = try {
@@ -203,12 +210,7 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     val thisZdt = this.atZone(timeZone)
     val otherZdt = other.atZone(timeZone)
     when(unit) {
-        is DateTimeUnit.TimeBased -> {
-            multiplyAddAndDivide(other.epochSeconds - epochSeconds,
-                    NANOS_PER_ONE.toLong(),
-                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
-                    unit.nanoseconds)
-        }
+        is DateTimeUnit.TimeBased -> until(other, unit)
         is DateTimeUnit.DateBased.DayBased -> (thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble() / unit.days).toLong()
         is DateTimeUnit.DateBased.MonthBased -> (thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble() / unit.months).toLong()
     }

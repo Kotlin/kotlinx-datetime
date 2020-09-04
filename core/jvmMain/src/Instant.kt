@@ -114,11 +114,8 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
         try {
             val thisZdt = atZone(timeZone)
             when (unit) {
-                is DateTimeUnit.TimeBased -> {
-                    multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let {
-                        (d, r) -> this.value.plusSeconds(d).plusNanos(r).also { it.atZone(timeZone.zoneId) }
-                    }
-                }
+                is DateTimeUnit.TimeBased ->
+                    plus(value, unit).value.also { it.atZone(timeZone.zoneId) }
                 is DateTimeUnit.DateBased.DayBased ->
                     thisZdt.plusDays(safeMultiply(value, unit.days.toLong())).toInstant()
                 is DateTimeUnit.DateBased.MonthBased ->
@@ -129,6 +126,15 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
             throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
         }
 
+actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    try {
+        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
+            Instant(this.value.plusSeconds(d).plusNanos(r))
+        }
+    } catch (e: Exception) {
+        if (e !is DateTimeException && e !is ArithmeticException) throw e
+        if (value > 0) Instant.MAX else Instant.MIN
+    }
 
 @OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
@@ -148,12 +154,7 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     val thisZdt = this.atZone(timeZone)
     val otherZdt = other.atZone(timeZone)
     when(unit) {
-        is DateTimeUnit.TimeBased -> {
-            multiplyAddAndDivide(other.epochSeconds - epochSeconds,
-                    NANOS_PER_ONE.toLong(),
-                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
-                    unit.nanoseconds)
-        }
+        is DateTimeUnit.TimeBased -> until(other, unit)
         is DateTimeUnit.DateBased.DayBased -> thisZdt.until(otherZdt, ChronoUnit.DAYS) / unit.days
         is DateTimeUnit.DateBased.MonthBased -> thisZdt.until(otherZdt, ChronoUnit.MONTHS) / unit.months
     }
