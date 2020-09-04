@@ -264,22 +264,34 @@ class InstantTest {
     @Test
     fun nanosecondAdjustment() {
         for (i in -2..2L) {
-            for (j in 0..9L) {
+            for (j in 0..9) {
                 val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
                 assertEquals(i, t.epochSeconds)
-                assertEquals(j, t.nanosecondsOfSecond.toLong())
+                assertEquals(j, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
             }
-            for (j in -10..-1L) {
+            for (j in -10..-1) {
                 val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
                 assertEquals(i - 1, t.epochSeconds)
-                assertEquals(j + 1000000000, t.nanosecondsOfSecond.toLong())
+                assertEquals(j + 1000000000, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
             }
-            for (j in 999_999_990..999_999_999L) {
+            for (j in 999_999_990..999_999_999) {
                 val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
                 assertEquals(i, t.epochSeconds)
-                assertEquals(j, t.nanosecondsOfSecond.toLong())
+                assertEquals(j, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
             }
         }
+        val t = Instant.fromEpochSeconds(0, Int.MAX_VALUE)
+        assertEquals((Int.MAX_VALUE / 1_000_000_000).toLong(), t.epochSeconds)
+        assertEquals(Int.MAX_VALUE % 1_000_000_000, t.nanosecondsOfSecond)
+        val t2 = Instant.fromEpochSeconds(0, Long.MAX_VALUE)
+        assertEquals(Long.MAX_VALUE / 1_000_000_000, t2.epochSeconds)
+        assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(), t2.nanosecondsOfSecond)
     }
 
     /* Based on the ThreeTenBp project.

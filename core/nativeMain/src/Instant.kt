@@ -250,6 +250,9 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
                 if (epochSeconds > 0) MAX else MIN
             }
 
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
+            fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
+
         actual fun parse(isoString: String): Instant =
             instantParser.parse(isoString)
 

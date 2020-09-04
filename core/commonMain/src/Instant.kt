@@ -112,6 +112,14 @@ public expect class Instant : Comparable<Instant> {
         fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long = 0): Instant
 
         /**
+         * Returns an [Instant] that is the [epochSeconds] number of seconds from the epoch instant `1970-01-01T00:00:00Z`
+         * and the [nanosecondAdjustment] number of nanoseconds from the whole second.
+         *
+         * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+         */
+        fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant
+
+        /**
          * Parses a string that represents an instant in ISO-8601 format including date and time components and
          * the mandatory `Z` designator of the UTC+0 time zone and returns the parsed [Instant] value.
          *
