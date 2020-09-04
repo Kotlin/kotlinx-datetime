@@ -100,6 +100,9 @@ class InstantTest {
                 val diff = instant2.minus(instant1, timeUnit, zone)
                 assertEquals(instant2 - instant1, timeUnit.duration * diff.toDouble())
                 assertEquals(instant2, instant1.plus(diff, timeUnit, zone))
+                assertEquals(instant1, instant2.minus(diff, timeUnit, zone))
+                assertEquals(instant2, instant1.plus(diff, timeUnit))
+                assertEquals(instant1, instant2.minus(diff, timeUnit))
             }
         }
 
@@ -109,12 +112,14 @@ class InstantTest {
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
         checkComponents(instant2.toLocalDateTime(zone), 2019, 10, 28, 1, 59)
         expectBetween(instant1, instant2, 24, DateTimeUnit.HOUR)
+        assertEquals(instant1, instant2.minus(DateTimePeriod(hours = 24), zone))
 
         val instant3 = instant1.plus(DateTimeUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         expectBetween(instant1, instant3, 25, DateTimeUnit.HOUR)
         expectBetween(instant1, instant3, 1, DateTimeUnit.DAY)
         assertEquals(1, instant1.daysUntil(instant3, zone))
+        assertEquals(instant1.minus(DateTimeUnit.HOUR), instant2.minus(DateTimeUnit.DAY, zone))
 
         val instant4 = instant1.plus(14, DateTimeUnit.MONTH, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
@@ -124,7 +129,13 @@ class InstantTest {
         expectBetween(instant1, instant4, 61, DateTimeUnit.WEEK)
         expectBetween(instant1, instant4, 366 + 31 + 30, DateTimeUnit.DAY)
         expectBetween(instant1, instant4, (366 + 31 + 30) * 24 + 1, DateTimeUnit.HOUR)
-
+        /* TODO: make this pass on Darwin-based systems.
+         * Since the Darwin implementation of `offset_at_datetime` can't utilize the preferred offset,
+         * when there's overlap, the implementation always assumes that the used offset is the one before the
+         * transition. However, it's not always the case, as seen here. In practice, this is a problem in
+         * scenarios where the destination of an arithmetic operation on datetimes is an overlap, and the source
+         * datetime is outside the daylight saving time. */
+        // assertEquals(instant1.plus(DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
 
         val period = DateTimePeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
@@ -132,11 +143,13 @@ class InstantTest {
         assertEquals(period, instant1.periodUntil(instant5, zone))
         assertEquals(period, instant5.minus(instant1, zone))
         assertEquals(26.hours, instant5.minus(instant1))
+        assertEquals(instant1.plus(DateTimeUnit.HOUR), instant5.minus(period, zone))
 
         val instant6 = instant1.plus(23, DateTimeUnit.HOUR, zone)
         checkComponents(instant6.toLocalDateTime(zone), 2019, 10, 28, 0, 59)
         expectBetween(instant1, instant6, 23, DateTimeUnit.HOUR)
         expectBetween(instant1, instant6, 0, DateTimeUnit.DAY)
+        assertEquals(instant1, instant6.minus(23, DateTimeUnit.HOUR, zone))
     }
 
     @Test

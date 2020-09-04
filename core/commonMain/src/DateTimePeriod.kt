@@ -67,6 +67,9 @@ sealed class DateTimePeriod {
         return result
     }
 
+    internal operator fun unaryMinus(): DateTimePeriod =
+        DateTimePeriod(-years, -months, -days, -hours, -minutes, -seconds, -nanoseconds)
+
     // TODO: parsing from iso string
 }
 

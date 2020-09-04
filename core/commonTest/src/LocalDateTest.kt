@@ -91,6 +91,9 @@ class LocalDateTest {
         checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)
         checkComponents(startDate.plus(DateTimeUnit.YEAR), 2017, 2, 28)
         checkComponents(startDate + DatePeriod(years = 4), 2020, 2, 29)
+        assertEquals(startDate, startDate.plus(DateTimeUnit.DAY).minus(DateTimeUnit.DAY))
+        assertEquals(startDate, startDate.plus(3, DateTimeUnit.DAY).minus(3, DateTimeUnit.DAY))
+        assertEquals(startDate, startDate + DatePeriod(years = 4) - DatePeriod(years = 4))
 
         checkComponents(LocalDate.parse("2016-01-31") + DatePeriod(months = 1), 2016, 2, 29)
 
