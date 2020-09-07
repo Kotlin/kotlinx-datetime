@@ -304,15 +304,25 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
                 throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
             toZonedLocalDateTimeFailing(timeZone).plus(value.toInt(), unit).toInstant()
         }
-        is DateTimeUnit.TimeBased -> multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
-            check(timeZone).plus(seconds, nanoseconds).check(timeZone)
-        }
+        is DateTimeUnit.TimeBased ->
+            check(timeZone).plus(value, unit).check(timeZone)
     }
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
 } catch (e: IllegalArgumentException) {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
 }
+
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    try {
+        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
+            plus(seconds, nanoseconds)
+        }
+    } catch (e: ArithmeticException) {
+        if (value > 0) Instant.MAX else Instant.MIN
+    } catch (e: IllegalArgumentException) {
+        if (value > 0) Instant.MAX else Instant.MIN
+    }
 
 @OptIn(ExperimentalTime::class)
 actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
@@ -337,13 +347,6 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
                 .toLong()
         is DateTimeUnit.TimeBased -> {
             check(timeZone); other.check(timeZone)
-            try {
-                multiplyAddAndDivide(other.epochSeconds - epochSeconds,
-                    NANOS_PER_ONE.toLong(),
-                    (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
-                    unit.nanoseconds)
-            } catch (e: ArithmeticException) {
-                if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
-            }
+            until(other, unit)
         }
     }

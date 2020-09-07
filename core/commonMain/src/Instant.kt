@@ -195,12 +195,32 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
  * - positive or zero if this instant is earlier than the other,
  * - negative or zero if this instant is later than the other,
  * - zero if this instant is equal to the other.
-
+ *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
+
+/**
+ * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
+ *
+ * The value returned is:
+ * - positive or zero if this instant is earlier than the other,
+ * - negative or zero if this instant is later than the other,
+ * - zero if this instant is equal to the other.
+ *
+ * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+ */
+public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
+    try {
+        multiplyAddAndDivide(other.epochSeconds - epochSeconds,
+            NANOS_PER_ONE.toLong(),
+            (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
+            unit.nanoseconds)
+    } catch (e: ArithmeticException) {
+        if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
+    }
 
 /**
  * Returns the number of whole days between two instants in the specified [timeZone].
@@ -263,6 +283,16 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
 public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
+ * Returns an instant that is the result of adding one [unit] to this instant.
+ *
+ * The returned instant is later than this instant.
+ *
+ * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ */
+public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
+    plus(1L, unit)
+
+/**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant
  * in the specified [timeZone].
  *
@@ -274,6 +304,17 @@ public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
 public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
+ * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
+ *
+ * If the [value] is positive, the returned instant is later than this instant.
+ * If the [value] is negative, the returned instant is earlier than this instant.
+ *
+ * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ */
+public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
+    plus(value.toLong(), unit)
+
+/**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant
  * in the specified [timeZone].
  *
@@ -283,6 +324,16 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
+
+/**
+ * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
+ *
+ * If the [value] is positive, the returned instant is later than this instant.
+ * If the [value] is negative, the returned instant is earlier than this instant.
+ *
+ * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ */
+public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
 
 /**
  * Returns the whole number of the specified date or time [units][unit] between [other] and `this` instants
@@ -298,6 +349,19 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
         other.until(this, unit, timeZone)
+
+/**
+ * Returns the whole number of the specified time [units][unit] between [other] and `this` instants.
+ *
+ * The value returned is negative or zero if this instant is earlier than the other,
+ * and positive or zero if this instant is later than the other.
+ *
+ * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+ *
+ * @see Instant.until
+ */
+public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
+    other.until(this, unit)
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800
