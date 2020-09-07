@@ -203,7 +203,7 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
 public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
 
 /**
- * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants.
+ * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
  *
  * The value returned is:
  * - positive or zero if this instant is earlier than the other,
