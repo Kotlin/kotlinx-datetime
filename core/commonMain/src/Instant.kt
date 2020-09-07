@@ -351,7 +351,7 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
         other.until(this, unit, timeZone)
 
 /**
- * Returns the whole number of the specified date or time [units][unit] between [other] and `this` instants.
+ * Returns the whole number of the specified time [units][unit] between [other] and `this` instants.
  *
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
