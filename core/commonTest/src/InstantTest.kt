@@ -478,6 +478,19 @@ class InstantRangeTest {
             assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MAX_VALUE), UTC) }
             assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MIN_VALUE), UTC) }
         }
+        // Arithmetic overflow in an Int
+        for (instant in smallInstants + listOf(maxValidInstant)) {
+            assertEquals(instant.epochSeconds + Int.MIN_VALUE,
+                instant.plus(Int.MIN_VALUE, DateTimeUnit.SECOND, UTC).epochSeconds)
+            assertEquals(instant.epochSeconds - Int.MAX_VALUE,
+                instant.minus(Int.MAX_VALUE, DateTimeUnit.SECOND, UTC).epochSeconds)
+        }
+        for (instant in smallInstants + listOf(minValidInstant)) {
+            assertEquals(instant.epochSeconds + Int.MAX_VALUE,
+                instant.plus(Int.MAX_VALUE, DateTimeUnit.SECOND, UTC).epochSeconds)
+            assertEquals(instant.epochSeconds - Int.MIN_VALUE,
+                instant.minus(Int.MIN_VALUE, DateTimeUnit.SECOND, UTC).epochSeconds)
+        }
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC)
         minValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC)

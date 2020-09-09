@@ -259,6 +259,8 @@ public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
         throw DateTimeArithmeticException("Boundaries of LocalDate exceeded when adding a value", e)
     }
 
+public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
+
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
         if (value > Int.MAX_VALUE || value < Int.MIN_VALUE)
             throw DateTimeArithmeticException("Can't add a Long to a LocalDate") // TODO: less specific message

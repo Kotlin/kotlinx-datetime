@@ -350,8 +350,7 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(-value, unit, timeZone)
+public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
@@ -373,7 +372,7 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
 public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
-    plus(-value.toLong(), unit)
+    minus(value.toLong(), unit)
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant

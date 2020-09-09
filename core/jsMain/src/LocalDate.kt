@@ -50,6 +50,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plusNumber(1, unit)
 public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
+public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(-value, unit)
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
 
 private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): LocalDate =

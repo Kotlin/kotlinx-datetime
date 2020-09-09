@@ -300,6 +300,8 @@ public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant 
     plus(1L, unit, timeZone)
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
     plus(value.toLong(), unit, timeZone)
+public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(-value.toLong(), unit, timeZone)
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
     when (unit) {
         is DateTimeUnit.DateBased -> {

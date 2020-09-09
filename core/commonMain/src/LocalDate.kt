@@ -223,7 +223,7 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-public fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
+public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
 /**
  * Returns a [LocalDate] that is the result of adding the [value] number of the specified [unit] to this date.

@@ -163,6 +163,12 @@ public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
             throw e
         }
 
+public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    if (value == Int.MIN_VALUE)
+        plus(-value.toLong(), unit, timeZone)
+    else
+        plus(-value, unit, timeZone)
+
 actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     try {
         multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
