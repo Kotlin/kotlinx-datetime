@@ -412,7 +412,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone) =
     if (value != Long.MIN_VALUE) {
         plus(-value, unit, timeZone)
     } else {
-        plus(-(value+1), unit, timeZone).plus(unit, timeZone)
+        plus(-(value + 1), unit, timeZone).plus(unit, timeZone)
     }
 
 /**
@@ -433,7 +433,12 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
-public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant = plus(-value, unit)
+public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    if (value != Long.MIN_VALUE) {
+        plus(-value, unit)
+    } else {
+        plus(-(value + 1), unit).plus(unit)
+    }
 
 /**
  * Returns the whole number of the specified date or time [units][unit] between [other] and `this` instants
