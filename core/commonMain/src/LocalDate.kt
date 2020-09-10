@@ -118,7 +118,14 @@ expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDate].
  */
-public operator fun LocalDate.minus(period: DatePeriod): LocalDate = plus(-period as DatePeriod)
+public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
+    if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
+        plus(with(period) { DatePeriod(-years, -months, -days) })
+    } else {
+        minus(period.years, DateTimeUnit.YEAR).
+        minus(period.months, DateTimeUnit.MONTH).
+        minus(period.days, DateTimeUnit.DAY)
+    }
 
 /**
  * Returns a [DatePeriod] representing the difference between `this` and [other] dates.

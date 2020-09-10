@@ -188,9 +188,23 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
  */
-public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant = plus(-period, timeZone)
+public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+    /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
+    any other component means that `plus` will throw due to the minimum value of the numeric type overflowing the
+    platform-specific limits. */
+    if (period.nanoseconds != Long.MIN_VALUE) {
+        val negatedPeriod = with(period) {
+            DateTimePeriod(-years, -months, -days, -hours, -minutes, -seconds, -nanoseconds)
+        }
+        plus(negatedPeriod, timeZone)
+    } else {
+        val negatedPeriod = with(period) {
+            DateTimePeriod(-years, -months, -days, -hours, -minutes, -seconds, -(nanoseconds+1))
+        }
+        plus(negatedPeriod, timeZone).plus(DateTimeUnit.NANOSECOND)
+    }
 
-/**
+    /**
  * Returns a [DateTimePeriod] representing the difference between `this` and [other] instants.
  *
  * The components of [DateTimePeriod] are calculated so that adding it to `this` instant results in the [other] instant.
@@ -394,7 +408,12 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone) = plus(-value, unit, timeZone)
+public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone) =
+    if (value != Long.MIN_VALUE) {
+        plus(-value, unit, timeZone)
+    } else {
+        plus(-(value+1), unit, timeZone).plus(unit, timeZone)
+    }
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
