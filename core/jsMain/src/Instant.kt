@@ -80,6 +80,18 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
+            /* Performing normalization here because otherwise this fails:
+               assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(),
+                            Instant.fromEpochSeconds(0, Long.MAX_VALUE).nanosecondsOfSecond) */
+            val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
+            val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
+            Instant(jtInstant.ofEpochSecond(secs, nos))
+        } catch (e: Throwable) {
+            if (!e.isJodaDateTimeException() && e !is ArithmeticException) throw e
+            if (epochSeconds > 0) MAX else MIN
+        }
+
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e

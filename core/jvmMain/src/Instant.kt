@@ -72,6 +72,9 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochSeconds > 0) MAX else MIN
         }
 
+        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
+            fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
+
         actual val DISTANT_PAST: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS, 999_999_999))
         actual val DISTANT_FUTURE: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS, 0))
 
