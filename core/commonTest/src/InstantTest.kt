@@ -129,9 +129,7 @@ class InstantTest {
         expectBetween(instant1, instant4, 61, DateTimeUnit.WEEK)
         expectBetween(instant1, instant4, 366 + 31 + 30, DateTimeUnit.DAY)
         expectBetween(instant1, instant4, (366 + 31 + 30) * 24 + 1, DateTimeUnit.HOUR)
-        /* TODO: make this pass on Darwin-based and Windows systems.
-           See https://github.com/Kotlin/kotlinx-datetime/issues/51 */
-        // assertEquals(instant1.plus(DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
+        assertEquals(instant1.plus(DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
 
         val period = DateTimePeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
