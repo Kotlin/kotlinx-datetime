@@ -129,12 +129,8 @@ class InstantTest {
         expectBetween(instant1, instant4, 61, DateTimeUnit.WEEK)
         expectBetween(instant1, instant4, 366 + 31 + 30, DateTimeUnit.DAY)
         expectBetween(instant1, instant4, (366 + 31 + 30) * 24 + 1, DateTimeUnit.HOUR)
-        /* TODO: make this pass on Darwin-based systems.
-         * Since the Darwin implementation of `offset_at_datetime` can't utilize the preferred offset,
-         * when there's overlap, the implementation always assumes that the used offset is the one before the
-         * transition. However, it's not always the case, as seen here. In practice, this is a problem in
-         * scenarios where the destination of an arithmetic operation on datetimes is an overlap, and the source
-         * datetime is outside the daylight saving time. */
+        /* TODO: make this pass on Darwin-based and Windows systems.
+           See https://github.com/Kotlin/kotlinx-datetime/issues/51 */
         // assertEquals(instant1.plus(DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
 
         val period = DateTimePeriod(days = 1, hours = 1)
