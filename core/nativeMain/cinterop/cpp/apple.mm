@@ -81,6 +81,16 @@ static NSTimeZone *timezone_by_id(TZID id)
 
 extern "C" {
 
+bool current_time(int64_t *sec, int32_t *nano)
+{
+    double current = NSDate.date.timeIntervalSince1970;
+    double dsec;
+    double dnano = modf(current, &dsec);
+    *sec = (int64_t)dsec;
+    *nano = (int32_t)(dnano * 1000000000);
+    return true;
+}
+
 char * get_system_timezone(TZID *tzid)
 {
     /* The framework has its own cache of the system timezone. Calls to

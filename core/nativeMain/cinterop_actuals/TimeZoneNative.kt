@@ -16,6 +16,9 @@ internal actual fun getCurrentSystemDefaultTimeZone(): TimeZone = memScoped {
     TimeZone(tzid.value, kotlinString)
 }
 
+internal actual fun current_time(sec: kotlinx.cinterop.CValuesRef<platform.posix.int64_tVar /* = kotlinx.cinterop.LongVarOf<kotlin.Long> */>?, nano: kotlinx.cinterop.CValuesRef<platform.posix.int32_tVar>?): kotlin.Boolean =
+    kotlinx.datetime.internal.current_time(sec, nano)
+
 internal actual fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>? =
         kotlinx.datetime.internal.available_zone_ids()
 

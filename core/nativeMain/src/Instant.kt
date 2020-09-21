@@ -209,15 +209,13 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
 
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         actual fun now(): Instant = memScoped {
-            val timespecBuf = alloc<timespec>()
-            val error = clock_gettime(CLOCK_REALTIME, timespecBuf.ptr)
-            assert(error == 0)
-            // according to https://en.cppreference.com/w/c/chrono/timespec,
-            // tv_nsec in [0; 10^9), so no need to call [ofEpochSecond].
-            val seconds = timespecBuf.tv_sec.convert<Long>()
-            val nanosec = timespecBuf.tv_nsec.toInt()
+            val seconds = alloc<LongVar>()
+            val nanoseconds = alloc<IntVar>()
+            val result = current_time(seconds.ptr, nanoseconds.ptr)
             try {
-                Instant(seconds, nanosec)
+                require(result)
+                require(nanoseconds.value >= 0 && nanoseconds.value < NANOS_PER_ONE)
+                Instant(seconds.value, nanoseconds.value)
             } catch (e: IllegalArgumentException) {
                 throw IllegalStateException("The readings from the system clock are not representable as an Instant")
             }

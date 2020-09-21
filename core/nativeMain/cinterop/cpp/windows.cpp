@@ -281,6 +281,18 @@ static int offset_at_systime(DYNAMIC_TIME_ZONE_INFORMATION& dtzi,
 
 extern "C" {
 
+bool current_time(int64_t *sec, int32_t *nano)
+{
+    timespec tm;
+    int error = clock_gettime(CLOCK_REALTIME, &tm);
+    if (error) {
+        return false;
+    }
+    *sec = tm.tv_sec;
+    *nano = tm.tv_nsec;
+    return true;
+}
+
 char * get_system_timezone(TZID* id)
 {
     DYNAMIC_TIME_ZONE_INFORMATION dtzi{};

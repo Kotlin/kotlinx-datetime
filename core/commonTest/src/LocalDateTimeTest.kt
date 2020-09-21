@@ -72,7 +72,6 @@ class LocalDateTimeTest {
         }
     }
 
-
     @OptIn(ExperimentalTime::class)
     @Test
     fun tomorrow() {
