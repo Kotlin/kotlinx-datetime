@@ -7,8 +7,6 @@
    library. This implementation is used for MacOS and Linux, but once <chrono>
    is available for all the target platforms, the dependency on `date` can be
    removed along with the neighboring implementations. */
-#if !TARGET_OS_IPHONE
-#if !DATETIME_TARGET_WIN32
 #include "date/date.h"
 #include "date/tz.h"
 #include "helper_macros.hpp"
@@ -210,5 +208,3 @@ int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec)
 }
 
 }
-#endif // !DATETIME_TARGET_WIN32
-#endif // !TARGET_OS_IPHONE

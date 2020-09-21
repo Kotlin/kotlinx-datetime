@@ -6,7 +6,6 @@
    OS. This is used for iOS, but can also be used with no changes for MacOS.
    For now, MacOS uses the implementation based on the `date` library, along
    with Linux, and can be found in `cdate.cpp`. */
-#if TARGET_OS_IPHONE // only enable for iOS.
 #import <Foundation/Foundation.h>
 #import <Foundation/NSTimeZone.h>
 #import <Foundation/NSDate.h>
@@ -241,4 +240,3 @@ int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec) {
 }
 
 }
-#endif // TARGET_OS_IPHONE

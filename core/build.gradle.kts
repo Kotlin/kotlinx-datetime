@@ -106,19 +106,28 @@ kotlin {
                 val dateLibDir = "${project(":").projectDir}/thirdparty/date"
                 headers("$cinteropDir/public/cdate.h")
                 defFile("native/cinterop/date.def")
-                // common options
-                extraOpts("-Xsource-compiler-option", "-std=c++17")
                 extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
-                extraOpts("-Xsource-compiler-option", "-include$cinteropDir/cpp/defines.hpp")
-                // *nix support
-                extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
-                extraOpts("-Xcompile-source", "$dateLibDir/src/ios.mm")
-                extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
-                extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
-                // iOS support
-                extraOpts("-Xcompile-source", "$cinteropDir/cpp/apple.mm")
-                // Windows support
-                extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
+                extraOpts("-Xsource-compiler-option", "-DONLY_C_LOCALE=1")
+                when {
+                    konanTarget.family.isAppleFamily -> {
+                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/apple.mm")
+                    }
+                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
+                        extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
+                        extraOpts("-Xsource-compiler-option", "-std=c++11")
+                        extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
+                        extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
+                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
+                    }
+                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
+                        extraOpts("-Xsource-compiler-option", "-std=c++17")
+                        extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
+                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Unknown native target ${this@withType}")
+                    }
+                }
             }
         }
         compilations["main"].defaultSourceSet {

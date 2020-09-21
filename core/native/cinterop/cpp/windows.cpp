@@ -3,7 +3,6 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 /* This file implements the functions specified in `cdate.h` for Windows. */
-#if DATETIME_TARGET_WIN32
 /* only Windows 8 and later is supported. This is needed for
    `EnumDynamicTimeZoneInformation` to be available. */
 #define _WIN32_WINNT _WIN32_WINNT_WIN8
@@ -436,4 +435,3 @@ int64_t at_start_of_day(TZID zone_id, int64_t epoch_sec)
 }
 
 }
-#endif // DATETIME_TARGET_WIN32
