@@ -55,6 +55,9 @@ public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
 public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
         plus(value.toLong(), unit)
 
+public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
+        plus(-value.toLong(), unit)
+
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
         try {
             when (unit) {

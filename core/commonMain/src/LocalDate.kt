@@ -111,6 +111,23 @@ public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond:
 expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
 
 /**
+ * Returns a date that is the result of subtracting components of [DatePeriod] from this date. The components are
+ * subtracted in the order from the largest units to the smallest, i.e. from years to days.
+ *
+ * @see LocalDate.periodUntil
+ * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
+ * [LocalDate].
+ */
+public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
+    if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
+        plus(with(period) { DatePeriod(-years, -months, -days) })
+    } else {
+        minus(period.years, DateTimeUnit.YEAR).
+        minus(period.months, DateTimeUnit.MONTH).
+        minus(period.days, DateTimeUnit.DAY)
+    }
+
+/**
  * Returns a [DatePeriod] representing the difference between `this` and [other] dates.
  *
  * The components of [DatePeriod] are calculated so that adding it to `this` date results in the [other] date.
@@ -187,6 +204,15 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
+ * Returns a [LocalDate] that is the result of subtracting one [unit] from this date.
+ *
+ * The returned date is earlier than this date.
+ *
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, unit)
+
+/**
  * Returns a [LocalDate] that is the result of adding the [value] number of the specified [unit] to this date.
  *
  * If the [value] is positive, the returned date is later than this date.
@@ -197,6 +223,16 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
 /**
+ * Returns a [LocalDate] that is the result of subtracting the [value] number of the specified [unit] from this date.
+ *
+ * If the [value] is positive, the returned date is earlier than this date.
+ * If the [value] is negative, the returned date is later than this date.
+ *
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
+
+/**
  * Returns a [LocalDate] that is the result of adding the [value] number of the specified [unit] to this date.
  *
  * If the [value] is positive, the returned date is later than this date.
@@ -205,3 +241,13 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
+
+/**
+ * Returns a [LocalDate] that is the result of subtracting the [value] number of the specified [unit] from this date.
+ *
+ * If the [value] is positive, the returned date is earlier than this date.
+ * If the [value] is negative, the returned date is later than this date.
+ *
+ * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ */
+public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)

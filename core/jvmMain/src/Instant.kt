@@ -113,6 +113,9 @@ public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant 
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
         plus(value.toLong(), unit, timeZone)
 
+public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+        plus(-value.toLong(), unit, timeZone)
+
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
         try {
             val thisZdt = atZone(timeZone)

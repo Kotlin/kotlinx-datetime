@@ -16,7 +16,16 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     internal fun plus(value: Int, unit: DateTimeUnit.DateBased): ZonedDateTime = dateTime.plus(value, unit).resolve()
 
     // Never throws in practice
-    private fun LocalDateTime.resolve(): ZonedDateTime = with(zone) { atZone(offset) }
+    private fun LocalDateTime.resolve(): ZonedDateTime =
+        // workaround for https://github.com/Kotlin/kotlinx-datetime/issues/51
+        if (toInstant(offset).toLocalDateTime(zone) == this@resolve) {
+            // this LocalDateTime is valid in these timezone and offset.
+            ZonedDateTime(this, zone, offset)
+        } else {
+            // this LDT does need proper resolving, as the instant that it would map to given the preferred offset
+            // is is mapped to another LDT.
+            with(zone) { atZone(offset) }
+        }
 
     override fun equals(other: Any?): Boolean =
         this === other || other is ZonedDateTime &&
