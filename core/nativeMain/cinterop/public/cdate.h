@@ -6,6 +6,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef size_t TZID;
 const TZID TZID_INVALID = SIZE_MAX;
@@ -14,6 +15,9 @@ enum GAP_HANDLING {
     GAP_HANDLING_MOVE_FORWARD,
     GAP_HANDLING_NEXT_CORRECT,
 };
+
+// Returns true if successful.
+bool current_time(int64_t *sec, int32_t *nano);
 
 /* Returns a string that must be freed by the caller, or null.
    If something is returned, `id` has the id of the timezone. */

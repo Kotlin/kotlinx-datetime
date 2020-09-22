@@ -22,6 +22,7 @@ internal expect fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.U
 internal expect fun at_start_of_day(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Long
 internal expect fun offset_at_instant(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Int
 internal expect fun timezone_by_name(zone_name: kotlin.String?): kotlinx.datetime.TZID /* = kotlin.ULong */
+internal expect fun current_time(sec: kotlinx.cinterop.CValuesRef<platform.posix.int64_tVar /* = kotlinx.cinterop.LongVarOf<kotlin.Long> */>?, nano: kotlinx.cinterop.CValuesRef<platform.posix.int32_tVar>?): kotlin.Boolean
 
 public actual open class TimeZone internal constructor(private val tzid: TZID, actual val id: String) {
 
@@ -92,7 +93,7 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
 
     internal open fun offsetAtImpl(instant: Instant): ZoneOffset {
         val offset = offset_at_instant(tzid, instant.epochSeconds)
-        if (offset == INT_MAX) {
+        if (offset == Int.MAX_VALUE) {
             throw RuntimeException("Unable to acquire the offset at instant $instant for zone $this")
         }
         return ZoneOffset.ofSeconds(offset)
@@ -113,9 +114,9 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
     internal open fun LocalDateTime.atZone(preferred: ZoneOffset? = null): ZonedDateTime = memScoped {
         val epochSeconds = toEpochSecond(ZoneOffset.UTC)
         val offset = alloc<IntVar>()
-        offset.value = preferred?.totalSeconds ?: INT_MAX
+        offset.value = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = offset_at_datetime(tzid, epochSeconds, offset.ptr)
-        if (offset.value == INT_MAX) {
+        if (offset.value == Int.MAX_VALUE) {
             throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@TimeZone}")
         }
         val dateTime = try {

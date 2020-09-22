@@ -81,6 +81,18 @@ static TZID id_by_zone(const tzdb& db, const time_zone* tz)
 
 extern "C" {
 
+bool current_time(int64_t *sec, int32_t *nano)
+{
+    timespec tm;
+    int error = clock_gettime(CLOCK_REALTIME, &tm);
+    if (error) {
+        return false;
+    }
+    *sec = tm.tv_sec;
+    *nano = tm.tv_nsec;
+    return true;
+}
+
 char * get_system_timezone(TZID * id)
 {
     try {
