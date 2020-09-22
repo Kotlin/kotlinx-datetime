@@ -32,18 +32,18 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
                 return ZoneOffset.of(zoneId)
             }
             if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                return ZoneOffset(ZoneOffsetImpl(0, zoneId))
+                return TimeZone(ZoneOffsetImpl(0, zoneId))
             }
             if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
                 zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")) {
                 val offset = ZoneOffset.of(zoneId.substring(3))
                 return (if (offset.totalSeconds == 0) ZoneOffsetImpl(0, zoneId.substring(0, 3))
-                else ZoneOffsetImpl(offset.totalSeconds, zoneId.substring(0, 3) + offset.id)).let(::ZoneOffset)
+                else ZoneOffsetImpl(offset.totalSeconds, zoneId.substring(0, 3) + offset.id)).let(::TimeZone)
             }
             if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
                 val offset = ZoneOffset.of(zoneId.substring(2))
                 return (if (offset.totalSeconds == 0) ZoneOffsetImpl(0, "UT")
-                else ZoneOffsetImpl(offset.totalSeconds, "UT" + offset.id)).let(::ZoneOffset)
+                else ZoneOffsetImpl(offset.totalSeconds, "UT" + offset.id)).let(::TimeZone)
             }
             return TimeZone(PlatformTimeZoneImpl.of(zoneId))
         }
