@@ -113,15 +113,23 @@ kotlin {
                         extraOpts("-Xcompile-source", "$cinteropDir/cpp/apple.mm")
                     }
                     konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
+                        // needed for the date library so that it does not try to download the timezone database
                         extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
+                        /* using a more modern C++ version causes the date library to use features that are not
+                        * present in the currently outdated GCC root shipped with Kotlin/Native for Linux. */
                         extraOpts("-Xsource-compiler-option", "-std=c++11")
+                        // the date library and its headers
                         extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
                         extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
+                        // the main source for the platform bindings.
                         extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
                     }
                     konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
+                        // needed to be able to use std::shared_mutex to implement caching.
                         extraOpts("-Xsource-compiler-option", "-std=c++17")
+                        // the date library headers, needed for some pure calculations.
                         extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
+                        // the main source for the platform bindings.
                         extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
                     }
                     else -> {
