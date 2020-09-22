@@ -100,6 +100,12 @@ kotlin {
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+        compilations["test"].kotlinOptions {
+            freeCompilerArgs += listOf("-trw")
+        }
+        if (konanTarget.family.isAppleFamily) {
+            return@withType
+        }
         compilations["main"].cinterops {
             create("date") {
                 val cinteropDir = "$projectDir/native/cinterop"
@@ -109,14 +115,11 @@ kotlin {
                 extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
                 extraOpts("-Xsource-compiler-option", "-DONLY_C_LOCALE=1")
                 when {
-                    konanTarget.family.isAppleFamily -> {
-                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/apple.mm")
-                    }
                     konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
                         // needed for the date library so that it does not try to download the timezone database
                         extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
                         /* using a more modern C++ version causes the date library to use features that are not
-                        * present in the currently outdated GCC root shipped with Kotlin/Native for Linux. */
+                    * present in the currently outdated GCC root shipped with Kotlin/Native for Linux. */
                         extraOpts("-Xsource-compiler-option", "-std=c++11")
                         // the date library and its headers
                         extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
@@ -140,9 +143,6 @@ kotlin {
         }
         compilations["main"].defaultSourceSet {
             kotlin.srcDir("native/cinterop_actuals")
-        }
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
         }
     }
 
