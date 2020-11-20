@@ -1,4 +1,5 @@
 import java.net.URL
+import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
@@ -86,9 +87,12 @@ kotlin {
     }
 
     sourceSets.all {
+        val suffixIndex = name.indexOfLast { it.isUpperCase() }
+        val targetName = name.substring(0, suffixIndex)
+        val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
 //        println("SOURCE_SET: $name")
-        kotlin.setSrcDirs(listOf("$name/src"))
-        resources.setSrcDirs(listOf("$name/resources"))
+        kotlin.srcDir("$targetName/${suffix ?: "src"}")
+        resources.srcDir("$targetName/${suffix?.let { it + "Resources "} ?: "resources"}")
         languageSettings.apply {
             //            progressiveMode = true
             useExperimentalAnnotation("kotlin.Experimental")
@@ -98,10 +102,10 @@ kotlin {
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
         compilations["main"].cinterops {
             create("date") {
-                val cinteropDir = "$projectDir/nativeMain/cinterop"
+                val cinteropDir = "$projectDir/native/cinterop"
                 val dateLibDir = "${project(":").projectDir}/thirdparty/date"
                 headers("$cinteropDir/public/cdate.h")
-                defFile("nativeMain/cinterop/date.def")
+                defFile("native/cinterop/date.def")
                 // common options
                 extraOpts("-Xsource-compiler-option", "-std=c++17")
                 extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
@@ -118,7 +122,7 @@ kotlin {
             }
         }
         compilations["main"].defaultSourceSet {
-            kotlin.srcDir("nativeMain/cinterop_actuals")
+            kotlin.srcDir("native/cinterop_actuals")
         }
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
