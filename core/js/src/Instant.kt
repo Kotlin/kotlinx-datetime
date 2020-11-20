@@ -14,8 +14,44 @@ import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
 import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import kotlin.math.truncate
 
+object InstantSerializer: KSerializer<Instant> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Long>("epochSeconds")
+            element<Long>("nanosecondsOfSecond")
+        }
+
+    override fun deserialize(decoder: Decoder): Instant =
+        decoder.decodeStructure(descriptor) {
+            var epochSeconds = 0L
+            var nanosecondsOfSecond = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> epochSeconds = decodeLongElement(descriptor, 0)
+                    1 -> nanosecondsOfSecond = decodeIntElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
+        }
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.epochSeconds)
+            encodeIntElement(descriptor, 1, value.nanosecondsOfSecond)
+        }
+    }
+
+}
+
+@Serializable(with = InstantSerializer::class)
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 

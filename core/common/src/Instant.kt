@@ -7,6 +7,7 @@ package kotlinx.datetime
 
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlinx.serialization.Serializable
 
 @OptIn(ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
