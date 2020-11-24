@@ -240,7 +240,6 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 - [x] Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
 - [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
   formats that are used in practice (in particular, various RFCs).
-- [ ] An alternative JVM implementation for Android might be needed.  
 
 ## Using in your projects
 
@@ -249,6 +248,9 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 The library is published to [kotlinx](https://bintray.com/kotlin/kotlinx/kotlinx.datetime) bintray repository<!-- and available in jcenter as well-->.
 
 The library depends on the Kotlin Standard Library not lower than `1.4.0`.
+
+If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer 
+and enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
 
 ### Gradle
 
