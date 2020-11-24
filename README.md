@@ -283,6 +283,34 @@ dependencies {
 }
 ```
 
+#### Note about time zones in JS
+
+By default, there's only one time zone available in Kotlin/JS: the `SYSTEM` time zone with a fixed offset.
+
+If you want to use all time zones in Kotlin/JS platform, you need to add the following npm dependency:
+
+```kotlin
+kotlin {
+    sourceSets {
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("@js-joda/timezone", "2.3.0"))
+            }
+        }
+    }
+}
+```
+
+and after that add the following initialization code in your project:
+
+```kotlin
+@JsModule("@js-joda/timezone")
+@JsNonModule
+external object JsJodaTimeZoneModule
+
+private val jsJodaTz = JsJodaTimeZoneModule
+```
+
 ### Maven
 
 - Add the bintray repository to the `<repositories>` section.
