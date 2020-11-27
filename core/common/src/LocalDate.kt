@@ -5,6 +5,61 @@
 
 package kotlinx.datetime
 
+import kotlin.time.*
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+
+object LocalDateISO8601Serializer: KSerializer<LocalDate> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalDate =
+        LocalDate.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeString(value.toString())
+    }
+
+}
+
+object LocalDateSerializer: KSerializer<LocalDate> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Int>("year")
+            element<Short>("month")
+            element<Short>("day")
+        }
+
+    override fun deserialize(decoder: Decoder): LocalDate =
+        decoder.decodeStructure(descriptor) {
+            var year = 0
+            var month: Short = 0
+            var day: Short = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> year = decodeIntElement(descriptor, 0)
+                    1 -> month = decodeShortElement(descriptor, 1)
+                    2 -> day = decodeShortElement(descriptor, 2)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            LocalDate(year, month.toInt(), day.toInt())
+        }
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.year)
+            encodeShortElement(descriptor, 1, value.monthNumber.toShort())
+            encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
+        }
+    }
+
+}
+
 public expect class LocalDate : Comparable<LocalDate> {
     companion object {
         /**

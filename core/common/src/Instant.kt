@@ -5,9 +5,74 @@
 
 package kotlinx.datetime
 
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+import kotlin.time.*
+
+object InstantISO8601Serializer: KSerializer<Instant> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Instant =
+        Instant.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        encoder.encodeString(value.toString())
+    }
+
+}
+
+@OptIn(ExperimentalTime::class)
+object InstantDoubleSerializer: KSerializer<Instant> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.DOUBLE)
+
+    override fun deserialize(decoder: Decoder): Instant {
+        val secondsSince1970 = decoder.decodeDouble()
+        return Instant.fromEpochSeconds(0) + secondsSince1970.seconds
+    }
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        val durationFrom1970 = value - Instant.fromEpochSeconds(0)
+        encoder.encodeDouble(durationFrom1970.inSeconds)
+    }
+
+}
+
+object InstantSerializer: KSerializer<Instant> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Long>("epochSeconds")
+            element<Long>("nanosecondsOfSecond")
+        }
+
+    override fun deserialize(decoder: Decoder): Instant =
+        decoder.decodeStructure(descriptor) {
+            var epochSeconds = 0L
+            var nanosecondsOfSecond = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> epochSeconds = decodeLongElement(descriptor, 0)
+                    1 -> nanosecondsOfSecond = decodeIntElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
+        }
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.epochSeconds)
+            encodeIntElement(descriptor, 1, value.nanosecondsOfSecond)
+        }
+    }
+
+}
 
 @OptIn(ExperimentalTime::class)
 public expect class Instant : Comparable<Instant> {
