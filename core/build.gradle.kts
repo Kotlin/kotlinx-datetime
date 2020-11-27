@@ -149,6 +149,7 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-common")
+                // this is not `compileOnly` only temporarily, until there is a source set for testing serialization
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.0.1")
             }
