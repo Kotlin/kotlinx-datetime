@@ -14,44 +14,94 @@ import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets.US_ASCII
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.random.*
+
+const val REPETITIONS = 1
 
 @ExperimentalSerializationApi
 inline fun<reified T: Any> protobufMeasurements(serializer: KSerializer<T>, generator: () -> Array<T>) {
-    val instants = generator()
-    var result: ByteArray? = null
-    val time = measureTimeMillis {
-        result = ProtoBuf.encodeToByteArray(ArraySerializer(serializer), instants)
+    repeat(REPETITIONS) {
+        val values = generator()
+        val result: ByteArray
+        val time = measureTimeMillis {
+            result = ProtoBuf.encodeToByteArray(ArraySerializer(serializer), values)
+        }
+        val newValues: Array<T>
+        val time2 = measureTimeMillis {
+            newValues = ProtoBuf.decodeFromByteArray(ArraySerializer(serializer), result)
+        }
+        assert(values.contentEquals(newValues))
+        if (it == REPETITIONS - 1) {
+            println("time (ser): $time\ttime (des): $time2\tbytes: ${result.size}\tfor $serializer")
+        }
     }
-    val time2 = measureTimeMillis {
-        ProtoBuf.decodeFromByteArray(ArraySerializer(serializer), result!!)
-    }
-    println("time (ser): $time\ttime (des): $time2\tbytes: ${result!!.size}\tfor $serializer")
 }
 
 @ExperimentalSerializationApi
 inline fun<reified T: Any> jsonMeasurements(serializer: KSerializer<T>, generator: () -> Array<T>) {
-    val instants = generator()
-    var result: String? = null
-    val time = measureTimeMillis {
-        result = Json.encodeToString(ArraySerializer(serializer), instants)
+    repeat(REPETITIONS) {
+        val values = generator()
+        val result: String
+        val time = measureTimeMillis {
+            result = Json.encodeToString(ArraySerializer(serializer), values)
+        }
+        val newValues: Array<T>
+        val time2 = measureTimeMillis {
+            newValues = Json.decodeFromString(ArraySerializer(serializer), result)
+        }
+        assert(values.contentEquals(newValues))
+        if (it == REPETITIONS - 1) {
+            println("time (ser): $time\ttime (des): $time2\tbytes: ${result.toByteArray().size}\tfor $serializer")
+        }
     }
-    val time2 = measureTimeMillis {
-        Json.decodeFromString(ArraySerializer(serializer), result!!)
+}
+
+@ExperimentalSerializationApi
+inline fun<reified T: Any> gzippedProtobufMeasurements(serializer: KSerializer<T>, generator: () -> Array<T>) {
+    repeat(REPETITIONS) {
+        val values = generator()
+        val result: ByteArray
+        val time = measureTimeMillis {
+            val bos = ByteArrayOutputStream()
+            GZIPOutputStream(bos).use {
+                it.write(ProtoBuf.encodeToByteArray(ArraySerializer(serializer), values))
+            }
+            result = bos.toByteArray()
+        }
+        val newValues: Array<T>
+        val time2 = measureTimeMillis {
+            val ungzipped = GZIPInputStream(result.inputStream()).use { it.readBytes() }
+            newValues = ProtoBuf.decodeFromByteArray(ArraySerializer(serializer), ungzipped)
+        }
+        assert(values.contentEquals(newValues))
+        if (it == REPETITIONS - 1) {
+            println("time (ser): $time\ttime (des): $time2\tbytes: ${result.size}\tfor $serializer")
+        }
     }
-    println("time (ser): $time\ttime (des): $time2\tbytes: ${result!!.toByteArray().size}\tfor $serializer")
 }
 
 @ExperimentalSerializationApi
 inline fun<reified T: Any> gzippedJsonMeasurements(serializer: KSerializer<T>, generator: () -> Array<T>) {
-    val instants = generator()
-    var result: ByteArray? = null
-    val time = measureTimeMillis {
-        result = gzip(Json.encodeToString(ArraySerializer(serializer), instants))
+    repeat(REPETITIONS) {
+        val values = generator()
+        val result: ByteArray
+        val time = measureTimeMillis {
+            val bos = ByteArrayOutputStream()
+            GZIPOutputStream(bos).bufferedWriter(US_ASCII).use {
+                it.write(Json.encodeToString(ArraySerializer(serializer), values))
+            }
+            result = bos.toByteArray()
+        }
+        val newValues: Array<T>
+        val time2 = measureTimeMillis {
+            val ungzipped = GZIPInputStream(result.inputStream()).bufferedReader(US_ASCII).use { it.readText() }
+            newValues = Json.decodeFromString(ArraySerializer(serializer), ungzipped)
+        }
+        assert(values.contentEquals(newValues))
+        if (it == REPETITIONS - 1) {
+            println("time (ser): $time\ttime (des): $time2\tbytes: ${result.size}\tfor $serializer")
+        }
     }
-    val time2 = measureTimeMillis {
-        Json.decodeFromString(ArraySerializer(serializer), ungzip(result!!))
-    }
-    println("time (ser): $time\ttime (des): $time2\tbytes: ${result!!.size}\tfor $serializer")
 }
 
 @ExperimentalSerializationApi
@@ -64,6 +114,10 @@ inline fun<reified T: Any> measurements(vararg serializers: KSerializer<T>, cros
     for (serializer in serializers) {
         jsonMeasurements(serializer, generator)
     }
+    println("Gzipped Protobuf:")
+    for (serializer in serializers) {
+        gzippedProtobufMeasurements(serializer, generator)
+    }
     println("Gzipped JSON:")
     for (serializer in serializers) {
         gzippedJsonMeasurements(serializer, generator)
@@ -72,19 +126,25 @@ inline fun<reified T: Any> measurements(vararg serializers: KSerializer<T>, cros
 
 @OptIn(ExperimentalSerializationApi::class)
 fun main() {
-    measurements(InstantSerializer, InstantISO8601Serializer, InstantDoubleSerializer) {
+    measurements(InstantSerializer, InstantISO8601Serializer) {
         Array(10_000) { Clock.System.now() }
     }
-    measurements(LocalDateSerializer, LocalDateISO8601Serializer) {
+    measurements(LocalDateSerializer, LocalDateISO8601Serializer, LocalDateLongSerializer) {
         Array(10_000) { Clock.System.now().toLocalDateTime(TimeZone.UTC).date }
     }
-}
+    measurements(LocalDateTimeSerializer, LocalDateTimeISO8601Serializer, LocalDateTimeCompactSerializer) {
+        Array(10_000) { Clock.System.now().toLocalDateTime(TimeZone.UTC) }
+    }
+    measurements(MonthSerializer) {
+        Array(10_000) { Month(Random.nextInt(1, 13)) }
+    }
 
-fun gzip(content: String): ByteArray {
-    val bos = ByteArrayOutputStream()
-    GZIPOutputStream(bos).bufferedWriter(US_ASCII).use { it.write(content) }
-    return bos.toByteArray()
+    val period = DatePeriod(10, 15, 20)
+    println(Json.encodeToString(period))
+    println(Json.encodeToString(period as DateTimePeriod))
+    println(Json.encodeToString(period as DateTimePeriod))
+    println(Json.decodeFromString(DateTimePeriod.serializer(), """{"years":10,"months":15,"days":20,"hours":0,"minutes":0,"seconds":0,"nanoseconds":0}"""))
+    println(Json.decodeFromString(DatePeriod.serializer(), """{"years":10,"months":15,"days":20,"hours":0,"minutes":0,"seconds":0,"nanoseconds":0}"""))
+    println(Json.decodeFromString(DateTimePeriod.serializer(), """{"years":10,"months":15,"days":20}"""))
+    println(Json.decodeFromString(DatePeriod.serializer(), """{"years":10,"months":15,"days":20}"""))
 }
-
-fun ungzip(content: ByteArray): String =
-    GZIPInputStream(content.inputStream()).bufferedReader(US_ASCII).use { it.readText() }

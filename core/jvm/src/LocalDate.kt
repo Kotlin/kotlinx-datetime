@@ -5,11 +5,27 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
 
+actual object LocalDateLongSerializer: KSerializer<LocalDate> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): LocalDate =
+        LocalDate(jtLocalDate.ofEpochDay(decoder.decodeLong()))
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeLong(value.value.toEpochDay())
+    }
+
+}
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {

@@ -24,24 +24,6 @@ object InstantISO8601Serializer: KSerializer<Instant> {
 
 }
 
-@OptIn(ExperimentalTime::class)
-object InstantDoubleSerializer: KSerializer<Instant> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.DOUBLE)
-
-    override fun deserialize(decoder: Decoder): Instant {
-        val secondsSince1970 = decoder.decodeDouble()
-        return Instant.fromEpochSeconds(0) + secondsSince1970.seconds
-    }
-
-    override fun serialize(encoder: Encoder, value: Instant) {
-        val durationFrom1970 = value - Instant.fromEpochSeconds(0)
-        encoder.encodeDouble(durationFrom1970.inSeconds)
-    }
-
-}
-
 object InstantSerializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =

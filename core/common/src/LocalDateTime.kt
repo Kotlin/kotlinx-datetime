@@ -5,7 +5,77 @@
 
 package kotlinx.datetime
 
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 
+object LocalDateTimeISO8601Serializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        LocalDateTime.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.toString())
+    }
+
+}
+
+object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Int>("year")
+            element<Short>("month")
+            element<Short>("day")
+            element<Short>("hour")
+            element<Short>("minute")
+            element<Short>("second")
+            element<Int>("nanosecond")
+        }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        decoder.decodeStructure(descriptor) {
+            var year = 0
+            var month: Short = 0
+            var day: Short = 0
+            var hour: Short = 0
+            var minute: Short = 0
+            var second: Short = 0
+            var nanosecond = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> year = decodeIntElement(descriptor, 0)
+                    1 -> month = decodeShortElement(descriptor, 1)
+                    2 -> day = decodeShortElement(descriptor, 2)
+                    3 -> hour = decodeShortElement(descriptor, 3)
+                    4 -> minute = decodeShortElement(descriptor, 4)
+                    5 -> second = decodeShortElement(descriptor, 5)
+                    6 -> nanosecond = decodeIntElement(descriptor, 6)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            LocalDateTime(year, month.toInt(), day.toInt(), hour.toInt(), minute.toInt(), second.toInt(), nanosecond)
+        }
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.year)
+            encodeShortElement(descriptor, 1, value.monthNumber.toShort())
+            encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
+            encodeShortElement(descriptor, 3, value.hour.toShort())
+            encodeShortElement(descriptor, 4, value.minute.toShort())
+            encodeShortElement(descriptor, 5, value.second.toShort())
+            encodeIntElement(descriptor, 6, value.nanosecond)
+        }
+    }
+
+}
+
+expect object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime>
 
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     companion object {

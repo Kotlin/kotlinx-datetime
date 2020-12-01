@@ -8,7 +8,67 @@ package kotlinx.datetime
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 
+object DateTimePeriodSerializer: KSerializer<DateTimePeriod> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Int>("years")
+            element<Int>("months")
+            element<Int>("days")
+            element<Int>("hours")
+            element<Int>("minutes")
+            element<Int>("seconds")
+            element<Long>("nanoseconds")
+        }
+
+    override fun deserialize(decoder: Decoder): DateTimePeriod =
+        decoder.decodeStructure(descriptor) {
+            var years = 0
+            var months = 0
+            var days = 0
+            var hours = 0
+            var minutes = 0
+            var seconds = 0
+            var nanoseconds = 0L
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> years = decodeIntElement(descriptor, 0)
+                    1 -> months = decodeIntElement(descriptor, 1)
+                    2 -> days = decodeIntElement(descriptor, 2)
+                    3 -> hours = decodeIntElement(descriptor, 3)
+                    4 -> minutes = decodeIntElement(descriptor, 4)
+                    5 -> seconds = decodeIntElement(descriptor, 5)
+                    6 -> nanoseconds = decodeLongElement(descriptor, 6)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            DateTimePeriod(years, months, days, hours, minutes, seconds, nanoseconds)
+        }
+
+    override fun serialize(encoder: Encoder, value: DateTimePeriod) {
+        encoder.encodeStructure(descriptor) {
+            with (value) {
+                encodeIntElement(descriptor, 0, value.years)
+                encodeIntElement(descriptor, 1, value.months)
+                encodeIntElement(descriptor, 2, value.days)
+                if (hours or minutes or seconds != 0 || nanoseconds != 0) {
+                    encodeIntElement(descriptor, 3, value.hours)
+                    encodeIntElement(descriptor, 4, value.minutes)
+                    encodeIntElement(descriptor, 5, value.seconds)
+                    encodeLongElement(descriptor, 6, value.nanoseconds.toLong())
+                }
+            }
+        }
+    }
+
+}
+
+@Serializable(with = DateTimePeriodSerializer::class)
 // TODO: could be error-prone without explicitly named params
 sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
@@ -233,9 +293,45 @@ sealed class DateTimePeriod {
 
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
+object DatePeriodSerializer: KSerializer<DatePeriod> {
+
+    override val descriptor: SerialDescriptor = DateTimePeriodSerializer.descriptor
+
+    override fun deserialize(decoder: Decoder): DatePeriod =
+        decoder.decodeStructure(descriptor) {
+            var years = 0
+            var months = 0
+            var days = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> years = decodeIntElement(descriptor, 0)
+                    1 -> months = decodeIntElement(descriptor, 1)
+                    2 -> days = decodeIntElement(descriptor, 2)
+                    3 -> require(decodeIntElement(descriptor, 3) == 0)
+                    4 -> require(decodeIntElement(descriptor, 4) == 0)
+                    5 -> require(decodeLongElement(descriptor, 5) == 0L)
+                    6 -> require(decodeLongElement(descriptor, 6) == 0L)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            DatePeriod(years, months, days)
+        }
+
+    override fun serialize(encoder: Encoder, value: DatePeriod) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.years)
+            encodeIntElement(descriptor, 1, value.months)
+            encodeIntElement(descriptor, 2, value.days)
+        }
+    }
+
+}
+
+@Serializable(with = DatePeriodSerializer::class)
 class DatePeriod internal constructor(
-    internal override val totalMonths: Int,
-    override val days: Int,
+        internal override val totalMonths: Int,
+        override val days: Int,
 ) : DateTimePeriod() {
     constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations

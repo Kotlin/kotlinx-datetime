@@ -4,8 +4,44 @@
  */
 package kotlinx.datetime
 
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
+import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
+import kotlinx.datetime.internal.JSJoda.LocalTime as jtLocalTime
 
+actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Long>("epochDay")
+            element<Long>("nanoOfDay")
+        }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        decoder.decodeStructure(descriptor) {
+            var epochDay = 0L
+            var nanoOfDay = 0L
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> epochDay = decodeLongElement(descriptor, 0)
+                    1 -> nanoOfDay = decodeLongElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            LocalDateTime(jtLocalDateTime.of(jtLocalDate.ofEpochDay(epochDay), jtLocalTime.ofNanoOfDay(nanoOfDay)))
+        }
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.date.value.toEpochDay().toLong())
+            encodeLongElement(descriptor, 1, value.value.toLocalTime().toNanoOfDay().toLong())
+        }
+    }
+
+}
 
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 

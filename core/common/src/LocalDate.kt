@@ -60,6 +60,8 @@ object LocalDateSerializer: KSerializer<LocalDate> {
 
 }
 
+expect object LocalDateLongSerializer: KSerializer<LocalDate>
+
 public expect class LocalDate : Comparable<LocalDate> {
     companion object {
         /**

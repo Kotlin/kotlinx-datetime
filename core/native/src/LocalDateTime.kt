@@ -8,6 +8,44 @@
 
 package kotlinx.datetime
 
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+
+actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Long>("epochDay")
+            element<Long>("nanoOfDay")
+        }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        decoder.decodeStructure(descriptor) {
+            var epochDay = 0L
+            var nanoOfDay = 0L
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> epochDay = decodeLongElement(descriptor, 0)
+                    1 -> nanoOfDay = decodeLongElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            val date = LocalDate.ofEpochDay(epochDay.clampToInt())
+            val time = LocalTime.ofNanoOfDay(nanoOfDay)
+            LocalDateTime(date, time)
+        }
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.date.toEpochDay().toLong())
+            encodeLongElement(descriptor, 1, value.time.toNanoOfDay())
+        }
+    }
+
+}
+
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
 internal val localDateTimeParser: Parser<LocalDateTime>

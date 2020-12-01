@@ -6,6 +6,21 @@
 package kotlinx.datetime
 
 import kotlin.native.concurrent.*
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+
+object MonthSerializer: KSerializer<Month> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Month", PrimitiveKind.INT)
+
+    override fun deserialize(decoder: Decoder): Month = Month(decoder.decodeInt())
+
+    override fun serialize(encoder: Encoder, value: Month) {
+        encoder.encodeInt(value.number)
+    }
+}
 
 public expect enum class Month {
     JANUARY,

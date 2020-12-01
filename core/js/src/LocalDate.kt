@@ -6,7 +6,24 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
+
+actual object LocalDateLongSerializer: KSerializer<LocalDate> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): LocalDate =
+        LocalDate(jtLocalDate.ofEpochDay(decoder.decodeLong()))
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeLong(value.value.toEpochDay().toLong())
+    }
+
+}
 
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {

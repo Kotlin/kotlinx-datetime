@@ -5,13 +5,50 @@
 @file:JvmName("LocalDateTimeJvmKt")
 package kotlinx.datetime
 
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.LocalDateTime as jtLocalDateTime
+import java.time.LocalDate as jtLocalDate
+import java.time.LocalTime as jtLocalTime
 
 
 public actual typealias Month = java.time.Month
 public actual typealias DayOfWeek = java.time.DayOfWeek
+
+actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("Instant") {
+            element<Long>("epochDay")
+            element<Long>("nanoOfDay")
+        }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        decoder.decodeStructure(descriptor) {
+            var epochDay = 0L
+            var nanoOfDay = 0L
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> epochDay = decodeLongElement(descriptor, 0)
+                    1 -> nanoOfDay = decodeLongElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            LocalDateTime(jtLocalDateTime.of(jtLocalDate.ofEpochDay(epochDay), jtLocalTime.ofNanoOfDay(nanoOfDay)))
+        }
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.date.value.toEpochDay())
+            encodeLongElement(descriptor, 1, value.value.toLocalTime().toNanoOfDay())
+        }
+    }
+
+}
 
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
