@@ -8,50 +8,48 @@ package kotlinx.datetime
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.nanoseconds
+import kotlinx.serialization.*
 
+@Serializable
 sealed class DateTimeUnit {
 
     abstract operator fun times(scalar: Int): DateTimeUnit
 
+    @Serializable
+    @SerialName("TimeBased")
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
-        private val unitName: String
-        private val unitScale: Long
+
+        /* fields without a default value can't be @Transient, so the more natural way of writing this
+        (setting [unitName] and [unitScale] in init { ... }) won't work. */
+        @Transient
+        private val unitName: String = when {
+            nanoseconds % 3600_000_000_000 == 0L -> "HOUR"
+            nanoseconds % 60_000_000_000 == 0L -> "MINUTE"
+            nanoseconds % 1_000_000_000 == 0L -> "SECOND"
+            nanoseconds % 1_000_000 == 0L -> "MILLISECOND"
+            nanoseconds % 1_000 == 0L -> "MICROSECOND"
+            else -> "NANOSECOND"
+        }
+
+        @Transient
+        private val unitScale: Long = when {
+            nanoseconds % 3600_000_000_000 == 0L -> nanoseconds / 3600_000_000_000
+            nanoseconds % 60_000_000_000 == 0L -> nanoseconds / 60_000_000_000
+            nanoseconds % 1_000_000_000 == 0L -> nanoseconds / 1_000_000_000
+            nanoseconds % 1_000_000 == 0L -> nanoseconds / 1_000_000
+            nanoseconds % 1_000 == 0L -> nanoseconds / 1_000
+            else -> nanoseconds
+        }
 
         init {
             require(nanoseconds > 0) { "Unit duration must be positive, but was $nanoseconds ns." }
-            // find a concise string representation for the unit with this duration
-            when {
-                nanoseconds % 3600_000_000_000 == 0L -> {
-                    unitName = "HOUR"
-                    unitScale = nanoseconds / 3600_000_000_000
-                }
-                nanoseconds % 60_000_000_000 == 0L -> {
-                    unitName = "MINUTE"
-                    unitScale = nanoseconds / 60_000_000_000
-                }
-                nanoseconds % 1_000_000_000 == 0L -> {
-                    unitName = "SECOND"
-                    unitScale = nanoseconds / 1_000_000_000
-                }
-                nanoseconds % 1_000_000 == 0L -> {
-                    unitName = "MILLISECOND"
-                    unitScale = nanoseconds / 1_000_000
-                }
-                nanoseconds % 1_000 == 0L -> {
-                    unitName = "MICROSECOND"
-                    unitScale = nanoseconds / 1_000
-                }
-                else -> {
-                    unitName = "NANOSECOND"
-                    unitScale = nanoseconds
-                }
-            }
         }
 
         override fun times(scalar: Int): TimeBased = TimeBased(safeMultiply(nanoseconds, scalar.toLong()))
 
         @ExperimentalTime
-        val duration: Duration = nanoseconds.nanoseconds
+        val duration: Duration
+            get() = nanoseconds.nanoseconds
 
         override fun equals(other: Any?): Boolean =
                 this === other || (other is TimeBased && this.nanoseconds == other.nanoseconds)
@@ -61,8 +59,11 @@ sealed class DateTimeUnit {
         override fun toString(): String = formatToString(unitScale, unitName)
     }
 
+    @Serializable
     sealed class DateBased : DateTimeUnit() {
         // TODO: investigate how to move subclasses up to DateTimeUnit scope
+        @Serializable
+        @SerialName("DayBased")
         class DayBased(val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
@@ -80,6 +81,8 @@ sealed class DateTimeUnit {
             else
                 formatToString(days, "DAY")
         }
+        @Serializable
+        @SerialName("MonthBased")
         class MonthBased(val months: Int) : DateBased() {
             init {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }

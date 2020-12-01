@@ -147,4 +147,13 @@ fun main() {
     println(Json.decodeFromString(DatePeriod.serializer(), """{"years":10,"months":15,"days":20,"hours":0,"minutes":0,"seconds":0,"nanoseconds":0}"""))
     println(Json.decodeFromString(DateTimePeriod.serializer(), """{"years":10,"months":15,"days":20}"""))
     println(Json.decodeFromString(DatePeriod.serializer(), """{"years":10,"months":15,"days":20}"""))
+    val unit = DateTimeUnit.MICROSECOND * 3
+    println(Json.encodeToString(unit))
+    println(Json.encodeToString(unit as DateTimeUnit))
+    println(Json.decodeFromString(DateTimeUnit.TimeBased.serializer(), """{"nanoseconds":3000}"""))
+    println(Json.decodeFromString(DateTimeUnit.serializer(), """{"type":"TimeBased","nanoseconds":3000}"""))
+    val unit2 = DateTimeUnit.DAY * 2
+    println(Json.encodeToString(unit2))
+    println(Json.encodeToString(unit2 as DateTimeUnit))
+    println(Json.decodeFromString(DateTimeUnit.serializer(), """{"type":"DayBased","days":2}"""))
 }

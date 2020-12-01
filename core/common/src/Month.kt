@@ -13,12 +13,12 @@ import kotlinx.serialization.encoding.*
 object MonthSerializer: KSerializer<Month> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Month", PrimitiveKind.INT)
+        PrimitiveSerialDescriptor("Month", PrimitiveKind.SHORT)
 
-    override fun deserialize(decoder: Decoder): Month = Month(decoder.decodeInt())
+    override fun deserialize(decoder: Decoder): Month = Month(decoder.decodeShort().toInt())
 
     override fun serialize(encoder: Encoder, value: Month) {
-        encoder.encodeInt(value.number)
+        encoder.encodeShort(value.number.toShort())
     }
 }
 
