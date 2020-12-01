@@ -20,7 +20,8 @@ sealed class DateTimeUnit {
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
 
         /* fields without a default value can't be @Transient, so the more natural way of writing this
-        (setting [unitName] and [unitScale] in init { ... }) won't work. */
+        (setting [unitName] and [unitScale] in init { ... }) won't work:
+        https://github.com/Kotlin/kotlinx.serialization/issues/1227. */
         @Transient
         private val unitName: String = when {
             nanoseconds % 3600_000_000_000 == 0L -> "HOUR"

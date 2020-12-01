@@ -29,12 +29,13 @@ object InstantSerializer: KSerializer<Instant> {
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("Instant") {
             element<Long>("epochSeconds")
-            element<Long>("nanosecondsOfSecond")
+            element<Long>("nanosecondsOfSecond", isOptional = true)
         }
 
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): Instant =
         decoder.decodeStructure(descriptor) {
-            var epochSeconds = 0L
+            var epochSeconds: Long? = null
             var nanosecondsOfSecond = 0
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
@@ -44,6 +45,7 @@ object InstantSerializer: KSerializer<Instant> {
                     else -> error("Unexpected index: $index")
                 }
             }
+            if (epochSeconds == null) throw MissingFieldException("epochSeconds")
             Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
         }
 
@@ -57,6 +59,7 @@ object InstantSerializer: KSerializer<Instant> {
 }
 
 @OptIn(ExperimentalTime::class)
+@Serializable(with = InstantISO8601Serializer::class)
 public expect class Instant : Comparable<Instant> {
 
     /**

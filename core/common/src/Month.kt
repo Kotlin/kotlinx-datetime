@@ -10,7 +10,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-object MonthSerializer: KSerializer<Month> {
+object MonthIntSerializer: KSerializer<Month> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Month", PrimitiveKind.SHORT)

@@ -51,6 +51,7 @@ internal const val YEAR_MAX = 999_999
 private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
+@Serializable(with = LocalDateISO8601Serializer::class)
 public actual class LocalDate actual constructor(actual val year: Int, actual val monthNumber: Int, actual val dayOfMonth: Int) : Comparable<LocalDate> {
 
     init {

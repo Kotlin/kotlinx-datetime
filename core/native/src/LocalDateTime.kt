@@ -20,10 +20,11 @@ actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
             element<Long>("nanoOfDay")
         }
 
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDateTime =
         decoder.decodeStructure(descriptor) {
-            var epochDay = 0L
-            var nanoOfDay = 0L
+            var epochDay: Long? = null
+            var nanoOfDay: Long? = null
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> epochDay = decodeLongElement(descriptor, 0)
@@ -32,6 +33,8 @@ actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
                     else -> error("Unexpected index: $index")
                 }
             }
+            if (epochDay == null) throw MissingFieldException("epochDay")
+            if (nanoOfDay == null) throw MissingFieldException("nanoOfDay")
             val date = LocalDate.ofEpochDay(epochDay.clampToInt())
             val time = LocalTime.ofNanoOfDay(nanoOfDay)
             LocalDateTime(date, time)
@@ -56,6 +59,7 @@ internal val localDateTimeParser: Parser<LocalDateTime>
             LocalDateTime(date, time)
         }
 
+@Serializable(with = LocalDateTimeISO8601Serializer::class)
 public actual class LocalDateTime internal constructor(
     actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
     actual companion object {

@@ -16,13 +16,13 @@ object DateTimePeriodSerializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("Instant") {
-            element<Int>("years")
-            element<Int>("months")
-            element<Int>("days")
-            element<Int>("hours")
-            element<Int>("minutes")
-            element<Int>("seconds")
-            element<Long>("nanoseconds")
+            element<Int>("years", isOptional = true)
+            element<Int>("months", isOptional = true)
+            element<Int>("days", isOptional = true)
+            element<Int>("hours", isOptional = true)
+            element<Int>("minutes", isOptional = true)
+            element<Int>("seconds", isOptional = true)
+            element<Long>("nanoseconds", isOptional = true)
         }
 
     override fun deserialize(decoder: Decoder): DateTimePeriod =
@@ -295,6 +295,14 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
 
 object DatePeriodSerializer: KSerializer<DatePeriod> {
 
+    private fun unexpectedNonzero(fieldName: String, value: Long) {
+        if (value != 0L) {
+            throw SerializationException("expected field '$fieldName' to be zero, but was $value")
+        }
+    }
+
+    private fun unexpectedNonzero(fieldName: String, value: Int) = unexpectedNonzero(fieldName, value.toLong())
+
     override val descriptor: SerialDescriptor = DateTimePeriodSerializer.descriptor
 
     override fun deserialize(decoder: Decoder): DatePeriod =
@@ -307,10 +315,10 @@ object DatePeriodSerializer: KSerializer<DatePeriod> {
                     0 -> years = decodeIntElement(descriptor, 0)
                     1 -> months = decodeIntElement(descriptor, 1)
                     2 -> days = decodeIntElement(descriptor, 2)
-                    3 -> require(decodeIntElement(descriptor, 3) == 0)
-                    4 -> require(decodeIntElement(descriptor, 4) == 0)
-                    5 -> require(decodeLongElement(descriptor, 5) == 0L)
-                    6 -> require(decodeLongElement(descriptor, 6) == 0L)
+                    3 -> unexpectedNonzero("hours", decodeIntElement(descriptor, 3))
+                    4 -> unexpectedNonzero("minutes", decodeIntElement(descriptor, 4))
+                    5 -> unexpectedNonzero("seconds", decodeLongElement(descriptor, 5))
+                    6 -> unexpectedNonzero("nanoseconds", decodeLongElement(descriptor, 6))
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }

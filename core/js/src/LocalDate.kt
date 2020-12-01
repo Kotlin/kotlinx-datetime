@@ -25,6 +25,7 @@ actual object LocalDateLongSerializer: KSerializer<LocalDate> {
 
 }
 
+@Serializable(with = LocalDateISO8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
         public actual fun parse(isoString: String): LocalDate = try {

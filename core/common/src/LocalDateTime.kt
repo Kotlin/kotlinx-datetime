@@ -32,17 +32,18 @@ object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
             element<Short>("day")
             element<Short>("hour")
             element<Short>("minute")
-            element<Short>("second")
-            element<Int>("nanosecond")
+            element<Short>("second", isOptional = true)
+            element<Int>("nanosecond", isOptional = true)
         }
 
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDateTime =
         decoder.decodeStructure(descriptor) {
-            var year = 0
-            var month: Short = 0
-            var day: Short = 0
-            var hour: Short = 0
-            var minute: Short = 0
+            var year: Int? = null
+            var month: Short? = null
+            var day: Short? = null
+            var hour: Short? = null
+            var minute: Short? = null
             var second: Short = 0
             var nanosecond = 0
             while (true) {
@@ -58,6 +59,11 @@ object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
                     else -> error("Unexpected index: $index")
                 }
             }
+            if (year == null) throw MissingFieldException("year")
+            if (month == null) throw MissingFieldException("month")
+            if (day == null) throw MissingFieldException("day")
+            if (hour == null) throw MissingFieldException("hour")
+            if (minute == null) throw MissingFieldException("minute")
             LocalDateTime(year, month.toInt(), day.toInt(), hour.toInt(), minute.toInt(), second.toInt(), nanosecond)
         }
 
@@ -68,8 +74,10 @@ object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
             encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
             encodeShortElement(descriptor, 3, value.hour.toShort())
             encodeShortElement(descriptor, 4, value.minute.toShort())
-            encodeShortElement(descriptor, 5, value.second.toShort())
-            encodeIntElement(descriptor, 6, value.nanosecond)
+            if (value.second != 0 || value.nanosecond != 0) {
+                encodeShortElement(descriptor, 5, value.second.toShort())
+                encodeIntElement(descriptor, 6, value.nanosecond)
+            }
         }
     }
 
@@ -77,6 +85,7 @@ object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
 
 expect object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime>
 
+@Serializable(with = LocalDateTimeISO8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     companion object {
 

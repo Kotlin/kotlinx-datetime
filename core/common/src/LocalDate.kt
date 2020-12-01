@@ -33,11 +33,12 @@ object LocalDateSerializer: KSerializer<LocalDate> {
             element<Short>("day")
         }
 
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDate =
         decoder.decodeStructure(descriptor) {
-            var year = 0
-            var month: Short = 0
-            var day: Short = 0
+            var year: Int? = null
+            var month: Short? = null
+            var day: Short? = null
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> year = decodeIntElement(descriptor, 0)
@@ -47,6 +48,9 @@ object LocalDateSerializer: KSerializer<LocalDate> {
                     else -> error("Unexpected index: $index")
                 }
             }
+            if (year == null) throw MissingFieldException("year")
+            if (month == null) throw MissingFieldException("month")
+            if (day == null) throw MissingFieldException("day")
             LocalDate(year, month.toInt(), day.toInt())
         }
 
@@ -62,6 +66,7 @@ object LocalDateSerializer: KSerializer<LocalDate> {
 
 expect object LocalDateLongSerializer: KSerializer<LocalDate>
 
+@Serializable(with = LocalDateISO8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     companion object {
         /**

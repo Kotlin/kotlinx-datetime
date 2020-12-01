@@ -135,11 +135,13 @@ fun main() {
     measurements(LocalDateTimeSerializer, LocalDateTimeISO8601Serializer, LocalDateTimeCompactSerializer) {
         Array(10_000) { Clock.System.now().toLocalDateTime(TimeZone.UTC) }
     }
-    measurements(MonthSerializer) {
+    measurements(MonthIntSerializer) {
         Array(10_000) { Month(Random.nextInt(1, 13)) }
     }
 
     val period = DatePeriod(10, 15, 20)
+    println(ProtoBuf.decodeFromByteArray(DateTimePeriod.serializer(), ProtoBuf.encodeToByteArray(period as DateTimePeriod)))
+    println(Json.decodeFromString(DateTimePeriod.serializer(), """{}"""))
     println(Json.encodeToString(period))
     println(Json.encodeToString(period as DateTimePeriod))
     println(Json.encodeToString(period as DateTimePeriod))
@@ -156,4 +158,6 @@ fun main() {
     println(Json.encodeToString(unit2))
     println(Json.encodeToString(unit2 as DateTimeUnit))
     println(Json.decodeFromString(DateTimeUnit.serializer(), """{"type":"DayBased","days":2}"""))
+
+    println(ProtoBuf.decodeFromByteArray(DateTimePeriod.serializer(), ProtoBuf.encodeToByteArray(period as DateTimePeriod)))
 }
