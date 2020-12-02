@@ -126,6 +126,13 @@ inline fun<reified T: Any> measurements(vararg serializers: KSerializer<T>, cros
 
 @OptIn(ExperimentalSerializationApi::class)
 fun main() {
+    println(TimeZone.of("+2"))
+    val offset = TimeZone.of("+2") as ZoneOffset
+    println(Json.encodeToString(offset))
+    val offset2 = Json.decodeFromString(ZoneOffsetSerializer, """"+2"""")
+    require(offset == offset2)
+    val offset3 = Json.decodeFromString(TimeZoneSerializer, """"+2"""")
+    require(offset == offset3)
     measurements(InstantSerializer, InstantISO8601Serializer) {
         Array(10_000) { Clock.System.now() }
     }
@@ -137,6 +144,9 @@ fun main() {
     }
     measurements(MonthIntSerializer) {
         Array(10_000) { Month(Random.nextInt(1, 13)) }
+    }
+    measurements(TimeZoneSerializer) {
+        TimeZone.availableZoneIds.map { TimeZone.of(it) }.toTypedArray()
     }
 
     val period = DatePeriod(10, 15, 20)

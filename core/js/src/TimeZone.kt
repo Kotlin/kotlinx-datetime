@@ -5,8 +5,10 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 
+@Serializable(with = TimeZoneSerializer::class)
 actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     public actual val id: String get() = zoneId.id()
 
@@ -27,7 +29,12 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
         actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
 
         actual fun of(zoneId: String): TimeZone = try {
-            ZoneId.of(zoneId).let(::TimeZone)
+            val zone = ZoneId.of(zoneId)
+            if (zone is jtZoneOffset) {
+                ZoneOffset(zone)
+            } else {
+                TimeZone(zone)
+            }
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
             throw e
@@ -37,6 +44,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     }
 }
 
+@Serializable(with = ZoneOffsetSerializer::class)
 public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): TimeZone(zoneOffset) {
     internal val zoneOffset get() = zoneId as jtZoneOffset
 

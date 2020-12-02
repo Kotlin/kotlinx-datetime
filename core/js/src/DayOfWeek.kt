@@ -5,10 +5,8 @@
 
 package kotlinx.datetime
 
-import kotlinx.serialization.*
 import kotlinx.datetime.internal.JSJoda.DayOfWeek as jsDayOfWeek
 
-@Serializable
 public actual enum class DayOfWeek {
     MONDAY,
     TUESDAY,

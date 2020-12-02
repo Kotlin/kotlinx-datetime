@@ -5,7 +5,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.serialization.*
 import kotlin.native.concurrent.*
 
 public expect enum class DayOfWeek {

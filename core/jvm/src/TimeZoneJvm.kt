@@ -8,10 +8,12 @@
 
 package kotlinx.datetime
 
+import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
 
+@Serializable(with = TimeZoneSerializer::class)
 actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     public actual val id: String get() = zoneId.id
 
@@ -32,8 +34,12 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
         actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
 
         actual fun of(zoneId: String): TimeZone = try {
-            // TODO: Return ZoneOffset for j.t.ZoneOffset
-            ZoneId.of(zoneId).let(::TimeZone)
+            val zone = ZoneId.of(zoneId)
+            if (zone is jtZoneOffset) {
+                ZoneOffset(zone)
+            } else {
+                TimeZone(zone)
+            }
         } catch (e: Exception) {
             if (e is DateTimeException) throw IllegalTimeZoneException(e)
             throw e
@@ -43,6 +49,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     }
 }
 
+@Serializable(with = ZoneOffsetSerializer::class)
 public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): TimeZone(zoneOffset) {
     internal val zoneOffset get() = zoneId as jtZoneOffset
 

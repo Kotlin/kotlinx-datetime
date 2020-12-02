@@ -52,16 +52,14 @@ object DateTimePeriodSerializer: KSerializer<DateTimePeriod> {
 
     override fun serialize(encoder: Encoder, value: DateTimePeriod) {
         encoder.encodeStructure(descriptor) {
-            with (value) {
-                encodeIntElement(descriptor, 0, value.years)
-                encodeIntElement(descriptor, 1, value.months)
-                encodeIntElement(descriptor, 2, value.days)
-                if (hours or minutes or seconds != 0 || nanoseconds != 0) {
-                    encodeIntElement(descriptor, 3, value.hours)
-                    encodeIntElement(descriptor, 4, value.minutes)
-                    encodeIntElement(descriptor, 5, value.seconds)
-                    encodeLongElement(descriptor, 6, value.nanoseconds.toLong())
-                }
+            with(value) {
+                if (years != 0) encodeIntElement(descriptor, 0, years)
+                if (months != 0) encodeIntElement(descriptor, 1, months)
+                if (days != 0) encodeIntElement(descriptor, 2, days)
+                if (hours != 0) encodeIntElement(descriptor, 3, hours)
+                if (minutes != 0) encodeIntElement(descriptor, 4, minutes)
+                if (seconds != 0) encodeIntElement(descriptor, 5, seconds)
+                if (nanoseconds != 0) encodeLongElement(descriptor, 6, value.nanoseconds.toLong())
             }
         }
     }
@@ -328,9 +326,11 @@ object DatePeriodSerializer: KSerializer<DatePeriod> {
 
     override fun serialize(encoder: Encoder, value: DatePeriod) {
         encoder.encodeStructure(descriptor) {
-            encodeIntElement(descriptor, 0, value.years)
-            encodeIntElement(descriptor, 1, value.months)
-            encodeIntElement(descriptor, 2, value.days)
+            with(value) {
+                if (years != 0) encodeIntElement(DateTimePeriodSerializer.descriptor, 0, years)
+                if (months != 0) encodeIntElement(DateTimePeriodSerializer.descriptor, 1, months)
+                if (days != 0) encodeIntElement(DateTimePeriodSerializer.descriptor, 2, days)
+            }
         }
     }
 

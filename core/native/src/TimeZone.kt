@@ -10,7 +10,9 @@ package kotlinx.datetime
 
 import kotlin.math.abs
 import kotlin.native.concurrent.*
+import kotlinx.serialization.Serializable
 
+@Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor(internal val value: TimeZoneImpl) {
 
     actual companion object {
@@ -79,6 +81,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
 @ThreadLocal
 private var zoneOffsetCache: MutableMap<Int, ZoneOffset> = mutableMapOf()
 
+@Serializable(with = ZoneOffsetSerializer::class)
 public actual class ZoneOffset internal constructor(internal val offset: ZoneOffsetImpl) : TimeZone(offset) {
 
     actual val totalSeconds get() = offset.totalSeconds
