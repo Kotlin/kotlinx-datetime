@@ -98,7 +98,7 @@ class ConvertersTest {
             assertEquals(ktPeriod, jtPeriod.toKotlinDatePeriod())
             assertJtPeriodEqual(jtPeriod, ktPeriod.toJavaPeriod())
 
-            // TODO: assertEquals(ktPeriod, jtPeriod.toString().let(DatePeriod::parse))
+            assertEquals(ktPeriod, jtPeriod.toString().let(DatePeriod::parse))
             assertJtPeriodEqual(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
         }
 

@@ -41,6 +41,34 @@ class DateTimePeriodTest {
     }
 
     @Test
+    fun parseIsoString() {
+        assertEquals(DateTimePeriod(years = 1), DateTimePeriod.parse("P1Y"))
+        assertEquals(DatePeriod(years = 1, months = 1), DateTimePeriod.parse("P1Y1M"))
+        assertEquals(DateTimePeriod(months = 11), DateTimePeriod.parse("P11M"))
+        assertEquals(DateTimePeriod(months = 14), DateTimePeriod.parse("P14M")) // TODO: normalize or not
+        assertEquals(DateTimePeriod(months = 10, days = 5), DateTimePeriod.parse("P10M5D"))
+        assertEquals(DateTimePeriod(years = 1, days = 40), DateTimePeriod.parse("P1Y40D"))
+
+        assertEquals(DateTimePeriod(hours = 1), DateTimePeriod.parse("PT1H"))
+        assertEquals(DateTimePeriod(), DateTimePeriod.parse("P0D"))
+        assertEquals(DatePeriod(), DateTimePeriod.parse("P0D"))
+
+        assertEquals(DateTimePeriod(days = 1, hours = -1), DateTimePeriod.parse("P1DT-1H"))
+        assertEquals(DateTimePeriod(days = -1, hours = -1), DateTimePeriod.parse("-P1DT1H"))
+        assertEquals(DateTimePeriod(months = -1), DateTimePeriod.parse("-P1M"))
+
+        assertEquals(DateTimePeriod(years = -1, months = -2, days = -3, hours = -4, minutes = -5, seconds = 0, nanoseconds = 500_000_000),
+            DateTimePeriod.parse("P-1Y-2M-3DT-4H-5M0.500000000S"))
+
+        assertEquals(DateTimePeriod(nanoseconds = 999_999_999_999_999L), DateTimePeriod.parse("PT277H46M39.999999999S"))
+        assertEquals(DateTimePeriod(seconds = 1, nanoseconds = -1L), DateTimePeriod.parse("PT0.999999999S"))
+        assertEquals(DateTimePeriod(nanoseconds = -1L), DateTimePeriod.parse("-PT0.000000001S"))
+        assertEquals(DateTimePeriod(days = 1, nanoseconds = -1L), DateTimePeriod.parse("P1DT-0.000000001S"))
+        assertEquals(DateTimePeriod(seconds = -1, nanoseconds = 1L), DateTimePeriod.parse("-PT0.999999999S"))
+        assertEquals(DateTimePeriod(days = 1, seconds = -1, nanoseconds = 1L), DateTimePeriod.parse("P1DT-0.999999999S"))
+    }
+
+    @Test
     fun periodArithmetic() {
         val p1 = DateTimePeriod(years = 10)
         val p2 = DateTimePeriod(days = 3)
