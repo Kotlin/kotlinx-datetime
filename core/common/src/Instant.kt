@@ -24,7 +24,7 @@ object InstantISO8601Serializer: KSerializer<Instant> {
 
 }
 
-object InstantSerializer: KSerializer<Instant> {
+object InstantComponentSerializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("Instant") {

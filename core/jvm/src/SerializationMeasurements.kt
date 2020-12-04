@@ -15,8 +15,9 @@ import java.nio.charset.StandardCharsets.US_ASCII
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.random.*
+import kotlin.time.*
 
-const val REPETITIONS = 1
+const val REPETITIONS = 100
 
 @ExperimentalSerializationApi
 inline fun<reified T: Any> protobufMeasurements(serializer: KSerializer<T>, generator: () -> Array<T>) {
@@ -133,13 +134,14 @@ fun main() {
     require(offset == offset2)
     val offset3 = Json.decodeFromString(TimeZoneSerializer, """"+2"""")
     require(offset == offset3)
-    measurements(InstantSerializer, InstantISO8601Serializer) {
+    */
+    measurements(InstantComponentSerializer, InstantISO8601Serializer) {
         Array(10_000) { Clock.System.now() }
     }
-    measurements(LocalDateSerializer, LocalDateISO8601Serializer, LocalDateLongSerializer) {
+    measurements(LocalDateComponentSerializer, LocalDateISO8601Serializer, LocalDateLongSerializer) {
         Array(10_000) { Clock.System.now().toLocalDateTime(TimeZone.UTC).date }
     }
-    measurements(LocalDateTimeSerializer, LocalDateTimeISO8601Serializer, LocalDateTimeCompactSerializer) {
+    measurements(LocalDateTimeComponentSerializer, LocalDateTimeISO8601Serializer, LocalDateTimeCompactSerializer) {
         Array(10_000) { Clock.System.now().toLocalDateTime(TimeZone.UTC) }
     }
     measurements(MonthIntSerializer) {
@@ -149,6 +151,8 @@ fun main() {
         TimeZone.availableZoneIds.map { TimeZone.of(it) }.toTypedArray()
     }
 
+
+    /*
     val period = DatePeriod(10, 15, 20)
     println(ProtoBuf.decodeFromByteArray(DateTimePeriod.serializer(), ProtoBuf.encodeToByteArray(period as DateTimePeriod)))
     println(Json.decodeFromString(DateTimePeriod.serializer(), """{}"""))
@@ -169,5 +173,7 @@ fun main() {
     println(Json.encodeToString(unit2 as DateTimeUnit))
     println(Json.decodeFromString(DateTimeUnit.serializer(), """{"type":"DayBased","days":2}"""))
 
-    println(ProtoBuf.decodeFromByteArray(DateTimePeriod.serializer(), ProtoBuf.encodeToByteArray(period as DateTimePeriod)))
+    // println(ProtoBuf.decodeFromByteArray(DateTimePeriod.serializer(), ProtoBuf.encodeToByteArray(period as DateTimePeriod)))
+
+     */
 }

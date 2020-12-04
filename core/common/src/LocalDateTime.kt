@@ -23,7 +23,7 @@ object LocalDateTimeISO8601Serializer: KSerializer<LocalDateTime> {
 
 }
 
-object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
+object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("Instant") {
