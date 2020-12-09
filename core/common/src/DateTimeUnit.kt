@@ -6,15 +6,18 @@
 package kotlinx.datetime
 
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
+import kotlinx.serialization.internal.*
+import kotlin.reflect.*
 import kotlin.time.*
 
-@Serializable
+@Serializable(with = DateTimeUnitSerializer::class)
 sealed class DateTimeUnit {
 
     abstract operator fun times(scalar: Int): DateTimeUnit
 
-    @Serializable
-    @SerialName("TimeBased")
+    @Serializable(with = TimeBasedSerializer::class)
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
 
         /* fields without a default value can't be @Transient, so the more natural way of writing this
@@ -58,11 +61,10 @@ sealed class DateTimeUnit {
         override fun toString(): String = formatToString(unitScale, unitName)
     }
 
-    @Serializable
+    @Serializable(with = DateBasedSerializer::class)
     sealed class DateBased : DateTimeUnit() {
         // TODO: investigate how to move subclasses up to DateTimeUnit scope
-        @Serializable
-        @SerialName("DayBased")
+        @Serializable(with = DayBasedSerializer::class)
         class DayBased(val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
@@ -80,8 +82,7 @@ sealed class DateTimeUnit {
             else
                 formatToString(days, "DAY")
         }
-        @Serializable
-        @SerialName("MonthBased")
+        @Serializable(with = MonthBasedSerializer::class)
         class MonthBased(val months: Int) : DateBased() {
             init {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }
@@ -120,4 +121,175 @@ sealed class DateTimeUnit {
         val YEAR = MONTH * 12
         val CENTURY = YEAR * 100
     }
+}
+
+object TimeBasedSerializer: KSerializer<DateTimeUnit.TimeBased> {
+
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
+        element<Long>("nanoseconds")
+    }
+
+    override fun serialize(encoder: Encoder, value: DateTimeUnit.TimeBased) {
+        encoder.encodeStructure(descriptor) {
+            encodeLongElement(descriptor, 0, value.nanoseconds);
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    override fun deserialize(decoder: Decoder): DateTimeUnit.TimeBased {
+        var seen = false
+        var nanoseconds = 0L
+        decoder.decodeStructure(descriptor) {
+            if (decodeSequentially()) {
+                nanoseconds = decodeLongElement(descriptor, 0)
+                seen = true
+            } else {
+                while (true) {
+                    when (val elementIndex: Int = decodeElementIndex(descriptor)) {
+                        0 -> {
+                            nanoseconds = decodeLongElement(descriptor, 0)
+                            seen = true
+                        }
+                        CompositeDecoder.DECODE_DONE -> break
+                        else -> throw UnknownFieldException(elementIndex)
+                    }
+                }
+            }
+        }
+        if (!seen) throw MissingFieldException("nanoseconds")
+        return DateTimeUnit.TimeBased(nanoseconds)
+    }
+}
+
+object DayBasedSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
+
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
+        element<Int>("days")
+    }
+
+    override fun serialize(encoder: Encoder, value: DateTimeUnit.DateBased.DayBased) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.days);
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    override fun deserialize(decoder: Decoder): DateTimeUnit.DateBased.DayBased {
+        var seen = false
+        var days = 0
+        decoder.decodeStructure(descriptor) {
+            if (decodeSequentially()) {
+                days = decodeIntElement(descriptor, 0)
+                seen = true
+            } else {
+                while (true) {
+                    when (val elementIndex: Int = decodeElementIndex(descriptor)) {
+                        0 -> {
+                            days = decodeIntElement(descriptor, 0)
+                            seen = true
+                        }
+                        CompositeDecoder.DECODE_DONE -> break
+                        else -> throw UnknownFieldException(elementIndex)
+                    }
+                }
+            }
+        }
+        if (!seen) throw MissingFieldException("days")
+        return DateTimeUnit.DateBased.DayBased(days)
+    }
+}
+
+object MonthBasedSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
+
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
+        element<Int>("months")
+    }
+
+    override fun serialize(encoder: Encoder, value: DateTimeUnit.DateBased.MonthBased) {
+        encoder.encodeStructure(descriptor) {
+            encodeIntElement(descriptor, 0, value.months);
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    override fun deserialize(decoder: Decoder): DateTimeUnit.DateBased.MonthBased {
+        var seen = false
+        var months = 0
+        decoder.decodeStructure(descriptor) {
+            if (decodeSequentially()) {
+                months = decodeIntElement(descriptor, 0)
+                seen = true
+            } else {
+                while (true) {
+                    when (val elementIndex: Int = decodeElementIndex(descriptor)) {
+                        0 -> {
+                            months = decodeIntElement(descriptor, 0)
+                            seen = true
+                        }
+                        CompositeDecoder.DECODE_DONE -> break
+                        else -> throw UnknownFieldException(elementIndex)
+                    }
+                }
+            }
+        }
+        if (!seen) throw MissingFieldException("months")
+        return DateTimeUnit.DateBased.MonthBased(months)
+    }
+}
+
+@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+object DateBasedSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
+
+    private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
+        DateTimeUnit.DateBased::class,
+        arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class),
+        arrayOf(DayBasedSerializer, MonthBasedSerializer))
+
+    @InternalSerializationApi
+    override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?):
+        DeserializationStrategy<out DateTimeUnit.DateBased>? =
+        impl.findPolymorphicSerializerOrNull(decoder, klassName)
+
+    @InternalSerializationApi
+    override fun findPolymorphicSerializerOrNull(encoder: Encoder, value: DateTimeUnit.DateBased):
+        SerializationStrategy<DateTimeUnit.DateBased>? =
+        impl.findPolymorphicSerializerOrNull(encoder, value)
+
+    @InternalSerializationApi
+    override val baseClass: KClass<DateTimeUnit.DateBased>
+        get() = DateTimeUnit.DateBased::class
+
+    @InternalSerializationApi
+    override val descriptor: SerialDescriptor
+        get() = impl.descriptor
+
+}
+
+@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
+
+    private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
+        DateTimeUnit::class,
+        arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class, DateTimeUnit.TimeBased::class),
+        arrayOf(DayBasedSerializer, MonthBasedSerializer, TimeBasedSerializer))
+
+    @InternalSerializationApi
+    override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?): DeserializationStrategy<out DateTimeUnit>? =
+        impl.findPolymorphicSerializerOrNull(decoder, klassName)
+
+    @InternalSerializationApi
+    override fun findPolymorphicSerializerOrNull(encoder: Encoder, value: DateTimeUnit): SerializationStrategy<DateTimeUnit>? =
+        impl.findPolymorphicSerializerOrNull(encoder, value)
+
+    @InternalSerializationApi
+    override val baseClass: KClass<DateTimeUnit>
+        get() = DateTimeUnit::class
+
+    @InternalSerializationApi
+    override val descriptor: SerialDescriptor
+        get() = impl.descriptor
+
 }
