@@ -39,12 +39,12 @@ object LocalDateComponentSerializer: KSerializer<LocalDate> {
             var year: Int? = null
             var month: Short? = null
             var day: Short? = null
-            while (true) {
+            loop@while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> year = decodeIntElement(descriptor, 0)
                     1 -> month = decodeShortElement(descriptor, 1)
                     2 -> day = decodeShortElement(descriptor, 2)
-                    CompositeDecoder.DECODE_DONE -> break
+                    CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                     else -> error("Unexpected index: $index")
                 }
             }

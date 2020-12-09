@@ -145,13 +145,13 @@ object TimeBasedSerializer: KSerializer<DateTimeUnit.TimeBased> {
                 nanoseconds = decodeLongElement(descriptor, 0)
                 seen = true
             } else {
-                while (true) {
+                loop@while (true) {
                     when (val elementIndex: Int = decodeElementIndex(descriptor)) {
                         0 -> {
                             nanoseconds = decodeLongElement(descriptor, 0)
                             seen = true
                         }
-                        CompositeDecoder.DECODE_DONE -> break
+                        CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                         else -> throw UnknownFieldException(elementIndex)
                     }
                 }
@@ -184,13 +184,13 @@ object DayBasedSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
                 days = decodeIntElement(descriptor, 0)
                 seen = true
             } else {
-                while (true) {
+                loop@while (true) {
                     when (val elementIndex: Int = decodeElementIndex(descriptor)) {
                         0 -> {
                             days = decodeIntElement(descriptor, 0)
                             seen = true
                         }
-                        CompositeDecoder.DECODE_DONE -> break
+                        CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                         else -> throw UnknownFieldException(elementIndex)
                     }
                 }
@@ -223,13 +223,13 @@ object MonthBasedSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
                 months = decodeIntElement(descriptor, 0)
                 seen = true
             } else {
-                while (true) {
+                loop@while (true) {
                     when (val elementIndex: Int = decodeElementIndex(descriptor)) {
                         0 -> {
                             months = decodeIntElement(descriptor, 0)
                             seen = true
                         }
-                        CompositeDecoder.DECODE_DONE -> break
+                        CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                         else -> throw UnknownFieldException(elementIndex)
                     }
                 }

@@ -46,7 +46,7 @@ object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
             var minute: Short? = null
             var second: Short = 0
             var nanosecond = 0
-            while (true) {
+            loop@while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> year = decodeIntElement(descriptor, 0)
                     1 -> month = decodeShortElement(descriptor, 1)
@@ -55,7 +55,7 @@ object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
                     4 -> minute = decodeShortElement(descriptor, 4)
                     5 -> second = decodeShortElement(descriptor, 5)
                     6 -> nanosecond = decodeIntElement(descriptor, 6)
-                    CompositeDecoder.DECODE_DONE -> break
+                    CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                     else -> error("Unexpected index: $index")
                 }
             }
@@ -76,7 +76,9 @@ object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
             encodeShortElement(descriptor, 4, value.minute.toShort())
             if (value.second != 0 || value.nanosecond != 0) {
                 encodeShortElement(descriptor, 5, value.second.toShort())
-                encodeIntElement(descriptor, 6, value.nanosecond)
+                if (value.nanosecond != 0) {
+                    encodeIntElement(descriptor, 6, value.nanosecond)
+                }
             }
         }
     }

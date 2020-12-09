@@ -9,17 +9,18 @@ import kotlin.native.concurrent.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
+import kotlinx.serialization.internal.*
 
-object MonthIntSerializer: KSerializer<Month> {
+@Suppress("INVISIBLE_MEMBER")
+object MonthSerializer: KSerializer<Month> {
+    private val impl = EnumSerializer("Month", Month.values())
 
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Month", PrimitiveKind.SHORT)
+    override val descriptor: SerialDescriptor
+        get() = impl.descriptor
 
-    override fun deserialize(decoder: Decoder): Month = Month(decoder.decodeShort().toInt())
+    override fun deserialize(decoder: Decoder): Month = impl.deserialize(decoder)
 
-    override fun serialize(encoder: Encoder, value: Month) {
-        encoder.encodeShort(value.number.toShort())
-    }
+    override fun serialize(encoder: Encoder, value: Month) = impl.serialize(encoder, value)
 }
 
 public expect enum class Month {

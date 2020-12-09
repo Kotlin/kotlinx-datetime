@@ -37,11 +37,11 @@ object InstantComponentSerializer: KSerializer<Instant> {
         decoder.decodeStructure(descriptor) {
             var epochSeconds: Long? = null
             var nanosecondsOfSecond = 0
-            while (true) {
+            loop@while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> epochSeconds = decodeLongElement(descriptor, 0)
                     1 -> nanosecondsOfSecond = decodeIntElement(descriptor, 1)
-                    CompositeDecoder.DECODE_DONE -> break
+                    CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                     else -> error("Unexpected index: $index")
                 }
             }
@@ -52,7 +52,9 @@ object InstantComponentSerializer: KSerializer<Instant> {
     override fun serialize(encoder: Encoder, value: Instant) {
         encoder.encodeStructure(descriptor) {
             encodeLongElement(descriptor, 0, value.epochSeconds)
-            encodeIntElement(descriptor, 1, value.nanosecondsOfSecond)
+            if (value.nanosecondsOfSecond != 0) {
+                encodeIntElement(descriptor, 1, value.nanosecondsOfSecond)
+            }
         }
     }
 

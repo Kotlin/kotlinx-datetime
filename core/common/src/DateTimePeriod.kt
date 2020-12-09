@@ -308,7 +308,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
             var years = 0
             var months = 0
             var days = 0
-            while (true) {
+            loop@while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> years = decodeIntElement(descriptor, 0)
                     1 -> months = decodeIntElement(descriptor, 1)
@@ -317,7 +317,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
                     4 -> unexpectedNonzero("minutes", decodeIntElement(descriptor, 4))
                     5 -> unexpectedNonzero("seconds", decodeLongElement(descriptor, 5))
                     6 -> unexpectedNonzero("nanoseconds", decodeLongElement(descriptor, 6))
-                    CompositeDecoder.DECODE_DONE -> break
+                    CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                     else -> error("Unexpected index: $index")
                 }
             }

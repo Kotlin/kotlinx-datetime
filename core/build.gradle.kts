@@ -5,7 +5,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     id("kotlin-multiplatform")
-    kotlin("plugin.serialization") version "1.4.10"
+    kotlin("plugin.serialization")
     `maven-publish`
 }
 
@@ -149,9 +149,7 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-common")
-                // this is not `compileOnly` only temporarily, until there is a source set for testing serialization
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
             }
         }
 

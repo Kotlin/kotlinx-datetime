@@ -9,6 +9,7 @@ buildscript {
 
 plugins {
     id("kotlinx.team.infra") version "0.3.0-dev-64"
+    kotlin("plugin.serialization") version "1.4.10"
 }
 
 infra {
