@@ -14,7 +14,7 @@ import kotlinx.datetime.internal.JSJoda.LocalTime as jtLocalTime
 actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("Instant") {
+        buildClassSerialDescriptor("LocalDateTime") {
             element<Long>("epochDay")
             element<Long>("nanoOfDay")
         }

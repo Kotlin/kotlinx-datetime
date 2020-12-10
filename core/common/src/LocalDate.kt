@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.*
 object LocalDateISO8601Serializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): LocalDate =
         LocalDate.parse(decoder.decodeString())
@@ -27,7 +27,7 @@ object LocalDateISO8601Serializer: KSerializer<LocalDate> {
 object LocalDateComponentSerializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("Instant") {
+        buildClassSerialDescriptor("LocalDate") {
             element<Int>("year")
             element<Short>("month")
             element<Short>("day")

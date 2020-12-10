@@ -28,7 +28,7 @@ object TimeZoneSerializer: KSerializer<TimeZone> {
 object ZoneOffsetSerializer: KSerializer<ZoneOffset> {
 
     override val descriptor: SerialDescriptor
-        get() = PrimitiveSerialDescriptor("TimeZone", PrimitiveKind.STRING)
+        get() = PrimitiveSerialDescriptor("ZoneOffset", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): ZoneOffset {
         val zone = TimeZone.of(decoder.decodeString())
