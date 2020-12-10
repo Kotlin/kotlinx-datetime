@@ -19,32 +19,38 @@ sealed class DateTimeUnit {
 
     @Serializable(with = TimeBasedSerializer::class)
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
-
-        /* fields without a default value can't be @Transient, so the more natural way of writing this
-        (setting [unitName] and [unitScale] in init { ... }) won't work:
-        https://github.com/Kotlin/kotlinx.serialization/issues/1227. */
-        @Transient
-        private val unitName: String = when {
-            nanoseconds % 3600_000_000_000 == 0L -> "HOUR"
-            nanoseconds % 60_000_000_000 == 0L -> "MINUTE"
-            nanoseconds % 1_000_000_000 == 0L -> "SECOND"
-            nanoseconds % 1_000_000 == 0L -> "MILLISECOND"
-            nanoseconds % 1_000 == 0L -> "MICROSECOND"
-            else -> "NANOSECOND"
-        }
-
-        @Transient
-        private val unitScale: Long = when {
-            nanoseconds % 3600_000_000_000 == 0L -> nanoseconds / 3600_000_000_000
-            nanoseconds % 60_000_000_000 == 0L -> nanoseconds / 60_000_000_000
-            nanoseconds % 1_000_000_000 == 0L -> nanoseconds / 1_000_000_000
-            nanoseconds % 1_000_000 == 0L -> nanoseconds / 1_000_000
-            nanoseconds % 1_000 == 0L -> nanoseconds / 1_000
-            else -> nanoseconds
-        }
+        private val unitName: String
+        private val unitScale: Long
 
         init {
             require(nanoseconds > 0) { "Unit duration must be positive, but was $nanoseconds ns." }
+            // find a concise string representation for the unit with this duration
+            when {
+                nanoseconds % 3600_000_000_000 == 0L -> {
+                    unitName = "HOUR"
+                    unitScale = nanoseconds / 3600_000_000_000
+                }
+                nanoseconds % 60_000_000_000 == 0L -> {
+                    unitName = "MINUTE"
+                    unitScale = nanoseconds / 60_000_000_000
+                }
+                nanoseconds % 1_000_000_000 == 0L -> {
+                    unitName = "SECOND"
+                    unitScale = nanoseconds / 1_000_000_000
+                }
+                nanoseconds % 1_000_000 == 0L -> {
+                    unitName = "MILLISECOND"
+                    unitScale = nanoseconds / 1_000_000
+                }
+                nanoseconds % 1_000 == 0L -> {
+                    unitName = "MICROSECOND"
+                    unitScale = nanoseconds / 1_000
+                }
+                else -> {
+                    unitName = "NANOSECOND"
+                    unitScale = nanoseconds
+                }
+            }
         }
 
         override fun times(scalar: Int): TimeBased = TimeBased(safeMultiply(nanoseconds, scalar.toLong()))

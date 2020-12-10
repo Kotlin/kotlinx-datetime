@@ -16,7 +16,7 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
-            val json = "{\"nanoseconds\":$nanoseconds}"
+            val json = "{\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
             assertEquals(json, Json.encodeToString(TimeBasedSerializer, unit))
             assertEquals(unit, Json.decodeFromString(TimeBasedSerializer, json))
         }
@@ -67,7 +67,7 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
-            val json = "{\"type\":\"TimeBased\",\"nanoseconds\":$nanoseconds}"
+            val json = "{\"type\":\"TimeBased\",\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
             assertEquals(json, Json.encodeToString(DateTimeUnitSerializer, unit))
             assertEquals(unit, Json.decodeFromString(DateTimeUnitSerializer, json))
         }
