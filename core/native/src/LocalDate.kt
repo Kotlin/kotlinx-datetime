@@ -270,8 +270,7 @@ actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     with(period) {
         try {
             this@plus
-                .run { if (years != 0 && months == 0) plusYears(years) else this }
-                .run { if (months != 0) plusMonths(safeAdd(safeMultiply(years, 12), months)) else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
                 .run { if (days != 0) plusDays(days) else this }
         } catch (e: ArithmeticException) {
             throw DateTimeArithmeticException("Arithmetic overflow when adding a period to a date", e)
@@ -305,5 +304,5 @@ public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
 actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = monthsUntil(other)
     val days = plusMonths(months).daysUntil(other)
-    return DatePeriod(months / 12, months % 12, days)
+    return DatePeriod(totalMonths = months, days)
 }

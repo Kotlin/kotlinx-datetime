@@ -68,8 +68,7 @@ private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): L
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {
         return@with value
-                .run { if (years != 0 && months == 0) plusYears(years) else this }
-                .run { if (months != 0) plusMonths(years.toDouble() * 12 + months) else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
                 .run { if (days != 0) plusDays(days) else this }
 
     }.let(::LocalDate)
@@ -86,7 +85,7 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = startD.until(endD, ChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
     val days = startD.until(endD, ChronoUnit.DAYS).toInt()
 
-    return DatePeriod(months / 12, months % 12, days)
+    return DatePeriod(totalMonths = months, days)
 }
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
