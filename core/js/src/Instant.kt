@@ -116,8 +116,8 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
                 .run { if (days != 0) plusDays(days) as ZonedDateTime else this }
                 .run { if (hours != 0) plusHours(hours) else this }
                 .run { if (minutes != 0) plusMinutes(minutes) else this }
-                .run { if (seconds != 0L) plusSeconds(seconds.toDouble()) else this }
-                .run { if (nanoseconds != 0L) plusNanos(nanoseconds.toDouble()) else this }
+                .run { if (seconds != 0) plusSeconds(seconds) else this }
+                .run { if (nanoseconds != 0) plusNanos(nanoseconds.toDouble()) else this }
     }.toInstant().let(::Instant)
 }    catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
@@ -191,7 +191,7 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val time = thisZdt.until(otherZdt, ChronoUnit.NANOS).toDouble().nanoseconds
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds, nanoseconds.toLong())
     }
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e

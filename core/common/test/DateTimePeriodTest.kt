@@ -17,7 +17,7 @@ class DateTimePeriodTest {
         assertEquals("P1Y", DateTimePeriod(years = 1).toString())
         assertEquals("P1Y1M", DatePeriod(years = 1, months = 1).toString())
         assertEquals("P11M", DateTimePeriod(months = 11).toString())
-        assertEquals("P14M", DateTimePeriod(months = 14).toString()) // TODO: normalize or not
+        assertEquals("P1Y2M", DateTimePeriod(months = 14).toString()) // TODO: normalize or not
         assertEquals("P10M5D", DateTimePeriod(months = 10, days = 5).toString())
         assertEquals("P1Y40D", DateTimePeriod(years = 1, days = 40).toString())
 
@@ -29,8 +29,15 @@ class DateTimePeriodTest {
         assertEquals("-P1DT1H", DateTimePeriod(days = -1, hours = -1).toString())
         assertEquals("-P1M", DateTimePeriod(months = -1).toString())
 
-        assertEquals("P-1Y-2M-3DT-4H-5M0.500000000S",
+        assertEquals("-P1Y2M3DT4H4M59.500000000S",
                 DateTimePeriod(years = -1, months = -2, days = -3, hours = -4, minutes = -5, seconds = 0, nanoseconds = 500_000_000).toString())
+
+        assertEquals("PT277H46M39.999999999S", DateTimePeriod(nanoseconds = 999_999_999_999_999L).toString())
+        assertEquals("PT0.999999999S", DateTimePeriod(seconds = 1, nanoseconds = -1L).toString())
+        assertEquals("-PT0.000000001S", DateTimePeriod(nanoseconds = -1L).toString())
+        assertEquals("P1DT-0.000000001S", DateTimePeriod(days = 1, nanoseconds = -1L).toString())
+        assertEquals("-PT0.999999999S", DateTimePeriod(seconds = -1, nanoseconds = 1L).toString())
+        assertEquals("P1DT-0.999999999S", DateTimePeriod(days = 1, seconds = -1, nanoseconds = 1L).toString())
     }
 
     @Test

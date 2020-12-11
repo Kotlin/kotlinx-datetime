@@ -99,8 +99,8 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
                     .run { if (days != 0) plusDays(days.toLong()) else this }
                     .run { if (hours != 0) plusHours(hours.toLong()) else this }
                     .run { if (minutes != 0) plusMinutes(minutes.toLong()) else this }
-                    .run { if (seconds != 0L) plusSeconds(seconds) else this }
-                    .run { if (nanoseconds != 0L) plusNanos(nanoseconds) else this }
+                    .run { if (seconds != 0) plusSeconds(seconds.toLong()) else this }
+                    .run { if (nanoseconds != 0) plusNanos(nanoseconds.toLong()) else this }
         }.toInstant().let(::Instant)
     } catch (e: DateTimeException) {
         throw DateTimeArithmeticException(e)
@@ -152,7 +152,7 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val time = thisZdt.until(otherZdt, ChronoUnit.NANOS).nanoseconds
 
     time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds, nanoseconds.toLong())
     }
 }
 

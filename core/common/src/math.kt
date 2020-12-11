@@ -161,3 +161,22 @@ internal fun multiplyAddAndDivide(d: Long, n: Long, r: Long, m: Long): Long {
     val (rd, rr) = multiplyAndDivide(md, n, m)
     return safeAdd(rd, safeAdd(mr / m, safeAdd(mr % m, rr) / m))
 }
+
+/**
+ * Calculates [d] * [n] + [r], where [n] > 0 and |[r]| <= [n].
+ *
+ * @throws ArithmeticException if the result overflows a long
+ */
+internal fun multiplyAndAdd(d: Long, n: Long, r: Long): Long {
+    var md = d
+    var mr = r
+    // make sure [md] and [mr] have the same sign
+    if (d > 0 && r < 0) {
+        md--
+        mr += n
+    } else if (d < 0 && r > 0) {
+        md++
+        mr -= n
+    }
+    return safeAdd(safeMultiply(md, n), mr)
+}
