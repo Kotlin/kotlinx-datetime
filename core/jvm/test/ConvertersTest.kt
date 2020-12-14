@@ -96,10 +96,10 @@ class ConvertersTest {
             val jtPeriod = JTPeriod.of(years, months, days)
 
             assertEquals(ktPeriod, jtPeriod.toKotlinDatePeriod())
-            assertJtPeriodEqual(jtPeriod, ktPeriod.toJavaPeriod())
+            assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toJavaPeriod())
 
             assertEquals(ktPeriod, jtPeriod.toString().let(DatePeriod::parse))
-            assertJtPeriodEqual(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
+            assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
         }
 
         repeat(1000) {
