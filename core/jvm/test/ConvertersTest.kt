@@ -86,7 +86,7 @@ class ConvertersTest {
     @Test
     fun datePeriod() {
 
-        fun assertJtPeriodEqual(a: JTPeriod, b: JTPeriod) {
+        fun assertJtPeriodNormalizedEquals(a: JTPeriod, b: JTPeriod) {
             assertEquals(a.days, b.days)
             assertEquals(a.months + a.years * 12, b.months + b.years * 12)
         }
