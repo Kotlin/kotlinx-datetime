@@ -100,6 +100,9 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = startD.until(endD, ChronoUnit.MONTHS); startD = startD.plusMonths(months)
     val days = startD.until(endD, ChronoUnit.DAYS)
 
+    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
+        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
+    }
     return DatePeriod(totalMonths = months.toInt(), days.toInt())
 }
 

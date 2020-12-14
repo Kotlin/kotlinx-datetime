@@ -210,7 +210,8 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * - negative or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
+ * on JVM) if the number of months between the two dates exceeds an Int.
  */
 public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
 
@@ -292,7 +293,8 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * - positive or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
+ * on JVM) if the number of months between the two dates exceeds an Int.
  * @see Instant.periodUntil
  */
 public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =

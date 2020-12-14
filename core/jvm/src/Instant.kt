@@ -147,6 +147,9 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
     val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
 
+    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
+        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
+    }
     return buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds)
 }
 
