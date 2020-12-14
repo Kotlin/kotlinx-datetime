@@ -259,7 +259,7 @@ public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 private class DateTimePeriodImpl(
     internal override val totalMonths: Int,
     override val days: Int,
-    override val totalNanoseconds: Long,
+    internal override val totalNanoseconds: Long,
 ) : DateTimePeriod()
 
 // TODO: these calculations fit in a JS Number. Possible to do an expect/actual here.
