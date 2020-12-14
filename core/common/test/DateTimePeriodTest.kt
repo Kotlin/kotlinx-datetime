@@ -17,7 +17,7 @@ class DateTimePeriodTest {
         assertEquals("P1Y", DateTimePeriod(years = 1).toString())
         assertEquals("P1Y1M", DatePeriod(years = 1, months = 1).toString())
         assertEquals("P11M", DateTimePeriod(months = 11).toString())
-        assertEquals("P1Y2M", DateTimePeriod(months = 14).toString()) // TODO: normalize or not
+        assertEquals("P1Y2M", DateTimePeriod(months = 14).toString())
         assertEquals("P10M5D", DateTimePeriod(months = 10, days = 5).toString())
         assertEquals("P1Y40D", DateTimePeriod(years = 1, days = 40).toString())
 
@@ -45,7 +45,7 @@ class DateTimePeriodTest {
         assertEquals(DateTimePeriod(years = 1), DateTimePeriod.parse("P1Y"))
         assertEquals(DatePeriod(years = 1, months = 1), DateTimePeriod.parse("P1Y1M"))
         assertEquals(DateTimePeriod(months = 11), DateTimePeriod.parse("P11M"))
-        assertEquals(DateTimePeriod(months = 14), DateTimePeriod.parse("P14M")) // TODO: normalize or not
+        assertEquals(DateTimePeriod(months = 14), DateTimePeriod.parse("P14M"))
         assertEquals(DateTimePeriod(months = 10, days = 5), DateTimePeriod.parse("P10M5D"))
         assertEquals(DateTimePeriod(years = 1, days = 40), DateTimePeriod.parse("P1Y40D"))
 

@@ -235,7 +235,7 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
 
 class DatePeriod internal constructor(
     internal override val totalMonths: Int,
-    override val days: Int = 0,
+    override val days: Int,
 ) : DateTimePeriod() {
     constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
@@ -243,7 +243,7 @@ class DatePeriod internal constructor(
     override val minutes: Int get() = 0
     override val seconds: Int get() = 0
     override val nanoseconds: Int get() = 0
-    override val totalNanoseconds: Long get() = 0
+    internal override val totalNanoseconds: Long get() = 0
 
     companion object {
         fun parse(text: String): DatePeriod =
@@ -257,9 +257,9 @@ class DatePeriod internal constructor(
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(
-    internal override val totalMonths: Int = 0,
-    override val days: Int = 0,
-    override val totalNanoseconds: Long = 0,
+    internal override val totalMonths: Int,
+    override val days: Int,
+    override val totalNanoseconds: Long,
 ) : DateTimePeriod()
 
 // TODO: these calculations fit in a JS Number. Possible to do an expect/actual here.
@@ -303,9 +303,7 @@ fun DateTimePeriod(
     totalNanoseconds(hours, minutes, seconds, nanoseconds))
 
 @OptIn(ExperimentalTime::class)
-fun Duration.toDateTimePeriod(): DateTimePeriod = toComponents { hours, minutes, seconds, nanoseconds ->
-    buildDateTimePeriod(totalNanoseconds = totalNanoseconds(hours, minutes, seconds, nanoseconds.toLong()))
-}
+fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = toLongNanoseconds())
 
 operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
     safeAdd(totalMonths, other.totalMonths),
