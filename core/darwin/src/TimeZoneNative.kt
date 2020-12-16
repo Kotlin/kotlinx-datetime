@@ -155,12 +155,12 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        return ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), ZoneOffset.ofSeconds(offset).offset)
+        return ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), FixedOffsetTimeZone.ofSeconds(offset).offset)
     }
 
     override fun offsetAt(instant: Instant): ZoneOffsetImpl {
         val date = dateWithTimeIntervalSince1970Saturating(instant.epochSeconds)
-        return ZoneOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt()).offset
+        return FixedOffsetTimeZone.ofSeconds(value.secondsFromGMTForDate(date).toInt()).offset
     }
 
     // org.threeten.bp.ZoneId#equals

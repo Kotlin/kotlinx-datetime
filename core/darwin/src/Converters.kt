@@ -42,7 +42,7 @@ public fun NSDate.toKotlinInstant(): Instant {
  * [DateTimeException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
  * nearest minute.
  */
-public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is ZoneOffset) {
+public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone) {
     require (totalSeconds % 60 == 0) {
         "Lossy conversion: Darwin uses minute precision for fixed-offset time zones"
     }

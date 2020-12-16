@@ -30,7 +30,7 @@ internal class ZoneOffsetImpl(val totalSeconds: Int, override val id: String): T
         LocalDateTime(date, LocalTime.MIN).atZone(null).toInstant()
 
     override fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime {
-        return ZonedDateTime(this@atZone, ZoneOffset(this@ZoneOffsetImpl), this@ZoneOffsetImpl)
+        return ZonedDateTime(this@atZone, FixedOffsetTimeZone(this@ZoneOffsetImpl), this@ZoneOffsetImpl)
     }
 
     override fun offsetAt(instant: Instant): ZoneOffsetImpl = this

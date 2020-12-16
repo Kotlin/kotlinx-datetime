@@ -61,11 +61,11 @@ public fun java.time.ZoneId.toKotlinTimeZone(): TimeZone = TimeZone(this)
 
 
 /**
- * Converts this [kotlinx.datetime.ZoneOffset][ZoneOffset] value to a [java.time.ZoneOffset][java.time.ZoneOffset] value.
+ * Converts this [kotlinx.datetime.FixedOffsetTimeZone][FixedOffsetTimeZone] value to a [java.time.ZoneOffset][java.time.ZoneOffset] value.
  */
-public fun ZoneOffset.toJavaZoneOffset(): java.time.ZoneOffset = this.zoneOffset
+public fun FixedOffsetTimeZone.toJavaZoneOffset(): java.time.ZoneOffset = this.zoneOffset
 
 /**
- * Converts this [java.time.ZoneOffset][java.time.ZoneOffset] value to a [kotlinx.datetime.ZoneOffset][ZoneOffset] value.
+ * Converts this [java.time.ZoneOffset][java.time.ZoneOffset] value to a [kotlinx.datetime.FixedOffsetTimeZone][FixedOffsetTimeZone] value.
  */
-public fun java.time.ZoneOffset.toKotlinZoneOffset(): ZoneOffset = ZoneOffset(this)
+public fun java.time.ZoneOffset.toKotlinZoneOffset(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)

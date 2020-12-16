@@ -17,7 +17,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
 
         actual fun currentSystemDefault(): TimeZone = PlatformTimeZoneImpl.currentSystemDefault().let(::TimeZone)
 
-        actual val UTC: TimeZone = ZoneOffset.UTC
+        actual val UTC: TimeZone = FixedOffsetTimeZone.UTC
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
         actual fun of(zoneId: String): TimeZone {
@@ -29,19 +29,19 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
             }
             if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
-                return ZoneOffset.of(zoneId)
+                return FixedOffsetTimeZone.of(zoneId)
             }
             if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
                 return TimeZone(ZoneOffsetImpl(0, zoneId))
             }
             if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
                 zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")) {
-                val offset = ZoneOffset.of(zoneId.substring(3))
+                val offset = FixedOffsetTimeZone.of(zoneId.substring(3))
                 return (if (offset.totalSeconds == 0) ZoneOffsetImpl(0, zoneId.substring(0, 3))
                 else ZoneOffsetImpl(offset.totalSeconds, zoneId.substring(0, 3) + offset.id)).let(::TimeZone)
             }
             if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
-                val offset = ZoneOffset.of(zoneId.substring(2))
+                val offset = FixedOffsetTimeZone.of(zoneId.substring(2))
                 return (if (offset.totalSeconds == 0) ZoneOffsetImpl(0, "UT")
                 else ZoneOffsetImpl(offset.totalSeconds, "UT" + offset.id)).let(::TimeZone)
             }
@@ -77,17 +77,17 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
 }
 
 @ThreadLocal
-private var zoneOffsetCache: MutableMap<Int, ZoneOffset> = mutableMapOf()
+private var zoneOffsetCache: MutableMap<Int, FixedOffsetTimeZone> = mutableMapOf()
 
-public actual class ZoneOffset internal constructor(internal val offset: ZoneOffsetImpl) : TimeZone(offset) {
+public actual class FixedOffsetTimeZone internal constructor(internal val offset: ZoneOffsetImpl) : TimeZone(offset) {
 
     actual val totalSeconds get() = offset.totalSeconds
 
     companion object {
-        val UTC = ZoneOffset(ZoneOffsetImpl.UTC)
+        val UTC = FixedOffsetTimeZone(ZoneOffsetImpl.UTC)
 
         // org.threeten.bp.ZoneOffset#of
-        internal fun of(offsetId: String): ZoneOffset {
+        internal fun of(offsetId: String): FixedOffsetTimeZone {
             if (offsetId == "Z") {
                 return UTC
             }
@@ -168,19 +168,19 @@ public actual class ZoneOffset internal constructor(internal val offset: ZoneOff
         }
 
         // org.threeten.bp.ZoneOffset#ofHoursMinutesSeconds
-        internal fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): ZoneOffset {
+        internal fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): FixedOffsetTimeZone {
             validate(hours, minutes, seconds)
             return if (hours == 0 && minutes == 0 && seconds == 0) UTC
             else ofSeconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
         }
 
         // org.threeten.bp.ZoneOffset#ofTotalSeconds
-        internal fun ofSeconds(seconds: Int): ZoneOffset =
+        internal fun ofSeconds(seconds: Int): FixedOffsetTimeZone =
             if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
                 zoneOffsetCache[seconds] ?:
-                    ZoneOffset(ZoneOffsetImpl(seconds, zoneIdByOffset(seconds))).also { zoneOffsetCache[seconds] = it }
+                    FixedOffsetTimeZone(ZoneOffsetImpl(seconds, zoneIdByOffset(seconds))).also { zoneOffsetCache[seconds] = it }
             } else {
-                ZoneOffset(ZoneOffsetImpl(seconds, zoneIdByOffset(seconds)))
+                FixedOffsetTimeZone(ZoneOffsetImpl(seconds, zoneIdByOffset(seconds)))
             }
 
         // org.threeten.bp.ZoneOffset#parseNumber
@@ -199,7 +199,7 @@ public actual class ZoneOffset internal constructor(internal val offset: ZoneOff
 }
 
 public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
-        value.offsetAt(instant).let(::ZoneOffset).let(::UtcOffset)
+        value.offsetAt(instant).let(::FixedOffsetTimeZone).let(::UtcOffset)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
         with(timeZone) { toLocalDateTime() }

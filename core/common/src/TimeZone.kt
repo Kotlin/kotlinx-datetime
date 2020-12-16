@@ -80,18 +80,20 @@ public expect open class TimeZone {
     public fun LocalDateTime.toInstant(): Instant
 }
 
-public expect class ZoneOffset : TimeZone {
-    val totalSeconds: Int
+public expect class FixedOffsetTimeZone : TimeZone {
+    internal val totalSeconds: Int
 }
 
-public class UtcOffset(internal val zoneOffset: ZoneOffset) {
+val FixedOffsetTimeZone.utcOffset: UtcOffset get() = UtcOffset(this)
+
+public class UtcOffset(internal val zoneOffset: FixedOffsetTimeZone) {
     val totalSeconds: Int get() = zoneOffset.totalSeconds
     override fun hashCode(): Int = zoneOffset.hashCode()
     override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
     override fun toString(): String = zoneOffset.toString()
 }
 
-public fun ZoneOffset(value: UtcOffset): ZoneOffset = value.zoneOffset
+public fun ZoneOffset(value: UtcOffset): FixedOffsetTimeZone = value.zoneOffset
 
 /**
  * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
