@@ -51,8 +51,8 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw e
 }
 
-public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
-        zoneId.rules().offsetOfInstant(instant.value).let(::ZoneOffset)
+public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
+        zoneId.rules().offsetOfInstant(instant.value).let(::ZoneOffset).let(::UtcOffset)
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)

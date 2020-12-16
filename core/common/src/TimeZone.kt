@@ -84,13 +84,22 @@ public expect class ZoneOffset : TimeZone {
     val totalSeconds: Int
 }
 
+public class UtcOffset(internal val zoneOffset: ZoneOffset) {
+    val totalSeconds: Int get() = zoneOffset.totalSeconds
+    override fun hashCode(): Int = zoneOffset.hashCode()
+    override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
+    override fun toString(): String = zoneOffset.toString()
+}
+
+public fun ZoneOffset(value: UtcOffset): ZoneOffset = value.zoneOffset
+
 /**
  * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
  */
-public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
+public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 
 /**
  * Return a civil date/time value that this instant has in the specified [timeZone].
@@ -104,13 +113,15 @@ public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
+public fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = toLocalDateTime(ZoneOffset(offset))
+
 /**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
  */
-public fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
+public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
         timeZone.offsetAt(this)
 
 /**
@@ -128,6 +139,8 @@ public fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
  * @see Instant.toLocalDateTime
  */
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
+
+public fun LocalDateTime.toInstant(offset: UtcOffset): Instant = toInstant(ZoneOffset(offset))
 
 /**
  * Returns an instant that corresponds to the start of this date in the specified [timeZone].

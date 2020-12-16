@@ -198,8 +198,8 @@ public actual class ZoneOffset internal constructor(internal val offset: ZoneOff
     }
 }
 
-public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
-        value.offsetAt(instant).let(::ZoneOffset)
+public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
+        value.offsetAt(instant).let(::ZoneOffset).let(::UtcOffset)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
         with(timeZone) { toLocalDateTime() }

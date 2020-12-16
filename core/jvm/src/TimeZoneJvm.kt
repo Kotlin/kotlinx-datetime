@@ -49,8 +49,8 @@ public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): T
     actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 }
 
-public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
-        zoneId.rules.getOffset(instant.value).let(::ZoneOffset)
+public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
+        zoneId.rules.getOffset(instant.value).let(::ZoneOffset).let(::UtcOffset)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
     java.time.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
