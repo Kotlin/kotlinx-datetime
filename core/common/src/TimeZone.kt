@@ -105,6 +105,19 @@ public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
 /**
+ * Return a civil date value that this instant has in the specified [timeZone].
+ *
+ * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
+ * is not necessary so.
+ *
+ * @see Instant.toLocalDateTime
+ * @see LocalDateTime.toInstant
+ * @see Instant.offsetIn
+ * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+ */
+public expect fun Instant.toLocalDate(timeZone: TimeZone): LocalDate
+
+/**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
  *
  * @see Instant.toLocalDateTime

@@ -91,6 +91,13 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
         throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
     }
 
+    actual fun Instant.toLocalDate(): LocalDate = try {
+        val localDateTime = toZonedLocalDateTime(this@TimeZone).dateTime
+        LocalDate(localDateTime.year, localDateTime.monthNumber, localDateTime.dayOfMonth)
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
+    }
+
     internal open fun offsetAtImpl(instant: Instant): ZoneOffset {
         val offset = offset_at_instant(tzid, instant.epochSeconds)
         if (offset == Int.MAX_VALUE) {
@@ -285,6 +292,9 @@ public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
         with(timeZone) { toLocalDateTime() }
+
+public actual fun Instant.toLocalDate(timeZone: TimeZone): LocalDate =
+        with(timeZone) { toLocalDate() }
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         with(timeZone) { toInstant() }
