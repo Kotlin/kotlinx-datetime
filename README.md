@@ -257,8 +257,11 @@ and enable [core library desugaring](https://developer.android.com/studio/write/
 - Add the bintray repository:
 
 ```kotlin
-repositories {
-    maven(url = "https://kotlin.bintray.com/kotlinx/") // soon will be just jcenter()
+allprojects {
+    repositories {
+        // ...
+        maven(url = "https://kotlin.bintray.com/kotlinx/") //TODO | kotlinx-datetime: soon will be just jcenter()
+    }
 }
 ```
 
