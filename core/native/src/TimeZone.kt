@@ -92,7 +92,7 @@ public actual open class TimeZone internal constructor(private val tzid: TZID, a
     }
 
     actual fun Instant.toLocalDate(): LocalDate = try {
-        val localDateTime = toZonedLocalDateTime(this@TimeZone).dateTime
+        val localDateTime = this.toLocalDateTime
         LocalDate(localDateTime.year, localDateTime.monthNumber, localDateTime.dayOfMonth)
     } catch (e: IllegalArgumentException) {
         throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)

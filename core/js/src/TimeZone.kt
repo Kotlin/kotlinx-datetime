@@ -53,7 +53,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
 }
 
 public actual fun Instant.toLocalDate(timeZone: TimeZone): LocalDate = try {
-    val localDateTime = kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+    val localDateTime = this.toLocalDateTime(timeZone)
     LocalDate(localDateTime.year, localDateTime.monthNumber, localDateTime.dayOfMonth)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
