@@ -13,7 +13,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          *
          * An example of a local date in ISO-8601 format: `2020-08-30`.
          *
-         * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+         * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          */
         public fun parse(isoString: String): LocalDate
 
@@ -86,7 +86,7 @@ public expect class LocalDate : Comparable<LocalDate> {
  *
  * See [LocalDate.parse] for examples of local date string representations.
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
  */
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
