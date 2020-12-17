@@ -186,7 +186,7 @@ public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 
 /**
- * Returns the number of whole years between two instants in the specified [timeZone].
+ * Returns the number of whole years between two dates.
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
