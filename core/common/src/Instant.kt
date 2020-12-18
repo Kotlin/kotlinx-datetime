@@ -128,7 +128,7 @@ public expect class Instant : Comparable<Instant> {
          * - `2020-08-30T18:43:00.500Z`
          * - `2020-08-30T18:43:00.123456789Z`
          *
-         * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
+         * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */
         fun parse(isoString: String): Instant
 
@@ -168,7 +168,7 @@ public val Instant.isDistantFuture
  *
  * See [Instant.parse] for examples of instant string representations.
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
  */
 public fun String.toInstant(): Instant = Instant.parse(this)
 

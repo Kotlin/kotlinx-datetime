@@ -13,7 +13,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          *
          * An example of a local date in ISO-8601 format: `2020-08-30`.
          *
-         * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+         * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          */
         public fun parse(isoString: String): LocalDate
 
@@ -86,7 +86,7 @@ public expect class LocalDate : Comparable<LocalDate> {
  *
  * See [LocalDate.parse] for examples of local date string representations.
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
  */
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
@@ -186,7 +186,7 @@ public expect fun LocalDate.daysUntil(other: LocalDate): Int
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 
 /**
- * Returns the number of whole years between two instants in the specified [timeZone].
+ * Returns the number of whole years between two dates.
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *

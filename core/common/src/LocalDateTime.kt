@@ -20,7 +20,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * - `2020-08-30T18:43:00.500`
          * - `2020-08-30T18:43:00.123456789`
          *
-         * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDateTime] are
+         * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are
          * exceeded.
          */
         public fun parse(isoString: String): LocalDateTime
@@ -113,7 +113,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  *
  * See [LocalDateTime.parse] for examples of date/time string representations.
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
  */
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
