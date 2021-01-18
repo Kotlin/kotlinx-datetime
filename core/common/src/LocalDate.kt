@@ -137,7 +137,7 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
  * - negative or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
- * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only)
+ * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
  * @see LocalDate.minus
  */
@@ -153,7 +153,7 @@ expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * - positive or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
- * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only)
+ * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
  * @see LocalDate.periodUntil
  */
