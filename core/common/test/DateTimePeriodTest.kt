@@ -13,6 +13,39 @@ import kotlin.time.*
 class DateTimePeriodTest {
 
     @Test
+    fun normalization() {
+        assertPeriodComponents(DateTimePeriod(years = 1) as DatePeriod, years = 1)
+        assertPeriodComponents(DateTimePeriod(years = 1, months = 1) as DatePeriod, years = 1, months = 1)
+        assertPeriodComponents(DateTimePeriod(years = 1, months = -1) as DatePeriod, months = 11)
+        assertPeriodComponents(DateTimePeriod(years = -1, months = 1) as DatePeriod, months = -11)
+        assertPeriodComponents(DateTimePeriod(years = -1, months = -1) as DatePeriod, years = -1, months = -1)
+        assertPeriodComponents(DateTimePeriod(months = 11) as DatePeriod, months = 11)
+        assertPeriodComponents(DateTimePeriod(months = 14) as DatePeriod, years = 1, months = 2)
+        assertPeriodComponents(DateTimePeriod(months = -14) as DatePeriod, years = -1, months = -2)
+        assertPeriodComponents(DateTimePeriod(months = 10, days = 5) as DatePeriod, months = 10, days = 5)
+        assertPeriodComponents(DateTimePeriod(years = 1, days = 40) as DatePeriod, years = 1, days = 40)
+        assertPeriodComponents(DateTimePeriod(years = 1, days = -40) as DatePeriod, years = 1, days = -40)
+        assertPeriodComponents(DateTimePeriod(days = 5) as DatePeriod, days = 5)
+
+        assertPeriodComponents(DateTimePeriod(hours = 3), hours = 3)
+        assertPeriodComponents(DateTimePeriod(hours = 1, minutes = 120), hours = 3)
+        assertPeriodComponents(DateTimePeriod(hours = 1, minutes = 119, seconds = 60), hours = 3)
+        assertPeriodComponents(DateTimePeriod(hours = 1, minutes = 119, seconds = 59, nanoseconds = 1_000_000_000), hours = 3)
+        assertPeriodComponents(DateTimePeriod(hours = 1, minutes = 121, seconds = -59, nanoseconds = -1_000_000_000), hours = 3)
+        assertPeriodComponents(DateTimePeriod())
+        assertPeriodComponents(DatePeriod())
+
+        assertPeriodComponents(DateTimePeriod(days = 1, hours = -1), days = 1, hours = -1)
+        assertPeriodComponents(DateTimePeriod(days = -1, hours = -1), days = -1, hours = -1)
+
+        assertPeriodComponents(DateTimePeriod(years = -1, months = -2, days = -3, hours = -4, minutes = -5, seconds = 0, nanoseconds = 500_000_000),
+            years = -1, months = -2, days = -3, hours = -4, minutes = -4, seconds = -59, nanoseconds = -500_000_000)
+
+        assertPeriodComponents(DateTimePeriod(nanoseconds = 999_999_999_999_999L), hours = 277, minutes = 46, seconds = 39, nanoseconds = 999_999_999)
+        assertPeriodComponents(DateTimePeriod(nanoseconds = -999_999_999_999_999L), hours = -277, minutes = -46, seconds = -39, nanoseconds = -999_999_999)
+    }
+
+    @Test
     fun toStringConversion() {
         assertEquals("P1Y", DateTimePeriod(years = 1).toString())
         assertEquals("P1Y1M", DatePeriod(years = 1, months = 1).toString())
@@ -103,5 +136,17 @@ class DateTimePeriodTest {
         )) {
             assertEquals(period, duration.toDateTimePeriod())
         }
+    }
+
+    private fun assertPeriodComponents(period: DateTimePeriod,
+                                       years: Int = 0, months: Int = 0, days: Int = 0,
+                                       hours: Int = 0, minutes: Int = 0, seconds: Int = 0, nanoseconds: Int = 0) {
+        assertEquals(years, period.years)
+        assertEquals(months, period.months)
+        assertEquals(days, period.days)
+        assertEquals(hours, period.hours)
+        assertEquals(minutes, period.minutes)
+        assertEquals(seconds, period.seconds)
+        assertEquals(nanoseconds, period.nanoseconds)
     }
 }
