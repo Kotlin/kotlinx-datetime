@@ -99,6 +99,29 @@ class DateTimePeriodTest {
         assertEquals(DateTimePeriod(days = 1, nanoseconds = -1L), DateTimePeriod.parse("P1DT-0.000000001S"))
         assertEquals(DateTimePeriod(seconds = -1, nanoseconds = 1L), DateTimePeriod.parse("-PT0.999999999S"))
         assertEquals(DateTimePeriod(days = 1, seconds = -1, nanoseconds = 1L), DateTimePeriod.parse("P1DT-0.999999999S"))
+
+        // overflow of `Int.MAX_VALUE` months
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P2000000000Y") }
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y2147483640M") }
+
+        // too large a number in a field
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000Y") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000M") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000D") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000H") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000M") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000S") }
+
+        // wrong order of signifiers
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P1Y2D3M") }
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P0DT1M2H") }
+
+        // loss of precision in fractional seconds
+        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P0.000000000001S") }
+
+        // non-zero time components when parsing DatePeriod
+        assertFailsWith<IllegalArgumentException> { DatePeriod.parse("P1DT1H") }
+        DatePeriod.parse("P1DT0H")
     }
 
     @Test
