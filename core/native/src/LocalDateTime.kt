@@ -66,7 +66,7 @@ public actual class LocalDateTime internal constructor(
     actual override fun toString(): String = date.toString() + 'T' + time.toString()
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
-    internal fun toEpochSecond(offset: ZoneOffset): Long {
+    internal fun toEpochSecond(offset: ZoneOffsetImpl): Long {
         val epochDay = date.toEpochDay().toLong()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
         secs -= offset.totalSeconds

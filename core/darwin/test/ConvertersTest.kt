@@ -48,7 +48,7 @@ class ConvertersTest {
         for (id in TimeZone.availableZoneIds) {
             val normalizedId = (NSTimeZone.abbreviationDictionary[id] ?: id) as String
             val timeZone = TimeZone.of(normalizedId)
-            if (timeZone is ZoneOffset) {
+            if (timeZone.value is ZoneOffsetImpl) {
                 continue
             }
             val nsTimeZone = timeZone.toNSTimeZone()

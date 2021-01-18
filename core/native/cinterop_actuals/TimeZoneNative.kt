@@ -4,35 +4,103 @@
  */
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
 import kotlinx.cinterop.*
 import platform.posix.free
 
-internal actual fun getCurrentSystemDefaultTimeZone(): TimeZone = memScoped {
-    val tzid = alloc<kotlinx.datetime.internal.TZIDVar>()
-    val string = kotlinx.datetime.internal.get_system_timezone(tzid.ptr)
-            ?: throw RuntimeException("Failed to get the system timezone.")
-    val kotlinString = string.toKString()
-    free(string)
-    TimeZone(tzid.value, kotlinString)
+internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val id: String): TimeZoneImpl {
+    actual companion object {
+        actual fun of(zoneId: String): PlatformTimeZoneImpl {
+            val tzid = timezone_by_name(zoneId)
+            if (tzid == TZID_INVALID) {
+                throw IllegalTimeZoneException("No timezone found with zone ID '$zoneId'")
+            }
+            return PlatformTimeZoneImpl(tzid, zoneId)
+        }
+
+        actual fun currentSystemDefault(): PlatformTimeZoneImpl = memScoped {
+            val tzid = alloc<TZIDVar>()
+            val string = get_system_timezone(tzid.ptr)
+                ?: throw RuntimeException("Failed to get the system timezone.")
+            val kotlinString = string.toKString()
+            free(string)
+            PlatformTimeZoneImpl(tzid.value, kotlinString)
+        }
+
+        actual val availableZoneIds: Set<String>
+            get() {
+                val set = mutableSetOf("UTC")
+                val zones = available_zone_ids()
+                    ?: throw RuntimeException("Failed to get the list of available timezones")
+                var ptr = zones
+                while (true) {
+                    val cur = ptr.pointed.value ?: break
+                    val zoneName = cur.toKString()
+                    set.add(zoneName)
+                    free(cur)
+                    ptr = (ptr + 1)!!
+                }
+                free(zones)
+                return set
+            }
+    }
+
+    override fun atStartOfDay(date: LocalDate): Instant = memScoped {
+        val ldt = LocalDateTime(date, LocalTime.MIN)
+        val epochSeconds = ldt.toEpochSecond(ZoneOffsetImpl.UTC)
+        val midnightInstantSeconds = at_start_of_day(tzid, epochSeconds)
+        if (midnightInstantSeconds == Long.MAX_VALUE) {
+            throw RuntimeException("Unable to acquire the time of start of day at $date for zone $this")
+        }
+        Instant(midnightInstantSeconds, 0)
+    }
+
+    override fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime = memScoped {
+        val epochSeconds = toEpochSecond(ZoneOffsetImpl.UTC)
+        val offset = alloc<IntVar>()
+        offset.value = preferred?.totalSeconds ?: Int.MAX_VALUE
+        val transitionDuration = offset_at_datetime(tzid, epochSeconds, offset.ptr)
+        if (offset.value == Int.MAX_VALUE) {
+            throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@PlatformTimeZoneImpl}")
+        }
+        val dateTime = try {
+            this@atZone.plusSeconds(transitionDuration)
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
+        } catch (e: ArithmeticException) {
+            throw RuntimeException("Anomalously long timezone transition gap reported", e)
+        }
+        ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), ZoneOffset.ofSeconds(offset.value).offset)
+    }
+
+    override fun offsetAt(instant: Instant): ZoneOffsetImpl {
+        val offset = offset_at_instant(tzid, instant.epochSeconds)
+        if (offset == Int.MAX_VALUE) {
+            throw RuntimeException("Unable to acquire the offset at instant $instant for zone $this")
+        }
+        return ZoneOffset.ofSeconds(offset).offset
+    }
+
+    // org.threeten.bp.ZoneId#equals
+    override fun equals(other: Any?): Boolean =
+        this === other || other is PlatformTimeZoneImpl && this.id == other.id
+
+    // org.threeten.bp.ZoneId#hashCode
+    override fun hashCode(): Int = id.hashCode()
+
+    // org.threeten.bp.ZoneId#toString
+    override fun toString(): String = id
 }
 
-internal actual fun current_time(sec: kotlinx.cinterop.CValuesRef<platform.posix.int64_tVar /* = kotlinx.cinterop.LongVarOf<kotlin.Long> */>?, nano: kotlinx.cinterop.CValuesRef<platform.posix.int32_tVar>?): kotlin.Boolean =
-    kotlinx.datetime.internal.current_time(sec, nano)
-
-internal actual fun available_zone_ids(): kotlinx.cinterop.CPointer<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>? =
-        kotlinx.datetime.internal.available_zone_ids()
-
-internal actual fun offset_at_datetime(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */, offset: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.IntVar /* = kotlinx.cinterop.IntVarOf<kotlin.Int> */>?): kotlin.Int =
-        kotlinx.datetime.internal.offset_at_datetime(zone, epoch_sec, offset)
-
-internal actual fun at_start_of_day(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Long =
-    kotlinx.datetime.internal.at_start_of_day(zone, epoch_sec)
-
-internal actual fun offset_at_instant(zone: kotlinx.datetime.TZID /* = kotlin.ULong */, epoch_sec: platform.posix.int64_t /* = kotlin.Long */): kotlin.Int =
-        kotlinx.datetime.internal.offset_at_instant(zone, epoch_sec)
-
-internal actual fun timezone_by_name(zone_name: kotlin.String?): kotlinx.datetime.TZID /* = kotlin.ULong */ =
-        kotlinx.datetime.internal.timezone_by_name(zone_name)
-
-internal actual val TZID_INVALID: TZID
-    get() = kotlinx.datetime.internal.TZID_INVALID
+internal actual fun currentTime(): Instant = memScoped {
+    val seconds = alloc<LongVar>()
+    val nanoseconds = alloc<IntVar>()
+    val result = current_time(seconds.ptr, nanoseconds.ptr)
+    try {
+        require(result)
+        require(nanoseconds.value >= 0 && nanoseconds.value < NANOS_PER_ONE)
+        Instant(seconds.value, nanoseconds.value)
+    } catch (e: IllegalArgumentException) {
+        throw IllegalStateException("The readings from the system clock are not representable as an Instant")
+    }
+}

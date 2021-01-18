@@ -18,7 +18,7 @@ class ThreeTenBpLocalDateTimeTest {
             val offset = ZoneOffset.ofSeconds(iHours)
             for (j in 0..99999) {
                 val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(j)
-                assertEquals((j - iHours).toLong(), a.toEpochSecond(offset))
+                assertEquals((j - iHours).toLong(), a.toEpochSecond(offset.offset))
             }
         }
     }
@@ -27,7 +27,7 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsBeforeEpoch() {
         for (i in 0..99999) {
             val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(-i)
-            assertEquals(-i.toLong(), a.toEpochSecond(ZoneOffset.UTC))
+            assertEquals(-i.toLong(), a.toEpochSecond(ZoneOffsetImpl.UTC))
         }
     }
 

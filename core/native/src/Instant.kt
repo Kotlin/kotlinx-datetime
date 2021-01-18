@@ -8,8 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.cinterop.*
-import platform.posix.*
 import kotlin.math.*
 import kotlin.time.*
 
@@ -82,6 +80,8 @@ private const val MIN_SECOND = -31619119219200L // -1000000-01-01T00:00:00Z
 private const val MAX_SECOND = 31494816403199L // +1000000-12-31T23:59:59
 
 private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
+
+internal expect fun currentTime(): Instant
 
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
@@ -208,18 +208,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         internal actual val MAX = Instant(MAX_SECOND, 999_999_999)
 
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
-        actual fun now(): Instant = memScoped {
-            val seconds = alloc<LongVar>()
-            val nanoseconds = alloc<IntVar>()
-            val result = current_time(seconds.ptr, nanoseconds.ptr)
-            try {
-                require(result)
-                require(nanoseconds.value >= 0 && nanoseconds.value < NANOS_PER_ONE)
-                Instant(seconds.value, nanoseconds.value)
-            } catch (e: IllegalArgumentException) {
-                throw IllegalStateException("The readings from the system clock are not representable as an Instant")
-            }
-        }
+        actual fun now(): Instant = currentTime()
 
         // org.threeten.bp.Instant#ofEpochMilli
         actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
