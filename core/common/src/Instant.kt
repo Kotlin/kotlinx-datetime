@@ -192,19 +192,15 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
     /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
     any other component means that `plus` will throw due to the minimum value of the numeric type overflowing the
     platform-specific limits. */
-    if (period.nanoseconds != Long.MIN_VALUE) {
-        val negatedPeriod = with(period) {
-            DateTimePeriod(-years, -months, -days, -hours, -minutes, -seconds, -nanoseconds)
-        }
+    if (period.totalNanoseconds != Long.MIN_VALUE) {
+        val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -totalNanoseconds) }
         plus(negatedPeriod, timeZone)
     } else {
-        val negatedPeriod = with(period) {
-            DateTimePeriod(-years, -months, -days, -hours, -minutes, -seconds, -(nanoseconds+1))
-        }
+        val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -(totalNanoseconds+1)) }
         plus(negatedPeriod, timeZone).plus(DateTimeUnit.NANOSECOND)
     }
 
-    /**
+/**
  * Returns a [DateTimePeriod] representing the difference between `this` and [other] instants.
  *
  * The components of [DateTimePeriod] are calculated so that adding it to `this` instant results in the [other] instant.
@@ -214,7 +210,8 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * - negative or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
+ * on JVM) if the number of months between the two dates exceeds an Int.
  */
 public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
 
@@ -296,7 +293,8 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * - positive or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
+ * on JVM) if the number of months between the two dates exceeds an Int.
  * @see Instant.periodUntil
  */
 public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =

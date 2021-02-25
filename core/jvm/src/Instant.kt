@@ -94,13 +94,9 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
         val thisZdt = atZone(timeZone)
         return with(period) {
             thisZdt
-                    .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-                    .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                    .run { if (totalMonths != 0) plusMonths(totalMonths.toLong()) else this }
                     .run { if (days != 0) plusDays(days.toLong()) else this }
-                    .run { if (hours != 0) plusHours(hours.toLong()) else this }
-                    .run { if (minutes != 0) plusMinutes(minutes.toLong()) else this }
-                    .run { if (seconds != 0L) plusSeconds(seconds) else this }
-                    .run { if (nanoseconds != 0L) plusNanos(nanoseconds) else this }
+                    .run { if (totalNanoseconds != 0L) plusNanos(totalNanoseconds) else this }
         }.toInstant().let(::Instant)
     } catch (e: DateTimeException) {
         throw DateTimeArithmeticException(e)
@@ -149,11 +145,12 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
 
     val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
-    val time = thisZdt.until(otherZdt, ChronoUnit.NANOS).nanoseconds
+    val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
 
-    time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
+    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
+        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
     }
+    return buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds)
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {

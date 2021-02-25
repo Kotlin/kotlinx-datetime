@@ -111,13 +111,12 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     val thisZdt = this.value.atZone(timeZone.zoneId)
     with(period) {
         thisZdt
-                .run { if (years != 0 && months == 0) plusYears(years) else this }
-                .run { if (months != 0) plusMonths(years * 12.0 + months) else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
                 .run { if (days != 0) plusDays(days) as ZonedDateTime else this }
                 .run { if (hours != 0) plusHours(hours) else this }
                 .run { if (minutes != 0) plusMinutes(minutes) else this }
-                .run { if (seconds != 0L) plusSeconds(seconds.toDouble()) else this }
-                .run { if (nanoseconds != 0L) plusNanos(nanoseconds.toDouble()) else this }
+                .run { if (seconds != 0) plusSeconds(seconds) else this }
+                .run { if (nanoseconds != 0) plusNanos(nanoseconds.toDouble()) else this }
     }.toInstant().let(::Instant)
 }    catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
@@ -188,11 +187,9 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
 
     val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble(); thisZdt = thisZdt.plusMonths(months)
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble(); thisZdt = thisZdt.plusDays(days) as ZonedDateTime
-    val time = thisZdt.until(otherZdt, ChronoUnit.NANOS).toDouble().nanoseconds
+    val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS).toDouble()
 
-    time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt(), hours, minutes, seconds.toLong(), nanoseconds.toLong())
-    }
+    buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds.toLong())
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
 }

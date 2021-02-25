@@ -85,8 +85,7 @@ private fun ofEpochDayChecked(epochDay: Long): java.time.LocalDate {
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {
         return@with value
-                .run { if (years != 0 && months == 0) plusYears(years.toLong()) else this }
-                .run { if (months != 0) plusMonths(years * 12L + months.toLong()) else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths.toLong()) else this }
                 .run { if (days != 0) plusDays(days.toLong()) else this }
 
     }.let(::LocalDate)
@@ -101,7 +100,10 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = startD.until(endD, ChronoUnit.MONTHS); startD = startD.plusMonths(months)
     val days = startD.until(endD, ChronoUnit.DAYS)
 
-    return DatePeriod((months / 12).toInt(), (months % 12).toInt(), days.toInt())
+    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
+        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
+    }
+    return DatePeriod(totalMonths = months.toInt(), days.toInt())
 }
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {

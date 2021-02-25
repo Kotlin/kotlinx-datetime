@@ -85,15 +85,21 @@ class ConvertersTest {
 
     @Test
     fun datePeriod() {
+
+        fun assertJtPeriodNormalizedEquals(a: JTPeriod, b: JTPeriod) {
+            assertEquals(a.days, b.days)
+            assertEquals(a.months + a.years * 12, b.months + b.years * 12)
+        }
+
         fun test(years: Int, months: Int, days: Int) {
             val ktPeriod = DatePeriod(years, months, days)
             val jtPeriod = JTPeriod.of(years, months, days)
 
             assertEquals(ktPeriod, jtPeriod.toKotlinDatePeriod())
-            assertEquals(jtPeriod, ktPeriod.toJavaPeriod())
+            assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toJavaPeriod())
 
-            // TODO: assertEquals(ktPeriod, jtPeriod.toString().let(DatePeriod::parse))
-            assertEquals(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
+            assertEquals(ktPeriod, jtPeriod.toString().let(DatePeriod::parse))
+            assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
         }
 
         repeat(1000) {

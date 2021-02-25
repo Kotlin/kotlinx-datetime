@@ -468,9 +468,11 @@ class InstantRangeTest {
     fun periodArithmeticOutOfRange() {
         // Instant.plus(DateTimePeriod(), TimeZone)
         // Arithmetic overflow
-        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
-            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MAX_VALUE), UTC) }
-            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(seconds = Long.MIN_VALUE), UTC) }
+        for (instant in largePositiveInstants) {
+            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(nanoseconds = Long.MAX_VALUE), UTC) }
+        }
+        for (instant in largeNegativeInstants) {
+            assertArithmeticFails("$instant") { instant.plus(DateTimePeriod(nanoseconds = Long.MIN_VALUE), UTC) }
         }
         // Arithmetic overflow in an Int
         for (instant in smallInstants + listOf(maxValidInstant)) {
@@ -494,9 +496,8 @@ class InstantRangeTest {
         assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC) }
         assertArithmeticFails { minValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC) }
         // Overflowing a LocalDateTime in intermediate computations
-        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(seconds = 1, nanoseconds = -1_000_000_001), UTC) }
-        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(hours = 1, minutes = -61), UTC) }
-        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(days = 1, hours = -48), UTC) }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(days = 1, nanoseconds = -1_000_000_001), UTC) }
+        assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(months = 1, days = -48), UTC) }
     }
 
     @Test
@@ -540,9 +541,9 @@ class InstantRangeTest {
     @Test
     fun periodUntilOutOfRange() {
         // Instant.periodUntil
-        maxValidInstant.periodUntil(minValidInstant, UTC)
-        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).periodUntil(minValidInstant, UTC) }
-        assertArithmeticFails { maxValidInstant.periodUntil(minValidInstant - 1.nanoseconds, UTC) }
+        maxValidInstant.periodUntil(maxValidInstant, UTC)
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).periodUntil(maxValidInstant, UTC) }
+        assertArithmeticFails { minValidInstant.periodUntil(minValidInstant - 1.nanoseconds, UTC) }
     }
 
     @Test

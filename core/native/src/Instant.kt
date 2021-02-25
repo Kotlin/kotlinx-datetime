@@ -266,16 +266,10 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedLocalDateTimeFailing(timeZone)
-            .run { if (years != 0 && months == 0) plus(years, DateTimeUnit.YEAR) else this }
-            .run { if (months != 0) plus(safeAdd(safeMultiply(years, 12), months), DateTimeUnit.MONTH) else this }
+            .run { if (totalMonths != 0) plus(totalMonths, DateTimeUnit.MONTH) else this }
             .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
         withDate.toInstant()
-            .run { if (hours != 0)
-                plus(hours.toLong() * SECONDS_PER_HOUR, 0).check(timeZone) else this }
-            .run { if (minutes != 0)
-                plus(minutes.toLong() * SECONDS_PER_MINUTE, 0).check(timeZone) else this }
-            .run { if (seconds != 0L) plus(seconds, 0).check(timeZone) else this }
-            .run { if (nanoseconds != 0L) plus(0, nanoseconds).check(timeZone) else this }
+            .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
     }.check(timeZone)
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
@@ -325,11 +319,9 @@ actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeri
     thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
     val days = thisLdt.until(otherLdt, DateTimeUnit.DAY).toInt() // `until` on dates never fails
     thisLdt = thisLdt.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
-    val time = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND).nanoseconds // |otherLdt - thisLdt| < 24h
+    val nanoseconds = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
 
-    time.toComponents { hours, minutes, seconds, nanoseconds ->
-        return DateTimePeriod((months / 12), (months % 12), days, hours, minutes, seconds.toLong(), nanoseconds.toLong())
-    }
+    return buildDateTimePeriod(months, days, nanoseconds)
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
