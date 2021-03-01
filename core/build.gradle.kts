@@ -149,7 +149,7 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-common")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
             }
         }
 
