@@ -1,5 +1,4 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.*
 
@@ -26,24 +25,6 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 */
 
 version = "2020.1"
-
-enum class Platform {
-    Windows, Linux, MacOS;
-}
-
-val versionSuffixParameter = "versionSuffix"
-val teamcitySuffixParameter = "teamcitySuffix"
-val releaseVersionParameter = "releaseVersion"
-val BUILD_ALL_ID = "Build_All"
-val DEPLOY_PUBLISH_ID = "Deploy_Publish"
-val DEPLOY_CONFIGURE_VERSION_ID = "Deploy_Configure"
-val BUILD_CONFIGURE_VERSION_ID = "Build_Version"
-val BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID = AbsoluteId("KotlinTools_CreateSonatypeStagingRepository")
-val libraryStagingRepoDescription = "Kotlin-DateTime"
-val platforms = Platform.values()
-val jdk = "JDK_18_x64"
-
-fun Project.additionalConfiguration() { }
 
 project {
     // Disable editing of project and build settings from the UI to avoid issues with TeamCity
@@ -124,18 +105,6 @@ fun Project.buildAll(versionBuild: BuildType) = BuildType {
         }
     }
 
-    features {
-        commitStatusPublisher {
-            publisher = github {
-                githubUrl = "https://api.github.com"
-                authType = personalToken {
-                    token = "credentialsJSON:af36802a-ccd4-401b-86b9-0b08d2dfad17"
-                }
-            }
-            param("github_oauth_user", "ilya-g")
-        }
-    }
-
     commonConfigure()
 }.also { buildType(it) }
 
@@ -163,21 +132,6 @@ fun Project.build(platform: Platform, versionBuild: BuildType) = buildType("Buil
 
     // What files to publish as build artifacts
     artifactRules = "+:build/maven=>maven\n+:build/api=>api"
-}
-
-fun BuildType.dependsOn(build: IdOwner, configure: Dependency.() -> Unit) =
-    apply {
-        dependencies.dependency(build, configure)
-    }
-
-fun BuildType.dependsOnSnapshot(build: IdOwner, onFailure: FailureAction = FailureAction.FAIL_TO_START, configure: SnapshotDependency.() -> Unit = {}) = apply {
-    dependencies.dependency(build) {
-        snapshot {
-            configure()
-            onDependencyFailure = onFailure
-            onDependencyCancel = FailureAction.CANCEL
-        }
-    }
 }
 
 fun Project.deployVersion() = BuildType {
@@ -251,62 +205,3 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
         }
     }
 }.dependsOnSnapshot(configureBuild)
-
-fun Platform.buildTypeName(): String = when (this) {
-    Platform.Windows, Platform.Linux -> name
-    Platform.MacOS -> "Mac OS X"
-}
-
-fun Platform.buildTypeId(): String = buildTypeName().substringBefore(" ")
-
-fun Platform.teamcityAgentName(): String = buildTypeName()
-
-fun Project.buildType(name: String, platform: Platform, configure: BuildType.() -> Unit) = BuildType {
-    // ID is prepended with Project ID, so don't repeat it here
-    // ID should conform to identifier rules, so just letters, numbers and underscore
-    id("${name}_${platform.buildTypeId()}")
-    // Display name of the build configuration
-    this.name = "$name (${platform.buildTypeName()})"
-
-    requirements {
-        contains("teamcity.agent.jvm.os.name", platform.teamcityAgentName())
-    }
-
-    params {
-        // This parameter is needed for macOS agent to be compatible
-        if (platform == Platform.MacOS) param("env.JDK_17", "")
-    }
-
-    commonConfigure()
-    configure()
-}.also { buildType(it) }
-
-
-fun BuildType.commonConfigure() {
-    requirements {
-        noLessThan("teamcity.agent.hardware.memorySizeMb", "6144")
-    }
-
-    // Allow to fetch build status through API for badges
-    allowExternalStatus = true
-
-    // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
-    vcs {
-        root(DslContext.settingsRoot)
-        showDependenciesChanges = true
-        checkoutMode = CheckoutMode.ON_AGENT
-    }
-
-    failureConditions {
-        errorMessage = true
-        nonZeroExitCode = true
-        executionTimeoutMin = 120
-    }
-
-    features {
-        feature {
-            id = "perfmon"
-            type = "perfmon"
-        }
-    }
-}
