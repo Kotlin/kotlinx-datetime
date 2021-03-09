@@ -202,7 +202,7 @@ fun Project.deployVersion() = BuildType {
         gradle {
             name = "Verify Gradle Configuration"
             tasks = "clean publishPrepareVersion"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
             buildFile = ""
             jdkHome = "%env.$jdk%"
         }
@@ -244,7 +244,7 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
             name = "Deploy ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
             tasks = "clean publish"
             buildFile = ""
             gradleWrapperPath = ""
