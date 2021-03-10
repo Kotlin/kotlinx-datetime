@@ -254,6 +254,14 @@ and enable [core library desugaring](https://developer.android.com/studio/write/
 
 ### Gradle
 
+- Add the Maven Central repository if it is not already there:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+```
+
 - In multiplatform projects, add a dependency to the commonMain source set dependencies
 ```kotlin
 kotlin {
