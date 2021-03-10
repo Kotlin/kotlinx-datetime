@@ -6,22 +6,6 @@
 package kotlinx.datetime
 
 import kotlin.native.concurrent.*
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
-import kotlinx.serialization.internal.*
-
-@Suppress("INVISIBLE_MEMBER")
-object MonthSerializer: KSerializer<Month> {
-    private val impl = EnumSerializer("Month", Month.values())
-
-    override val descriptor: SerialDescriptor
-        get() = impl.descriptor
-
-    override fun deserialize(decoder: Decoder): Month = impl.deserialize(decoder)
-
-    override fun serialize(encoder: Encoder, value: Month) = impl.serialize(encoder, value)
-}
 
 public expect enum class Month {
     JANUARY,

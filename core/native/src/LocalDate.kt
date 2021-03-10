@@ -8,24 +8,9 @@
 
 package kotlinx.datetime
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.datetime.serializers.LocalDateISO8601Serializer
+import kotlinx.serialization.Serializable
 import kotlin.math.*
-
-actual object LocalDateLongSerializer: KSerializer<LocalDate> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.LONG)
-
-    override fun deserialize(decoder: Decoder): LocalDate =
-        LocalDate.ofEpochDay(decoder.decodeLong().clampToInt())
-
-    override fun serialize(encoder: Encoder, value: LocalDate) {
-        encoder.encodeLong(value.toEpochDay().toLong())
-    }
-
-}
 
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE

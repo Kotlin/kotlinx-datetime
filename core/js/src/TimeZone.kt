@@ -5,6 +5,8 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlinx.datetime.serializers.TimeZoneSerializer
+import kotlinx.datetime.serializers.ZoneOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 

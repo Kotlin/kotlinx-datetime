@@ -5,6 +5,7 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.test.*

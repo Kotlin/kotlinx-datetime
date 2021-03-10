@@ -6,6 +6,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.InstantISO8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException

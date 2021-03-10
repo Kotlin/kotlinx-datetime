@@ -8,6 +8,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.TimeZoneSerializer
+import kotlinx.datetime.serializers.ZoneOffsetSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneId
