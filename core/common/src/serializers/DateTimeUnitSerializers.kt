@@ -14,7 +14,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlin.reflect.KClass
 
-object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
+public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
         element<Long>("nanoseconds")
@@ -53,7 +53,7 @@ object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
     }
 }
 
-object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
+public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
         element<Int>("days")
@@ -92,7 +92,7 @@ object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.DayBas
     }
 }
 
-object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
+public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
         element<Int>("months")
@@ -132,7 +132,7 @@ object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.Mont
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
-object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
+public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
         DateTimeUnit.DateBased::class,
@@ -160,7 +160,7 @@ object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUn
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
-object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
+public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
         DateTimeUnit::class,

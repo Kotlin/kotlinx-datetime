@@ -50,7 +50,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
     actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value)
 
-    actual companion object {
+    public actual companion object {
         public actual fun parse(isoString: String): LocalDateTime = try {
             jtLocalDateTime.parse(isoString).let(::LocalDateTime)
         } catch (e: DateTimeParseException) {

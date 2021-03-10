@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
-    companion object {
+    public companion object {
 
         /**
          * Parses a string that represents a date/time value in ISO-8601 format including date and time components

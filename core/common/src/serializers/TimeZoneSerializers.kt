@@ -11,7 +11,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-object TimeZoneSerializer: KSerializer<TimeZone> {
+public object TimeZoneSerializer: KSerializer<TimeZone> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TimeZone", PrimitiveKind.STRING)
 
@@ -23,7 +23,7 @@ object TimeZoneSerializer: KSerializer<TimeZone> {
 
 }
 
-object ZoneOffsetSerializer: KSerializer<ZoneOffset> {
+public object ZoneOffsetSerializer: KSerializer<ZoneOffset> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ZoneOffset", PrimitiveKind.STRING)
 

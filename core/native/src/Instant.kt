@@ -87,14 +87,14 @@ internal expect fun currentTime(): Instant
 
 @Serializable(with = InstantIso8601Serializer::class)
 @OptIn(ExperimentalTime::class)
-public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
+public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     init {
         require(isValidInstantSecond(epochSeconds)) { "Instant exceeds minimum or maximum instant" }
     }
 
     // org.threeten.bp.Instant#toEpochMilli
-    actual fun toEpochMilliseconds(): Long =
+    public actual fun toEpochMilliseconds(): Long =
         epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
     // org.threeten.bp.Instant#plus(long, long)
@@ -112,7 +112,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         return fromEpochSecondsThrowing(newEpochSeconds, nanoAdjustment)
     }
 
-    actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
+    public actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
         try {
             plus(secondsToAdd, nanosecondsToAdd.toLong())
         } catch (e: IllegalArgumentException) {
@@ -122,9 +122,9 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         }
     }
 
-    actual operator fun minus(duration: Duration): Instant = plus(-duration)
+    public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
-    actual operator fun minus(other: Instant): Duration =
+    public actual operator fun minus(other: Instant): Duration =
         (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
             (this.nanosecondsOfSecond - other.nanosecondsOfSecond).nanoseconds
 
@@ -206,15 +206,15 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         return buf.toString()
     }
 
-    actual companion object {
+    public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
         internal actual val MAX = Instant(MAX_SECOND, 999_999_999)
 
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
-        actual fun now(): Instant = currentTime()
+        public actual fun now(): Instant = currentTime()
 
         // org.threeten.bp.Instant#ofEpochMilli
-        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
+        public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
             if (epochMilliseconds < MIN_SECOND * MILLIS_PER_ONE) MIN
             else if (epochMilliseconds > MAX_SECOND * MILLIS_PER_ONE) MAX
             else Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
@@ -231,7 +231,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         }
 
         // org.threeten.bp.Instant#ofEpochSecond(long, long)
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
             try {
                 fromEpochSecondsThrowing(epochSeconds, nanosecondAdjustment)
             } catch (e: ArithmeticException) {
@@ -240,15 +240,15 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
                 if (epochSeconds > 0) MAX else MIN
             }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        actual fun parse(isoString: String): Instant =
+        public actual fun parse(isoString: String): Instant =
             instantParser.parse(isoString)
 
-        actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
+        public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 
-        actual val DISTANT_FUTURE: Instant = fromEpochSeconds(DISTANT_FUTURE_SECONDS, 0)
+        public actual val DISTANT_FUTURE: Instant = fromEpochSeconds(DISTANT_FUTURE_SECONDS, 0)
     }
 
 }
@@ -266,7 +266,7 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
     toZonedLocalDateTimeFailing(zone)
 }
 
-actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
+public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedLocalDateTimeFailing(timeZone)
             .run { if (totalMonths != 0) plus(totalMonths, DateTimeUnit.MONTH) else this }
@@ -314,7 +314,7 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
     }
 
 @OptIn(ExperimentalTime::class)
-actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
     var thisLdt = toZonedLocalDateTimeFailing(timeZone)
     val otherLdt = other.toZonedLocalDateTimeFailing(timeZone)
 

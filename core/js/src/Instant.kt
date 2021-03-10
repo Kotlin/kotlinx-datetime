@@ -22,15 +22,15 @@ import kotlin.math.truncate
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
-    actual val epochSeconds: Long
+    public actual val epochSeconds: Long
         get() = value.epochSecond().toLong()
-    actual val nanosecondsOfSecond: Int
+    public actual val nanosecondsOfSecond: Int
         get() = value.nano().toInt()
 
     public actual fun toEpochMilliseconds(): Long =
             epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
-    actual operator fun plus(duration: Duration): Instant {
+    public actual operator fun plus(duration: Duration): Instant {
         val addSeconds = truncate(duration.inSeconds)
         val addNanos = (duration.inNanoseconds % NANOS_PER_ONE).toInt()
         return try {
@@ -47,9 +47,9 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         return jtInstant.ofEpochSecond(newSeconds, newNanos)
     }
 
-    actual operator fun minus(duration: Duration): Instant = plus(-duration)
+    public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
-    actual operator fun minus(other: Instant): Duration {
+    public actual operator fun minus(other: Instant): Duration {
         val diff = jtDuration.between(other.value, this.value)
         return diff.seconds().toDouble().seconds + diff.nano().toDouble().nanoseconds
     }
@@ -65,24 +65,24 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     public actual companion object {
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
-        actual fun now(): Instant =
+        public actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
-        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant = try {
+        public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant = try {
             fromEpochSeconds(epochMilliseconds / MILLIS_PER_ONE, epochMilliseconds % MILLIS_PER_ONE * NANOS_PER_MILLI)
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
             if (epochMilliseconds > 0) MAX else MIN
         }
 
-        actual fun parse(isoString: String): Instant = try {
+        public actual fun parse(isoString: String): Instant = try {
             Instant(jtInstant.parse(isoString))
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
         }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             /* Performing normalization here because otherwise this fails:
                assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(),
                             Instant.fromEpochSeconds(0, Long.MAX_VALUE).nanosecondsOfSecond) */
@@ -94,15 +94,15 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochSeconds > 0) MAX else MIN
         }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant = try {
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
             if (epochSeconds > 0) MAX else MIN
         }
 
-        actual val DISTANT_PAST: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS, 999_999_999))
-        actual val DISTANT_FUTURE: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS, 0))
+        public actual val DISTANT_PAST: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS, 999_999_999))
+        public actual val DISTANT_FUTURE: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS, 0))
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
@@ -171,7 +171,7 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
     else
         plus(-value, unit, timeZone)
 
-actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     try {
         multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
             Instant(plusFix(d.toDouble(), r.toInt()))

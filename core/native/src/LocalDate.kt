@@ -37,7 +37,7 @@ private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
 @Serializable(with = LocalDateIso8601Serializer::class)
-public actual class LocalDate actual constructor(actual val year: Int, actual val monthNumber: Int, actual val dayOfMonth: Int) : Comparable<LocalDate> {
+public actual class LocalDate actual constructor(public actual val year: Int, public actual val monthNumber: Int, public actual val dayOfMonth: Int) : Comparable<LocalDate> {
 
     init {
         // org.threeten.bp.LocalDate#create
@@ -55,8 +55,8 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
     public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
 
-    actual companion object {
-        actual fun parse(isoString: String): LocalDate =
+    public actual companion object {
+        public actual fun parse(isoString: String): LocalDate =
             localDateParser.parse(isoString)
 
         // org.threeten.bp.LocalDate#toEpochDay
@@ -134,18 +134,18 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
     internal fun withYear(newYear: Int): LocalDate =
         if (newYear == year) this else resolvePreviousValid(newYear, monthNumber, dayOfMonth)
 
-    actual val month: Month
+    public actual val month: Month
         get() = Month(monthNumber)
 
     // org.threeten.bp.LocalDate#getDayOfWeek
-    actual val dayOfWeek: DayOfWeek
+    public actual val dayOfWeek: DayOfWeek
         get() {
             val dow0 = floorMod(toEpochDay() + 3, 7)
             return DayOfWeek(dow0 + 1)
         }
 
     // org.threeten.bp.LocalDate#getDayOfYear
-    actual val dayOfYear: Int
+    public actual val dayOfYear: Int
         get() = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
 
     // Several times faster than using `compareBy`
@@ -272,7 +272,7 @@ public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
             throw DateTimeArithmeticException("Can't add a Long to a LocalDate") // TODO: less specific message
         else plus(value.toInt(), unit)
 
-actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
+public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     with(period) {
         try {
             this@plus
@@ -307,7 +307,7 @@ public actual fun LocalDate.monthsUntil(other: LocalDate): Int {
 public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
     monthsUntil(other) / 12
 
-actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
+public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = monthsUntil(other)
     val days = plusMonths(months).daysUntil(other)
     return DatePeriod(totalMonths = months, days)

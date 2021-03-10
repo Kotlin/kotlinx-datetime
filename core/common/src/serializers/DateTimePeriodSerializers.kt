@@ -12,7 +12,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
+public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("DateTimePeriod") {
@@ -66,7 +66,7 @@ object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
 }
 
-object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
+public object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("DateTimePeriod", PrimitiveKind.STRING)
@@ -80,7 +80,7 @@ object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
 }
 
-object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
+public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
     private fun unexpectedNonzero(fieldName: String, value: Long) {
         if (value != 0L) {
@@ -134,7 +134,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
 }
 
-object DatePeriodIso8601Serializer: KSerializer<DatePeriod> {
+public object DatePeriodIso8601Serializer: KSerializer<DatePeriod> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("DatePeriod", PrimitiveKind.STRING)

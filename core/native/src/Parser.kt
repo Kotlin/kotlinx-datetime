@@ -5,7 +5,7 @@
 
 package kotlinx.datetime
 
-typealias Parser<T> = (String, Int) -> Pair<Int, T>
+internal typealias Parser<T> = (String, Int) -> Pair<Int, T>
 
 private fun parseException(message: String, position: Int) =
     DateTimeFormatException("Parse error at char $position: $message")
