@@ -142,6 +142,8 @@ fun Project.deployVersion() = BuildType {
     params {
         // enable editing of this configuration to set up things
         param("teamcity.ui.settings.readOnly", "false")
+        param("bintray-user", bintrayUserName)
+        password("bintray-key", bintrayToken)
         param(versionSuffixParameter, "dev-%build.counter%")
         param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
@@ -156,7 +158,7 @@ fun Project.deployVersion() = BuildType {
         gradle {
             name = "Verify Gradle Configuration"
             tasks = "clean publishPrepareVersion"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
             buildFile = ""
             jdkHome = "%env.$jdk%"
         }
@@ -186,6 +188,8 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
         param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
+        param("bintray-user", bintrayUserName)
+        password("bintray-key", bintrayToken)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
@@ -198,7 +202,7 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
             name = "Deploy ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
             tasks = "clean publish"
             buildFile = ""
             gradleWrapperPath = ""

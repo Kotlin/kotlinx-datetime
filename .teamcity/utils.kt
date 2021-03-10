@@ -9,6 +9,8 @@ const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
 const val releaseVersionParameter = "releaseVersion"
 
+const val bintrayUserName = "%env.BINTRAY_USER%"
+const val bintrayToken = "%env.BINTRAY_API_KEY%"
 const val libraryStagingRepoDescription = "Kotlin-DateTime-library"
 
 val platforms = Platform.values()
