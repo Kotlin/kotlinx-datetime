@@ -1,7 +1,6 @@
-import jetbrains.buildServer.configs.kotlin.v2018_2.*
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildFeatures.commitStatusPublisher
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.*
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -25,16 +24,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2018.2"
-val versionSuffixParameter = "versionSuffix"
-val teamcitySuffixParameter = "teamcitySuffix"
-val releaseVersionParameter = "releaseVersion"
-
-val bintrayUserName = "%env.BINTRAY_USER%"
-val bintrayToken = "%env.BINTRAY_API_KEY%"
-
-val platforms = listOf("Windows", "Linux", "Mac OS X")
-val jdk = "JDK_18_x64"
+version = "2020.1"
 
 project {
     // Disable editing of project and build settings from the UI to avoid issues with TeamCity
@@ -54,22 +44,30 @@ project {
         }
     }
 
-    val deployConfigure = deployConfigure().apply {
+    val deployVersion = deployVersion().apply {
         dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
+        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
+            reuseBuilds = ReuseBuilds.NO
+        }
     }
-    val deploys = platforms.map { deploy(it, deployConfigure) }
-    val deployPublish = deployPublish(deployConfigure).apply {
+    val deploys = platforms.map { deploy(it, deployVersion) }
+    val deployPublish = deployPublish(deployVersion).apply {
         dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
+        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
+            reuseBuilds = ReuseBuilds.NO
+        }
         deploys.forEach {
             dependsOnSnapshot(it)
         }
     }
 
-    buildTypesOrder = listOf(buildAll, buildVersion, *builds.toTypedArray(), deployPublish, deployConfigure, *deploys.toTypedArray())
+    buildTypesOrder = listOf(buildAll, buildVersion, *builds.toTypedArray(), deployPublish, deployVersion, *deploys.toTypedArray())
+
+    additionalConfiguration()
 }
 
 fun Project.buildVersion() = BuildType {
-    id("Build_Version")
+    id(BUILD_CONFIGURE_VERSION_ID)
     this.name = "Build (Configure Version)"
     commonConfigure()
 
@@ -91,7 +89,7 @@ fun Project.buildVersion() = BuildType {
 }.also { buildType(it) }
 
 fun Project.buildAll(versionBuild: BuildType) = BuildType {
-    id("Build_All")
+    id(BUILD_ALL_ID)
     this.name = "Build (All)"
     type = BuildTypeSettings.Type.COMPOSITE
 
@@ -107,22 +105,10 @@ fun Project.buildAll(versionBuild: BuildType) = BuildType {
         }
     }
 
-    features {
-        commitStatusPublisher {
-            publisher = github {
-                githubUrl = "https://api.github.com"
-                authType = personalToken {
-                    token = "credentialsJSON:af36802a-ccd4-401b-86b9-0b08d2dfad17"
-                }
-            }
-            param("github_oauth_user", "ilya-g")
-        }
-    }
-
     commonConfigure()
 }.also { buildType(it) }
 
-fun Project.build(platform: String, versionBuild: BuildType) = platform(platform, "Build") {
+fun Project.build(platform: Platform, versionBuild: BuildType) = buildType("Build", platform) {
 
     dependsOnSnapshot(versionBuild)
 
@@ -133,7 +119,7 @@ fun Project.build(platform: String, versionBuild: BuildType) = platform(platform
 
     steps {
         gradle {
-            name = "Build and Test $platform Binaries"
+            name = "Build and Test ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             tasks = "clean publishToBuildLocal check"
@@ -148,23 +134,8 @@ fun Project.build(platform: String, versionBuild: BuildType) = platform(platform
     artifactRules = "+:build/maven=>maven\n+:build/api=>api"
 }
 
-fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
-    apply {
-        dependencies.dependency(build, configure)
-    }
-
-fun BuildType.dependsOnSnapshot(build: BuildType, onFailure: FailureAction = FailureAction.FAIL_TO_START, configure: SnapshotDependency.() -> Unit = {}) = apply {
-    dependencies.dependency(build) {
-        snapshot {
-            configure()
-            onDependencyFailure = onFailure
-            onDependencyCancel = FailureAction.CANCEL
-        }
-    }
-}
-
-fun Project.deployConfigure() = BuildType {
-    id("Deploy_Configure")
+fun Project.deployVersion() = BuildType {
+    id(DEPLOY_CONFIGURE_VERSION_ID)
     this.name = "Deploy (Configure Version)"
     commonConfigure()
 
@@ -174,6 +145,8 @@ fun Project.deployConfigure() = BuildType {
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
         param(versionSuffixParameter, "dev-%build.counter%")
+        param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
+        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
     requirements {
@@ -184,7 +157,7 @@ fun Project.deployConfigure() = BuildType {
     steps {
         gradle {
             name = "Verify Gradle Configuration"
-            tasks = "clean publishBintrayCreateVersion"
+            tasks = "clean publishPrepareVersion"
             gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
             buildFile = ""
             jdkHome = "%env.$jdk%"
@@ -193,7 +166,7 @@ fun Project.deployConfigure() = BuildType {
 }.also { buildType(it) }
 
 fun Project.deployPublish(configureBuild: BuildType) = BuildType {
-    id("Deploy_Publish")
+    id(DEPLOY_PUBLISH_ID)
     this.name = "Deploy (Publish)"
     type = BuildTypeSettings.Type.COMPOSITE
     dependsOnSnapshot(configureBuild)
@@ -202,12 +175,13 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
         // Tell configuration build how to get release version parameter from this build
         // "dev" is the default and means publishing is not releasing to public
         text(configureBuild.reverseDepParamRefs[releaseVersionParameter].name, "dev", display = ParameterDisplay.PROMPT, label = "Release Version")
+        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
     commonConfigure()
 }.also { buildType(it) }
 
 
-fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platform, "Deploy") {
+fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("Deploy", platform) {
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
     maxRunningBuilds = 1
@@ -216,6 +190,7 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
         param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
+        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
     vcs {
@@ -224,7 +199,7 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
 
     steps {
         gradle {
-            name = "Deploy $platform Binaries"
+            name = "Deploy ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
@@ -234,53 +209,3 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
         }
     }
 }.dependsOnSnapshot(configureBuild)
-
-fun Project.platform(platform: String, name: String, configure: BuildType.() -> Unit) = BuildType {
-    // ID is prepended with Project ID, so don't repeat it here
-    // ID should conform to identifier rules, so just letters, numbers and underscore
-    id("${name}_${platform.substringBefore(" ")}")
-    // Display name of the build configuration
-    this.name = "$name ($platform)"
-
-    requirements {
-        contains("teamcity.agent.jvm.os.name", platform)
-    }
-
-    params {
-        // This parameter is needed for macOS agent to be compatible
-        if (platform.startsWith("Mac")) param("env.JDK_17", "")
-    }
-
-    commonConfigure()
-    configure()
-}.also { buildType(it) }
-
-
-fun BuildType.commonConfigure() {
-    requirements {
-        noLessThan("teamcity.agent.hardware.memorySizeMb", "6144")
-    }
-
-    // Allow to fetch build status through API for badges
-    allowExternalStatus = true
-
-    // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
-    vcs {
-        root(DslContext.settingsRoot)
-        showDependenciesChanges = true
-        checkoutMode = CheckoutMode.ON_AGENT
-    }
-
-    failureConditions {
-        errorMessage = true
-        nonZeroExitCode = true
-        executionTimeoutMin = 120
-    }
-
-    features {
-        feature {
-            id = "perfmon"
-            type = "perfmon"
-        }
-    }
-}
