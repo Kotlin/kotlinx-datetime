@@ -8,37 +8,17 @@ buildscript {
 }
 
 plugins {
-    id("kotlinx.team.infra") version "0.1.0-dev-53"
-}
-
-project(":kotlinx-datetime") {
-    pluginManager.apply("kotlin-multiplatform")
-//    pluginManager.apply("maven-publish")
+    id("kotlinx.team.infra") version "0.3.0-dev-64"
 }
 
 infra {
     teamcity {
-        bintrayUser = "%env.BINTRAY_USER%"
-        bintrayToken = "%env.BINTRAY_API_KEY%"
+        libraryStagingRepoDescription = project.name
     }
     publishing {
         include(":kotlinx-datetime")
-
-        bintray {
-            organization = "kotlin"
-            repository = "kotlinx"
-            library = "kotlinx.datetime"
-            username = findProperty("bintrayUser") as String?
-            password = findProperty("bintrayApiKey") as String?
-        }
-
-        bintrayDev {
-            organization = "kotlin"
-            repository = "kotlin-dev"
-            library = "kotlinx.datetime"
-            username = findProperty("bintrayUser") as String?
-            password = findProperty("bintrayApiKey") as String?
-        }
+        libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
+        sonatype { }
     }
 }
 

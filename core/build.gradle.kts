@@ -1,3 +1,4 @@
+import kotlinx.team.infra.mavenPublicationsPom
 import java.net.URL
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
@@ -7,20 +8,16 @@ plugins {
     `maven-publish`
 }
 
+mavenPublicationsPom {
+    description.set("Kotlin Datetime Library")
+}
+
 base {
     archivesBaseName = "kotlinx-datetime" // doesn't work
 }
 
 //val JDK_6: String by project
 val JDK_8: String by project
-
-//publishing {
-//    repositories {
-//        maven(url = "${rootProject.buildDir}/maven") {
-//            this.name = "buildLocal2"
-//        }
-//    }
-//}
 
 kotlin {
     infra {

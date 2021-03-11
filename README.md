@@ -245,7 +245,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 
 > Note that the library is experimental, and the API is subject to change.
 
-The library is published to [kotlinx](https://bintray.com/kotlin/kotlinx/kotlinx.datetime) bintray repository<!-- and available in jcenter as well-->.
+The library is published to Maven Central.
 
 The library depends on the Kotlin Standard Library not lower than `1.4.0`.
 
@@ -254,11 +254,11 @@ and enable [core library desugaring](https://developer.android.com/studio/write/
 
 ### Gradle
 
-- Add the bintray repository:
+- Add the Maven Central repository if it is not already there:
 
 ```kotlin
 repositories {
-    maven(url = "https://kotlin.bintray.com/kotlinx/") // soon will be just jcenter()
+    mavenCentral()
 }
 ```
 
@@ -313,32 +313,7 @@ private val jsJodaTz = JsJodaTimeZoneModule
 
 ### Maven
 
-- Add the bintray repository to the `<repositories>` section.
-
-```xml
-<repository>
-    <snapshots>
-        <enabled>false</enabled>
-    </snapshots>
-    <id>kotlinx</id>
-    <name>kotlinx</name>
-    <url>https://kotlin.bintray.com/kotlinx/</url>
-</repository>
-```
-<!--
-```xml
-<repository>
-    <snapshots>
-        <enabled>false</enabled>
-    </snapshots>
-    <id>jcenter</id>
-    <name>jcenter</name>
-    <url>https://jcenter.bintray.com/</url>
-</repository>
-```
--->
-
-- Add a dependency to the `<dependencies>` element. Note that you need to use the platform-specific `-jvm` artifact in Maven.
+Add a dependency to the `<dependencies>` element. Note that you need to use the platform-specific `-jvm` artifact in Maven.
 
 ```xml
 <dependency>
