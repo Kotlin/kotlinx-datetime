@@ -7,7 +7,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.LocalDateISO8601Serializer
 import kotlinx.serialization.Serializable
-import kotlin.time.*
 
 @Serializable(with = LocalDateISO8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {

@@ -7,9 +7,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
 import kotlinx.datetime.serializers.LocalDateISO8601Serializer
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
 
 @Serializable(with = LocalDateISO8601Serializer::class)
