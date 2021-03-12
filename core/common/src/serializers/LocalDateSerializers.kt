@@ -63,5 +63,3 @@ object LocalDateComponentSerializer: KSerializer<LocalDate> {
     }
 
 }
-
-expect object LocalDateLongSerializer: KSerializer<LocalDate>

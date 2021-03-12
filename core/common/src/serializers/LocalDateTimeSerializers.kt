@@ -85,6 +85,3 @@ object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
     }
 
 }
-
-expect object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime>
-
