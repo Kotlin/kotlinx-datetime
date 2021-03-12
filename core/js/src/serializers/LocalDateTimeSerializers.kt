@@ -30,7 +30,7 @@ actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
                     0 -> epochDay = decodeLongElement(descriptor, 0)
                     1 -> nanoOfDay = decodeLongElement(descriptor, 1)
                     CompositeDecoder.DECODE_DONE -> break
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             if (epochDay == null) throw MissingFieldException("epochDay")

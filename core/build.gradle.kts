@@ -19,6 +19,7 @@ base {
 
 //val JDK_6: String by project
 val JDK_8: String by project
+val serializationVersion: String by project
 
 kotlin {
     infra {
@@ -149,7 +150,7 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-common")
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 

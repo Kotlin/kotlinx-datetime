@@ -57,7 +57,7 @@ object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
                     5 -> second = decodeShortElement(descriptor, 5)
                     6 -> nanosecond = decodeIntElement(descriptor, 6)
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             if (year == null) throw MissingFieldException("year")

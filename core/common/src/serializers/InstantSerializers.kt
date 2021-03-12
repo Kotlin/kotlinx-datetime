@@ -42,7 +42,7 @@ object InstantComponentSerializer: KSerializer<Instant> {
                     0 -> epochSeconds = decodeLongElement(descriptor, 0)
                     1 -> nanosecondsOfSecond = decodeIntElement(descriptor, 1)
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             if (epochSeconds == null) throw MissingFieldException("epochSeconds")

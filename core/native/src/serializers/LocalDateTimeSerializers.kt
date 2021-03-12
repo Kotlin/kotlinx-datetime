@@ -5,10 +5,8 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.clampToInt
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -31,12 +29,12 @@ actual object LocalDateTimeCompactSerializer: KSerializer<LocalDateTime> {
                     0 -> epochDay = decodeLongElement(descriptor, 0)
                     1 -> nanoOfDay = decodeLongElement(descriptor, 1)
                     CompositeDecoder.DECODE_DONE -> break
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             if (epochDay == null) throw MissingFieldException("epochDay")
             if (nanoOfDay == null) throw MissingFieldException("nanoOfDay")
-            val date = LocalDate.ofEpochDay(epochDay.clampToInt())
+            val date = LocalDateLongSerializer.dateFromLongEpochDays(epochDay)
             val time = LocalTime.ofNanoOfDay(nanoOfDay)
             LocalDateTime(date, time)
         }

@@ -44,7 +44,7 @@ object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
                     5 -> seconds = decodeIntElement(descriptor, 5)
                     6 -> nanoseconds = decodeLongElement(descriptor, 6)
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             DateTimePeriod(years, months, days, hours, minutes, seconds, nanoseconds)
@@ -84,7 +84,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
     private fun unexpectedNonzero(fieldName: String, value: Long) {
         if (value != 0L) {
-            throw SerializationException("expected field '$fieldName' to be zero, but was $value")
+            throw SerializationException("DatePeriod should have non-date components be zero, but got $value in '$fieldName'")
         }
     }
 
@@ -97,7 +97,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
             element<Int>("days", isOptional = true)
             element<Int>("hours", isOptional = true)
             element<Int>("minutes", isOptional = true)
-            element<Long>("seconds", isOptional = true)
+            element<Int>("seconds", isOptional = true)
             element<Long>("nanoseconds", isOptional = true)
         }
 
@@ -113,10 +113,10 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
                     2 -> days = decodeIntElement(descriptor, 2)
                     3 -> unexpectedNonzero("hours", decodeIntElement(descriptor, 3))
                     4 -> unexpectedNonzero("minutes", decodeIntElement(descriptor, 4))
-                    5 -> unexpectedNonzero("seconds", decodeLongElement(descriptor, 5))
+                    5 -> unexpectedNonzero("seconds", decodeIntElement(descriptor, 5))
                     6 -> unexpectedNonzero("nanoseconds", decodeLongElement(descriptor, 6))
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                    else -> error("Unexpected index: $index")
+                    else -> throw SerializationException("Unexpected index: $index")
                 }
             }
             DatePeriod(years, months, days)
@@ -143,7 +143,7 @@ object DatePeriodISO8601Serializer: KSerializer<DatePeriod> {
     override fun deserialize(decoder: Decoder): DatePeriod =
         when (val period = DateTimePeriod.parse(decoder.decodeString())) {
             is DatePeriod -> period
-            else -> throw IllegalArgumentException("$period is not a date-based period")
+            else -> throw SerializationException("$period is not a date-based period")
         }
 
     override fun serialize(encoder: Encoder, value: DatePeriod) {
