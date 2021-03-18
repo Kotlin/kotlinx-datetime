@@ -6,6 +6,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 plugins {
     id("kotlin-multiplatform")
     `maven-publish`
+    id("org.jetbrains.dokka")
 }
 
 mavenPublicationsPom {
@@ -217,6 +218,17 @@ tasks {
     named("jvmTest", Test::class) {
         // maxHeapSize = "1024m"
 //        executable = "$JDK_6/bin/java"
+    }
+
+    val docsDir = buildDir.resolve("dokka/html")
+
+    dokkaHtml {
+        outputDirectory.set(docsDir)
+    }
+
+    named("javadocJar", org.gradle.jvm.tasks.Jar::class) {
+        dependsOn(dokkaHtml)
+        from(docsDir)
     }
 }
 

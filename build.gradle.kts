@@ -9,6 +9,7 @@ buildscript {
 
 plugins {
     id("kotlinx.team.infra") version "0.3.0-dev-64"
+    id("org.jetbrains.dokka") version "1.4.30" apply false
 }
 
 infra {
@@ -37,4 +38,3 @@ allprojects {
         mavenCentral()
     }
 }
-
