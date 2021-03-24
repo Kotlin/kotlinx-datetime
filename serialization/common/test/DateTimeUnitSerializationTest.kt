@@ -18,8 +18,8 @@ class DateTimeUnitSerializationTest {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
             val json = "{\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
-            assertEquals(json, Json.encodeToString(TimeBasedSerializer, unit))
-            assertEquals(unit, Json.decodeFromString(TimeBasedSerializer, json))
+            assertEquals(json, Json.encodeToString(TimeBasedDateTimeUnitSerializer, unit))
+            assertEquals(unit, Json.decodeFromString(TimeBasedDateTimeUnitSerializer, json))
         }
     }
 
@@ -29,8 +29,8 @@ class DateTimeUnitSerializationTest {
             val days = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DateBased.DayBased(days)
             val json = "{\"days\":$days}"
-            assertEquals(json, Json.encodeToString(DayBasedSerializer, unit))
-            assertEquals(unit, Json.decodeFromString(DayBasedSerializer, json))
+            assertEquals(json, Json.encodeToString(DayBasedDateTimeUnitSerializer, unit))
+            assertEquals(unit, Json.decodeFromString(DayBasedDateTimeUnitSerializer, json))
         }
     }
 
@@ -40,8 +40,8 @@ class DateTimeUnitSerializationTest {
             val months = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DateBased.MonthBased(months)
             val json = "{\"months\":$months}"
-            assertEquals(json, Json.encodeToString(MonthBasedSerializer, unit))
-            assertEquals(unit, Json.decodeFromString(MonthBasedSerializer, json))
+            assertEquals(json, Json.encodeToString(MonthBasedDateTimeUnitSerializer, unit))
+            assertEquals(unit, Json.decodeFromString(MonthBasedDateTimeUnitSerializer, json))
         }
     }
 
@@ -51,15 +51,15 @@ class DateTimeUnitSerializationTest {
             val days = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DateBased.DayBased(days)
             val json = "{\"type\":\"DayBased\",\"days\":$days}"
-            assertEquals(json, Json.encodeToString(DateBasedSerializer, unit))
-            assertEquals(unit, Json.decodeFromString(DateBasedSerializer, json))
+            assertEquals(json, Json.encodeToString(DateBasedDateTimeUnitSerializer, unit))
+            assertEquals(unit, Json.decodeFromString(DateBasedDateTimeUnitSerializer, json))
         }
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DateBased.MonthBased(months)
             val json = "{\"type\":\"MonthBased\",\"months\":$months}"
-            assertEquals(json, Json.encodeToString(DateBasedSerializer, unit))
-            assertEquals(unit, Json.decodeFromString(DateBasedSerializer, json))
+            assertEquals(json, Json.encodeToString(DateBasedDateTimeUnitSerializer, unit))
+            assertEquals(unit, Json.decodeFromString(DateBasedDateTimeUnitSerializer, json))
         }
     }
 

@@ -14,7 +14,7 @@ sealed class DateTimeUnit {
 
     abstract operator fun times(scalar: Int): DateTimeUnit
 
-    @Serializable(with = TimeBasedSerializer::class)
+    @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
     class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
         private val unitName: String
         private val unitScale: Long
@@ -64,10 +64,10 @@ sealed class DateTimeUnit {
         override fun toString(): String = formatToString(unitScale, unitName)
     }
 
-    @Serializable(with = DateBasedSerializer::class)
+    @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     sealed class DateBased : DateTimeUnit() {
         // TODO: investigate how to move subclasses up to DateTimeUnit scope
-        @Serializable(with = DayBasedSerializer::class)
+        @Serializable(with = DayBasedDateTimeUnitSerializer::class)
         class DayBased(val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
@@ -85,7 +85,7 @@ sealed class DateTimeUnit {
             else
                 formatToString(days, "DAY")
         }
-        @Serializable(with = MonthBasedSerializer::class)
+        @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
         class MonthBased(val months: Int) : DateBased() {
             init {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }

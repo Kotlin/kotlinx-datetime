@@ -14,7 +14,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlin.reflect.KClass
 
-object TimeBasedSerializer: KSerializer<DateTimeUnit.TimeBased> {
+object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
         element<Long>("nanoseconds")
@@ -53,7 +53,7 @@ object TimeBasedSerializer: KSerializer<DateTimeUnit.TimeBased> {
     }
 }
 
-object DayBasedSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
+object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
         element<Int>("days")
@@ -92,7 +92,7 @@ object DayBasedSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
     }
 }
 
-object MonthBasedSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
+object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
         element<Int>("months")
@@ -132,12 +132,12 @@ object MonthBasedSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
-object DateBasedSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
+object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
         DateTimeUnit.DateBased::class,
         arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class),
-        arrayOf(DayBasedSerializer, MonthBasedSerializer))
+        arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer))
 
     @InternalSerializationApi
     override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?):
@@ -165,7 +165,7 @@ object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
         DateTimeUnit::class,
         arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class, DateTimeUnit.TimeBased::class),
-        arrayOf(DayBasedSerializer, MonthBasedSerializer, TimeBasedSerializer))
+        arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
 
     @InternalSerializationApi
     override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?): DeserializationStrategy<out DateTimeUnit>? =
