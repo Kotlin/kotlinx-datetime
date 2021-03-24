@@ -7,12 +7,13 @@ package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.serializers.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
+import kotlinx.serialization.serializer
 import kotlin.test.*
 
 class LocalDateTimeSerializationTest {
-    @Test
-    fun iso8601Serialization() {
+    private fun iso8601Serialization(serializer: KSerializer<LocalDateTime>) {
         for ((localDateTime, json) in listOf(
             Pair(LocalDateTime(2008, 7, 5, 2, 1), "\"2008-07-05T02:01\""),
             Pair(LocalDateTime(2007, 12, 31, 23, 59, 1), "\"2007-12-31T23:59:01\""),
@@ -20,13 +21,12 @@ class LocalDateTimeSerializationTest {
             Pair(LocalDateTime(-1, 1, 2, 23, 59, 59, 999990000), "\"-0001-01-02T23:59:59.999990\""),
             Pair(LocalDateTime(-2008, 1, 2, 23, 59, 59, 999999990), "\"-2008-01-02T23:59:59.999999990\""),
         )) {
-            assertEquals(json, Json.encodeToString(LocalDateTimeISO8601Serializer, localDateTime))
-            assertEquals(localDateTime, Json.decodeFromString(LocalDateTimeISO8601Serializer, json))
+            assertEquals(json, Json.encodeToString(serializer, localDateTime))
+            assertEquals(localDateTime, Json.decodeFromString(serializer, json))
         }
     }
 
-    @Test
-    fun componentSerialization() {
+    private fun componentSerialization(serializer: KSerializer<LocalDateTime>) {
         for ((localDateTime, json) in listOf(
             Pair(LocalDateTime(2008, 7, 5, 2, 1), "{\"year\":2008,\"month\":7,\"day\":5,\"hour\":2,\"minute\":1}"),
             Pair(LocalDateTime(2007, 12, 31, 23, 59, 1),
@@ -40,30 +40,46 @@ class LocalDateTimeSerializationTest {
             Pair(LocalDateTime(-2008, 1, 2, 23, 59, 0, 1),
                 "{\"year\":-2008,\"month\":1,\"day\":2,\"hour\":23,\"minute\":59,\"second\":0,\"nanosecond\":1}"),
         )) {
-            assertEquals(json, Json.encodeToString(LocalDateTimeComponentSerializer, localDateTime))
-            assertEquals(localDateTime, Json.decodeFromString(LocalDateTimeComponentSerializer, json))
+            assertEquals(json, Json.encodeToString(serializer, localDateTime))
+            assertEquals(localDateTime, Json.decodeFromString(serializer, json))
         }
         // adding omitted values shouldn't break deserialization
         assertEquals(LocalDateTime(2008, 7, 5, 2, 1),
-            Json.decodeFromString(LocalDateTimeComponentSerializer,
+            Json.decodeFromString(serializer,
                 "{\"year\":2008,\"month\":7,\"day\":5,\"hour\":2,\"minute\":1,\"second\":0}"
             ))
         assertEquals(LocalDateTime(2008, 7, 5, 2, 1),
-            Json.decodeFromString(LocalDateTimeComponentSerializer,
+            Json.decodeFromString(serializer,
                 "{\"year\":2008,\"month\":7,\"day\":5,\"hour\":2,\"minute\":1,\"nanosecond\":0}"
             ))
         assertEquals(LocalDateTime(2008, 7, 5, 2, 1),
-            Json.decodeFromString(LocalDateTimeComponentSerializer,
+            Json.decodeFromString(serializer,
                 "{\"year\":2008,\"month\":7,\"day\":5,\"hour\":2,\"minute\":1,\"second\":0,\"nanosecond\":0}"
             ))
         // invalid values must fail to construct
         assertFailsWith<IllegalArgumentException> {
-            Json.decodeFromString(LocalDateTimeComponentSerializer,
+            Json.decodeFromString(serializer,
                 "{\"year\":1000000000000,\"month\":3,\"day\":12,\"hour\":10,\"minute\":2}")
         }
         assertFailsWith<IllegalArgumentException> {
-            Json.decodeFromString(LocalDateTimeComponentSerializer,
+            Json.decodeFromString(serializer,
                 "{\"year\":2020,\"month\":30,\"day\":12,\"hour\":10,\"minute\":2}")
         }
+    }
+
+    @Test
+    fun testIso8601Serialization() {
+        iso8601Serialization(LocalDateTimeISO8601Serializer)
+    }
+
+    @Test
+    fun testComponentSerialization() {
+        componentSerialization(LocalDateTimeComponentSerializer)
+    }
+
+    @Test
+    fun testDefaultSerializers() {
+        // should be the same as the ISO-8601
+        iso8601Serialization(Json.serializersModule.serializer())
     }
 }
