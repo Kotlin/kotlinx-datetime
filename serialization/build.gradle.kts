@@ -3,7 +3,6 @@ import java.util.Locale
 plugins {
     id("kotlin-multiplatform")
     kotlin("plugin.serialization")
-    `maven-publish`
 }
 
 val JDK_8: String by project
