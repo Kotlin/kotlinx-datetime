@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.contextual
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ContextualSerializationTest {
+class IntegrationTest {
 
     @Serializable
     data class Dummy(
@@ -52,9 +52,35 @@ class ContextualSerializationTest {
                 """"dateTime":{"year":2020,"month":1,"day":3,"hour":12,"minute":59,"second":58,"nanosecond":10203045},""" +
                 """"datePeriod":{"years":19,"months":10,"days":-3},""" +
                 """"dateTimePeriod":{"years":-49,"months":-11,"days":2,"hours":-3,"minutes":-4,"seconds":-5,"nanoseconds":-12300000}}"""
-        assertEquals("""{"years":-49,"months":-11,"days":2,"hours":-3,"minutes":-4,"seconds":-5,"nanoseconds":-12300000}""",
-            Json.encodeToString(DateTimePeriodComponentSerializer, DateTimePeriod.parse("-P50Y-1M-2DT3H4M5.0123S")))
         assertEquals(dummyValue, format.decodeFromString(json))
-        assertEquals(json, format.encodeToString(dummyValue)) // fails
+        assertEquals(json, format.encodeToString(dummyValue))
+    }
+
+    @Serializable
+    data class Dummy2(
+        val instant: Instant,
+        val date: LocalDate,
+        val dateTime: LocalDateTime,
+        val datePeriod: DatePeriod,
+        val dateTimePeriod: DateTimePeriod,
+    )
+
+    @Test
+    fun testDefaultSerialization() {
+        val dummyValue = Dummy2(
+            Instant.parse("2021-03-24T01:29:30.123456789Z"),
+            LocalDate.parse("2020-01-02"),
+            LocalDateTime.parse("2020-01-03T12:59:58.010203045"),
+            DatePeriod.parse("P20Y-2M-3D"),
+            DateTimePeriod.parse("-P50Y-1M-2DT3H4M5.0123S"),
+        )
+        val json = "{\"instant\":\"2021-03-24T01:29:30.123456789Z\"," +
+                "\"date\":\"2020-01-02\"," +
+                "\"dateTime\":\"2020-01-03T12:59:58.010203045\"," +
+                "\"datePeriod\":\"P19Y10M-3D\"," +
+                "\"dateTimePeriod\":\"P-49Y-11M2DT-3H-4M-5.012300000S\"" +
+                "}"
+        assertEquals(dummyValue, Json.decodeFromString(json))
+        assertEquals(json, Json.encodeToString(dummyValue))
     }
 }

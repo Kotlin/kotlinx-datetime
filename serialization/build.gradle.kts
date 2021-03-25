@@ -6,6 +6,7 @@ plugins {
 }
 
 val JDK_8: String by project
+val serializationVersion: String by project
 
 kotlin {
     infra {
@@ -75,7 +76,7 @@ kotlin {
         commonTest {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-test-common")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
                 api("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
