@@ -10,7 +10,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-object LocalDateTimeISO8601Serializer: KSerializer<LocalDateTime> {
+object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)

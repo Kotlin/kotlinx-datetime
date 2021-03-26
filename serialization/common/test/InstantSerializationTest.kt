@@ -53,7 +53,7 @@ class InstantSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        iso8601Serialization(InstantISO8601Serializer)
+        iso8601Serialization(InstantIso8601Serializer)
     }
 
     @Test

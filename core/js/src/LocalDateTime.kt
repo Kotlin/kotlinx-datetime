@@ -4,11 +4,11 @@
  */
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.LocalDateTimeISO8601Serializer
+import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
 
-@Serializable(with = LocalDateTimeISO8601Serializer::class)
+@Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :

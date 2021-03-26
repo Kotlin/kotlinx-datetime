@@ -8,7 +8,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.InstantISO8601Serializer
+import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
 import kotlin.time.*
@@ -85,7 +85,7 @@ private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second 
 
 internal expect fun currentTime(): Instant
 
-@Serializable(with = InstantISO8601Serializer::class)
+@Serializable(with = InstantIso8601Serializer::class)
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(actual val epochSeconds: Long, actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 

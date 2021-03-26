@@ -13,7 +13,7 @@ import kotlin.test.*
 
 class DateTimePeriodSerializationTest {
 
-    private fun datePeriodISO8601Serialization(
+    private fun datePeriodIso8601Serialization(
         datePeriodSerializer: KSerializer<DatePeriod>,
         dateTimePeriodSerializer: KSerializer<DateTimePeriod>
     ) {
@@ -65,7 +65,7 @@ class DateTimePeriodSerializationTest {
         Json.decodeFromString(datePeriodSerializer, "{\"hours\":0}")
     }
 
-    private fun dateTimePeriodISO8601Serialization(dateTimePeriodSerializer: KSerializer<DateTimePeriod>) {
+    private fun dateTimePeriodIso8601Serialization(dateTimePeriodSerializer: KSerializer<DateTimePeriod>) {
         for ((period, json) in listOf(
           Pair(DateTimePeriod(), "\"P0D\""),
           Pair(DateTimePeriod(hours = 1), "\"PT1H\""),
@@ -96,8 +96,8 @@ class DateTimePeriodSerializationTest {
     }
 
     @Test
-    fun testDatePeriodISO8601Serialization() {
-        datePeriodISO8601Serialization(DatePeriodISO8601Serializer, DateTimePeriodISO8601Serializer)
+    fun testDatePeriodIso8601Serialization() {
+        datePeriodIso8601Serialization(DatePeriodIso8601Serializer, DateTimePeriodIso8601Serializer)
     }
 
     @Test
@@ -106,8 +106,8 @@ class DateTimePeriodSerializationTest {
     }
 
     @Test
-    fun testDateTimePeriodISO8601Serialization() {
-        dateTimePeriodISO8601Serialization(DateTimePeriodISO8601Serializer)
+    fun testDateTimePeriodIso8601Serialization() {
+        dateTimePeriodIso8601Serialization(DateTimePeriodIso8601Serializer)
     }
 
     @Test
@@ -118,8 +118,8 @@ class DateTimePeriodSerializationTest {
     @Test
     fun testDefaultSerializers() {
         // Check that they behave the same as the ISO-8601 serializers
-        dateTimePeriodISO8601Serialization(Json.serializersModule.serializer())
-        datePeriodISO8601Serialization(Json.serializersModule.serializer(), Json.serializersModule.serializer())
+        dateTimePeriodIso8601Serialization(Json.serializersModule.serializer())
+        datePeriodIso8601Serialization(Json.serializersModule.serializer(), Json.serializersModule.serializer())
     }
 
 }

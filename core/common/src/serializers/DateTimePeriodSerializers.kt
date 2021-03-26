@@ -66,7 +66,7 @@ object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
 }
 
-object DateTimePeriodISO8601Serializer: KSerializer<DateTimePeriod> {
+object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("DateTimePeriod", PrimitiveKind.STRING)
@@ -134,7 +134,7 @@ object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
 }
 
-object DatePeriodISO8601Serializer: KSerializer<DatePeriod> {
+object DatePeriodIso8601Serializer: KSerializer<DatePeriod> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("DatePeriod", PrimitiveKind.STRING)

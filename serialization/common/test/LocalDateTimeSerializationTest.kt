@@ -69,7 +69,7 @@ class LocalDateTimeSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        iso8601Serialization(LocalDateTimeISO8601Serializer)
+        iso8601Serialization(LocalDateTimeIso8601Serializer)
     }
 
     @Test

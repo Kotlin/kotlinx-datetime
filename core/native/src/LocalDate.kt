@@ -8,7 +8,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.LocalDateISO8601Serializer
+import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
 
@@ -36,7 +36,7 @@ internal const val YEAR_MAX = 999_999
 private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
-@Serializable(with = LocalDateISO8601Serializer::class)
+@Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate actual constructor(actual val year: Int, actual val monthNumber: Int, actual val dayOfMonth: Int) : Comparable<LocalDate> {
 
     init {
