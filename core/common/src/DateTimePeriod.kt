@@ -239,8 +239,8 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
 
 @Serializable(with = DatePeriodIso8601Serializer::class)
 class DatePeriod internal constructor(
-        internal override val totalMonths: Int,
-        override val days: Int,
+    internal override val totalMonths: Int,
+    override val days: Int,
 ) : DateTimePeriod() {
     constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
