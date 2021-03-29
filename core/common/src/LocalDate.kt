@@ -5,6 +5,10 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.serialization.Serializable
+
+@Serializable(with = LocalDateIso8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     companion object {
         /**

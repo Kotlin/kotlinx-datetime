@@ -5,10 +5,12 @@
 
 package kotlinx.datetime
 
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlinx.datetime.serializers.InstantIso8601Serializer
+import kotlinx.serialization.Serializable
+import kotlin.time.*
 
 @OptIn(ExperimentalTime::class)
+@Serializable(with = InstantIso8601Serializer::class)
 public expect class Instant : Comparable<Instant> {
 
     /**

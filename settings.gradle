@@ -13,3 +13,5 @@ rootProject.name = 'Kotlin-DateTime-library'
 
 include ':core'
 project(":core").name='kotlinx-datetime'
+include ':serialization'
+project(":serialization").name='kotlinx-datetime-serialization'

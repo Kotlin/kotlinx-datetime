@@ -8,6 +8,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.serialization.Serializable
 import kotlin.math.*
 
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
@@ -34,6 +36,7 @@ internal const val YEAR_MAX = 999_999
 private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
+@Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate actual constructor(actual val year: Int, actual val monthNumber: Int, actual val dayOfMonth: Int) : Comparable<LocalDate> {
 
     init {
@@ -63,7 +66,7 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
         internal fun ofEpochDay(epochDay: Int): LocalDate {
             // LocalDate(-999999, 1, 1).toEpochDay(), LocalDate(999999, 12, 31).toEpochDay()
             // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-            require(epochDay >= -365961662 && epochDay <= 364522971) {
+            require(epochDay >= MIN_EPOCH_DAY && epochDay <= MAX_EPOCH_DAY) {
                 "Invalid date: boundaries of LocalDate exceeded"
             }
             var zeroDay = epochDay + DAYS_0000_TO_1970
@@ -97,6 +100,9 @@ public actual class LocalDate actual constructor(actual val year: Int, actual va
 
         internal actual val MIN = LocalDate(YEAR_MIN, 1, 1)
         internal actual val MAX = LocalDate(YEAR_MAX, 12, 31)
+
+        internal const val MIN_EPOCH_DAY = -365961662
+        internal const val MAX_EPOCH_DAY = 364522971
     }
 
     // org.threeten.bp.LocalDate#toEpochDay

@@ -8,6 +8,9 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.serialization.Serializable
+
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
 // org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
 internal val localDateTimeParser: Parser<LocalDateTime>
@@ -18,6 +21,7 @@ internal val localDateTimeParser: Parser<LocalDateTime>
             LocalDateTime(date, time)
         }
 
+@Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(
     actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
     actual companion object {

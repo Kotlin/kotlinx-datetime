@@ -3,12 +3,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30")
     }
 }
 
 plugins {
     id("kotlinx.team.infra") version "0.3.0-dev-64"
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 infra {

@@ -133,9 +133,12 @@ internal class DivRemResult(val q: Long, val r: Long) {
     operator fun component2(): Long = r
 }
 
+@Suppress("NOTHING_TO_INLINE")
 private inline fun low(x: Long) = x and 0xffffffff
+@Suppress("NOTHING_TO_INLINE")
 private inline fun high(x: Long) = (x shr 32) and 0xffffffff
 /** For [bit] in [0; 63], return bit #[bit] of [value], counting from the least significant bit */
+@Suppress("NOTHING_TO_INLINE")
 private inline fun indexBit(value: Long, bit: Int): Long = (value shr bit and 1)
 
 

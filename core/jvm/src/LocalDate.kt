@@ -5,12 +5,14 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
 
-
+@Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     actual companion object {
         public actual fun parse(isoString: String): LocalDate = try {

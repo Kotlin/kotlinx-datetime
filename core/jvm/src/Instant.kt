@@ -6,6 +6,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.InstantIso8601Serializer
+import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
@@ -13,6 +15,7 @@ import kotlin.time.*
 import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
+@Serializable(with = InstantIso8601Serializer::class)
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
