@@ -59,7 +59,7 @@ private fun parseIsoString(isoString: String): Instant {
 
         // extract timezone
         if (timePart.length <= offset) {
-            throw IllegalArgumentException("No time zone indicator in '$timePart'")
+            throw DateTimeFormatException("No time zone indicator in '$timePart'")
         }
         val timezone: TimeZone
         val timezoneIndicator = timePart[offset]
