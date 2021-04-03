@@ -59,9 +59,13 @@ class InstantTest {
     @Test
     fun parseIsoString() {
         val instants = arrayOf(
+            Triple("1970-01-01T0000Z", 0, 0),
+            Triple("1970-01-01T00:00Z", 0, 0),
+            Triple("1970-01-01T000000Z", 0, 0),
             Triple("1970-01-01T00:00:00Z", 0, 0),
             Triple("1970-01-01t00:00:00Z", 0, 0),
             Triple("1970-01-01T00:00:00z", 0, 0),
+            Triple("1970-01-01t00:00:00z", 0, 0),
             Triple("1970-01-01T00:00:00.0Z", 0, 0),
             Triple("1970-01-01T00:00:00.000000000Z", 0, 0),
             Triple("1970-01-01T00:00:00.000000001Z", 0, 1),
@@ -80,9 +84,59 @@ class InstantTest {
         }
 
         assertInvalidFormat { Instant.parse("x") }
+        assertInvalidFormat { Instant.parse("1970-01-01T00:00.1Z") }
         assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
         assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
+    }
+
+    @Test
+    fun isoTimezoneOffsets() {
+        val validOffsets = arrayOf(
+            "1970-01-01T00:00:00Z",
+            "1970-01-01T00:00:00z",
+
+            "1970-01-01T00:00:00+00:00",
+            "1970-01-01T00:00:00+0000",
+
+            "1970-01-01T01:00:00+01:00",
+            "1970-01-01T01:00:00+0100",
+
+            "1970-01-01T18:00:00+18:00",
+            "1970-01-01T18:00:00+1800",
+
+            "1970-01-01T00:01:00+00:01",
+            "1970-01-01T00:01:00+0001",
+
+            "1969-12-31T23:00:00-01:00",
+            "1969-12-31T23:00:00-0100",
+
+            "1969-12-31T06:00:00-18:00",
+            "1969-12-31T06:00:00-1800",
+
+            "1969-12-31T23:59:00-00:01",
+            "1969-12-31T23:59:00-0001",
+        )
+        validOffsets.forEach {
+            assertEquals(0, Instant.parse(it).toEpochMilliseconds())
+        }
+
+        val invalidOffsets = arrayOf(
+            "1970-01-01T18:01:00+18:01",
+            "1970-01-01T18:01:00+1801",
+
+            "1969-12-31T05:59:00-18:01",
+            "1969-12-31T05:59:00-1801",
+
+            "1970-01-01T01:00:00+01",
+            "1970-01-01T01:00:00+01",
+
+            "1970-01-01T01:00:00+1:00",
+            "1970-01-01T01:00:00+100",
+        )
+        invalidOffsets.forEach {
+            assertFailsWith<IllegalArgumentException> { Instant.parse(it) }
+        }
     }
 
     @OptIn(ExperimentalTime::class)

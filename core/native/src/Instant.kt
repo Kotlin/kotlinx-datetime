@@ -23,54 +23,6 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#parse
-private val instantParser: Parser<Instant>
-    get() = localDateParser
-        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-        .chain(intParser(2, 2)) // hour
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // minute
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // second
-        .chain(optional(
-            concreteCharParser('.')
-                .chainSkipping(fractionParser(0, 9, 9)) // nanos
-        ))
-        .chainIgnoring(concreteCharParser('Z').or(concreteCharParser('z')))
-        .map {
-            val (dateHourMinuteSecond, nanosVal) = it
-            val (dateHourMinute, secondsVal) = dateHourMinuteSecond
-            val (dateHour, minutesVal) = dateHourMinute
-            val (dateVal, hoursVal) = dateHour
-
-            val nano = nanosVal ?: 0
-            val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
-                listOf(1, 0, 0, 0)
-            } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
-                // parsed a leap second, but it seems it isn't used
-                listOf(0, 23, 59, 59)
-            } else {
-                listOf(0, hoursVal, minutesVal, secondsVal)
-            }
-
-            // never fails: 9_999 years are always supported
-            val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, DateTimeUnit.DAY)
-            val localTime = LocalTime.of(hours, min, seconds, 0)
-            val secDelta: Long = try {
-                safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
-            } catch (e: ArithmeticException) {
-                throw DateTimeFormatException(e)
-            }
-            val epochDay = localDate.toEpochDay().toLong()
-            val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
-            try {
-                Instant(instantSecs, nano)
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException(e)
-            }
-        }
-
 /**
  * The minimum supported epoch second.
  */
@@ -243,8 +195,7 @@ public actual class Instant internal constructor(actual val epochSeconds: Long, 
         actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        actual fun parse(isoString: String): Instant =
-            instantParser.parse(isoString)
+        actual fun parse(isoString: String): Instant = parseInstantCommon(isoString)
 
         actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 

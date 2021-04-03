@@ -9,7 +9,6 @@ package kotlinx.datetime
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
-import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
 import java.time.Instant as jtInstant
@@ -62,11 +61,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        actual fun parse(isoString: String): Instant = try {
-            Instant(jtInstant.parse(isoString))
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        actual fun parse(isoString: String): Instant = parseInstantCommon(isoString)
 
         actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))

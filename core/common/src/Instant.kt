@@ -123,12 +123,15 @@ public expect class Instant : Comparable<Instant> {
 
         /**
          * Parses a string that represents an instant in ISO-8601 format including date and time components and
-         * the mandatory `Z` designator of the UTC+0 time zone and returns the parsed [Instant] value.
+         * time zone offset.
          *
          * Examples of instants in ISO-8601 format:
+         * - `2020-08-30T18:43Z`
          * - `2020-08-30T18:43:00Z`
          * - `2020-08-30T18:43:00.500Z`
          * - `2020-08-30T18:43:00.123456789Z`
+         * - `2020-08-30T18:43:00+01:00`
+         * - `2020-08-30T18:43:00+0100`
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */

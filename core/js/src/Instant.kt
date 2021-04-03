@@ -75,12 +75,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochMilliseconds > 0) MAX else MIN
         }
 
-        actual fun parse(isoString: String): Instant = try {
-            Instant(jtInstant.parse(isoString))
-        } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
-        }
+        actual fun parse(isoString: String): Instant = parseInstantCommon(isoString)
 
         actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             /* Performing normalization here because otherwise this fails:
