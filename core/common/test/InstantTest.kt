@@ -85,6 +85,7 @@ class InstantTest {
 
         assertInvalidFormat { Instant.parse("x") }
         assertInvalidFormat { Instant.parse("1970-01-01T00:00.1Z") }
+        assertInvalidFormat { Instant.parse("1970-01-01T00:00:00.Z") }
         assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
         assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
