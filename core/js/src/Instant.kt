@@ -11,6 +11,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.nanoseconds
 import kotlin.time.seconds
 import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
+import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
 import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
@@ -76,7 +77,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jtInstant.parse(isoString))
+            Instant(jtOffsetDateTime.parse(isoString).toInstant())
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e

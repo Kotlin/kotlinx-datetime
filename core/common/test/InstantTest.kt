@@ -85,6 +85,27 @@ class InstantTest {
         assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
     }
 
+    @Test
+    fun parseStringsWithOffsets() {
+        val instants = arrayOf(
+            Triple("2020-01-01T00:01:01.02+18:00", 1577772061L, 20_000_000),
+            Triple("2020-01-01T00:01:01.123456789-17:59:59", 1577901660L, 123456789),
+            Triple("2020-01-01T00:01:01.010203040+17:59:59", 1577772062L, 10203040),
+            Triple("2020-01-01T00:01:01.010203040+17:59", 1577772121L, 10203040),
+            // Triple("2020-01-01T00:01:01+00", 1577836861L, 0), // fails on JS, passes everywhere else
+        )
+        instants.forEach {
+            val (str, seconds, nanos) = it
+            val instant = Instant.parse(str)
+            assertEquals(nanos, instant.nanosecondsOfSecond, str)
+            assertEquals(seconds, instant.epochSeconds, str)
+        }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+18:01") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+1801") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+0") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+000000") }
+    }
+
     @OptIn(ExperimentalTime::class)
     @Test
     fun instantCalendarArithmetic() {

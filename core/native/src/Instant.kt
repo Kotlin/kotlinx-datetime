@@ -23,8 +23,48 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
+/** A parser for the string representation of [ZoneOffset] as seen in `OffsetDateTime`.
+ *
+ * We can't just reuse the parsing logic of [ZoneOffset.of], as that version is more lenient: here, strings like
+ * "0330" are not considered valid zone offsets, whereas [ZoneOffset.of] sees treats the example above as "03:30". */
+private val zoneOffsetParser: Parser<ZoneOffset>
+    get() = (concreteCharParser('z').or(concreteCharParser('Z')).map { ZoneOffset.UTC })
+        .or(
+            concreteCharParser('+').or(concreteCharParser('-'))
+                .chain(intParser(2, 2))
+                .chain(
+                    optional(
+                        // minutes
+                        concreteCharParser(':').chainSkipping(intParser(2, 2))
+                            .chain(optional(
+                                    // seconds
+                                    concreteCharParser(':').chainSkipping(intParser(2, 2))
+                            ))))
+                .map {
+                    val (signHours, minutesSeconds) = it
+                    val (sign, hours) = signHours
+                    val minutes: Int
+                    val seconds: Int
+                    if (minutesSeconds == null) {
+                        minutes = 0
+                        seconds = 0
+                    } else {
+                        minutes = minutesSeconds.first
+                        seconds = minutesSeconds.second ?: 0
+                    }
+                    try {
+                        if (sign == '-')
+                            ZoneOffset.ofHoursMinutesSeconds(-hours, -minutes, -seconds)
+                        else
+                            ZoneOffset.ofHoursMinutesSeconds(hours, minutes, seconds)
+                    } catch (e: IllegalTimeZoneException) {
+                        throw DateTimeFormatException(e)
+                    }
+                }
+        )
+
 // This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#parse
+// org.threeten.bp.format.DateTimeFormatter#ISO_OFFSET_DATE_TIME
 private val instantParser: Parser<Instant>
     get() = localDateParser
         .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
@@ -37,9 +77,10 @@ private val instantParser: Parser<Instant>
             concreteCharParser('.')
                 .chainSkipping(fractionParser(0, 9, 9)) // nanos
         ))
-        .chainIgnoring(concreteCharParser('Z').or(concreteCharParser('z')))
+        .chain(zoneOffsetParser)
         .map {
-            val (dateHourMinuteSecond, nanosVal) = it
+            val (localDateTime, offset) = it
+            val (dateHourMinuteSecond, nanosVal) = localDateTime
             val (dateHourMinute, secondsVal) = dateHourMinuteSecond
             val (dateHour, minutesVal) = dateHourMinute
             val (dateVal, hoursVal) = dateHour
@@ -63,7 +104,7 @@ private val instantParser: Parser<Instant>
                 throw DateTimeFormatException(e)
             }
             val epochDay = localDate.toEpochDay().toLong()
-            val instantSecs = epochDay * 86400 + localTime.toSecondOfDay() + secDelta
+            val instantSecs = epochDay * 86400 - offset.totalSeconds + localTime.toSecondOfDay() + secDelta
             try {
                 Instant(instantSecs, nano)
             } catch (e: IllegalArgumentException) {

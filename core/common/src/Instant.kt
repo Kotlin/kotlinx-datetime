@@ -123,12 +123,18 @@ public expect class Instant : Comparable<Instant> {
 
         /**
          * Parses a string that represents an instant in ISO-8601 format including date and time components and
-         * the mandatory `Z` designator of the UTC+0 time zone and returns the parsed [Instant] value.
+         * the mandatory time zone offset and returns the parsed [Instant] value.
          *
-         * Examples of instants in ISO-8601 format:
+         * In addition to allowing the `Z` designator of the UTC+0 time zone to be passed as the time zone offset, which
+         * is required by the ISO-8601, this parser also accepts the other possible offsets, but does not provide a way
+         * to query the result for which offset was specified in the string.
+         *
+         * Examples of instants in the ISO-8601 format:
          * - `2020-08-30T18:43:00Z`
          * - `2020-08-30T18:43:00.500Z`
          * - `2020-08-30T18:43:00.123456789Z`
+         * - `2020-08-30T18:40.00+03:00`
+         * - `2020-08-30T18:40.00+03:30:20`
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */
@@ -166,7 +172,7 @@ public val Instant.isDistantFuture: Boolean
 
 /**
  * Converts this string representing an instant in ISO-8601 format including date and time components and
- * the mandatory `Z` designator of the UTC+0 time zone to an [Instant] value.
+ * the time zone offset to an [Instant] value.
  *
  * See [Instant.parse] for examples of instant string representations.
  *

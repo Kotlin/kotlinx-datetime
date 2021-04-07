@@ -13,6 +13,7 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
 import java.time.Instant as jtInstant
+import java.time.OffsetDateTime as jtOffsetDateTime
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
@@ -63,7 +64,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jtInstant.parse(isoString))
+            Instant(jtOffsetDateTime.parse(isoString).toInstant())
         } catch (e: DateTimeParseException) {
             throw DateTimeFormatException(e)
         }
