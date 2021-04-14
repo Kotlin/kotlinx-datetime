@@ -94,8 +94,7 @@ class InstantTest {
             Pair("2020-01-01T00:01:01.010203040+17:59", "2019-12-31T06:02:01.010203040Z"),
             Pair("2020-01-01T00:01:01+00", "2020-01-01T00:01:01Z"),
         )
-        strings.forEach {
-            val (str, strInZ) = it
+        strings.forEach { (str, strInZ) ->
             val instant = Instant.parse(str)
             assertEquals(Instant.parse(strInZ), instant, str)
             assertEquals(strInZ, instant.toString(), str)
@@ -124,7 +123,7 @@ class InstantTest {
 
         for (instant in instants) {
             for (offset in offsets) {
-                val str = instant.toStringWithOffset(TimeZone.of("+03:12:14") as ZoneOffset)
+                val str = instant.toStringWithOffset(offset)
                 assertEquals(instant, Instant.parse(str))
             }
         }

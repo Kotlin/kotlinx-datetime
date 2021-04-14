@@ -83,13 +83,16 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             throw e
         }
 
-        /** A workaround for a bug where the string representations of Instant that have an offset of the form
-         * "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine.
+        /** A workaround for the string representations of Instant that have an offset of the form
+         * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine.
          * See [the Github issue](https://github.com/js-joda/js-joda/issues/492). */
         private fun fixOffsetRepresentation(isoString: String): String {
-            val time = isoString.split("T").elementAtOrNull(1) ?: return isoString
-            val offset = time.split("+", "-").elementAtOrNull(1) ?: return isoString
-            return if (offset.contains(":")) isoString else "$isoString:00"
+            val time = isoString.indexOf('T', ignoreCase = true)
+            if (time == -1) return isoString // the string is malformed
+            val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
+            if (offset < time) return isoString // the offset is 'Z' and not +/- something else
+            val separator = isoString.indexOf(':', offset) // if there is a ':' in the offset, no changes needed
+            return if (separator != -1) isoString else "$isoString:00"
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
