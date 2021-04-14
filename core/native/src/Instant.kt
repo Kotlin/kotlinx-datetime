@@ -185,67 +185,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
-    actual override fun toString(): String {
-        val buf = StringBuilder()
-        val inNano: Int = nanosecondsOfSecond
-        if (epochSeconds >= -SECONDS_0000_TO_1970) { // current era
-            val zeroSecs: Long = epochSeconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
-            val hi: Long = floorDiv(zeroSecs, SECONDS_PER_10000_YEARS) + 1
-            val lo: Long = floorMod(zeroSecs, SECONDS_PER_10000_YEARS)
-            val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
-                .toLocalDateTime(TimeZone.UTC)
-            if (hi > 0) {
-                buf.append('+').append(hi)
-            }
-            buf.append(ldt)
-            if (ldt.second == 0) {
-                buf.append(":00")
-            }
-        } else { // before current era
-            val zeroSecs: Long = epochSeconds + SECONDS_0000_TO_1970
-            val hi: Long = zeroSecs / SECONDS_PER_10000_YEARS
-            val lo: Long = zeroSecs % SECONDS_PER_10000_YEARS
-            val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
-                .toLocalDateTime(TimeZone.UTC)
-            val pos = buf.length
-            buf.append(ldt)
-            if (ldt.second == 0) {
-                buf.append(":00")
-            }
-            if (hi < 0) {
-                when {
-                    ldt.year == -10000 -> {
-                        buf.deleteAt(pos)
-                        buf.deleteAt(pos)
-                        buf.insert(pos, (hi - 1).toString())
-                    }
-                    lo == 0L -> {
-                        buf.insert(pos, hi)
-                    }
-                    else -> {
-                        buf.insert(pos + 1, abs(hi))
-                    }
-                }
-            }
-        }
-        //fraction
-        if (inNano != 0) {
-            buf.append('.')
-            when {
-                inNano % 1000000 == 0 -> {
-                    buf.append((inNano / 1000000 + 1000).toString().substring(1))
-                }
-                inNano % 1000 == 0 -> {
-                    buf.append((inNano / 1000 + 1000000).toString().substring(1))
-                }
-                else -> {
-                    buf.append((inNano + 1000000000).toString().substring(1))
-                }
-            }
-        }
-        buf.append('Z')
-        return buf.toString()
-    }
+    actual override fun toString(): String = toStringWithOffset(ZoneOffset.UTC)
 
     public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
@@ -378,3 +318,66 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
             until(other, unit)
         }
     }
+
+internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String {
+    val buf = StringBuilder()
+    val inNano: Int = nanosecondsOfSecond
+    val seconds = epochSeconds + offset.totalSeconds
+    if (seconds >= -SECONDS_0000_TO_1970) { // current era
+        val zeroSecs: Long = seconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
+        val hi: Long = floorDiv(zeroSecs, SECONDS_PER_10000_YEARS) + 1
+        val lo: Long = floorMod(zeroSecs, SECONDS_PER_10000_YEARS)
+        val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
+            .toLocalDateTime(TimeZone.UTC)
+        if (hi > 0) {
+            buf.append('+').append(hi)
+        }
+        buf.append(ldt)
+        if (ldt.second == 0) {
+            buf.append(":00")
+        }
+    } else { // before current era
+        val zeroSecs: Long = seconds + SECONDS_0000_TO_1970
+        val hi: Long = zeroSecs / SECONDS_PER_10000_YEARS
+        val lo: Long = zeroSecs % SECONDS_PER_10000_YEARS
+        val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
+            .toLocalDateTime(TimeZone.UTC)
+        val pos = buf.length
+        buf.append(ldt)
+        if (ldt.second == 0) {
+            buf.append(":00")
+        }
+        if (hi < 0) {
+            when {
+                ldt.year == -10000 -> {
+                    buf.deleteAt(pos)
+                    buf.deleteAt(pos)
+                    buf.insert(pos, (hi - 1).toString())
+                }
+                lo == 0L -> {
+                    buf.insert(pos, hi)
+                }
+                else -> {
+                    buf.insert(pos + 1, abs(hi))
+                }
+            }
+        }
+    }
+    //fraction
+    if (inNano != 0) {
+        buf.append('.')
+        when {
+            inNano % 1000000 == 0 -> {
+                buf.append((inNano / 1000000 + 1000).toString().substring(1))
+            }
+            inNano % 1000 == 0 -> {
+                buf.append((inNano / 1000 + 1000000).toString().substring(1))
+            }
+            else -> {
+                buf.append((inNano + 1000000000).toString().substring(1))
+            }
+        }
+    }
+    buf.append(offset.id)
+    return buf.toString()
+}

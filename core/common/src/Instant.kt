@@ -125,9 +125,10 @@ public expect class Instant : Comparable<Instant> {
          * Parses a string that represents an instant in ISO-8601 format including date and time components and
          * the mandatory time zone offset and returns the parsed [Instant] value.
          *
-         * In addition to allowing the `Z` designator of the UTC+0 time zone to be passed as the time zone offset, which
-         * is required by the ISO-8601, this parser also accepts the other possible offsets, but does not provide a way
-         * to query the result for which offset was specified in the string.
+         * Supports the following ways of specifying the time zone offset:
+         * - the `Z` designator for the UTC+0 time zone,
+         * - a custom time zone offset specified with `+hh`, or `+hh:mm`, or `+hh:mm:ss`
+         *   (with `+` being replaced with `-` for the negative offsets)
          *
          * Examples of instants in the ISO-8601 format:
          * - `2020-08-30T18:43:00Z`
@@ -476,3 +477,5 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800
+
+internal expect fun Instant.toStringWithOffset(offset: ZoneOffset): String

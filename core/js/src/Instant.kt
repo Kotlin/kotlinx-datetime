@@ -77,10 +77,19 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jtOffsetDateTime.parse(isoString).toInstant())
+            Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)).toInstant())
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
+        }
+
+        /** A workaround for a bug where the string representations of Instant that have an offset of the form
+         * "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine.
+         * See [the Github issue](https://github.com/js-joda/js-joda/issues/492). */
+        private fun fixOffsetRepresentation(isoString: String): String {
+            val time = isoString.split("T").elementAtOrNull(1) ?: return isoString
+            val offset = time.split("+", "-").elementAtOrNull(1) ?: return isoString
+            return if (offset.contains(":")) isoString else "$isoString:00"
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
@@ -211,3 +220,6 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
 }
+
+internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String =
+    jtOffsetDateTime.ofInstant(this.value, offset.zoneId).toString()

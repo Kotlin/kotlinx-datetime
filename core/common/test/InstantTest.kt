@@ -87,23 +87,47 @@ class InstantTest {
 
     @Test
     fun parseStringsWithOffsets() {
-        val instants = arrayOf(
-            Triple("2020-01-01T00:01:01.02+18:00", 1577772061L, 20_000_000),
-            Triple("2020-01-01T00:01:01.123456789-17:59:59", 1577901660L, 123456789),
-            Triple("2020-01-01T00:01:01.010203040+17:59:59", 1577772062L, 10203040),
-            Triple("2020-01-01T00:01:01.010203040+17:59", 1577772121L, 10203040),
-            // Triple("2020-01-01T00:01:01+00", 1577836861L, 0), // fails on JS, passes everywhere else
+        val strings = arrayOf(
+            Pair("2020-01-01T00:01:01.02+18:00", "2019-12-31T06:01:01.020Z"),
+            Pair("2020-01-01T00:01:01.123456789-17:59:59", "2020-01-01T18:01:00.123456789Z"),
+            Pair("2020-01-01T00:01:01.010203040+17:59:59", "2019-12-31T06:01:02.010203040Z"),
+            Pair("2020-01-01T00:01:01.010203040+17:59", "2019-12-31T06:02:01.010203040Z"),
+            Pair("2020-01-01T00:01:01+00", "2020-01-01T00:01:01Z"),
         )
-        instants.forEach {
-            val (str, seconds, nanos) = it
+        strings.forEach {
+            val (str, strInZ) = it
             val instant = Instant.parse(str)
-            assertEquals(nanos, instant.nanosecondsOfSecond, str)
-            assertEquals(seconds, instant.epochSeconds, str)
+            assertEquals(Instant.parse(strInZ), instant, str)
+            assertEquals(strInZ, instant.toString(), str)
         }
         assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+18:01") }
         assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+1801") }
         assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+0") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01") }
         assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+000000") }
+
+        val instants = listOf(
+            Instant.DISTANT_FUTURE,
+            Instant.DISTANT_PAST,
+            Instant.fromEpochSeconds(0, 0))
+
+        val offsets = listOf(
+            TimeZone.of("Z") as ZoneOffset,
+            TimeZone.of("+03:12:14") as ZoneOffset,
+            TimeZone.of("-03:12:14") as ZoneOffset,
+            TimeZone.of("+02:35") as ZoneOffset,
+            TimeZone.of("-02:35") as ZoneOffset,
+            TimeZone.of("+04") as ZoneOffset,
+            TimeZone.of("-04") as ZoneOffset,
+        )
+
+        for (instant in instants) {
+            for (offset in offsets) {
+                val str = instant.toStringWithOffset(TimeZone.of("+03:12:14") as ZoneOffset)
+                assertEquals(instant, Instant.parse(str))
+            }
+        }
     }
 
     @OptIn(ExperimentalTime::class)
