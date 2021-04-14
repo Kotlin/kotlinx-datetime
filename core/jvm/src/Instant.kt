@@ -64,9 +64,17 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jtOffsetDateTime.parse(isoString).toInstant())
+            Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)).toInstant())
         } catch (e: DateTimeParseException) {
             throw DateTimeFormatException(e)
+        }
+
+        /** A workaround for a quirk of the JDKs older than 11 where the string representations of Instant that have an
+         * offset of the form "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
+        private fun fixOffsetRepresentation(isoString: String): String {
+            val time = isoString.split("T").elementAtOrNull(1) ?: return isoString
+            val offset = time.split("+", "-").elementAtOrNull(1) ?: return isoString
+            return if (offset.contains(":")) isoString else "$isoString:00"
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
