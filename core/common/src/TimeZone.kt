@@ -21,18 +21,18 @@ public expect open class TimeZone {
      */
     public val id: String
 
-    companion object {
+    public companion object {
         /**
          * Queries the current system time zone.
          *
          * If the current system time zone changes, this function can reflect this change on the next invocation.
          */
-        fun currentSystemDefault(): TimeZone
+        public fun currentSystemDefault(): TimeZone
 
         /**
          * Returns the time zone with the fixed UTC+0 offset.
          */
-        val UTC: TimeZone
+        public val UTC: TimeZone
 
         /**
          * Returns the time zone identified by the provided [zoneId].
@@ -48,12 +48,12 @@ public expect open class TimeZone {
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
          */
-        fun of(zoneId: String): TimeZone
+        public fun of(zoneId: String): TimeZone
 
         /**
          * Queries the set of identifiers of time zones available in the system.
          */
-        val availableZoneIds: Set<String>
+        public val availableZoneIds: Set<String>
     }
 
     /**
@@ -87,7 +87,7 @@ public expect open class TimeZone {
 
 @Serializable(with = ZoneOffsetSerializer::class)
 public expect class ZoneOffset : TimeZone {
-    val totalSeconds: Int
+    public val totalSeconds: Int
 }
 
 /**

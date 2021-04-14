@@ -23,31 +23,31 @@ internal val localDateTimeParser: Parser<LocalDateTime>
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(
-    actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
-    actual companion object {
-        actual fun parse(isoString: String): LocalDateTime =
+    public actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
+    public actual companion object {
+        public actual fun parse(isoString: String): LocalDateTime =
             localDateTimeParser.parse(isoString)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
     }
 
-    actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+    public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, monthNumber, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
 
     public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, month, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
 
-    actual val year: Int get() = date.year
-    actual val monthNumber: Int get() = date.monthNumber
-    actual val month: Month get() = date.month
-    actual val dayOfMonth: Int get() = date.dayOfMonth
-    actual val dayOfWeek: DayOfWeek get() = date.dayOfWeek
-    actual val dayOfYear: Int get() = date.dayOfYear
-    actual val hour: Int get() = time.hour
-    actual val minute: Int get() = time.minute
-    actual val second: Int get() = time.second
-    actual val nanosecond: Int get() = time.nanosecond
+    public actual val year: Int get() = date.year
+    public actual val monthNumber: Int get() = date.monthNumber
+    public actual val month: Month get() = date.month
+    public actual val dayOfMonth: Int get() = date.dayOfMonth
+    public actual val dayOfWeek: DayOfWeek get() = date.dayOfWeek
+    public actual val dayOfYear: Int get() = date.dayOfYear
+    public actual val hour: Int get() = time.hour
+    public actual val minute: Int get() = time.minute
+    public actual val second: Int get() = time.second
+    public actual val nanosecond: Int get() = time.nanosecond
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalDateTime): Int {

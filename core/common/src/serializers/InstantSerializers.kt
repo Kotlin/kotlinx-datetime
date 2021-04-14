@@ -10,7 +10,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-object InstantIso8601Serializer: KSerializer<Instant> {
+public object InstantIso8601Serializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
@@ -24,7 +24,7 @@ object InstantIso8601Serializer: KSerializer<Instant> {
 
 }
 
-object InstantComponentSerializer: KSerializer<Instant> {
+public object InstantComponentSerializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
         buildClassSerialDescriptor("Instant") {

@@ -16,7 +16,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
 
 @Serializable(with = TimeZoneSerializer::class)
-actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
+public actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
     public actual val id: String get() = zoneId.id
 
 
@@ -31,11 +31,11 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
 
     override fun toString(): String = zoneId.toString()
 
-    actual companion object {
-        actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
-        actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
+    public actual companion object {
+        public actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
+        public actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
 
-        actual fun of(zoneId: String): TimeZone = try {
+        public actual fun of(zoneId: String): TimeZone = try {
             val zone = ZoneId.of(zoneId)
             if (zone is jtZoneOffset) {
                 ZoneOffset(zone)
@@ -47,7 +47,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
             throw e
         }
 
-        actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
+        public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
     }
 }
 
@@ -55,7 +55,7 @@ actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
 public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): TimeZone(zoneOffset) {
     internal val zoneOffset get() = zoneId as jtZoneOffset
 
-    actual val totalSeconds: Int get() = zoneOffset.totalSeconds
+    public actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 }
 
 public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =

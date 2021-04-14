@@ -22,6 +22,8 @@ val JDK_8: String by project
 val serializationVersion: String by project
 
 kotlin {
+    explicitApi()
+
     infra {
         target("linuxX64")
         target("mingwX64")

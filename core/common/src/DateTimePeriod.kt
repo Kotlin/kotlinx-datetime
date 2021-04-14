@@ -14,17 +14,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable(with = DateTimePeriodIso8601Serializer::class)
 // TODO: could be error-prone without explicitly named params
-sealed class DateTimePeriod {
+public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
-    abstract val days: Int
+    public abstract val days: Int
     internal abstract val totalNanoseconds: Long
 
-    val years: Int get() = totalMonths / 12
-    val months: Int get() = totalMonths % 12
-    open val hours: Int get() = (totalNanoseconds / 3_600_000_000_000).toInt()
-    open val minutes: Int get() = ((totalNanoseconds % 3_600_000_000_000) / 60_000_000_000).toInt()
-    open val seconds: Int get() = ((totalNanoseconds % 60_000_000_000) / NANOS_PER_ONE).toInt()
-    open val nanoseconds: Int get() = (totalNanoseconds % NANOS_PER_ONE).toInt()
+    public val years: Int get() = totalMonths / 12
+    public val months: Int get() = totalMonths % 12
+    public open val hours: Int get() = (totalNanoseconds / 3_600_000_000_000).toInt()
+    public open val minutes: Int get() = ((totalNanoseconds % 3_600_000_000_000) / 60_000_000_000).toInt()
+    public open val seconds: Int get() = ((totalNanoseconds % 60_000_000_000) / NANOS_PER_ONE).toInt()
+    public open val nanoseconds: Int get() = (totalNanoseconds % NANOS_PER_ONE).toInt()
 
     private fun allNonpositive() =
         totalMonths <= 0 && days <= 0 && totalNanoseconds <= 0 && (totalMonths or days != 0 || totalNanoseconds != 0L)
@@ -70,8 +70,8 @@ sealed class DateTimePeriod {
         return result
     }
 
-    companion object {
-        fun parse(text: String): DateTimePeriod {
+    public companion object {
+        public fun parse(text: String): DateTimePeriod {
             fun parseException(message: String, position: Int): Nothing =
                 throw DateTimeFormatException("Parse error at char $position: $message")
             val START = 0
@@ -238,11 +238,11 @@ sealed class DateTimePeriod {
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
 @Serializable(with = DatePeriodIso8601Serializer::class)
-class DatePeriod internal constructor(
+public class DatePeriod internal constructor(
     internal override val totalMonths: Int,
     override val days: Int,
 ) : DateTimePeriod() {
-    constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
+    public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
     override val hours: Int get() = 0
     override val minutes: Int get() = 0
@@ -250,8 +250,8 @@ class DatePeriod internal constructor(
     override val nanoseconds: Int get() = 0
     internal override val totalNanoseconds: Long get() = 0
 
-    companion object {
-        fun parse(text: String): DatePeriod =
+    public companion object {
+        public fun parse(text: String): DatePeriod =
             when (val period = DateTimePeriod.parse(text)) {
                 is DatePeriod -> period
                 else -> throw DateTimeFormatException("Period $period (parsed from string $text) is not date-based")
@@ -296,7 +296,7 @@ internal fun buildDateTimePeriod(totalMonths: Int = 0, days: Int = 0, totalNanos
     else
         DatePeriod(totalMonths, days)
 
-fun DateTimePeriod(
+public fun DateTimePeriod(
     years: Int = 0,
     months: Int = 0,
     days: Int = 0,
@@ -308,15 +308,15 @@ fun DateTimePeriod(
     totalNanoseconds(hours, minutes, seconds, nanoseconds))
 
 @OptIn(ExperimentalTime::class)
-fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = toLongNanoseconds())
+public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = toLongNanoseconds())
 
-operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
+public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
     safeAdd(totalMonths, other.totalMonths),
     safeAdd(days, other.days),
     safeAdd(totalNanoseconds, other.totalNanoseconds),
 )
 
-operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
+public operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
     safeAdd(totalMonths, other.totalMonths),
     safeAdd(days, other.days),
 )

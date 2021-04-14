@@ -12,7 +12,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.*
 
 @Suppress("INVISIBLE_MEMBER")
-object MonthSerializer: KSerializer<Month> {
+public object MonthSerializer: KSerializer<Month> {
     private val impl = EnumSerializer("Month", Month.values())
 
     override val descriptor: SerialDescriptor
@@ -20,5 +20,5 @@ object MonthSerializer: KSerializer<Month> {
 
     override fun deserialize(decoder: Decoder): Month = impl.deserialize(decoder)
 
-    override fun serialize(encoder: Encoder, value: Month) = impl.serialize(encoder, value)
+    override fun serialize(encoder: Encoder, value: Month): Unit = impl.serialize(encoder, value)
 }

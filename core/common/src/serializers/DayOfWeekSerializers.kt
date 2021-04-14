@@ -12,7 +12,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.*
 
 @Suppress("INVISIBLE_MEMBER")
-object DayOfWeekSerializer: KSerializer<DayOfWeek> {
+public object DayOfWeekSerializer: KSerializer<DayOfWeek> {
     private val impl = EnumSerializer("Month", DayOfWeek.values())
 
     override val descriptor: SerialDescriptor
@@ -20,5 +20,5 @@ object DayOfWeekSerializer: KSerializer<DayOfWeek> {
 
     override fun deserialize(decoder: Decoder): DayOfWeek = impl.deserialize(decoder)
 
-    override fun serialize(encoder: Encoder, value: DayOfWeek) = impl.serialize(encoder, value)
+    override fun serialize(encoder: Encoder, value: DayOfWeek): Unit = impl.serialize(encoder, value)
 }

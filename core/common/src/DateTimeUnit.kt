@@ -10,12 +10,12 @@ import kotlinx.serialization.Serializable
 import kotlin.time.*
 
 @Serializable(with = DateTimeUnitSerializer::class)
-sealed class DateTimeUnit {
+public sealed class DateTimeUnit {
 
-    abstract operator fun times(scalar: Int): DateTimeUnit
+    public abstract operator fun times(scalar: Int): DateTimeUnit
 
     @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
-    class TimeBased(val nanoseconds: Long) : DateTimeUnit() {
+    public class TimeBased(public val nanoseconds: Long) : DateTimeUnit() {
         private val unitName: String
         private val unitScale: Long
 
@@ -53,7 +53,7 @@ sealed class DateTimeUnit {
         override fun times(scalar: Int): TimeBased = TimeBased(safeMultiply(nanoseconds, scalar.toLong()))
 
         @ExperimentalTime
-        val duration: Duration
+        public val duration: Duration
             get() = nanoseconds.nanoseconds
 
         override fun equals(other: Any?): Boolean =
@@ -65,10 +65,10 @@ sealed class DateTimeUnit {
     }
 
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
-    sealed class DateBased : DateTimeUnit() {
+    public sealed class DateBased : DateTimeUnit() {
         // TODO: investigate how to move subclasses up to DateTimeUnit scope
         @Serializable(with = DayBasedDateTimeUnitSerializer::class)
-        class DayBased(val days: Int) : DateBased() {
+        public class DayBased(public val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
             }
@@ -86,7 +86,7 @@ sealed class DateTimeUnit {
                 formatToString(days, "DAY")
         }
         @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
-        class MonthBased(val months: Int) : DateBased() {
+        public class MonthBased(public val months: Int) : DateBased() {
             init {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }
             }
@@ -110,18 +110,18 @@ sealed class DateTimeUnit {
     protected fun formatToString(value: Int, unit: String): String = if (value == 1) unit else "$value-$unit"
     protected fun formatToString(value: Long, unit: String): String = if (value == 1L) unit else "$value-$unit"
 
-    companion object {
-        val NANOSECOND = TimeBased(nanoseconds = 1)
-        val MICROSECOND = NANOSECOND * 1000
-        val MILLISECOND = MICROSECOND * 1000
-        val SECOND = MILLISECOND * 1000
-        val MINUTE = SECOND * 60
-        val HOUR = MINUTE * 60
-        val DAY = DateBased.DayBased(days = 1)
-        val WEEK = DAY * 7
-        val MONTH = DateBased.MonthBased(months = 1)
-        val QUARTER = MONTH * 3
-        val YEAR = MONTH * 12
-        val CENTURY = YEAR * 100
+    public companion object {
+        public val NANOSECOND: TimeBased = TimeBased(nanoseconds = 1)
+        public val MICROSECOND: TimeBased = NANOSECOND * 1000
+        public val MILLISECOND: TimeBased = MICROSECOND * 1000
+        public val SECOND: TimeBased = MILLISECOND * 1000
+        public val MINUTE: TimeBased = SECOND * 60
+        public val HOUR: TimeBased = MINUTE * 60
+        public val DAY: DateBased.DayBased = DateBased.DayBased(days = 1)
+        public val WEEK: DateBased.DayBased = DAY * 7
+        public val MONTH: DateBased.MonthBased = DateBased.MonthBased(months = 1)
+        public val QUARTER: DateBased.MonthBased = MONTH * 3
+        public val YEAR: DateBased.MonthBased = MONTH * 12
+        public val CENTURY: DateBased.MonthBased = YEAR * 100
     }
 }

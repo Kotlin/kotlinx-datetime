@@ -19,9 +19,9 @@ import java.time.Clock as jtClock
 @OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
-    actual val epochSeconds: Long
+    public actual val epochSeconds: Long
         get() = value.epochSecond
-    actual val nanosecondsOfSecond: Int
+    public actual val nanosecondsOfSecond: Int
         get() = value.nano
 
     public actual fun toEpochMilliseconds(): Long = try {
@@ -30,7 +30,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         if (value.isAfter(java.time.Instant.EPOCH)) Long.MAX_VALUE else Long.MIN_VALUE
     }
 
-    actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
+    public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         try {
             Instant(value.plusSeconds(seconds).plusNanos(nanoseconds.toLong()))
         } catch (e: java.lang.Exception) {
@@ -39,9 +39,9 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
     }
 
-    actual operator fun minus(duration: Duration): Instant = plus(-duration)
+    public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
-    actual operator fun minus(other: Instant): Duration =
+    public actual operator fun minus(other: Instant): Duration =
             (this.value.epochSecond - other.value.epochSecond).seconds + // won't overflow given the instant bounds
             (this.value.nano - other.value.nano).nanoseconds
 
@@ -56,30 +56,30 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     public actual companion object {
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
-        actual fun now(): Instant =
+        public actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
-        actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
+        public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        actual fun parse(isoString: String): Instant = try {
+        public actual fun parse(isoString: String): Instant = try {
             Instant(jtInstant.parse(isoString))
         } catch (e: DateTimeParseException) {
             throw DateTimeFormatException(e)
         }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
         } catch (e: Exception) {
             if (e !is ArithmeticException && e !is DateTimeException) throw e
             if (epochSeconds > 0) MAX else MIN
         }
 
-        actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
+        public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        actual val DISTANT_PAST: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS, 999_999_999))
-        actual val DISTANT_FUTURE: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS, 0))
+        public actual val DISTANT_PAST: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS, 999_999_999))
+        public actual val DISTANT_FUTURE: Instant = Instant(jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS, 0))
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
@@ -131,7 +131,7 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
             throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
         }
 
-actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     try {
         multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
             Instant(this.value.plusSeconds(d).plusNanos(r))

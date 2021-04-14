@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlin.test.*
 
 class DateTimeUnitTest {
-    val U = DateTimeUnit // alias
+    private val U = DateTimeUnit // alias
 
     @Test
     fun baseUnits() {

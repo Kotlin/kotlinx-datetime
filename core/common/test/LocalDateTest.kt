@@ -11,13 +11,13 @@ import kotlin.test.*
 
 class LocalDateTest {
 
-    fun checkEquals(expected: LocalDate, actual: LocalDate) {
+    private fun checkEquals(expected: LocalDate, actual: LocalDate) {
         assertEquals(expected, actual)
         assertEquals(expected.hashCode(), actual.hashCode())
         assertEquals(expected.toString(), actual.toString())
     }
 
-    fun checkComponents(value: LocalDate, year: Int, month: Int, day: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
+    private fun checkComponents(value: LocalDate, year: Int, month: Int, day: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
         assertEquals(year, value.year)
         assertEquals(month, value.monthNumber)
         assertEquals(Month(month), value.month)
@@ -29,7 +29,7 @@ class LocalDateTest {
         checkEquals(fromComponents, value)
     }
 
-    fun checkLocalDateTimePart(date: LocalDate, datetime: LocalDateTime) {
+    private fun checkLocalDateTimePart(date: LocalDate, datetime: LocalDateTime) {
         checkEquals(date, datetime.date)
         checkComponents(date, datetime.year, datetime.monthNumber, datetime.dayOfMonth, datetime.dayOfWeek.isoDayNumber, datetime.dayOfYear)
     }
@@ -102,6 +102,7 @@ class LocalDateTest {
     }
 
     @Test
+    @Suppress("UNUSED_VARIABLE")
     fun tomorrow() {
         val today = Clock.System.todayAt(TimeZone.currentSystemDefault())
 
@@ -224,9 +225,7 @@ class LocalDateTest {
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
     assertFailsWith<IllegalArgumentException> { constructor(2007, 2, 29) }
-    constructor(2008, 2, 29).let { date ->
-        assertEquals(29, date.dayOfMonth)
-    }
+    assertEquals(29, constructor(2008, 2, 29).dayOfMonth)
     assertFailsWith<IllegalArgumentException> { constructor(2007, 4, 31) }
     assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 0) }
     assertFailsWith<IllegalArgumentException> { constructor(2007,1, 32) }

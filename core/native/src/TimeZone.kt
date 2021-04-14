@@ -17,14 +17,14 @@ import kotlinx.serialization.Serializable
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor(internal val value: TimeZoneImpl) {
 
-    actual companion object {
+    public actual companion object {
 
-        actual fun currentSystemDefault(): TimeZone = PlatformTimeZoneImpl.currentSystemDefault().let(::TimeZone)
+        public actual fun currentSystemDefault(): TimeZone = PlatformTimeZoneImpl.currentSystemDefault().let(::TimeZone)
 
-        actual val UTC: TimeZone = ZoneOffset.UTC
+        public actual val UTC: TimeZone = ZoneOffset.UTC
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
-        actual fun of(zoneId: String): TimeZone {
+        public actual fun of(zoneId: String): TimeZone {
             // TODO: normalize aliases?
             if (zoneId == "Z") {
                 return UTC
@@ -52,20 +52,20 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
             return TimeZone(PlatformTimeZoneImpl.of(zoneId))
         }
 
-        actual val availableZoneIds: Set<String>
+        public actual val availableZoneIds: Set<String>
             get() = PlatformTimeZoneImpl.availableZoneIds
     }
 
-    actual val id
+    public actual val id: String
         get() = value.id
 
-    actual fun Instant.toLocalDateTime(): LocalDateTime = try {
+    public actual fun Instant.toLocalDateTime(): LocalDateTime = try {
         toZonedLocalDateTime(this@TimeZone).dateTime
     } catch (e: IllegalArgumentException) {
         throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
     }
 
-    actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
+    public actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
 
     internal open fun atStartOfDay(date: LocalDate): Instant = value.atStartOfDay(date)
 
@@ -86,10 +86,10 @@ private var zoneOffsetCache: MutableMap<Int, ZoneOffset> = mutableMapOf()
 @Serializable(with = ZoneOffsetSerializer::class)
 public actual class ZoneOffset internal constructor(internal val offset: ZoneOffsetImpl) : TimeZone(offset) {
 
-    actual val totalSeconds get() = offset.totalSeconds
+    public actual val totalSeconds: Int get() = offset.totalSeconds
 
-    companion object {
-        val UTC = ZoneOffset(ZoneOffsetImpl.UTC)
+    public companion object {
+        internal val UTC: ZoneOffset = ZoneOffset(ZoneOffsetImpl.UTC)
 
         // org.threeten.bp.ZoneOffset#of
         internal fun of(offsetId: String): ZoneOffset {
