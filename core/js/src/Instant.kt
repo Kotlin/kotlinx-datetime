@@ -84,8 +84,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         /** A workaround for the string representations of Instant that have an offset of the form
-         * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine.
-         * See [the Github issue](https://github.com/js-joda/js-joda/issues/492). */
+         * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
         private fun fixOffsetRepresentation(isoString: String): String {
             val time = isoString.indexOf('T', ignoreCase = true)
             if (time == -1) return isoString // the string is malformed
