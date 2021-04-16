@@ -192,7 +192,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
-                implementation(npm("@js-joda/core",  "3.1.0"))
+                implementation(npm("@js-joda/core",  "3.2.0"))
             }
         }
 

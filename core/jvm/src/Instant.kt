@@ -13,6 +13,7 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
 import java.time.Instant as jtInstant
+import java.time.OffsetDateTime as jtOffsetDateTime
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
@@ -63,9 +64,20 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jtInstant.parse(isoString))
+            Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)).toInstant())
         } catch (e: DateTimeParseException) {
             throw DateTimeFormatException(e)
+        }
+
+        /** A workaround for a quirk of the JDKs older than 11 where the string representations of Instant that have an
+         * offset of the form "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
+        private fun fixOffsetRepresentation(isoString: String): String {
+            val time = isoString.indexOf('T', ignoreCase = true)
+            if (time == -1) return isoString // the string is malformed
+            val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
+            if (offset < time) return isoString // the offset is 'Z' and not +/- something else
+            val separator = isoString.indexOf(':', offset) // if there is a ':' in the offset, no changes needed
+            return if (separator != -1) isoString else "$isoString:00"
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
@@ -170,3 +182,5 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
 }
 
+internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String =
+    jtOffsetDateTime.ofInstant(this.value, offset.zoneId).toString()

@@ -123,12 +123,19 @@ public expect class Instant : Comparable<Instant> {
 
         /**
          * Parses a string that represents an instant in ISO-8601 format including date and time components and
-         * the mandatory `Z` designator of the UTC+0 time zone and returns the parsed [Instant] value.
+         * the mandatory time zone offset and returns the parsed [Instant] value.
          *
-         * Examples of instants in ISO-8601 format:
+         * Supports the following ways of specifying the time zone offset:
+         * - the `Z` designator for the UTC+0 time zone,
+         * - a custom time zone offset specified with `+hh`, or `+hh:mm`, or `+hh:mm:ss`
+         *   (with `+` being replaced with `-` for the negative offsets)
+         *
+         * Examples of instants in the ISO-8601 format:
          * - `2020-08-30T18:43:00Z`
          * - `2020-08-30T18:43:00.500Z`
          * - `2020-08-30T18:43:00.123456789Z`
+         * - `2020-08-30T18:40.00+03:00`
+         * - `2020-08-30T18:40.00+03:30:20`
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */
@@ -166,7 +173,7 @@ public val Instant.isDistantFuture: Boolean
 
 /**
  * Converts this string representing an instant in ISO-8601 format including date and time components and
- * the mandatory `Z` designator of the UTC+0 time zone to an [Instant] value.
+ * the time zone offset to an [Instant] value.
  *
  * See [Instant.parse] for examples of instant string representations.
  *
@@ -470,3 +477,10 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800
+
+/**
+ * Displays the given Instant in the given [offset].
+ *
+ * Be careful: this function may throw for some values of the [Instant].
+ */
+internal expect fun Instant.toStringWithOffset(offset: ZoneOffset): String
