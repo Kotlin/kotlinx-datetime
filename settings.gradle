@@ -1,8 +1,6 @@
 pluginManagement {
     repositories {
-        maven { url 'https://dl.bintray.com/orangy/maven' }
-        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         gradlePluginPortal()
     }
 }
