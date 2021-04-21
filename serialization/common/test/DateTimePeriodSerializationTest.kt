@@ -6,7 +6,7 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.serializers.*
+import kotlinx.datetime.serialization.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
@@ -113,13 +113,6 @@ class DateTimePeriodSerializationTest {
     @Test
     fun testDateTimePeriodComponentSerialization() {
         dateTimePeriodComponentSerialization(DateTimePeriodComponentSerializer)
-    }
-
-    @Test
-    fun testDefaultSerializers() {
-        // Check that they behave the same as the ISO-8601 serializers
-        dateTimePeriodIso8601Serialization(Json.serializersModule.serializer())
-        datePeriodIso8601Serialization(Json.serializersModule.serializer(), Json.serializersModule.serializer())
     }
 
 }

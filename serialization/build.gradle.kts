@@ -70,6 +70,7 @@ kotlin {
             dependencies {
                 api(project(":kotlinx-datetime"))
                 api("org.jetbrains.kotlin:kotlin-stdlib-common")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 

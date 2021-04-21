@@ -8,11 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.datetime.serializers.ZoneOffsetSerializer
-import kotlinx.serialization.Serializable
-
-@Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
     /**
      * Returns the identifier string of the time zone.
@@ -85,7 +80,6 @@ public expect open class TimeZone {
     public fun LocalDateTime.toInstant(): Instant
 }
 
-@Serializable(with = ZoneOffsetSerializer::class)
 public expect class ZoneOffset : TimeZone {
     public val totalSeconds: Int
 }

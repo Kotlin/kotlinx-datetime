@@ -6,10 +6,9 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.serializers.*
+import kotlinx.datetime.serialization.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
-import kotlinx.serialization.serializer
 import kotlin.random.*
 import kotlin.test.*
 
@@ -108,15 +107,6 @@ class DateTimeUnitSerializationTest {
     @Test
     fun testSerialization() {
         serialization(DateTimeUnitSerializer)
-    }
-
-    @Test
-    fun testDefaultSerializers() {
-        monthBasedSerialization(Json.serializersModule.serializer())
-        timeBasedSerialization(Json.serializersModule.serializer())
-        dayBasedSerialization(Json.serializersModule.serializer())
-        dateBasedSerialization(Json.serializersModule.serializer())
-        serialization(Json.serializersModule.serializer())
     }
 
 }

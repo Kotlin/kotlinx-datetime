@@ -6,10 +6,9 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.serializers.*
+import kotlinx.datetime.serialization.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
-import kotlinx.serialization.serializer
 import kotlin.test.*
 
 class TimeZoneSerializationTest {
@@ -42,11 +41,5 @@ class TimeZoneSerializationTest {
     @Test
     fun testSerialization() {
         serialization(TimeZoneSerializer)
-    }
-
-    @Test
-    fun testDefaultSerializers() {
-        zoneOffsetSerialization(Json.serializersModule.serializer())
-        serialization(Json.serializersModule.serializer())
     }
 }

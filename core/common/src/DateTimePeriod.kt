@@ -5,14 +5,10 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.DatePeriodIso8601Serializer
-import kotlinx.datetime.serializers.DateTimePeriodIso8601Serializer
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlinx.serialization.Serializable
 
-@Serializable(with = DateTimePeriodIso8601Serializer::class)
 // TODO: could be error-prone without explicitly named params
 public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
@@ -237,7 +233,6 @@ public sealed class DateTimePeriod {
 
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
-@Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
     internal override val totalMonths: Int,
     override val days: Int,

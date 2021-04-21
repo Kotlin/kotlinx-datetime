@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.serializers
+package kotlinx.datetime.serialization
 
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.*

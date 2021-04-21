@@ -5,16 +5,12 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.*
-import kotlinx.serialization.Serializable
 import kotlin.time.*
 
-@Serializable(with = DateTimeUnitSerializer::class)
 public sealed class DateTimeUnit {
 
     public abstract operator fun times(scalar: Int): DateTimeUnit
 
-    @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
     public class TimeBased(public val nanoseconds: Long) : DateTimeUnit() {
         private val unitName: String
         private val unitScale: Long
@@ -64,10 +60,8 @@ public sealed class DateTimeUnit {
         override fun toString(): String = formatToString(unitScale, unitName)
     }
 
-    @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     public sealed class DateBased : DateTimeUnit() {
         // TODO: investigate how to move subclasses up to DateTimeUnit scope
-        @Serializable(with = DayBasedDateTimeUnitSerializer::class)
         public class DayBased(public val days: Int) : DateBased() {
             init {
                 require(days > 0) { "Unit duration must be positive, but was $days days." }
@@ -85,7 +79,6 @@ public sealed class DateTimeUnit {
             else
                 formatToString(days, "DAY")
         }
-        @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
         public class MonthBased(public val months: Int) : DateBased() {
             init {
                 require(months > 0) { "Unit duration must be positive, but was $months months." }
