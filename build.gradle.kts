@@ -18,6 +18,7 @@ infra {
     }
     publishing {
         include(":kotlinx-datetime")
+        include(":kotlinx-datetime-serialization")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
         sonatype { }
     }
