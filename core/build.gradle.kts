@@ -192,6 +192,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core",  "3.2.0"))
             }
         }
@@ -205,6 +206,9 @@ kotlin {
 
         val nativeMain by getting {
             dependsOn(commonMain.get())
+            dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+            }
         }
 
         val nativeTest by getting {
