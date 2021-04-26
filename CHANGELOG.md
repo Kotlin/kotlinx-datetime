@@ -11,7 +11,6 @@
 - `kotlinx-serialization` support ([#37](https://github.com/Kotlin/kotlinx-datetime/issues/37))
 - Normalization of `DateTimePeriod` components, meaning that periods that are semantically equivalent are considered equal ([#81](https://github.com/Kotlin/kotlinx-datetime/issues/81))
 - `Instant` can now be parsed from an ISO-8601 string with an offset other than `Z` ([#56](https://github.com/Kotlin/kotlinx-datetime/issues/56))
-- Publication on Maven Central ([#40](https://github.com/Kotlin/kotlinx-datetime/issues/40))
 
 ## 0.1.1
 
