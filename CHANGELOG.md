@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 0.2.0
+
+#### Fixes
+
+- Fixed `TimeZone.currentSystemDefault()` crashing on Darwin if the resulting time zone is not listed among `TimeZone.knownTimeZoneIdentifiers` ([#94](https://github.com/Kotlin/kotlinx-datetime/issues/94))
+
+#### Features
+
+- `kotlinx-serialization` support ([#37](https://github.com/Kotlin/kotlinx-datetime/issues/37))
+- Normalization of `DateTimePeriod` components, meaning that periods that are semantically equivalent are considered equal ([#81](https://github.com/Kotlin/kotlinx-datetime/issues/81))
+- `Instant` can now be parsed from an ISO-8601 string with an offset other than `Z` ([#56](https://github.com/Kotlin/kotlinx-datetime/issues/56))
+
 ## 0.1.1
 
 #### Fixes
