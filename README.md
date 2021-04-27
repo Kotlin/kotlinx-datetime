@@ -2,7 +2,7 @@
 
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub) 
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) 
-<!-- [ ![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.datetime/images/download.svg) ](https://bintray.com/kotlin/kotlinx/kotlinx.datetime/_latestVersion) -->
+[![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-datetime.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.jetbrains.kotlinx%22%20AND%20a:%22kotlinx-datetime%22)
 
 
 A multiplatform Kotlin library for working with date and time.
@@ -247,7 +247,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 
 The library is published to Maven Central.
 
-The library depends on the Kotlin Standard Library not lower than `1.4.0`.
+The library is compatible with the Kotlin Standard Library not lower than `1.5.0`.
 
 If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer 
 and enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
@@ -268,7 +268,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.0")
              }
         }
     }
@@ -279,7 +279,7 @@ kotlin {
 
 ```groovy
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.0")
 }
 ```
 
@@ -319,7 +319,7 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 <dependency>
     <groupId>org.jetbrains.kotlinx</groupId>
     <artifactId>kotlinx-datetime-jvm</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
