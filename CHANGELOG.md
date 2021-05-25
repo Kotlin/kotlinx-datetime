@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.2.1
+
+#### Fixes
+
+- Fixed the library being incompatible with kotlinx.serialization 1.2.0 and above ([#118](https://github.com/Kotlin/kotlinx-datetime/issues/118)).
+
+#### Features
+
+- `watchosX64` target support. In practice, this means the ability to run projects that depend on this library in the iOS Simulator for Apple Watch.
+
 ## 0.2.0
 
 #### Fixes
