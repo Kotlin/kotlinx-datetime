@@ -268,7 +268,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.0")
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
              }
         }
     }
@@ -279,7 +279,7 @@ kotlin {
 
 ```groovy
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
 }
 ```
 
@@ -319,7 +319,7 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 <dependency>
     <groupId>org.jetbrains.kotlinx</groupId>
     <artifactId>kotlinx-datetime-jvm</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 </dependency>
 ```
 
