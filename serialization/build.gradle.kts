@@ -11,6 +11,7 @@ val serializationVersion: String by project
 kotlin {
     infra {
         target("linuxX64")
+        target("linuxArm64")
         target("mingwX64")
         target("macosX64")
         target("iosX64")
