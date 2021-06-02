@@ -4,11 +4,10 @@
  */
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.*
 import kotlinx.datetime.internal.JSJoda.ZoneId
-import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.datetime.serializers.ZoneOffsetSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
+import kotlinx.serialization.Serializable
 
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
@@ -33,7 +32,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         public actual fun of(zoneId: String): TimeZone = try {
             val zone = ZoneId.of(zoneId)
             if (zone is jtZoneOffset) {
-                ZoneOffset(zone)
+                FixedOffsetTimeZone(UtcOffset(zone))
             } else {
                 TimeZone(zone)
             }
@@ -46,10 +45,11 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     }
 }
 
-@Serializable(with = ZoneOffsetSerializer::class)
-public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): TimeZone(zoneOffset) {
+@Serializable(with = FixedOffsetTimeZoneSerializer::class)
+public actual class FixedOffsetTimeZone actual constructor(public actual val utcOffset: UtcOffset): TimeZone(utcOffset.zoneOffset) {
     private val zoneOffset get() = zoneId as jtZoneOffset
 
+    @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
 }
 
@@ -61,11 +61,22 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw e
 }
 
-public actual fun TimeZone.offsetAt(instant: Instant): ZoneOffset =
-        zoneId.rules().offsetOfInstant(instant.value).let(::ZoneOffset)
+public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
+    kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, utcOffset.zoneOffset).let(::LocalDateTime)
+} catch (e: Throwable) {
+    if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
+    throw e
+}
+
+
+public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
+        zoneId.rules().offsetOfInstant(instant.value).let(::UtcOffset)
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
+
+public actual fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant =
+    this.value.toInstant(utcOffset.zoneOffset).let(::Instant)
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
         this.value.atStartOfDay(timeZone.zoneId).toInstant().let(::Instant)

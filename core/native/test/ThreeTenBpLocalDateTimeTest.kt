@@ -15,10 +15,10 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsAfterEpoch() {
         for (i in -5..4) {
             val iHours = i * 3600
-            val offset = ZoneOffset.ofSeconds(iHours)
+            val offset = UtcOffset.ofSeconds(iHours)
             for (j in 0..99999) {
                 val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(j)
-                assertEquals((j - iHours).toLong(), a.toEpochSecond(offset.offset))
+                assertEquals((j - iHours).toLong(), a.toEpochSecond(offset))
             }
         }
     }
@@ -27,7 +27,7 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsBeforeEpoch() {
         for (i in 0..99999) {
             val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(-i)
-            assertEquals(-i.toLong(), a.toEpochSecond(ZoneOffsetImpl.UTC))
+            assertEquals(-i.toLong(), a.toEpochSecond(UtcOffset.ZERO))
         }
     }
 

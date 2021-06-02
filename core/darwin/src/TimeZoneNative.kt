@@ -112,7 +112,7 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
 
     override fun atStartOfDay(date: LocalDate): Instant {
         val ldt = LocalDateTime(date, LocalTime.MIN)
-        val epochSeconds = ldt.toEpochSecond(ZoneOffsetImpl.UTC)
+        val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
         // timezone
         val nsDate = NSDate.dateWithTimeIntervalSince1970(epochSeconds.toDouble())
         val newDate = systemDateByLocalDate(value, nsDate)
@@ -132,8 +132,8 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         return Instant(midnight.timeIntervalSince1970.toLong(), 0)
     }
 
-    override fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime {
-        val epochSeconds = toEpochSecond(ZoneOffsetImpl.UTC)
+    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime {
+        val epochSeconds = toEpochSecond(UtcOffset.ZERO)
         var offset = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = run {
             /* a date in an unspecified timezone, defined by the number of seconds since
@@ -155,12 +155,12 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        return ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), ZoneOffset.ofSeconds(offset).offset)
+        return ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset))
     }
 
-    override fun offsetAt(instant: Instant): ZoneOffsetImpl {
+    override fun offsetAt(instant: Instant): UtcOffset {
         val date = dateWithTimeIntervalSince1970Saturating(instant.epochSeconds)
-        return ZoneOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt()).offset
+        return UtcOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt())
     }
 
     // org.threeten.bp.ZoneId#equals

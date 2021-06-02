@@ -483,4 +483,4 @@ internal const val DISTANT_FUTURE_SECONDS = 3093527980800
  *
  * Be careful: this function may throw for some values of the [Instant].
  */
-internal expect fun Instant.toStringWithOffset(offset: ZoneOffset): String
+internal expect fun Instant.toStringWithOffset(offset: UtcOffset): String

@@ -182,5 +182,5 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
 }
 
-internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String =
-    jtOffsetDateTime.ofInstant(this.value, offset.zoneId).toString()
+internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
+    jtOffsetDateTime.ofInstant(this.value, offset.zoneOffset).toString()

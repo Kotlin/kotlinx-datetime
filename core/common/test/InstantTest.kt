@@ -112,13 +112,13 @@ class InstantTest {
             Instant.fromEpochSeconds(0, 0))
 
         val offsets = listOf(
-            TimeZone.of("Z") as ZoneOffset,
-            TimeZone.of("+03:12:14") as ZoneOffset,
-            TimeZone.of("-03:12:14") as ZoneOffset,
-            TimeZone.of("+02:35") as ZoneOffset,
-            TimeZone.of("-02:35") as ZoneOffset,
-            TimeZone.of("+04") as ZoneOffset,
-            TimeZone.of("-04") as ZoneOffset,
+            UtcOffset.parse("Z"),
+            UtcOffset.parse("+03:12:14"),
+            UtcOffset.parse("-03:12:14"),
+            UtcOffset.parse("+02:35"),
+            UtcOffset.parse("-02:35"),
+            UtcOffset.parse("+04"),
+            UtcOffset.parse("-04"),
         )
 
         for (instant in instants) {

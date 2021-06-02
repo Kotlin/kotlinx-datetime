@@ -47,7 +47,7 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
 
     override fun atStartOfDay(date: LocalDate): Instant = memScoped {
         val ldt = LocalDateTime(date, LocalTime.MIN)
-        val epochSeconds = ldt.toEpochSecond(ZoneOffsetImpl.UTC)
+        val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
         val midnightInstantSeconds = at_start_of_day(tzid, epochSeconds)
         if (midnightInstantSeconds == Long.MAX_VALUE) {
             throw RuntimeException("Unable to acquire the time of start of day at $date for zone $this")
@@ -55,8 +55,8 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         Instant(midnightInstantSeconds, 0)
     }
 
-    override fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime = memScoped {
-        val epochSeconds = toEpochSecond(ZoneOffsetImpl.UTC)
+    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime = memScoped {
+        val epochSeconds = toEpochSecond(UtcOffset.ZERO)
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = offset_at_datetime(tzid, epochSeconds, offset.ptr)
@@ -70,15 +70,15 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), ZoneOffset.ofSeconds(offset.value).offset)
+        ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset.value))
     }
 
-    override fun offsetAt(instant: Instant): ZoneOffsetImpl {
+    override fun offsetAt(instant: Instant): UtcOffset {
         val offset = offset_at_instant(tzid, instant.epochSeconds)
         if (offset == Int.MAX_VALUE) {
             throw RuntimeException("Unable to acquire the offset at instant $instant for zone $this")
         }
-        return ZoneOffset.ofSeconds(offset).offset
+        return UtcOffset.ofSeconds(offset)
     }
 
     // org.threeten.bp.ZoneId#equals

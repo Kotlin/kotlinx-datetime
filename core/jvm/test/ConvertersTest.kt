@@ -129,13 +129,15 @@ class ConvertersTest {
     @Test
     fun zoneOffset() {
         fun test(offsetString: String) {
-            val ktZoneOffset = TimeZone.of(offsetString).offsetAt(Instant.fromEpochMilliseconds(0))
+            val ktUtcOffset = TimeZone.of(offsetString).offsetAt(Instant.fromEpochMilliseconds(0))
+            val ktZoneOffset = ktUtcOffset.asTimeZone()
             val jtZoneOffset = JTZoneOffset.of(offsetString)
 
-            assertEquals(ktZoneOffset, jtZoneOffset.toKotlinZoneOffset())
+            assertEquals(ktZoneOffset, jtZoneOffset.toKotlinFixedOffsetTimeZone())
             assertEquals(ktZoneOffset, jtZoneOffset.toKotlinTimeZone())
             assertEquals(jtZoneOffset, ktZoneOffset.toJavaZoneOffset())
             assertEquals(jtZoneOffset, ktZoneOffset.toJavaZoneId())
+            assertEquals(jtZoneOffset, ktUtcOffset.toJavaZoneOffset())
         }
 
         test("Z")

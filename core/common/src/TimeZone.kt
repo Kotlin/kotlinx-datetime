@@ -8,8 +8,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.datetime.serializers.ZoneOffsetSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 @Serializable(with = TimeZoneSerializer::class)
@@ -85,10 +84,17 @@ public expect open class TimeZone {
     public fun LocalDateTime.toInstant(): Instant
 }
 
-@Serializable(with = ZoneOffsetSerializer::class)
-public expect class ZoneOffset : TimeZone {
+@Serializable(with = FixedOffsetTimeZoneSerializer::class)
+public expect class FixedOffsetTimeZone : TimeZone {
+    public constructor(utcOffset: UtcOffset)
+    public val utcOffset: UtcOffset
+
+    @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public val totalSeconds: Int
 }
+
+@Deprecated("Use FixedOffsetTimeZone of UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
+public typealias ZoneOffset = FixedOffsetTimeZone
 
 /**
  * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
@@ -96,7 +102,7 @@ public expect class ZoneOffset : TimeZone {
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
  */
-public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
+public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 
 /**
  * Return a civil date/time value that this instant has in the specified [timeZone].
@@ -110,13 +116,16 @@ public expect fun TimeZone.offsetAt(instant: Instant): ZoneOffset
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
+public expect fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime
+
+
 /**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
  */
-public fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
+public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
         timeZone.offsetAt(this)
 
 /**
@@ -134,6 +143,8 @@ public fun Instant.offsetIn(timeZone: TimeZone): ZoneOffset =
  * @see Instant.toLocalDateTime
  */
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
+
+public expect fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant
 
 /**
  * Returns an instant that corresponds to the start of this date in the specified [timeZone].

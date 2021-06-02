@@ -7,8 +7,8 @@ package kotlinx.datetime
 internal interface TimeZoneImpl {
     val id: String
     fun atStartOfDay(date: LocalDate): Instant
-    fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime
-    fun offsetAt(instant: Instant): ZoneOffsetImpl
+    fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime
+    fun offsetAt(instant: Instant): UtcOffset
 }
 
 internal expect class PlatformTimeZoneImpl: TimeZoneImpl {
@@ -19,29 +19,24 @@ internal expect class PlatformTimeZoneImpl: TimeZoneImpl {
     }
 }
 
-internal class ZoneOffsetImpl(val totalSeconds: Int, override val id: String): TimeZoneImpl {
-
-    companion object {
-        // org.threeten.bp.ZoneOffset#UTC
-        val UTC = ZoneOffsetImpl(0, "Z")
-    }
+internal class ZoneOffsetImpl(val utcOffset: UtcOffset, override val id: String): TimeZoneImpl {
 
     override fun atStartOfDay(date: LocalDate): Instant =
         LocalDateTime(date, LocalTime.MIN).atZone(null).toInstant()
 
-    override fun LocalDateTime.atZone(preferred: ZoneOffsetImpl?): ZonedDateTime {
-        return ZonedDateTime(this@atZone, ZoneOffset(this@ZoneOffsetImpl), this@ZoneOffsetImpl)
+    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime {
+        return ZonedDateTime(this@atZone, utcOffset.asTimeZone(), utcOffset)
     }
 
-    override fun offsetAt(instant: Instant): ZoneOffsetImpl = this
+    override fun offsetAt(instant: Instant): UtcOffset = utcOffset
 
     // org.threeten.bp.ZoneOffset#toString
     override fun toString(): String = id
 
     // org.threeten.bp.ZoneOffset#hashCode
-    override fun hashCode(): Int = totalSeconds
+    override fun hashCode(): Int = utcOffset.hashCode()
 
     // org.threeten.bp.ZoneOffset#equals
     override fun equals(other: Any?): Boolean =
-        this === other || other is ZoneOffsetImpl && totalSeconds == other.totalSeconds
+        this === other || other is ZoneOffsetImpl && utcOffset == other.utcOffset
 }
