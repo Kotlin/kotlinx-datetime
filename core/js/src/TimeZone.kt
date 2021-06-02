@@ -6,7 +6,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlinx.datetime.serializers.TimeZoneSerializer
-import kotlinx.datetime.serializers.ZoneOffsetSerializer
+import kotlinx.datetime.serializers.FixedOffsetTimeZoneSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 
@@ -46,7 +46,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     }
 }
 
-@Serializable(with = ZoneOffsetSerializer::class)
+@Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class ZoneOffset internal constructor(zoneOffset: jtZoneOffset): TimeZone(zoneOffset) {
     private val zoneOffset get() = zoneId as jtZoneOffset
 

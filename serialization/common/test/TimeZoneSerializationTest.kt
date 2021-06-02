@@ -14,8 +14,8 @@ import kotlin.test.*
 
 class TimeZoneSerializationTest {
 
-    private fun zoneOffsetSerialization(serializer: KSerializer<ZoneOffset>) {
-        val offset2h = TimeZone.of("+02:00") as ZoneOffset
+    private fun zoneOffsetSerialization(serializer: KSerializer<FixedOffsetTimeZone>) {
+        val offset2h = TimeZone.of("+02:00") as FixedOffsetTimeZone
         assertEquals("\"+02:00\"", Json.encodeToString(serializer, offset2h))
         assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02:00\""))
         assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02\""))
@@ -36,7 +36,7 @@ class TimeZoneSerializationTest {
 
     @Test
     fun testZoneOffsetSerialization() {
-        zoneOffsetSerialization(ZoneOffsetSerializer)
+        zoneOffsetSerialization(FixedOffsetTimeZoneSerializer)
     }
 
     @Test

@@ -22,7 +22,7 @@ val JDK_8: String by project
 val serializationVersion: String by project
 
 kotlin {
-    explicitApi()
+    explicitApiWarning()
 
     infra {
         target("linuxX64")

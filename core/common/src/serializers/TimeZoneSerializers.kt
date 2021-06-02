@@ -5,8 +5,8 @@
 
 package kotlinx.datetime.serializers
 
+import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.ZoneOffset
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -23,20 +23,20 @@ public object TimeZoneSerializer: KSerializer<TimeZone> {
 
 }
 
-public object ZoneOffsetSerializer: KSerializer<ZoneOffset> {
+public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ZoneOffset", PrimitiveKind.STRING)
 
-    override fun deserialize(decoder: Decoder): ZoneOffset {
+    override fun deserialize(decoder: Decoder): FixedOffsetTimeZone {
         val zone = TimeZone.of(decoder.decodeString())
-        if (zone is ZoneOffset) {
+        if (zone is FixedOffsetTimeZone) {
             return zone
         } else {
             throw SerializationException("Timezone identifier '$zone' does not correspond to a fixed-offset timezone")
         }
     }
 
-    override fun serialize(encoder: Encoder, value: ZoneOffset) {
+    override fun serialize(encoder: Encoder, value: FixedOffsetTimeZone) {
         encoder.encodeString(value.id)
     }
 
