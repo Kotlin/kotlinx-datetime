@@ -1,7 +1,6 @@
 plugins {
     id("kotlinx.team.infra") version "0.3.0-dev-64"
-    kotlin("multiplatform") version "1.5.0" apply false
-    kotlin("plugin.serialization") version "1.5.0" apply false
+    kotlin("multiplatform") apply false
 }
 
 infra {
