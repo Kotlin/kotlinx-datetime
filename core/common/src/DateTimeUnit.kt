@@ -54,7 +54,7 @@ public sealed class DateTimeUnit {
 
         @ExperimentalTime
         public val duration: Duration
-            get() = nanoseconds.nanoseconds
+            get() = Duration.nanoseconds(nanoseconds)
 
         override fun equals(other: Any?): Boolean =
                 this === other || (other is TimeBased && this.nanoseconds == other.nanoseconds)

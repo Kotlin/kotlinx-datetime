@@ -6,10 +6,6 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZonedDateTime
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlin.time.nanoseconds
-import kotlin.time.seconds
 import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
 import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
@@ -17,7 +13,7 @@ import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlin.math.truncate
+import kotlin.time.*
 
 @Serializable(with = InstantIso8601Serializer::class)
 @OptIn(ExperimentalTime::class)
@@ -31,14 +27,12 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     public actual fun toEpochMilliseconds(): Long =
             epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
-    public actual operator fun plus(duration: Duration): Instant {
-        val addSeconds = truncate(duration.inSeconds)
-        val addNanos = (duration.inNanoseconds % NANOS_PER_ONE).toInt()
+    public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         return try {
-            Instant(plusFix(addSeconds, addNanos))
+            Instant(plusFix(seconds.toDouble(), nanoseconds))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
-            if (addSeconds > 0) MAX else MIN
+            if (seconds > 0) MAX else MIN
         }
     }
 
@@ -52,7 +46,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     public actual operator fun minus(other: Instant): Duration {
         val diff = jtDuration.between(other.value, this.value)
-        return diff.seconds().toDouble().seconds + diff.nano().toDouble().nanoseconds
+        return Duration.seconds(diff.seconds().toDouble()) + Duration.nanoseconds(diff.nano().toDouble())
     }
 
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value).toInt()
@@ -127,7 +121,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     with(period) {
         thisZdt
                 .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
-                .run { if (days != 0) plusDays(days) as ZonedDateTime else this }
+                .run { if (days != 0) plusDays(days) else this }
                 .run { if (hours != 0) plusHours(hours) else this }
                 .run { if (minutes != 0) plusMinutes(minutes) else this }
                 .run { if (seconds != 0) plusSeconds(seconds) else this }
@@ -152,7 +146,7 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
                     plus(value, unit).value.checkZone(timeZone)
                 }
                 is DateTimeUnit.DateBased.DayBased ->
-                    (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
+                    thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
                 is DateTimeUnit.DateBased.MonthBased ->
                     thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
             }.let(::Instant)
@@ -168,7 +162,7 @@ public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
                 is DateTimeUnit.TimeBased ->
                     plus(value.toLong(), unit).value.checkZone(timeZone)
                 is DateTimeUnit.DateBased.DayBased ->
-                    (thisZdt.plusDays(value.toDouble() * unit.days) as ZonedDateTime).toInstant()
+                    thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
                 is DateTimeUnit.DateBased.MonthBased ->
                     thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
             }.let(::Instant)
@@ -201,7 +195,7 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val otherZdt = other.value.atZone(timeZone.zoneId)
 
     val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble(); thisZdt = thisZdt.plusMonths(months)
-    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble(); thisZdt = thisZdt.plusDays(days) as ZonedDateTime
+    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble(); thisZdt = thisZdt.plusDays(days)
     val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS).toDouble()
 
     buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds.toLong())

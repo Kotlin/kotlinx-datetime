@@ -166,8 +166,8 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     public actual operator fun minus(other: Instant): Duration =
-        (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
-            (this.nanosecondsOfSecond - other.nanosecondsOfSecond).nanoseconds
+        Duration.seconds(this.epochSeconds - other.epochSeconds) + // won't overflow given the instant bounds
+        Duration.nanoseconds(this.nanosecondsOfSecond - other.nanosecondsOfSecond)
 
     actual override fun compareTo(other: Instant): Int {
         val s = epochSeconds.compareTo(other.epochSeconds)

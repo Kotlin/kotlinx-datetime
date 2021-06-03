@@ -160,10 +160,10 @@ class DateTimePeriodTest {
         assertTrue(periodZero is DatePeriod)
 
         for ((period, duration) in listOf(
-                DateTimePeriod(hours = 1) to 1.hours,
-                DateTimePeriod(hours = 2) to 120.minutes,
-                DateTimePeriod(minutes = 2, seconds = 30) to 150.seconds,
-                DateTimePeriod(seconds = 2) to 2e9.nanoseconds
+                DateTimePeriod(hours = 1) to Duration.hours(1),
+                DateTimePeriod(hours = 2) to Duration.minutes(120),
+                DateTimePeriod(minutes = 2, seconds = 30) to Duration.seconds(150),
+                DateTimePeriod(seconds = 2) to Duration.nanoseconds(2e9)
         )) {
             assertEquals(period, duration.toDateTimePeriod())
         }

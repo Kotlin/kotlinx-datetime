@@ -162,7 +162,7 @@ public sealed class DateTimePeriod {
                         parseException("Value $this does not fit into an Int, which is required for component '$component'", iStart)
                     return toInt()
                 }
-                when (text[i].toUpperCase()) {
+                when (text[i].uppercaseChar()) {
                     'Y' -> {
                         if (state >= AFTER_YEAR)
                             parseException(wrongOrder, i)
@@ -308,7 +308,7 @@ public fun DateTimePeriod(
     totalNanoseconds(hours, minutes, seconds, nanoseconds))
 
 @OptIn(ExperimentalTime::class)
-public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = toLongNanoseconds())
+public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = inWholeNanoseconds)
 
 public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
     safeAdd(totalMonths, other.totalMonths),

@@ -198,7 +198,7 @@ public actual class ZoneOffset internal constructor(internal val offset: ZoneOff
             if (ch1 < '0' || ch1 > '9' || ch2 < '0' || ch2 > '9') {
                 throw IllegalTimeZoneException("Invalid ID for ZoneOffset, non numeric characters found: $offsetId")
             }
-            return (ch1.toInt() - 48) * 10 + (ch2.toInt() - 48)
+            return (ch1 - '0') * 10 + (ch2 - '0')
         }
     }
 }
