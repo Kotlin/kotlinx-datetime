@@ -4,7 +4,7 @@ import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
-    id("kotlin-multiplatform")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
     `maven-publish`
 }
