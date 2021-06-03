@@ -43,8 +43,8 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     public actual operator fun minus(other: Instant): Duration =
-            (this.value.epochSecond - other.value.epochSecond).seconds + // won't overflow given the instant bounds
-            (this.value.nano - other.value.nano).nanoseconds
+            Duration.seconds(this.value.epochSecond - other.value.epochSecond) + // won't overflow given the instant bounds
+            Duration.nanoseconds(this.value.nano - other.value.nano)
 
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value)
 
