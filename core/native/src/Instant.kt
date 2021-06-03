@@ -27,8 +27,8 @@ public actual enum class DayOfWeek {
  *
  * We can't just reuse the parsing logic of [ZoneOffset.of], as that version is more lenient: here, strings like
  * "0330" are not considered valid zone offsets, whereas [ZoneOffset.of] sees treats the example above as "03:30". */
-private val zoneOffsetParser: Parser<ZoneOffset>
-    get() = (concreteCharParser('z').or(concreteCharParser('Z')).map { ZoneOffset.UTC })
+private val zoneOffsetParser: Parser<UtcOffset>
+    get() = (concreteCharParser('z').or(concreteCharParser('Z')).map { UtcOffset.ZERO })
         .or(
             concreteCharParser('+').or(concreteCharParser('-'))
                 .chain(intParser(2, 2))
@@ -54,9 +54,9 @@ private val zoneOffsetParser: Parser<ZoneOffset>
                     }
                     try {
                         if (sign == '-')
-                            ZoneOffset.ofHoursMinutesSeconds(-hours, -minutes, -seconds)
+                            UtcOffset.ofHoursMinutesSeconds(-hours, -minutes, -seconds)
                         else
-                            ZoneOffset.ofHoursMinutesSeconds(hours, minutes, seconds)
+                            UtcOffset.ofHoursMinutesSeconds(hours, minutes, seconds)
                     } catch (e: IllegalTimeZoneException) {
                         throw DateTimeFormatException(e)
                     }
@@ -185,7 +185,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
-    actual override fun toString(): String = toStringWithOffset(ZoneOffset.UTC)
+    actual override fun toString(): String = toStringWithOffset(UtcOffset.ZERO)
 
     public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
@@ -319,7 +319,7 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
         }
     }
 
-internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String {
+internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String {
     val buf = StringBuilder()
     val inNano: Int = nanosecondsOfSecond
     val seconds = epochSeconds + offset.totalSeconds
@@ -378,6 +378,6 @@ internal actual fun Instant.toStringWithOffset(offset: ZoneOffset): String {
             }
         }
     }
-    buf.append(offset.id)
+    buf.append(offset)
     return buf.toString()
 }

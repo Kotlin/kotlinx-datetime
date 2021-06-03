@@ -8,7 +8,7 @@
 
 package kotlinx.datetime
 
-internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: TimeZone, val offset: ZoneOffsetImpl) {
+internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: TimeZone, val offset: UtcOffset) {
     /**
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
@@ -18,7 +18,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
     // Never throws in practice
     private fun LocalDateTime.resolve(): ZonedDateTime =
         // workaround for https://github.com/Kotlin/kotlinx-datetime/issues/51
-        if (with(offset) { atZone(null).toInstant() }.toLocalDateTime(zone) == this@resolve) {
+        if (this@resolve.toInstant(offset).toLocalDateTime(zone) == this@resolve) {
             // this LocalDateTime is valid in these timezone and offset.
             ZonedDateTime(this, zone, offset)
         } else {
@@ -38,7 +38,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
 
     override fun toString(): String {
         var str = dateTime.toString() + offset.toString()
-        if (offset !== zone.value) {
+        if (zone !is FixedOffsetTimeZone || offset !== zone.utcOffset) {
             str += "[$zone]"
         }
         return str
@@ -54,12 +54,7 @@ internal fun ZonedDateTime.toInstant(): Instant =
  */
 internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
     val currentOffset = zone.value.offsetAt(this)
-    val localSecond: Long = epochSeconds + currentOffset.totalSeconds // overflow caught later
-    val localEpochDay = floorDiv(localSecond, SECONDS_PER_DAY.toLong()).toInt()
-    val secsOfDay = floorMod(localSecond, SECONDS_PER_DAY.toLong()).toInt()
-    val date: LocalDate = LocalDate.ofEpochDay(localEpochDay) // may throw
-    val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)
-    return ZonedDateTime(LocalDateTime(date, time), zone, currentOffset)
+    return ZonedDateTime(toLocalDateTimeImpl(currentOffset), zone, currentOffset)
 }
 
 // org.threeten.bp.ZonedDateTime#until

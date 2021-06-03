@@ -19,12 +19,12 @@ import kotlin.test.*
 class ThreeTenBpTimeZoneTest {
 
     @Test
-    fun zoneOffsetToString() {
-        var offset: ZoneOffset = ZoneOffset.ofHoursMinutesSeconds(1, 0, 0)
+    fun utcOffsetToString() {
+        var offset: UtcOffset = UtcOffset.ofHoursMinutesSeconds(1, 0, 0)
         assertEquals("+01:00", offset.toString())
-        offset = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3)
+        offset = UtcOffset.ofHoursMinutesSeconds(1, 2, 3)
         assertEquals("+01:02:03", offset.toString())
-        offset = ZoneOffset.UTC
+        offset = UtcOffset.ZERO
         assertEquals("Z", offset.toString())
     }
 
@@ -35,8 +35,8 @@ class ThreeTenBpTimeZoneTest {
             "+00", "+0000", "+00:00", "+000000", "+00:00:00",
             "-00", "-0000", "-00:00", "-000000", "-00:00:00")
         for (v in values) {
-            val test = ZoneOffset.of(v)
-            assertSame(test, ZoneOffset.UTC)
+            val test = UtcOffset.parse(v)
+            assertSame(test, UtcOffset.ZERO)
         }
     }
 
@@ -57,11 +57,11 @@ class ThreeTenBpTimeZoneTest {
             "-01_00", "-01;00", "-01@00", "-01:AA",
             "@01:00")
         for (v in values) {
-            assertFailsWith(IllegalTimeZoneException::class, "should fail: $v") { ZoneOffset.of(v) }
+            assertFailsWith(IllegalTimeZoneException::class, "should fail: $v") { UtcOffset.parse(v) }
         }
     }
 
-    private fun zoneOffsetCheck(offset: ZoneOffset, hours: Int, minutes: Int, seconds: Int) {
+    private fun zoneOffsetCheck(offset: UtcOffset, hours: Int, minutes: Int, seconds: Int) {
         assertEquals(offset.totalSeconds, hours * 60 * 60 + minutes * 60 + seconds)
         val id: String
         if (hours == 0 && minutes == 0 && seconds == 0) {
@@ -78,16 +78,16 @@ class ThreeTenBpTimeZoneTest {
             id = str
         }
         assertEquals(id, offset.id)
-        assertEquals(ZoneOffset.ofHoursMinutesSeconds(hours, minutes, seconds), offset)
-        assertEquals(offset, ZoneOffset.of(id))
+        assertEquals(UtcOffset.ofHoursMinutesSeconds(hours, minutes, seconds), offset)
+        assertEquals(offset, UtcOffset.parse(id))
         assertEquals(id, offset.toString())
     }
 
     @Test
     fun zoneOffsetEquals() {
-        val offset1 = ZoneOffset.ofHoursMinutesSeconds(1, 2, 3)
-        val offset2 = ZoneOffset.ofHoursMinutesSeconds(2, 3, 4)
-        val offset2b = ZoneOffset.ofHoursMinutesSeconds(2, 3, 4)
+        val offset1 = UtcOffset.ofHoursMinutesSeconds(1, 2, 3)
+        val offset2 = UtcOffset.ofHoursMinutesSeconds(2, 3, 4)
+        val offset2b = UtcOffset.ofHoursMinutesSeconds(2, 3, 4)
         assertEquals(false, offset1 == offset2)
         assertEquals(false, offset2 == offset1)
         assertEquals(true, offset1 == offset1)
@@ -109,15 +109,15 @@ class ThreeTenBpTimeZoneTest {
                             (abs(i) + 100).toString().substring(1) + ":" +
                             (abs(j) + 100).toString().substring(1) + ":" +
                             (abs(k) + 100).toString().substring(1)
-                        val test = ZoneOffset.of(str)
+                        val test = UtcOffset.parse(str)
                         zoneOffsetCheck(test, i, j, k)
                     }
                 }
             }
         }
-        val test1 = ZoneOffset.of("-18:00:00")
+        val test1 = UtcOffset.parse("-18:00:00")
         zoneOffsetCheck(test1, -18, 0, 0)
-        val test2 = ZoneOffset.of("+18:00:00")
+        val test2 = UtcOffset.parse("+18:00:00")
         zoneOffsetCheck(test2, 18, 0, 0)
     }
 
@@ -134,7 +134,7 @@ class ThreeTenBpTimeZoneTest {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
         val zone = TimeZone.of("Europe/Paris")
         assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
-            zone, ZoneOffset.ofSeconds(2 * 3600).offset), with(zone) { t.atZone() })
+            zone, UtcOffset.ofSeconds(2 * 3600)), with(zone) { t.atZone() })
     }
 
 }
