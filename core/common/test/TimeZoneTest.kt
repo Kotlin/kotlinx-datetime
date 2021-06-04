@@ -14,8 +14,10 @@ class TimeZoneTest {
 
     @Test
     fun utc() {
-        println(TimeZone.UTC)
-        assertEquals("Z", TimeZone.UTC.id)
+        val utc: FixedOffsetTimeZone = TimeZone.UTC
+        println(utc)
+        assertEquals("Z", utc.id)
+        assertEquals(0, utc.utcOffset.totalSeconds)
     }
 
     @Test
