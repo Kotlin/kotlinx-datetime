@@ -77,7 +77,7 @@ class ThreeTenBpTimeZoneTest {
             }
             id = str
         }
-        assertEquals(id, offset.id)
+        assertEquals(id, offset.toString())
         assertEquals(UtcOffset.ofHoursMinutesSeconds(hours, minutes, seconds), offset)
         assertEquals(offset, UtcOffset.parse(id))
         assertEquals(id, offset.toString())

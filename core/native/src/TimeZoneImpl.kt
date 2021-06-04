@@ -38,5 +38,5 @@ internal class ZoneOffsetImpl(val utcOffset: UtcOffset, override val id: String)
 
     // org.threeten.bp.ZoneOffset#equals
     override fun equals(other: Any?): Boolean =
-        this === other || other is ZoneOffsetImpl && utcOffset == other.utcOffset
+        this === other || other is ZoneOffsetImpl && id == other.id
 }

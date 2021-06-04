@@ -8,7 +8,6 @@
 
 package kotlinx.datetime.test
 import kotlinx.datetime.*
-import kotlin.math.exp
 import kotlin.test.*
 
 class TimeZoneTest {
@@ -92,6 +91,16 @@ class TimeZoneTest {
         for ((id, str) in idToString) {
             assertEquals(str, TimeZone.of(id).toString())
         }
+    }
+
+    @Test
+    fun utcOffsetNormalization() {
+        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04").map { TimeZone.of(it) }
+        val instant = Instant.fromEpochSeconds(0)
+        val offsets = sameOffsetTZs.map { it.offsetAt(instant) }
+
+        assertTrue(offsets.distinct().size == 1, "Expected all offsets to be equal: $offsets")
+        assertTrue(offsets.map { it.toString() }.distinct().size == 1, "Expected all offsets to have the same string representation: $offsets")
     }
 
     // from 310bp
