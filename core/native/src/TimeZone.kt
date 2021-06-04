@@ -64,18 +64,22 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
     public actual val id: String
         get() = value.id
 
-    public actual fun Instant.toLocalDateTime(): LocalDateTime = try {
-        toZonedLocalDateTime(this@TimeZone).dateTime
-    } catch (e: IllegalArgumentException) {
-        throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)
-    }
-
-    public actual fun LocalDateTime.toInstant(): Instant = atZone().toInstant()
+    public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
+    public actual fun LocalDateTime.toInstant(): Instant = localDateTimeToInstant(this)
 
     internal open fun atStartOfDay(date: LocalDate): Instant = value.atStartOfDay(date)
 
-    internal open fun LocalDateTime.atZone(preferred: UtcOffset? = null): ZonedDateTime =
-        with(value) { atZone(preferred) }
+    internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
+        instant.toLocalDateTimeImpl(offsetAt(instant))
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
+    }
+
+    internal open fun localDateTimeToInstant(dateTime: LocalDateTime): Instant =
+        atZone(dateTime).toInstant()
+
+    internal open fun atZone(dateTime: LocalDateTime, preferred: UtcOffset? = null): ZonedDateTime =
+        value.atZone(dateTime, preferred)
 
     override fun equals(other: Any?): Boolean =
         this === other || other is TimeZone && this.value == other.value
@@ -95,6 +99,9 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val u
 
     @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public actual val totalSeconds: Int get() = utcOffset.totalSeconds
+
+    override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(utcOffset)
+    override fun localDateTimeToInstant(dateTime: LocalDateTime): Instant = dateTime.toInstant(utcOffset)
 }
 
 
@@ -223,7 +230,7 @@ public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
         value.offsetAt(instant)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-        with(timeZone) { toLocalDateTime() }
+    timeZone.instantToLocalDateTime(this)
 
 public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
     toLocalDateTimeImpl(utcOffset)
@@ -241,10 +248,10 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
 }
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-        with(timeZone) { toInstant() }
+    timeZone.localDateTimeToInstant(this)
 
 public actual fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant =
     Instant(this.toEpochSecond(utcOffset), this.nanosecond)
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
-        timeZone.atStartOfDay(this)
+    timeZone.atStartOfDay(this)

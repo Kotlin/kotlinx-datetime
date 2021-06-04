@@ -24,7 +24,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
         } else {
             // this LDT does need proper resolving, as the instant that it would map to given the preferred offset
             // is is mapped to another LDT.
-            with(zone) { atZone(offset) }
+            zone.atZone(this, offset)
         }
 
     override fun equals(other: Any?): Boolean =
@@ -48,14 +48,6 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
 internal fun ZonedDateTime.toInstant(): Instant =
     Instant(dateTime.toEpochSecond(offset), dateTime.nanosecond)
 
-// org.threeten.bp.LocalDateTime#ofEpochSecond + org.threeten.bp.ZonedDateTime#create
-/**
- * @throws IllegalArgumentException if the [Instant] exceeds the boundaries of [LocalDateTime]
- */
-internal fun Instant.toZonedLocalDateTime(zone: TimeZone): ZonedDateTime {
-    val currentOffset = zone.value.offsetAt(this)
-    return ZonedDateTime(toLocalDateTimeImpl(currentOffset), zone, currentOffset)
-}
 
 // org.threeten.bp.ZonedDateTime#until
 // This version is simplified and to be used ONLY in case you know the timezones are equal!

@@ -55,22 +55,22 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         Instant(midnightInstantSeconds, 0)
     }
 
-    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime = memScoped {
-        val epochSeconds = toEpochSecond(UtcOffset.ZERO)
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime = memScoped {
+        val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = offset_at_datetime(tzid, epochSeconds, offset.ptr)
         if (offset.value == Int.MAX_VALUE) {
-            throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@PlatformTimeZoneImpl}")
+            throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@PlatformTimeZoneImpl}")
         }
-        val dateTime = try {
-            this@atZone.plusSeconds(transitionDuration)
+        val correctedDateTime = try {
+            dateTime.plusSeconds(transitionDuration)
         } catch (e: IllegalArgumentException) {
             throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset.value))
+        ZonedDateTime(correctedDateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset.value))
     }
 
     override fun offsetAt(instant: Instant): UtcOffset {

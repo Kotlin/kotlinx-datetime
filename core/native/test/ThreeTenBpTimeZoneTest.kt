@@ -126,7 +126,7 @@ class ThreeTenBpTimeZoneTest {
         val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
         val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
         val tz = TimeZone.of("Europe/Berlin")
-        assertEquals(with(tz) { t1.atZone() }, with(tz) { t2.atZone() })
+        assertEquals(tz.atZone(t1), tz.atZone(t2))
     }
 
     @Test
@@ -134,7 +134,7 @@ class ThreeTenBpTimeZoneTest {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
         val zone = TimeZone.of("Europe/Paris")
         assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
-            zone, UtcOffset.ofSeconds(2 * 3600)), with(zone) { t.atZone() })
+            zone, UtcOffset.ofSeconds(2 * 3600)), zone.atZone(t))
     }
 
 }
