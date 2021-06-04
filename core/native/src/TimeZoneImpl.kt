@@ -7,7 +7,7 @@ package kotlinx.datetime
 internal interface TimeZoneImpl {
     val id: String
     fun atStartOfDay(date: LocalDate): Instant
-    fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime
+    fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime
     fun offsetAt(instant: Instant): UtcOffset
 }
 
@@ -22,10 +22,10 @@ internal expect class PlatformTimeZoneImpl: TimeZoneImpl {
 internal class ZoneOffsetImpl(val utcOffset: UtcOffset, override val id: String): TimeZoneImpl {
 
     override fun atStartOfDay(date: LocalDate): Instant =
-        LocalDateTime(date, LocalTime.MIN).atZone(null).toInstant()
+        LocalDateTime(date, LocalTime.MIN).toInstant(utcOffset)
 
-    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime {
-        return ZonedDateTime(this@atZone, utcOffset.asTimeZone(), utcOffset)
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
+        return ZonedDateTime(dateTime, utcOffset.asTimeZone(), utcOffset)
     }
 
     override fun offsetAt(instant: Instant): UtcOffset = utcOffset

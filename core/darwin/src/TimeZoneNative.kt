@@ -132,15 +132,15 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         return Instant(midnight.timeIntervalSince1970.toLong(), 0)
     }
 
-    override fun LocalDateTime.atZone(preferred: UtcOffset?): ZonedDateTime {
-        val epochSeconds = toEpochSecond(UtcOffset.ZERO)
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
+        val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
         var offset = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = run {
             /* a date in an unspecified timezone, defined by the number of seconds since
                the start of the epoch in *that* unspecified timezone */
             val date = dateWithTimeIntervalSince1970Saturating(epochSeconds)
             val newDate = systemDateByLocalDate(value, date)
-                ?: throw RuntimeException("Unable to acquire the offset at ${this@atZone} for zone ${this@PlatformTimeZoneImpl}")
+                ?: throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@PlatformTimeZoneImpl}")
             // we now know the offset of that timezone at this time.
             offset = value.secondsFromGMTForDate(newDate).toInt()
             /* `dateFromComponents` automatically corrects the date to avoid gaps. We
@@ -148,14 +148,14 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
             (newDate.timeIntervalSince1970.toLong() +
                 offset.toLong() - date.timeIntervalSince1970.toLong()).toInt()
         }
-        val dateTime = try {
-            this@atZone.plusSeconds(transitionDuration)
+        val correctedDateTime = try {
+            dateTime.plusSeconds(transitionDuration)
         } catch (e: IllegalArgumentException) {
             throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        return ZonedDateTime(dateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset))
+        return ZonedDateTime(correctedDateTime, TimeZone(this), UtcOffset.ofSeconds(offset))
     }
 
     override fun offsetAt(instant: Instant): UtcOffset {
