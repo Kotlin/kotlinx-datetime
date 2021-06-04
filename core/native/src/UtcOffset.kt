@@ -8,7 +8,8 @@ package kotlinx.datetime
 import kotlin.math.abs
 import kotlin.native.concurrent.ThreadLocal
 
-public actual class UtcOffset internal constructor(public actual val totalSeconds: Int, internal val id: String) {
+public actual class UtcOffset internal constructor(public actual val totalSeconds: Int) {
+    private val id: String = zoneIdByOffset(totalSeconds)
 
     override fun hashCode(): Int = totalSeconds
     override fun equals(other: Any?): Boolean = other is UtcOffset && this.totalSeconds == other.totalSeconds
@@ -16,7 +17,7 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
 
     public actual companion object {
 
-        internal val ZERO: UtcOffset = UtcOffset(0, "Z")
+        internal val ZERO: UtcOffset = UtcOffset(0)
 
         public actual fun parse(offsetString: String): UtcOffset {
             if (offsetString == "Z") {
@@ -59,8 +60,7 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
             val first: Char = offsetString[0]
             if (first != '+' && first != '-') {
                 throw IllegalTimeZoneException(
-                    "Invalid ID for UtcOffset, plus/minus not found when expected: $offsetString"
-                )
+                    "Invalid ID for UtcOffset, plus/minus not found when expected: $offsetString")
             }
             return if (first == '-') {
                 ofHoursMinutesSeconds(-hours, -minutes, -seconds)
@@ -72,10 +72,8 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
         // org.threeten.bp.ZoneOffset#validate
         private fun validate(hours: Int, minutes: Int, seconds: Int) {
             if (hours < -18 || hours > 18) {
-                throw IllegalTimeZoneException(
-                    "Zone offset hours not in valid range: value " + hours +
-                            " is not in the range -18 to 18"
-                )
+                throw IllegalTimeZoneException("Zone offset hours not in valid range: value " + hours +
+                    " is not in the range -18 to 18")
             }
             if (hours > 0) {
                 if (minutes < 0 || seconds < 0) {
@@ -89,16 +87,12 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
                 throw IllegalTimeZoneException("Zone offset minutes and seconds must have the same sign")
             }
             if (abs(minutes) > 59) {
-                throw IllegalTimeZoneException(
-                    "Zone offset minutes not in valid range: abs(value) " +
-                            abs(minutes) + " is not in the range 0 to 59"
-                )
+                throw IllegalTimeZoneException("Zone offset minutes not in valid range: abs(value) " +
+                    abs(minutes) + " is not in the range 0 to 59")
             }
             if (abs(seconds) > 59) {
-                throw IllegalTimeZoneException(
-                    "Zone offset seconds not in valid range: abs(value) " +
-                            abs(seconds) + " is not in the range 0 to 59"
-                )
+                throw IllegalTimeZoneException("Zone offset seconds not in valid range: abs(value) " +
+                    abs(seconds) + " is not in the range 0 to 59")
             }
             if (abs(hours) == 18 && (abs(minutes) > 0 || abs(seconds) > 0)) {
                 throw IllegalTimeZoneException("Zone offset not in valid range: -18:00 to +18:00")
@@ -115,9 +109,9 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
         // org.threeten.bp.ZoneOffset#ofTotalSeconds
         internal fun ofSeconds(seconds: Int): UtcOffset =
             if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
-                utcOffsetCache[seconds] ?: UtcOffset(seconds, zoneIdByOffset(seconds)).also { utcOffsetCache[seconds] = it }
+                utcOffsetCache[seconds] ?: UtcOffset(seconds).also { utcOffsetCache[seconds] = it }
             } else {
-                UtcOffset(seconds, zoneIdByOffset(seconds))
+                UtcOffset(seconds)
             }
 
         // org.threeten.bp.ZoneOffset#parseNumber

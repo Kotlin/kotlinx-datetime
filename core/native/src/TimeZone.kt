@@ -33,19 +33,23 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
                 return UtcOffset.parse(zoneId).asTimeZone()
             }
             if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                // TODO: Should we allow non-normalized zone ids in UtcOffset id?
-                return UtcOffset(0, zoneId).asTimeZone()
+                return FixedOffsetTimeZone(UtcOffset(0), zoneId)
             }
             if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
                 zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")) {
+                val prefix = zoneId.take(3)
                 val offset = UtcOffset.parse(zoneId.substring(3))
-                return (if (offset.totalSeconds == 0) UtcOffset(0, zoneId.substring(0, 3))
-                else UtcOffset(offset.totalSeconds, zoneId.substring(0, 3) + offset.id)).asTimeZone()
+                return when (offset.totalSeconds) {
+                    0 -> FixedOffsetTimeZone(offset, prefix)
+                    else -> FixedOffsetTimeZone(offset, "$prefix$offset")
+                }
             }
             if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
                 val offset = UtcOffset.parse(zoneId.substring(2))
-                return (if (offset.totalSeconds == 0) UtcOffset(0, "UT")
-                else UtcOffset(offset.totalSeconds, "UT" + offset.id)).asTimeZone()
+                return when (offset.totalSeconds) {
+                    0 -> FixedOffsetTimeZone(offset, "UT")
+                    else -> FixedOffsetTimeZone(offset, "UT$offset")
+                }
             }
             return TimeZone(PlatformTimeZoneImpl.of(zoneId))
         }
@@ -80,7 +84,9 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
 
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
-public actual class FixedOffsetTimeZone actual constructor(public actual val utcOffset: UtcOffset) : TimeZone(ZoneOffsetImpl(utcOffset, utcOffset.id)) {
+public actual class FixedOffsetTimeZone internal constructor(public actual val utcOffset: UtcOffset, id: String) : TimeZone(ZoneOffsetImpl(utcOffset, id)) {
+
+    public actual constructor(utcOffset: UtcOffset) : this(utcOffset, utcOffset.toString())
 
     @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public actual val totalSeconds: Int get() = utcOffset.totalSeconds

@@ -99,6 +99,16 @@ class TimeZoneTest {
         }
     }
 
+    @Test
+    fun utcOffsetNormalization() {
+        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZone.of(it) }
+        val instant = Instant.fromEpochSeconds(0)
+        val offsets = sameOffsetTZs.map { it.offsetAt(instant) }
+
+        assertTrue(offsets.distinct().size == 1, "Expected all offsets to be equal: $offsets")
+        assertTrue(offsets.map { it.toString() }.distinct().size == 1, "Expected all offsets to have the same string representation: $offsets")
+    }
+
     // from 310bp
     @Test
     fun newYorkOffset() {
