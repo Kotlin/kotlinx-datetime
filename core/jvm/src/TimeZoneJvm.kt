@@ -32,7 +32,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     public actual companion object {
         public actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
-        public actual val UTC: TimeZone = jtZoneOffset.UTC.let(::TimeZone)
+        public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
             val zone = ZoneId.of(zoneId)

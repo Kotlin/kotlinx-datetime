@@ -31,7 +31,7 @@ public expect open class TimeZone {
         /**
          * Returns the time zone with the fixed UTC+0 offset.
          */
-        public val UTC: TimeZone
+        public val UTC: FixedOffsetTimeZone
 
         /**
          * Returns the time zone identified by the provided [zoneId].

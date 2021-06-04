@@ -18,7 +18,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
 
         public actual fun currentSystemDefault(): TimeZone = PlatformTimeZoneImpl.currentSystemDefault().let(::TimeZone)
 
-        public actual val UTC: TimeZone = UtcOffset.ZERO.asTimeZone()
+        public actual val UTC: FixedOffsetTimeZone = UtcOffset.ZERO.asTimeZone()
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
         public actual fun of(zoneId: String): TimeZone {
