@@ -67,7 +67,7 @@ class ConvertersTest {
                 (abs(hours) + 100).toString().substring(1) + ":" +
                 (abs(minutes) + 100).toString().substring(1) + ":" +
                 "00"
-            val test = TimeZone.of(str)
+            val test = TimeZone.of(str) as FixedOffsetTimeZone
             zoneOffsetCheck(test, hours, minutes)
         }
     }
@@ -93,9 +93,11 @@ class ConvertersTest {
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
-    private fun zoneOffsetCheck(timeZone: TimeZone, hours: Int, minutes: Int) {
+    private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
+        val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
         assertEquals(hours * 3600 + minutes * 60, nsTimeZone.secondsFromGMT.convert())
-        assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
+        assertIs<FixedOffsetTimeZone>(kotlinTimeZone)
+        assertEquals(timeZone.utcOffset, kotlinTimeZone.utcOffset)
     }
 }
