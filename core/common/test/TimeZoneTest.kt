@@ -57,7 +57,13 @@ class TimeZoneTest {
 
         assertFailsWith<IllegalTimeZoneException> { TimeZone.of("Mars/Standard") }
         assertFailsWith<IllegalTimeZoneException> { TimeZone.of("UTC+X") }
+    }
 
+    @Test
+    fun ofFailsOnInvalidOffset() {
+        for (v in UtcOffsetTest.invalidUtcOffsetStrings) {
+            assertFailsWith<IllegalTimeZoneException> { TimeZone.of(v) }
+        }
     }
 
     // from 310bp
