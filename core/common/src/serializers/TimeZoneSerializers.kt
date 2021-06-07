@@ -7,6 +7,7 @@ package kotlinx.datetime.serializers
 
 import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.UtcOffset
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -25,7 +26,7 @@ public object TimeZoneSerializer: KSerializer<TimeZone> {
 
 public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ZoneOffset", PrimitiveKind.STRING)
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FixedOffsetTimeZone", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): FixedOffsetTimeZone {
         val zone = TimeZone.of(decoder.decodeString())
@@ -38,6 +39,20 @@ public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 
     override fun serialize(encoder: Encoder, value: FixedOffsetTimeZone) {
         encoder.encodeString(value.id)
+    }
+
+}
+
+public object UtcOffsetSerializer: KSerializer<UtcOffset> {
+
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UtcOffset", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): UtcOffset {
+        return UtcOffset.parse(decoder.decodeString())
+    }
+
+    override fun serialize(encoder: Encoder, value: UtcOffset) {
+        encoder.encodeString(value.toString())
     }
 
 }

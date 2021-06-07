@@ -5,9 +5,12 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneOffset
 
+@Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 

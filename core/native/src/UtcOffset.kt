@@ -5,9 +5,12 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.native.concurrent.ThreadLocal
 
+@Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset internal constructor(public actual val totalSeconds: Int) {
     private val id: String = zoneIdByOffset(totalSeconds)
 

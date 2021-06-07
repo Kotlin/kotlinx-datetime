@@ -5,6 +5,10 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.serialization.Serializable
+
+@Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
     public val totalSeconds: Int
 
