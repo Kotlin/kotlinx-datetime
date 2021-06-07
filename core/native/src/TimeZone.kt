@@ -10,6 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.datetime.serializers.FixedOffsetTimeZoneSerializer
+import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlin.math.abs
 import kotlin.native.concurrent.*
 import kotlinx.serialization.Serializable
@@ -105,6 +106,7 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val u
 }
 
 
+@Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset internal constructor(public actual val totalSeconds: Int) {
     private val id: String = zoneIdByOffset(totalSeconds)
 

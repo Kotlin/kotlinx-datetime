@@ -7,6 +7,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.datetime.serializers.FixedOffsetTimeZoneSerializer
+import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 
@@ -54,6 +55,7 @@ public actual class FixedOffsetTimeZone actual constructor(public actual val utc
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
 }
 
+@Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(internal val zoneOffset: jtZoneOffset) {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
 

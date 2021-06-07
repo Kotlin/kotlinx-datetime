@@ -50,3 +50,4 @@ class TimeZoneSerializationTest {
         serialization(Json.serializersModule.serializer())
     }
 }
+

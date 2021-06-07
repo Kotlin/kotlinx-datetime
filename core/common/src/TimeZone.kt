@@ -10,6 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.TimeZoneSerializer
 import kotlinx.datetime.serializers.FixedOffsetTimeZoneSerializer
+import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable(with = TimeZoneSerializer::class)
@@ -97,6 +98,7 @@ public expect class FixedOffsetTimeZone : TimeZone {
 @Deprecated("Use FixedOffsetTimeZone of UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
 public typealias ZoneOffset = FixedOffsetTimeZone
 
+@Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
     public val totalSeconds: Int
 
