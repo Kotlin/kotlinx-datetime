@@ -96,7 +96,7 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
 
 public actual fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant =
-    this.value.atZone(utcOffset.zoneOffset).toInstant().let(::Instant)
+    this.value.toInstant(utcOffset.zoneOffset).let(::Instant)
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
         this.value.atStartOfDay(timeZone.zoneId).toInstant().let(::Instant)
