@@ -99,12 +99,10 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZone
     val offsets = rules.validOffsets(this.value)
     return when (offsets.size) {
         1 -> this.value.toInstant(offsets.single()).let(::Instant)
-        0 -> {
+        else -> {
             val transition = checkNotNull(rules.transition(this.value))
             return resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, transition.offsetBefore().let(::UtcOffset), transition.offsetAfter().let(::UtcOffset)))
         }
-        2 -> resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, offsets.first().let(::UtcOffset), offsets.last().let(::UtcOffset)))
-        else -> error("Unexpected offsets count: $offsets")
     }
 }
 
