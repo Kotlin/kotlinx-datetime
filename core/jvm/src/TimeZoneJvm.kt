@@ -23,7 +23,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant =
+    public actual fun LocalDateTime.toInstant(resolver: LocalDateTimeAmbiguityResolver): Instant =
         toInstant(this@TimeZone, resolver)
 
     override fun equals(other: Any?): Boolean =
@@ -96,15 +96,34 @@ public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime =
 }
 
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant {
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: LocalDateTimeAmbiguityResolver): Instant {
     if (timeZone is FixedOffsetTimeZone) return toInstant(timeZone)
     val rules = timeZone.zoneId.rules
-    val offsets = rules.getValidOffsets(this.value)
-    return when (offsets.size) {
-        1 -> this.value.toInstant(offsets.single()).let(::Instant)
+    return when (resolver) {
+        LocalDateTimeAmbiguityResolver.BeforeTransition, LocalDateTimeAmbiguityResolver.Lenient ->
+            this.value.toInstant(rules.getOffset(this.value)).let(::Instant)
         else -> {
-            val transition = rules.getTransition(this.value)!!
-            return resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, transition.offsetBefore.let(::UtcOffset), transition.offsetAfter.let(::UtcOffset)))
+            val offsets = rules.getValidOffsets(this.value)
+            when (offsets.size) {
+                1 -> {
+                    this.value.toInstant(offsets.single()).let(::Instant)
+                }
+                else -> {
+                    val transition = rules.getTransition(this.value)!!
+                    val offset = when (resolver) {
+                        LocalDateTimeAmbiguityResolver.BeforeTransition,
+                        LocalDateTimeAmbiguityResolver.Lenient ->
+                            transition.offsetBefore
+                        LocalDateTimeAmbiguityResolver.AfterTransition ->
+                            transition.offsetAfter
+                        LocalDateTimeAmbiguityResolver.Strict ->
+                            TODO("Choose exception type")
+                        is LocalDateTimeAmbiguityResolver.Custom ->
+                            return resolver.resolve(LocalDateTimeAmbiguity(this, offsets.size, transition.offsetBefore.let(::UtcOffset), transition.offsetAfter.let(::UtcOffset)))
+                    }
+                    this.value.toInstant(offset).let(::Instant)
+                }
+            }
         }
     }
 }

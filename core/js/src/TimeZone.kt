@@ -18,7 +18,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant = toInstant(this@TimeZone, resolver)
+    public actual fun LocalDateTime.toInstant(resolver: LocalDateTimeAmbiguityResolver): Instant = toInstant(this@TimeZone, resolver)
 
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
@@ -93,15 +93,34 @@ public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime =
 public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
         zoneId.rules().offsetOfInstant(instant.value).let(::UtcOffset)
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant {
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: LocalDateTimeAmbiguityResolver): Instant {
     if (timeZone is FixedOffsetTimeZone) return toInstant(timeZone)
     val rules = timeZone.zoneId.rules()
-    val offsets = rules.validOffsets(this.value)
-    return when (offsets.size) {
-        1 -> this.value.toInstant(offsets.single()).let(::Instant)
+    return when (resolver) {
+        LocalDateTimeAmbiguityResolver.BeforeTransition, LocalDateTimeAmbiguityResolver.Lenient ->
+            this.value.toInstant(rules.offset(this.value)).let(::Instant)
         else -> {
-            val transition = checkNotNull(rules.transition(this.value))
-            return resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, transition.offsetBefore().let(::UtcOffset), transition.offsetAfter().let(::UtcOffset)))
+            val offsets = rules.validOffsets(this.value)
+            when (offsets.size) {
+                1 -> {
+                    this.value.toInstant(offsets.single()).let(::Instant)
+                }
+                else -> {
+                    val transition = checkNotNull(rules.transition(this.value))
+                    val offset = when (resolver) {
+                        LocalDateTimeAmbiguityResolver.BeforeTransition,
+                        LocalDateTimeAmbiguityResolver.Lenient ->
+                            transition.offsetBefore()
+                        LocalDateTimeAmbiguityResolver.AfterTransition ->
+                            transition.offsetAfter()
+                        LocalDateTimeAmbiguityResolver.Strict ->
+                            TODO("Choose exception type")
+                        is LocalDateTimeAmbiguityResolver.Custom ->
+                            return resolver.resolve(LocalDateTimeAmbiguity(this, offsets.size, transition.offsetBefore().let(::UtcOffset), transition.offsetAfter().let(::UtcOffset)))
+                    }
+                    this.value.toInstant(offset).let(::Instant)
+                }
+            }
         }
     }
 }

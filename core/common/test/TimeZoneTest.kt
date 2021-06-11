@@ -196,10 +196,11 @@ class TimeZoneTest {
         val zone = TimeZone.of("Europe/Berlin")
         val date = LocalDateTime(2021, Month.JULY, 28, 12, 25)
         for (resolver in listOf(
-            TimeZoneLocalDateMappingResolver.STRICT,
-            TimeZoneLocalDateMappingResolver.LENIENT,
-            TimeZoneLocalDateMappingResolver { it.earlier() },
-            TimeZoneLocalDateMappingResolver { fail("Should not be called") }
+            LocalDateTimeAmbiguityResolver.Strict,
+            LocalDateTimeAmbiguityResolver.Lenient,
+            LocalDateTimeAmbiguityResolver.BeforeTransition,
+            LocalDateTimeAmbiguityResolver.AfterTransition,
+            LocalDateTimeAmbiguityResolver.Custom { fail("Should not be called") },
         )) {
             val instant = date.toInstant(zone, resolver)
             assertEquals(date, instant.toLocalDateTime(zone))
@@ -211,16 +212,20 @@ class TimeZoneTest {
         val zone = TimeZone.of("Europe/Berlin")
         val date = LocalDateTime(2021, Month.MARCH, 28, 2, 25) // non-existent local time
 
-        val instantLenient = date.toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
-        val instantLater = date.toInstant(zone) { it.later() }
-        val instantEarlier = date.toInstant(zone) {
+        val instantLenient = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Lenient)
+        val instantLater = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.later() })
+        val instantEarlier = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom {
             assertEquals(date, it.dateTime)
             assertEquals(0, it.results)
             assertEquals(UtcOffset.parse("+1"), it.offsetBefore)
             assertEquals(UtcOffset.parse("+2"), it.offsetAfter)
 
             it.earlier()
-        }
+        })
+        val instantBefore1 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.BeforeTransition)
+        val instantBefore2 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.beforeTransition() })
+        val instantAfter1 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.AfterTransition)
+        val instantAfter2 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.afterTransition() })
 
         assertEquals(instantLater, instantLenient)
         assertTrue(instantEarlier < instantLater, "$instantEarlier < $instantLater")
@@ -228,8 +233,14 @@ class TimeZoneTest {
         assertEquals(LocalDateTime(2021, Month.MARCH, 28, 3, 25), instantLater.toLocalDateTime(zone))
         assertEquals(LocalDateTime(2021, Month.MARCH, 28, 1, 25), instantEarlier.toLocalDateTime(zone))
 
-        assertFails { date.toInstant(zone, TimeZoneLocalDateMappingResolver.STRICT) }
-        assertFails { date.toInstant(zone) { it.single() } }
+        assertEquals(instantBefore1, instantBefore2)
+        assertEquals(instantLater, instantBefore1)
+
+        assertEquals(instantAfter1, instantAfter2)
+        assertEquals(instantEarlier, instantAfter1)
+
+        assertFails { date.toInstant(zone, LocalDateTimeAmbiguityResolver.Strict) }
+        assertFails { date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.single() }) }
     }
 
     @Test
@@ -237,24 +248,35 @@ class TimeZoneTest {
         val zone = TimeZone.of("Europe/Berlin")
         val date = LocalDateTime(2020, Month.OCTOBER, 25, 2, 25) // ambiguous local time
 
-        val instantLenient = date.toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
-        val instantLater = date.toInstant(zone) { it.later() }
-        val instantEarlier = date.toInstant(zone) {
+        val instantLenient = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Lenient)
+        val instantLater = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.later() })
+        val instantEarlier = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom {
             assertEquals(date, it.dateTime)
             assertEquals(2, it.results)
             assertEquals(UtcOffset.parse("+2"), it.offsetBefore)
             assertEquals(UtcOffset.parse("+1"), it.offsetAfter)
 
             it.earlier()
-        }
+        })
+        val instantBefore1 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.BeforeTransition)
+        val instantBefore2 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.beforeTransition() })
+        val instantAfter1 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.AfterTransition)
+        val instantAfter2 = date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.afterTransition() })
+
         assertEquals(instantEarlier, instantLenient)
         assertTrue(instantEarlier < instantLater, "$instantEarlier < $instantLater")
 
         assertEquals(date, instantLater.toLocalDateTime(zone))
         assertEquals(date, instantEarlier.toLocalDateTime(zone))
 
-        assertFails { date.toInstant(zone, TimeZoneLocalDateMappingResolver.STRICT) }
-        assertFails { date.toInstant(zone) { it.single() } }
+        assertEquals(instantBefore1, instantBefore2)
+        assertEquals(instantEarlier, instantBefore1)
+
+        assertEquals(instantAfter1, instantAfter2)
+        assertEquals(instantLater, instantAfter1)
+
+        assertFails { date.toInstant(zone, LocalDateTimeAmbiguityResolver.Strict) }
+        assertFails { date.toInstant(zone, LocalDateTimeAmbiguityResolver.Custom { it.single() }) }
     }
 
 

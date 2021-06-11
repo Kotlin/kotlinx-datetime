@@ -83,7 +83,7 @@ public expect open class TimeZone {
      *
      * @see Instant.toLocalDateTime
      */
-    public fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant
+    public fun LocalDateTime.toInstant(resolver: LocalDateTimeAmbiguityResolver): Instant
 }
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
@@ -159,20 +159,19 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  */
 public expect fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant
 
-public expect fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant
+public expect fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: LocalDateTimeAmbiguityResolver): Instant
 
-public fun interface TimeZoneLocalDateMappingResolver {
-    public fun resolve(mapping: TimeZoneLocalDateMapping): Instant
-    public companion object {
-        public val LENIENT: TimeZoneLocalDateMappingResolver =
-            TimeZoneLocalDateMappingResolver(TimeZoneLocalDateMapping::beforeTransition)
-
-        public val STRICT: TimeZoneLocalDateMappingResolver =
-            TimeZoneLocalDateMappingResolver(TimeZoneLocalDateMapping::single)
+public sealed interface LocalDateTimeAmbiguityResolver {
+    public object Lenient : LocalDateTimeAmbiguityResolver
+    public object Strict : LocalDateTimeAmbiguityResolver
+    public object BeforeTransition : LocalDateTimeAmbiguityResolver
+    public object AfterTransition : LocalDateTimeAmbiguityResolver
+    public fun interface Custom : LocalDateTimeAmbiguityResolver {
+        public fun resolve(ambiguity: LocalDateTimeAmbiguity): Instant
     }
 }
 
-public class TimeZoneLocalDateMapping internal constructor(
+public class LocalDateTimeAmbiguity internal constructor(
     public val dateTime: LocalDateTime,
     public val results: Int,
     public val offsetBefore: UtcOffset,

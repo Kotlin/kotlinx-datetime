@@ -150,7 +150,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone, LocalDateTimeAmbiguityResolver.Lenient)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -231,7 +231,7 @@ class InstantTest {
     @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone, LocalDateTimeAmbiguityResolver.Lenient)
         val ldt1 = instant1.toLocalDateTime(zone)
         val offset1 = instant1.offsetIn(zone)
         checkComponents(ldt1, 2019, 10, 27, 2, 59)

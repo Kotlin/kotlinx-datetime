@@ -71,7 +71,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
         get() = value.id
 
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
-    public actual fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant = localDateTimeToInstant(this, resolver)
+    public actual fun LocalDateTime.toInstant(resolver: LocalDateTimeAmbiguityResolver): Instant = localDateTimeToInstant(this, resolver)
 
     internal open fun atStartOfDay(date: LocalDate): Instant = value.atStartOfDay(date)
 
@@ -81,7 +81,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
         throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
     }
 
-    internal open fun localDateTimeToInstant(dateTime: LocalDateTime, resolver: TimeZoneLocalDateMappingResolver): Instant =
+    internal open fun localDateTimeToInstant(dateTime: LocalDateTime, resolver: LocalDateTimeAmbiguityResolver): Instant =
         // TODO: use resolver
         atZone(dateTime).toInstant()
 
@@ -108,7 +108,7 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val u
     public actual val totalSeconds: Int get() = utcOffset.totalSeconds
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(utcOffset)
-    override fun localDateTimeToInstant(dateTime: LocalDateTime, resolver: TimeZoneLocalDateMappingResolver): Instant = dateTime.toInstant(utcOffset)
+    override fun localDateTimeToInstant(dateTime: LocalDateTime, resolver: LocalDateTimeAmbiguityResolver): Instant = dateTime.toInstant(utcOffset)
     public actual fun LocalDateTime.toInstant(): Instant = this.toInstant(utcOffset)
 
 }
@@ -257,7 +257,7 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
     return LocalDateTime(date, time)
 }
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant =
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: LocalDateTimeAmbiguityResolver): Instant =
     timeZone.localDateTimeToInstant(this, resolver)
 
 public actual fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant =

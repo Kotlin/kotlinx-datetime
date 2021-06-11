@@ -70,7 +70,7 @@ class LocalDateTest {
     fun atStartOfDay() {
         val paris = TimeZone.of("Europe/Paris")
         val parisDate = LocalDate(2008, 6, 30)
-        assertEquals(parisDate.atTime(0, 0).toInstant(paris, TimeZoneLocalDateMappingResolver.LENIENT),
+        assertEquals(parisDate.atTime(0, 0).toInstant(paris, LocalDateTimeAmbiguityResolver.Lenient),
                 parisDate.atStartOfDayIn(paris), "paris")
 
         // TODO: Find another TZ transition that works in Windows
@@ -81,7 +81,7 @@ class LocalDateTest {
 
         val fixed = TimeZone.of("UTC+14")
         val fixedDate = LocalDate(2007, 4, 1)
-        assertEquals(fixedDate.atTime(0, 0).toInstant(fixed, TimeZoneLocalDateMappingResolver.STRICT),
+        assertEquals(fixedDate.atTime(0, 0).toInstant(fixed, LocalDateTimeAmbiguityResolver.Strict),
                 fixedDate.atStartOfDayIn(fixed), "fixed")
     }
 
