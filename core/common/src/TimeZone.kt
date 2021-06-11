@@ -83,7 +83,7 @@ public expect open class TimeZone {
      *
      * @see Instant.toLocalDateTime
      */
-    public fun LocalDateTime.toInstant(): Instant
+    public fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant
 }
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
@@ -93,6 +93,8 @@ public expect class FixedOffsetTimeZone : TimeZone {
 
     @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public val totalSeconds: Int
+
+    public fun LocalDateTime.toInstant(): Instant
 }
 
 @Deprecated("Use FixedOffsetTimeZone of UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
@@ -155,7 +157,43 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  *
  * @see Instant.toLocalDateTime
  */
-public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
+public expect fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant
+
+public expect fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant
+
+public fun interface TimeZoneLocalDateMappingResolver {
+    public fun resolve(mapping: TimeZoneLocalDateMapping): Instant
+    public companion object {
+        public val LENIENT: TimeZoneLocalDateMappingResolver =
+            TimeZoneLocalDateMappingResolver(TimeZoneLocalDateMapping::beforeTransition)
+
+        public val STRICT: TimeZoneLocalDateMappingResolver =
+            TimeZoneLocalDateMappingResolver(TimeZoneLocalDateMapping::single)
+    }
+}
+
+public class TimeZoneLocalDateMapping internal constructor(
+    public val dateTime: LocalDateTime,
+    public val results: Int,
+    public val offsetBefore: UtcOffset,
+    public val offsetAfter: UtcOffset
+) {
+
+    public fun earlier(): Instant =
+        dateTime.toInstant(maxOf(offsetAfter, offsetBefore, compareBy { it.totalSeconds }))
+
+    public fun later(): Instant =
+        dateTime.toInstant(minOf(offsetAfter, offsetBefore, compareBy { it.totalSeconds }))
+
+    public fun beforeTransition(): Instant = dateTime.toInstant(offsetBefore)
+
+    public fun afterTransition(): Instant = dateTime.toInstant(offsetAfter)
+
+    public fun single(): Instant {
+        if (results != 1) throw TODO("Choose exception type")
+        return afterTransition()
+    }
+}
 
 public expect fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant
 

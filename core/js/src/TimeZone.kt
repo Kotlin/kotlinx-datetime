@@ -18,7 +18,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
+    public actual fun LocalDateTime.toInstant(resolver: TimeZoneLocalDateMappingResolver): Instant = toInstant(this@TimeZone, resolver)
 
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
@@ -53,6 +53,7 @@ public actual class FixedOffsetTimeZone actual constructor(public actual val utc
 
     @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
+    public actual fun LocalDateTime.toInstant(): Instant = toInstant(utcOffset)
 }
 
 @Serializable(with = UtcOffsetSerializer::class)
@@ -92,8 +93,23 @@ public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime =
 public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
         zoneId.rules().offsetOfInstant(instant.value).let(::UtcOffset)
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-        this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, resolver: TimeZoneLocalDateMappingResolver): Instant {
+    if (timeZone is FixedOffsetTimeZone) return toInstant(timeZone)
+    val rules = timeZone.zoneId.rules()
+    val offsets = rules.validOffsets(this.value)
+    return when (offsets.size) {
+        1 -> this.value.toInstant(offsets.single()).let(::Instant)
+        0 -> {
+            val transition = checkNotNull(rules.transition(this.value))
+            return resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, transition.offsetBefore().let(::UtcOffset), transition.offsetAfter().let(::UtcOffset)))
+        }
+        2 -> resolver.resolve(TimeZoneLocalDateMapping(this, offsets.size, offsets.first().let(::UtcOffset), offsets.last().let(::UtcOffset)))
+        else -> error("Unexpected offsets count: $offsets")
+    }
+}
+
+public actual fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant =
+        this.value.toInstant(timeZone.utcOffset.zoneOffset).let(::Instant)
 
 public actual fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant =
     this.value.toInstant(utcOffset.zoneOffset).let(::Instant)

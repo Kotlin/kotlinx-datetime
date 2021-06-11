@@ -53,7 +53,8 @@ class LocalDateTimeTest {
     fun localDtToInstantConversionRespectsTimezones() {
         val ldt1 = "2011-03-26T04:00:00".toLocalDateTime()
         val ldt2 = "2011-03-27T04:00:00".toLocalDateTime()
-        val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
+        val resolver = TimeZoneLocalDateMappingResolver.LENIENT
+        val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant(resolver) - ldt1.toInstant(resolver) }
         assertEquals(Duration.hours(23), diff)
     }
 

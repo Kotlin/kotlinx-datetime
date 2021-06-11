@@ -191,6 +191,76 @@ class TimeZoneTest {
         check("-5", LocalDateTime(2008, 11, 2, 2, 0, 0, 0))
     }
 
+    @Test
+    fun localDateTimeNormalToInstant() {
+        val zone = TimeZone.of("Europe/Berlin")
+        val date = LocalDateTime(2021, Month.JULY, 28, 12, 25)
+        for (resolver in listOf(
+            TimeZoneLocalDateMappingResolver.STRICT,
+            TimeZoneLocalDateMappingResolver.LENIENT,
+            TimeZoneLocalDateMappingResolver { it.earlier() },
+            TimeZoneLocalDateMappingResolver { fail("Should not be called") }
+        )) {
+            val instant = date.toInstant(zone, resolver)
+            assertEquals(date, instant.toLocalDateTime(zone))
+        }
+    }
+
+    @Test
+    fun localDateTimeGapToInstant() {
+        val zone = TimeZone.of("Europe/Berlin")
+        val date = LocalDateTime(2021, Month.MARCH, 28, 2, 25) // non-existent local time
+
+        val instantLenient = date.toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
+        val instantLater = date.toInstant(zone) { it.later() }
+        val instantEarlier = date.toInstant(zone) {
+            assertEquals(date, it.dateTime)
+            assertEquals(0, it.results)
+            assertEquals(UtcOffset.parse("+1"), it.offsetBefore)
+            assertEquals(UtcOffset.parse("+2"), it.offsetAfter)
+
+            it.earlier()
+        }
+
+        assertEquals(instantLater, instantLenient)
+        assertTrue(instantEarlier < instantLater, "$instantEarlier < $instantLater")
+
+        assertEquals(LocalDateTime(2021, Month.MARCH, 28, 3, 25), instantLater.toLocalDateTime(zone))
+        assertEquals(LocalDateTime(2021, Month.MARCH, 28, 1, 25), instantEarlier.toLocalDateTime(zone))
+
+        assertFails { date.toInstant(zone, TimeZoneLocalDateMappingResolver.STRICT) }
+        assertFails { date.toInstant(zone) { it.single() } }
+    }
+
+    @Test
+    fun localDateTimeOverlapToInstant() {
+        val zone = TimeZone.of("Europe/Berlin")
+        val date = LocalDateTime(2020, Month.OCTOBER, 25, 2, 25) // ambiguous local time
+
+        val instantLenient = date.toInstant(zone, TimeZoneLocalDateMappingResolver.LENIENT)
+        val instantLater = date.toInstant(zone) { it.later() }
+        val instantEarlier = date.toInstant(zone) {
+            assertEquals(date, it.dateTime)
+            assertEquals(2, it.results)
+            assertEquals(UtcOffset.parse("+2"), it.offsetBefore)
+            assertEquals(UtcOffset.parse("+1"), it.offsetAfter)
+
+            it.earlier()
+        }
+        assertEquals(instantEarlier, instantLenient)
+        assertTrue(instantEarlier < instantLater, "$instantEarlier < $instantLater")
+
+        assertEquals(date, instantLater.toLocalDateTime(zone))
+        assertEquals(date, instantEarlier.toLocalDateTime(zone))
+
+        assertFails { date.toInstant(zone, TimeZoneLocalDateMappingResolver.STRICT) }
+        assertFails { date.toInstant(zone) { it.single() } }
+    }
+
+
+
+
+
     private fun LocalDateTime(year: Int, monthNumber: Int, dayOfMonth: Int) = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0)
 
 }
