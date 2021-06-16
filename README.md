@@ -228,8 +228,8 @@ time components are being added to a date at compile time.
 
 ### Date + time arithmetic
 
-Arithmetic on `LocalDateTime` is intentionally omitted. The reason for this is that the presence of time zone
-transitions (like changing from standard time to daylight saving time and back) causes `LocalDateTime` arithmetic to be
+Arithmetic on `LocalDateTime` is intentionally omitted. The reason for this is that the presence of daylight saving time
+transitions (changing from standard time to daylight saving time and back) causes `LocalDateTime` arithmetic to be
 ill-defined. For example, consider time gaps (or, as [`dst` tag wiki on Stack Overflow](https://stackoverflow.com/tags/dst/info)
 calls them, "spring forward" transitions), that is, ranges of date + time combinations that never occur in a given
 time zone due to clocks moving forward. If we allowed `LocalDateTime` arithmetic that ignored time zones, then it
