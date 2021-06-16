@@ -226,6 +226,33 @@ Notice that instead of general `DateTimeUnit` and `DateTimePeriod` we're using t
 `DateTimeUnit.DateBased` and `DatePeriod` respectively. This allows preventing the situations when
 time components are being added to a date at compile time.
 
+### Date + time arithmetic
+
+Arithmetic on `LocalDateTime` is intentionally omitted. The reason for this is that the presence of daylight saving time
+transitions (changing from standard time to daylight saving time and back) causes `LocalDateTime` arithmetic to be
+ill-defined. For example, consider time gaps (or, as [`dst` tag wiki on Stack Overflow](https://stackoverflow.com/tags/dst/info)
+calls them, "spring forward" transitions), that is, ranges of date + time combinations that never occur in a given
+time zone due to clocks moving forward. If we allowed `LocalDateTime` arithmetic that ignored time zones, then it
+could result in `LocalDateTime` instances that are inside a time gap and are invalid in the implied time zone.
+
+Therefore, the recommended way to use a `LocalDateTime` is to treat it as a representation of an `Instant`,
+perform all the required arithmetic on `Instant` values, and only convert to `LocalDateTime` when a human-readable
+representation is needed.
+
+```kotlin
+val timeZone = TimeZone.of("Europe/Berlin")
+val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
+val instant = localDateTime.toInstant(timeZone)
+
+val instantOneDayLater = instant.plus(1, DateTimeUnit.DAY, timeZone)
+val localDateTimeOneDayLater = instantOneDayLater.toLocalDateTime(timeZone)
+// 2021-03-28T03:16:20, as 02:16:20 that day is in a time gap
+
+val instantTwoDaysLater = instant.plus(2, DateTimeUnit.DAY, timeZone)
+val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
+// 2021-03-29T02:16:20
+```
+
 ## Implementation
 
 The implementation of date/time types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
