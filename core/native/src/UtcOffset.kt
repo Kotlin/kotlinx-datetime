@@ -58,47 +58,51 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
                     minutes = parseNumber(offsetString, 4, true)
                     seconds = parseNumber(offsetString, 7, true)
                 }
-                else -> throw IllegalTimeZoneException("Invalid ID for UtcOffset, invalid format: $offsetString")
+                else -> throw DateTimeFormatException("Invalid ID for UtcOffset, invalid format: $offsetString")
             }
             val first: Char = offsetString[0]
             if (first != '+' && first != '-') {
-                throw IllegalTimeZoneException(
+                throw DateTimeFormatException(
                     "Invalid ID for UtcOffset, plus/minus not found when expected: $offsetString")
             }
-            return if (first == '-') {
-                ofHoursMinutesSeconds(-hours, -minutes, -seconds)
-            } else {
-                ofHoursMinutesSeconds(hours, minutes, seconds)
+            try {
+                return if (first == '-') {
+                    ofHoursMinutesSeconds(-hours, -minutes, -seconds)
+                } else {
+                    ofHoursMinutesSeconds(hours, minutes, seconds)
+                }
+            } catch (e: IllegalArgumentException) {
+                throw DateTimeFormatException(e)
             }
         }
 
         // org.threeten.bp.ZoneOffset#validate
         private fun validate(hours: Int, minutes: Int, seconds: Int) {
             if (hours < -18 || hours > 18) {
-                throw IllegalTimeZoneException("Zone offset hours not in valid range: value " + hours +
-                    " is not in the range -18 to 18")
+                throw IllegalArgumentException("Zone offset hours not in valid range: value " + hours +
+                        " is not in the range -18 to 18")
             }
             if (hours > 0) {
                 if (minutes < 0 || seconds < 0) {
-                    throw IllegalTimeZoneException("Zone offset minutes and seconds must be positive because hours is positive")
+                    throw IllegalArgumentException("Zone offset minutes and seconds must be positive because hours is positive")
                 }
             } else if (hours < 0) {
                 if (minutes > 0 || seconds > 0) {
-                    throw IllegalTimeZoneException("Zone offset minutes and seconds must be negative because hours is negative")
+                    throw IllegalArgumentException("Zone offset minutes and seconds must be negative because hours is negative")
                 }
             } else if (minutes > 0 && seconds < 0 || minutes < 0 && seconds > 0) {
-                throw IllegalTimeZoneException("Zone offset minutes and seconds must have the same sign")
+                throw IllegalArgumentException("Zone offset minutes and seconds must have the same sign")
             }
             if (abs(minutes) > 59) {
-                throw IllegalTimeZoneException("Zone offset minutes not in valid range: abs(value) " +
-                    abs(minutes) + " is not in the range 0 to 59")
+                throw IllegalArgumentException("Zone offset minutes not in valid range: abs(value) " +
+                        abs(minutes) + " is not in the range 0 to 59")
             }
             if (abs(seconds) > 59) {
-                throw IllegalTimeZoneException("Zone offset seconds not in valid range: abs(value) " +
-                    abs(seconds) + " is not in the range 0 to 59")
+                throw IllegalArgumentException("Zone offset seconds not in valid range: abs(value) " +
+                        abs(seconds) + " is not in the range 0 to 59")
             }
             if (abs(hours) == 18 && (abs(minutes) > 0 || abs(seconds) > 0)) {
-                throw IllegalTimeZoneException("Zone offset not in valid range: -18:00 to +18:00")
+                throw IllegalArgumentException("Utc offset not in valid range: -18:00 to +18:00")
             }
         }
 
@@ -120,12 +124,12 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
         // org.threeten.bp.ZoneOffset#parseNumber
         private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
             if (precededByColon && offsetId[pos - 1] != ':') {
-                throw IllegalTimeZoneException("Invalid ID for ZoneOffset, colon not found when expected: $offsetId")
+                throw DateTimeFormatException("Invalid ID for UtcOffset, colon not found when expected: $offsetId")
             }
             val ch1 = offsetId[pos]
             val ch2 = offsetId[pos + 1]
             if (ch1 < '0' || ch1 > '9' || ch2 < '0' || ch2 > '9') {
-                throw IllegalTimeZoneException("Invalid ID for ZoneOffset, non numeric characters found: $offsetId")
+                throw DateTimeFormatException("Invalid ID for UtcOffset, non numeric characters found: $offsetId")
             }
             return (ch1 - '0') * 10 + (ch2 - '0')
         }

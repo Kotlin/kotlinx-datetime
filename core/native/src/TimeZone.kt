@@ -29,27 +29,32 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
             if (zoneId.length == 1) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
             }
-            if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
-                return UtcOffset.parse(zoneId).asTimeZone()
-            }
-            if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                return FixedOffsetTimeZone(UtcOffset(0), zoneId)
-            }
-            if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
-                zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")) {
-                val prefix = zoneId.take(3)
-                val offset = UtcOffset.parse(zoneId.substring(3))
-                return when (offset.totalSeconds) {
-                    0 -> FixedOffsetTimeZone(offset, prefix)
-                    else -> FixedOffsetTimeZone(offset, "$prefix$offset")
+            try {
+                if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
+                    return UtcOffset.parse(zoneId).asTimeZone()
                 }
-            }
-            if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
-                val offset = UtcOffset.parse(zoneId.substring(2))
-                return when (offset.totalSeconds) {
-                    0 -> FixedOffsetTimeZone(offset, "UT")
-                    else -> FixedOffsetTimeZone(offset, "UT$offset")
+                if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
+                    return FixedOffsetTimeZone(UtcOffset(0), zoneId)
                 }
+                if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
+                    zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")
+                ) {
+                    val prefix = zoneId.take(3)
+                    val offset = UtcOffset.parse(zoneId.substring(3))
+                    return when (offset.totalSeconds) {
+                        0 -> FixedOffsetTimeZone(offset, prefix)
+                        else -> FixedOffsetTimeZone(offset, "$prefix$offset")
+                    }
+                }
+                if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
+                    val offset = UtcOffset.parse(zoneId.substring(2))
+                    return when (offset.totalSeconds) {
+                        0 -> FixedOffsetTimeZone(offset, "UT")
+                        else -> FixedOffsetTimeZone(offset, "UT$offset")
+                    }
+                }
+            } catch (e: DateTimeFormatException) {
+                throw IllegalTimeZoneException(e)
             }
             return TimeZone(PlatformTimeZoneImpl.of(zoneId))
         }

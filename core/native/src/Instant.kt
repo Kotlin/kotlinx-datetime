@@ -57,7 +57,7 @@ private val zoneOffsetParser: Parser<UtcOffset>
                             UtcOffset.ofHoursMinutesSeconds(-hours, -minutes, -seconds)
                         else
                             UtcOffset.ofHoursMinutesSeconds(hours, minutes, seconds)
-                    } catch (e: IllegalTimeZoneException) {
+                    } catch (e: IllegalArgumentException) {
                         throw DateTimeFormatException(e)
                     }
                 }

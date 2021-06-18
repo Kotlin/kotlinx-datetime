@@ -34,6 +34,16 @@ class UtcOffsetTest {
     }
 
     @Test
+    fun invalidUtcOffsetStrings() {
+        for (v in invalidUtcOffsetStrings) {
+            assertFailsWith<DateTimeFormatException>("Should fail: $v") { UtcOffset.parse(v) }
+        }
+        for (v in fixedOffsetTimeZoneIds) {
+            assertFailsWith<DateTimeFormatException>("Time zone name should not be parsed as UtcOffset: $v") { UtcOffset.parse(v) }
+        }
+    }
+
+    @Test
     fun parseAllValidValues() {
         fun Int.pad() = toString().padStart(2, '0')
         fun check(offsetSeconds: Int, offsetString: String, canonical: Boolean = false) {
