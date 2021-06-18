@@ -52,9 +52,9 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone
-public actual constructor(public actual val utcOffset: UtcOffset): TimeZone(utcOffset.zoneOffset) {
-    @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
-    public actual val totalSeconds: Int get() = utcOffset.totalSeconds
+public actual constructor(public actual val offset: UtcOffset): TimeZone(offset.zoneOffset) {
+    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
+    public actual val totalSeconds: Int get() = offset.totalSeconds
 }
 
 public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
@@ -66,8 +66,8 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw DateTimeArithmeticException(e)
 }
 
-internal actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
-    java.time.LocalDateTime.ofInstant(this.value, utcOffset.zoneOffset).let(::LocalDateTime)
+internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
+    java.time.LocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }
@@ -76,8 +76,8 @@ internal actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
 
-public actual fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant =
-        this.value.toInstant(utcOffset.zoneOffset).let(::Instant)
+public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
+        this.value.toInstant(offset.zoneOffset).let(::Instant)
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
         this.value.atStartOfDay(timeZone.zoneId).toInstant().let(::Instant)

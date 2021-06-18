@@ -43,10 +43,10 @@ public fun NSDate.toKotlinInstant(): Instant {
  * nearest minute.
  */
 public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone) {
-    require (utcOffset.totalSeconds % 60 == 0) {
+    require (offset.totalSeconds % 60 == 0) {
         "NSTimeZone cannot represent fixed-offset time zones with offsets not expressed in whole minutes: $this"
     }
-    NSTimeZone.timeZoneForSecondsFromGMT(utcOffset.totalSeconds.convert())
+    NSTimeZone.timeZoneForSecondsFromGMT(offset.totalSeconds.convert())
 } else {
     NSTimeZone.timeZoneWithName(id) ?: NSTimeZone.timeZoneWithAbbreviation(id)!!
 }

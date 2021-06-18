@@ -86,10 +86,10 @@ public expect open class TimeZone {
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public expect class FixedOffsetTimeZone : TimeZone {
-    public constructor(utcOffset: UtcOffset)
-    public val utcOffset: UtcOffset
+    public constructor(offset: UtcOffset)
+    public val offset: UtcOffset
 
-    @Deprecated("Use utcOffset.totalSeconds", ReplaceWith("utcOffset.totalSeconds"))
+    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public val totalSeconds: Int
 }
 
@@ -116,7 +116,7 @@ public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
-internal expect fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime
+internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
 
 
 /**
@@ -144,7 +144,7 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  */
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
 
-public expect fun LocalDateTime.toInstant(utcOffset: UtcOffset): Instant
+public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
 
 /**
  * Returns an instant that corresponds to the start of this date in the specified [timeZone].

@@ -115,6 +115,6 @@ class UtcOffsetTest {
         val offset = UtcOffset.parse("+01:20:30")
         val timeZone = offset.asTimeZone()
         assertIs<FixedOffsetTimeZone>(timeZone)
-        assertEquals(offset, timeZone.utcOffset)
+        assertEquals(offset, timeZone.offset)
     }
 }

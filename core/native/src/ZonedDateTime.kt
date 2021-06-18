@@ -38,7 +38,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
 
     override fun toString(): String {
         var str = dateTime.toString() + offset.toString()
-        if (zone !is FixedOffsetTimeZone || offset !== zone.utcOffset) {
+        if (zone !is FixedOffsetTimeZone || offset !== zone.offset) {
             str += "[$zone]"
         }
         return str

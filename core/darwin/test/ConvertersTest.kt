@@ -98,6 +98,6 @@ class ConvertersTest {
         val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
         assertEquals(hours * 3600 + minutes * 60, nsTimeZone.secondsFromGMT.convert())
         assertIs<FixedOffsetTimeZone>(kotlinTimeZone)
-        assertEquals(timeZone.utcOffset, kotlinTimeZone.utcOffset)
+        assertEquals(timeZone.offset, kotlinTimeZone.offset)
     }
 }
