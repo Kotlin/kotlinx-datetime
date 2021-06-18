@@ -111,7 +111,7 @@ public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
     timeZone.instantToLocalDateTime(this)
 
-public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
+internal actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
     toLocalDateTimeImpl(utcOffset)
 } catch (e: IllegalArgumentException) {
     throw DateTimeArithmeticException("Instant ${this@toLocalDateTime} is not representable as LocalDateTime", e)

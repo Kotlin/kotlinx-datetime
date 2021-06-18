@@ -116,7 +116,7 @@ public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
-public expect fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime
+internal expect fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime
 
 
 /**

@@ -66,7 +66,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw DateTimeArithmeticException(e)
 }
 
-public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
+internal actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
     java.time.LocalDateTime.ofInstant(this.value, utcOffset.zoneOffset).let(::LocalDateTime)
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)

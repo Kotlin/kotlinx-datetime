@@ -61,7 +61,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = t
     throw e
 }
 
-public actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
+internal actual fun Instant.toLocalDateTime(utcOffset: UtcOffset): LocalDateTime = try {
     kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, utcOffset.zoneOffset).let(::LocalDateTime)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
