@@ -33,6 +33,56 @@ class UtcOffsetTest {
         val offsetSecondsRange = -18 * 60 * 60 .. +18 * 60 * 60
     }
 
+
+    @Test
+    fun construction() {
+        for (totalSeconds in offsetSecondsRange) {
+            val hours = totalSeconds / (60 * 60)
+            val totalMinutes = totalSeconds / 60
+            val minutes = totalMinutes % 60
+            val seconds = totalSeconds % 60
+            val offset = UtcOffset(hours, minutes, seconds)
+            val offsetSeconds = UtcOffset(seconds = totalSeconds)
+            val offsetMinutes = UtcOffset(minutes = totalMinutes, seconds = seconds)
+            assertEquals(totalSeconds, offset.totalSeconds)
+            assertEquals(offset, offsetMinutes)
+            assertEquals(offset, offsetSeconds)
+        }
+    }
+
+    @Test
+    fun constructionErrors() {
+        // total range
+        assertIllegalArgument { UtcOffset(hours = -19) }
+        assertIllegalArgument { UtcOffset(hours = +19) }
+        assertIllegalArgument { UtcOffset(hours = -18, minutes = -1) }
+        assertIllegalArgument { UtcOffset(hours = -18, seconds = -1) }
+        assertIllegalArgument { UtcOffset(hours = +18, seconds = +1) }
+        assertIllegalArgument { UtcOffset(hours = +18, seconds = +1) }
+        assertIllegalArgument { UtcOffset(seconds = offsetSecondsRange.first - 1) }
+        assertIllegalArgument { UtcOffset(seconds = offsetSecondsRange.last + 1) }
+        // component ranges
+        assertIllegalArgument { UtcOffset(hours = 0, minutes = 60) }
+        assertIllegalArgument { UtcOffset(hours = 0, seconds = -60) }
+        assertIllegalArgument { UtcOffset(minutes = 90, seconds = 90) }
+        assertIllegalArgument { UtcOffset(minutes = 0, seconds = 90) }
+        // component signs
+        assertIllegalArgument { UtcOffset(hours = +1, minutes = -1) }
+        assertIllegalArgument { UtcOffset(hours = +1, seconds = -1) }
+        assertIllegalArgument { UtcOffset(hours = -1, minutes = +1) }
+        assertIllegalArgument { UtcOffset(hours = -1, seconds = +1) }
+        assertIllegalArgument { UtcOffset(minutes = +1, seconds = -1) }
+        assertIllegalArgument { UtcOffset(minutes = -1, seconds = +1) }
+    }
+
+    @Test
+    fun utcOffsetToString() {
+        assertEquals("+01:00", UtcOffset(hours = 1, minutes = 0, seconds = 0).toString())
+        assertEquals("+01:02:03", UtcOffset(hours = 1, minutes = 2, seconds = 3).toString())
+        assertEquals("-01:00:30", UtcOffset(hours = -1, minutes = 0, seconds = -30).toString())
+        assertEquals("Z", UtcOffset.ZERO.toString())
+    }
+
     @Test
     fun invalidUtcOffsetStrings() {
         for (v in invalidUtcOffsetStrings) {
@@ -112,7 +162,7 @@ class UtcOffsetTest {
 
     @Test
     fun asTimeZone() {
-        val offset = UtcOffset.parse("+01:20:30")
+        val offset = UtcOffset(hours = 1, minutes = 20, seconds = 30)
         val timeZone = offset.asTimeZone()
         assertIs<FixedOffsetTimeZone>(timeZone)
         assertEquals(offset, timeZone.offset)

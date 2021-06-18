@@ -19,16 +19,6 @@ import kotlin.test.*
 class ThreeTenBpTimeZoneTest {
 
     @Test
-    fun utcOffsetToString() {
-        var offset: UtcOffset = UtcOffset.ofHoursMinutesSeconds(1, 0, 0)
-        assertEquals("+01:00", offset.toString())
-        offset = UtcOffset.ofHoursMinutesSeconds(1, 2, 3)
-        assertEquals("+01:02:03", offset.toString())
-        offset = UtcOffset.ZERO
-        assertEquals("Z", offset.toString())
-    }
-
-    @Test
     fun utcIsCached() {
         val values = arrayOf(
             "Z", "+0",
@@ -53,7 +43,7 @@ class ThreeTenBpTimeZoneTest {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
         val zone = TimeZone.of("Europe/Paris")
         assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
-            zone, UtcOffset.ofSeconds(2 * 3600)), zone.atZone(t))
+            zone, UtcOffset(seconds = 2 * 3600)), zone.atZone(t))
     }
 
 }

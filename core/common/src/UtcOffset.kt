@@ -17,5 +17,9 @@ public expect class UtcOffset {
         public fun parse(offsetString: String): UtcOffset
     }
 }
+public expect fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset
+
+@Deprecated("Use UtcOffset.ZERO instead", ReplaceWith("UtcOffset.ZERO"), DeprecationLevel.ERROR)
+public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
 
 public fun UtcOffset.asTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)

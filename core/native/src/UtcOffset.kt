@@ -11,7 +11,7 @@ import kotlin.math.abs
 import kotlin.native.concurrent.ThreadLocal
 
 @Serializable(with = UtcOffsetSerializer::class)
-public actual class UtcOffset internal constructor(public actual val totalSeconds: Int) {
+public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
     private val id: String = zoneIdByOffset(totalSeconds)
 
     override fun hashCode(): Int = totalSeconds
@@ -20,7 +20,7 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
 
     public actual companion object {
 
-        public actual val ZERO: UtcOffset = UtcOffset(0)
+        public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
         public actual fun parse(offsetString: String): UtcOffset {
             if (offsetString == "Z") {
@@ -76,6 +76,12 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
             }
         }
 
+        private fun validateTotal(totalSeconds: Int) {
+            if (totalSeconds !in -18 * SECONDS_PER_HOUR .. 18 * SECONDS_PER_HOUR) {
+                throw IllegalArgumentException("Total seconds value is out of range: $totalSeconds")
+            }
+        }
+
         // org.threeten.bp.ZoneOffset#validate
         private fun validate(hours: Int, minutes: Int, seconds: Int) {
             if (hours < -18 || hours > 18) {
@@ -114,12 +120,14 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
         }
 
         // org.threeten.bp.ZoneOffset#ofTotalSeconds
-        internal fun ofSeconds(seconds: Int): UtcOffset =
-            if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
-                utcOffsetCache[seconds] ?: UtcOffset(seconds).also { utcOffsetCache[seconds] = it }
+        internal fun ofSeconds(seconds: Int): UtcOffset {
+            validateTotal(seconds)
+            return if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
+                utcOffsetCache[seconds] ?: UtcOffset(totalSeconds = seconds).also { utcOffsetCache[seconds] = it }
             } else {
-                UtcOffset(seconds)
+                UtcOffset(totalSeconds = seconds)
             }
+        }
 
         // org.threeten.bp.ZoneOffset#parseNumber
         private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
@@ -138,3 +146,16 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
 
 @ThreadLocal
 private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf()
+
+@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
+public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
+    when {
+        hours != null ->
+            UtcOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0)
+        minutes != null ->
+            UtcOffset.ofHoursMinutesSeconds(minutes / MINUTES_PER_HOUR, minutes % MINUTES_PER_HOUR, seconds ?: 0)
+        else -> {
+            UtcOffset.ofSeconds(seconds ?: 0)
+        }
+    }
+

@@ -15,7 +15,7 @@ class ThreeTenBpLocalDateTimeTest {
     fun toSecondsAfterEpoch() {
         for (i in -5..4) {
             val iHours = i * 3600
-            val offset = UtcOffset.ofSeconds(iHours)
+            val offset = UtcOffset(seconds = iHours)
             for (j in 0..99999) {
                 val a = LocalDateTime(1970, 1, 1, 0, 0, 0, 0).plusSeconds(j)
                 assertEquals((j - iHours).toLong(), a.toEpochSecond(offset))

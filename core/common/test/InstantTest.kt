@@ -611,22 +611,3 @@ class InstantRangeTest {
     }
 }
 
-
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@kotlin.internal.InlineOnly
-inline fun <T> assertArithmeticFails(message: String? = null, f: () -> T) {
-    assertFailsWith<DateTimeArithmeticException>(message) {
-        val result = f()
-        fail(result.toString())
-    }
-}
-
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@kotlin.internal.InlineOnly
-inline fun <T> assertInvalidFormat(message: String? = null, f: () -> T) {
-    assertFailsWith<DateTimeFormatException>(message) {
-        val result = f()
-        fail(result.toString())
-    }
-}
-

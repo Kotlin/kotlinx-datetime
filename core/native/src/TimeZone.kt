@@ -34,7 +34,7 @@ public actual open class TimeZone internal constructor(internal val value: TimeZ
                     return UtcOffset.parse(zoneId).asTimeZone()
                 }
                 if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                    return FixedOffsetTimeZone(UtcOffset(0), zoneId)
+                    return FixedOffsetTimeZone(UtcOffset.ZERO, zoneId)
                 }
                 if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
                     zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")

@@ -29,3 +29,19 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
         }
     }
 }
+
+@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
+public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
+    try {
+        when {
+            hours != null ->
+                UtcOffset(ZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0))
+            minutes != null ->
+                UtcOffset(ZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0))
+            else -> {
+                UtcOffset(ZoneOffset.ofTotalSeconds(seconds ?: 0))
+            }
+        }
+    } catch (e: Throwable) {
+        if (e.isJodaDateTimeException()) throw IllegalArgumentException(e) else throw e
+    }
