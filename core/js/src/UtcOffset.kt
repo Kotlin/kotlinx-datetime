@@ -18,6 +18,9 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
     override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
+
+        public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
+
         public actual fun parse(offsetString: String): UtcOffset = try {
             ZoneOffset.of(offsetString).let(::UtcOffset)
         } catch (e: Throwable) {

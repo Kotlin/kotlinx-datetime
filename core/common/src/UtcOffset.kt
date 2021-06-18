@@ -13,6 +13,7 @@ public expect class UtcOffset {
     public val totalSeconds: Int
 
     public companion object {
+        public val ZERO: UtcOffset
         public fun parse(offsetString: String): UtcOffset
     }
 }

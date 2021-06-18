@@ -20,7 +20,7 @@ public actual class UtcOffset internal constructor(public actual val totalSecond
 
     public actual companion object {
 
-        internal val ZERO: UtcOffset = UtcOffset(0)
+        public actual val ZERO: UtcOffset = UtcOffset(0)
 
         public actual fun parse(offsetString: String): UtcOffset {
             if (offsetString == "Z") {
