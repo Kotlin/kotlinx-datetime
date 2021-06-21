@@ -26,17 +26,17 @@ private fun systemDateByLocalDate(zone: NSTimeZone, localDate: NSDate): NSDate? 
     return iso8601.dateFromComponents(dateComponents)
 }
 
-internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, override val id: String): TimeZoneImpl {
+internal actual class RegionTimeZone(private val value: NSTimeZone, actual override val id: String): TimeZone() {
     actual companion object {
-        actual fun of(zoneId: String): PlatformTimeZoneImpl {
+        actual fun of(zoneId: String): RegionTimeZone {
             val abbreviations = NSTimeZone.abbreviationDictionary
             val trueZoneId = abbreviations[zoneId] as String? ?: zoneId
             val zone = NSTimeZone.timeZoneWithName(trueZoneId)
                 ?: throw IllegalTimeZoneException("No timezone found with zone ID '$zoneId'")
-            return PlatformTimeZoneImpl(zone, zoneId)
+            return RegionTimeZone(zone, zoneId)
         }
 
-        actual fun currentSystemDefault(): PlatformTimeZoneImpl {
+        actual fun currentSystemDefault(): RegionTimeZone {
             /* The framework has its own cache of the system timezone. Calls to
             [NSTimeZone systemTimeZone] do not reflect changes to the system timezone
             and instead just return the cached value. Thus, to acquire the current
@@ -86,7 +86,7 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
             */
             NSTimeZone.resetSystemTimeZone()
             val zone = NSTimeZone.systemTimeZone
-            return PlatformTimeZoneImpl(zone, zone.name)
+            return RegionTimeZone(zone, zone.name)
         }
 
         actual val availableZoneIds: Set<String>
@@ -110,7 +110,7 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
             }
     }
 
-    override fun atStartOfDay(date: LocalDate): Instant {
+    actual override fun atStartOfDay(date: LocalDate): Instant {
         val ldt = LocalDateTime(date, LocalTime.MIN)
         val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
         // timezone
@@ -132,7 +132,7 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         return Instant(midnight.timeIntervalSince1970.toLong(), 0)
     }
 
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
+    actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
         val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
         var offset = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = run {
@@ -140,7 +140,7 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
                the start of the epoch in *that* unspecified timezone */
             val date = dateWithTimeIntervalSince1970Saturating(epochSeconds)
             val newDate = systemDateByLocalDate(value, date)
-                ?: throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@PlatformTimeZoneImpl}")
+                ?: throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@RegionTimeZone}")
             // we now know the offset of that timezone at this time.
             offset = value.secondsFromGMTForDate(newDate).toInt()
             /* `dateFromComponents` automatically corrects the date to avoid gaps. We
@@ -155,23 +155,14 @@ internal actual class PlatformTimeZoneImpl(private val value: NSTimeZone, overri
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        return ZonedDateTime(correctedDateTime, TimeZone(this), UtcOffset.ofSeconds(offset))
+        return ZonedDateTime(correctedDateTime, this@RegionTimeZone, UtcOffset.ofSeconds(offset))
     }
 
-    override fun offsetAt(instant: Instant): UtcOffset {
+    actual override fun offsetAtImpl(instant: Instant): UtcOffset {
         val date = dateWithTimeIntervalSince1970Saturating(instant.epochSeconds)
         return UtcOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt())
     }
 
-    // org.threeten.bp.ZoneId#equals
-    override fun equals(other: Any?): Boolean =
-        this === other || other is PlatformTimeZoneImpl && this.id == other.id
-
-    // org.threeten.bp.ZoneId#hashCode
-    override fun hashCode(): Int = id.hashCode()
-
-    // org.threeten.bp.ZoneId#toString
-    override fun toString(): String = id
 }
 
 internal actual fun currentTime(): Instant = NSDate.date().toKotlinInstant()

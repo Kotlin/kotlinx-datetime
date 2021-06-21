@@ -8,23 +8,23 @@ import kotlinx.datetime.internal.*
 import kotlinx.cinterop.*
 import platform.posix.free
 
-internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val id: String): TimeZoneImpl {
+internal actual class RegionTimeZone(private val tzid: TZID, actual override val id: String): TimeZone() {
     actual companion object {
-        actual fun of(zoneId: String): PlatformTimeZoneImpl {
+        actual fun of(zoneId: String): RegionTimeZone {
             val tzid = timezone_by_name(zoneId)
             if (tzid == TZID_INVALID) {
                 throw IllegalTimeZoneException("No timezone found with zone ID '$zoneId'")
             }
-            return PlatformTimeZoneImpl(tzid, zoneId)
+            return RegionTimeZone(tzid, zoneId)
         }
 
-        actual fun currentSystemDefault(): PlatformTimeZoneImpl = memScoped {
+        actual fun currentSystemDefault(): RegionTimeZone = memScoped {
             val tzid = alloc<TZIDVar>()
             val string = get_system_timezone(tzid.ptr)
                 ?: throw RuntimeException("Failed to get the system timezone.")
             val kotlinString = string.toKString()
             free(string)
-            PlatformTimeZoneImpl(tzid.value, kotlinString)
+            RegionTimeZone(tzid.value, kotlinString)
         }
 
         actual val availableZoneIds: Set<String>
@@ -45,7 +45,7 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
             }
     }
 
-    override fun atStartOfDay(date: LocalDate): Instant = memScoped {
+    actual override fun atStartOfDay(date: LocalDate): Instant = memScoped {
         val ldt = LocalDateTime(date, LocalTime.MIN)
         val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
         val midnightInstantSeconds = at_start_of_day(tzid, epochSeconds)
@@ -55,13 +55,13 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         Instant(midnightInstantSeconds, 0)
     }
 
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime = memScoped {
+    actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime = memScoped {
         val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
         val offset = alloc<IntVar>()
         offset.value = preferred?.totalSeconds ?: Int.MAX_VALUE
         val transitionDuration = offset_at_datetime(tzid, epochSeconds, offset.ptr)
         if (offset.value == Int.MAX_VALUE) {
-            throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@PlatformTimeZoneImpl}")
+            throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@RegionTimeZone}")
         }
         val correctedDateTime = try {
             dateTime.plusSeconds(transitionDuration)
@@ -70,10 +70,10 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         } catch (e: ArithmeticException) {
             throw RuntimeException("Anomalously long timezone transition gap reported", e)
         }
-        ZonedDateTime(correctedDateTime, TimeZone(this@PlatformTimeZoneImpl), UtcOffset.ofSeconds(offset.value))
+        ZonedDateTime(correctedDateTime, this@RegionTimeZone, UtcOffset.ofSeconds(offset.value))
     }
 
-    override fun offsetAt(instant: Instant): UtcOffset {
+    actual override fun offsetAtImpl(instant: Instant): UtcOffset {
         val offset = offset_at_instant(tzid, instant.epochSeconds)
         if (offset == Int.MAX_VALUE) {
             throw RuntimeException("Unable to acquire the offset at instant $instant for zone $this")
@@ -81,15 +81,6 @@ internal actual class PlatformTimeZoneImpl(private val tzid: TZID, override val 
         return UtcOffset.ofSeconds(offset)
     }
 
-    // org.threeten.bp.ZoneId#equals
-    override fun equals(other: Any?): Boolean =
-        this === other || other is PlatformTimeZoneImpl && this.id == other.id
-
-    // org.threeten.bp.ZoneId#hashCode
-    override fun hashCode(): Int = id.hashCode()
-
-    // org.threeten.bp.ZoneId#toString
-    override fun toString(): String = id
 }
 
 internal actual fun currentTime(): Instant = memScoped {
