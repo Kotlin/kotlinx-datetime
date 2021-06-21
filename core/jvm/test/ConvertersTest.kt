@@ -127,6 +127,20 @@ class ConvertersTest {
     }
 
     @Test
+    fun fixedOffsetTimeZone() {
+        val zone = TimeZone.of("UTC") as FixedOffsetTimeZone
+
+        val jtZone = zone.toJavaZoneId()
+        val jtZoneOffset = zone.toJavaZoneOffset()
+
+        assertEquals(zone.id, jtZone.id)
+        assertNotEquals(jtZone, jtZoneOffset)
+        assertEquals(jtZone.normalized(), jtZoneOffset)
+
+        assertIs<FixedOffsetTimeZone>(jtZone.toKotlinTimeZone())
+    }
+
+    @Test
     fun zoneOffset() {
         fun test(offsetString: String) {
             val ktUtcOffset = TimeZone.of(offsetString).offsetAt(Instant.fromEpochMilliseconds(0))

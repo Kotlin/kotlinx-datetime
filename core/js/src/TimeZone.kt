@@ -26,31 +26,38 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     override fun toString(): String = zoneId.toString()
 
     public actual companion object {
-        public actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
+        public actual fun currentSystemDefault(): TimeZone = ofZone(ZoneId.systemDefault())
         public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
-            val zone = ZoneId.of(zoneId)
-            if (zone is jtZoneOffset) {
-                FixedOffsetTimeZone(UtcOffset(zone))
-            } else {
-                TimeZone(zone)
-            }
+            ofZone(ZoneId.of(zoneId))
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
             throw e
         }
+
+        private fun ofZone(zoneId: ZoneId): TimeZone = when {
+            zoneId is jtZoneOffset ->
+                FixedOffsetTimeZone(UtcOffset(zoneId))
+            zoneId.rules().isFixedOffset() ->
+                FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId)
+            else ->
+                TimeZone(zoneId)
+        }
+
 
         public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds().toSet()
     }
 }
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
-public actual class FixedOffsetTimeZone actual constructor(public actual val offset: UtcOffset): TimeZone(offset.zoneOffset) {
-    private val zoneOffset get() = zoneId as jtZoneOffset
+public actual class FixedOffsetTimeZone
+internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZone(zoneId) {
+
+    public actual constructor(offset: UtcOffset) : this(offset, offset.zoneOffset)
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
+    public actual val totalSeconds: Int get() = offset.totalSeconds
 }
 
 

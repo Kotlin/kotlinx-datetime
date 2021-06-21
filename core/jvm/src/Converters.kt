@@ -57,7 +57,7 @@ public fun TimeZone.toJavaZoneId(): java.time.ZoneId = this.zoneId
 /**
  * Converts this [java.time.ZoneId][java.time.ZoneId] value to a [kotlinx.datetime.TimeZone][TimeZone] value.
  */
-public fun java.time.ZoneId.toKotlinTimeZone(): TimeZone = TimeZone(this)
+public fun java.time.ZoneId.toKotlinTimeZone(): TimeZone = TimeZone.ofZone(this)
 
 
 /**

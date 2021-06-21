@@ -31,19 +31,23 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     override fun toString(): String = zoneId.toString()
 
     public actual companion object {
-        public actual fun currentSystemDefault(): TimeZone = ZoneId.systemDefault().let(::TimeZone)
+        public actual fun currentSystemDefault(): TimeZone = ofZone(ZoneId.systemDefault())
         public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
-            val zone = ZoneId.of(zoneId)
-            if (zone is jtZoneOffset) {
-                FixedOffsetTimeZone(UtcOffset(zone))
-            } else {
-                TimeZone(zone)
-            }
+            ofZone(ZoneId.of(zoneId))
         } catch (e: Exception) {
             if (e is DateTimeException) throw IllegalTimeZoneException(e)
             throw e
+        }
+
+        internal fun ofZone(zoneId: ZoneId): TimeZone = when {
+            zoneId is jtZoneOffset ->
+                FixedOffsetTimeZone(UtcOffset(zoneId))
+            zoneId.rules.isFixedOffset ->
+                FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId)
+            else ->
+                TimeZone(zoneId)
         }
 
         public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
@@ -52,7 +56,10 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone
-public actual constructor(public actual val offset: UtcOffset): TimeZone(offset.zoneOffset) {
+internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZone(zoneId) {
+
+    public actual constructor(offset: UtcOffset) : this(offset, offset.zoneOffset)
+
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public actual val totalSeconds: Int get() = offset.totalSeconds
 }
