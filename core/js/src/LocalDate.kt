@@ -59,8 +59,8 @@ public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
 private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): LocalDate =
         try {
             when (unit) {
-                is DateTimeUnit.DateBased.DayBased -> this.value.plusDays(value.toDouble() * unit.days)
-                is DateTimeUnit.DateBased.MonthBased -> this.value.plusMonths(value.toDouble() * unit.months)
+                is DateTimeUnit.DayBased -> this.value.plusDays(value.toDouble() * unit.days)
+                is DateTimeUnit.MonthBased -> this.value.plusMonths(value.toDouble() * unit.months)
             }.let(::LocalDate)
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException() && !e.isJodaArithmeticException()) throw e
@@ -92,8 +92,8 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
 }
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
-    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
+    is DateTimeUnit.MonthBased -> monthsUntil(other) / unit.months
+    is DateTimeUnit.DayBased -> daysUntil(other) / unit.days
 }
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
