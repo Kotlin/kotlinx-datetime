@@ -94,8 +94,8 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBa
         endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
     }
     return when (unit) {
-        is DateTimeUnit.DateBased.MonthBased -> date.monthsUntil(endDate) / unit.months
-        is DateTimeUnit.DateBased.DayBased -> date.daysUntil(endDate) / unit.days
+        is DateTimeUnit.MonthBased -> date.monthsUntil(endDate) / unit.months
+        is DateTimeUnit.DayBased -> date.daysUntil(endDate) / unit.days
     }
 }
 

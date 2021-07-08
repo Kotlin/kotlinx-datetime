@@ -133,9 +133,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
             when (unit) {
                 is DateTimeUnit.TimeBased ->
                     plus(value, unit).value.also { it.atZone(timeZone.zoneId) }
-                is DateTimeUnit.DateBased.DayBased ->
+                is DateTimeUnit.DayBased ->
                     thisZdt.plusDays(safeMultiply(value, unit.days.toLong())).toInstant()
-                is DateTimeUnit.DateBased.MonthBased ->
+                is DateTimeUnit.MonthBased ->
                     thisZdt.plusMonths(safeMultiply(value, unit.months.toLong())).toInstant()
             }.let(::Instant)
         } catch (e: Exception) {
@@ -173,8 +173,8 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     val otherZdt = other.atZone(timeZone)
     when(unit) {
         is DateTimeUnit.TimeBased -> until(other, unit)
-        is DateTimeUnit.DateBased.DayBased -> thisZdt.until(otherZdt, ChronoUnit.DAYS) / unit.days
-        is DateTimeUnit.DateBased.MonthBased -> thisZdt.until(otherZdt, ChronoUnit.MONTHS) / unit.months
+        is DateTimeUnit.DayBased -> thisZdt.until(otherZdt, ChronoUnit.DAYS) / unit.days
+        is DateTimeUnit.MonthBased -> thisZdt.until(otherZdt, ChronoUnit.MONTHS) / unit.months
     }
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)

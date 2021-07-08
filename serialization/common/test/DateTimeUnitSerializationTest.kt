@@ -24,20 +24,20 @@ class DateTimeUnitSerializationTest {
         }
     }
 
-    private fun dayBasedSerialization(serializer: KSerializer<DateTimeUnit.DateBased.DayBased>) {
+    private fun dayBasedSerialization(serializer: KSerializer<DateTimeUnit.DayBased>) {
         repeat(100) {
             val days = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.DayBased(days)
+            val unit = DateTimeUnit.DayBased(days)
             val json = "{\"days\":$days}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
     }
 
-    private fun monthBasedSerialization(serializer: KSerializer<DateTimeUnit.DateBased.MonthBased>) {
+    private fun monthBasedSerialization(serializer: KSerializer<DateTimeUnit.MonthBased>) {
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.MonthBased(months)
+            val unit = DateTimeUnit.MonthBased(months)
             val json = "{\"months\":$months}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
@@ -47,14 +47,14 @@ class DateTimeUnitSerializationTest {
     private fun dateBasedSerialization(serializer: KSerializer<DateTimeUnit.DateBased>) {
         repeat(100) {
             val days = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.DayBased(days)
+            val unit = DateTimeUnit.DayBased(days)
             val json = "{\"type\":\"DayBased\",\"days\":$days}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.MonthBased(months)
+            val unit = DateTimeUnit.MonthBased(months)
             val json = "{\"type\":\"MonthBased\",\"months\":$months}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
@@ -71,14 +71,14 @@ class DateTimeUnitSerializationTest {
         }
         repeat(100) {
             val days = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.DayBased(days)
+            val unit = DateTimeUnit.DayBased(days)
             val json = "{\"type\":\"DayBased\",\"days\":$days}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
-            val unit = DateTimeUnit.DateBased.MonthBased(months)
+            val unit = DateTimeUnit.MonthBased(months)
             val json = "{\"type\":\"MonthBased\",\"months\":$months}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))

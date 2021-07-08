@@ -145,9 +145,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
                 is DateTimeUnit.TimeBased -> {
                     plus(value, unit).value.checkZone(timeZone)
                 }
-                is DateTimeUnit.DateBased.DayBased ->
+                is DateTimeUnit.DayBased ->
                     thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
-                is DateTimeUnit.DateBased.MonthBased ->
+                is DateTimeUnit.MonthBased ->
                     thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
             }.let(::Instant)
         } catch (e: Throwable) {
@@ -161,9 +161,9 @@ public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
             when (unit) {
                 is DateTimeUnit.TimeBased ->
                     plus(value.toLong(), unit).value.checkZone(timeZone)
-                is DateTimeUnit.DateBased.DayBased ->
+                is DateTimeUnit.DayBased ->
                     thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
-                is DateTimeUnit.DateBased.MonthBased ->
+                is DateTimeUnit.MonthBased ->
                     thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
             }.let(::Instant)
         } catch (e: Throwable) {
@@ -208,8 +208,8 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     val otherZdt = other.atZone(timeZone)
     when(unit) {
         is DateTimeUnit.TimeBased -> until(other, unit)
-        is DateTimeUnit.DateBased.DayBased -> (thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble() / unit.days).toLong()
-        is DateTimeUnit.DateBased.MonthBased -> (thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble() / unit.months).toLong()
+        is DateTimeUnit.DayBased -> (thisZdt.until(otherZdt, ChronoUnit.DAYS).toDouble() / unit.days).toLong()
+        is DateTimeUnit.MonthBased -> (thisZdt.until(otherZdt, ChronoUnit.MONTHS).toDouble() / unit.months).toLong()
     }
 } catch (e: ArithmeticException) {
     if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
