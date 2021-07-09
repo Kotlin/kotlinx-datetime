@@ -182,6 +182,16 @@ public val Instant.isDistantFuture: Boolean
 public fun String.toInstant(): Instant = Instant.parse(this)
 
 /**
+ * Converts this string representing an instant in ISO-8601 format including date and time components and
+ * the time zone offset to an [Instant] value.
+ * 
+ * Returns null, if this string does not match the ISO-8601 format or the boundaries of [Instant] are exceeded.
+ *
+ * See [Instant.parse] for examples of instant string representations.
+ */
+public fun String.toInstantOrNull(): Instant? = try { Instant.parse(this) } catch(cause: IllegalArgumentException) { null }
+
+/**
  * Returns an instant that is the result of adding components of [DateTimePeriod] to this instant. The components are
  * added in the order from the largest units to the smallest, i.e. from years to nanoseconds.
  *
