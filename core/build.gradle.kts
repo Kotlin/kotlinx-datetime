@@ -1,5 +1,6 @@
 import kotlinx.team.infra.mavenPublicationsPom
 import java.net.URL
+import java.nio.file.Files
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -227,6 +228,34 @@ tasks {
     named("jvmTest", Test::class) {
         // maxHeapSize = "1024m"
 //        executable = "$JDK_6/bin/java"
+    }
+
+    register("compileJavaModuleInfo", JavaCompile::class) {
+        classpath = files() // empty
+        source("jvm/java9/module-info.java")
+
+        val compileKotlinJvm = named("compileKotlinJvm", org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).get()
+        destinationDir = compileKotlinJvm.destinationDir // same dir to see classes compiled by compileKotlinJvm
+
+        doFirst {
+            options.compilerArgs = listOf(
+                "--release", "9",
+                "--module-path", compileKotlinJvm.classpath.asPath
+            )
+        }
+        doLast {
+            val moduleInfoClass = destinationDir.toPath().resolve("module-info.class")
+            val multiReleaseDir = destinationDir.toPath().resolve("META-INF/versions/9")
+            Files.createDirectories(multiReleaseDir)
+            Files.move(moduleInfoClass, multiReleaseDir.resolve("module-info.class"))
+        }
+    }
+
+    named("jvmJar", Jar::class) {
+        dependsOn("compileJavaModuleInfo")
+        manifest {
+            attributes("Multi-Release" to true)
+        }
     }
 }
 
