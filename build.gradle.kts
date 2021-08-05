@@ -26,6 +26,7 @@ val JDK_8 by ext(jdkPath(8))
 
 allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 }
