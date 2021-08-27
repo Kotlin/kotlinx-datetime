@@ -44,6 +44,23 @@ class ConvertersTest {
     }
 
     @Test
+    fun testIssue140() {
+//        fun getStart(): Instant {
+//            val systemTZ = TimeZone.currentSystemDefault()
+//            val now = Clock.System.now()
+//            val curDayIndex = now.toLocalDateTime(systemTZ).dayOfWeek.toInt() - 1
+//            return now.minus(curDayIndex, DateTimeUnit.DAY, systemTZ)
+//        }
+        val instant = Instant.parse("2021-08-23T10:50:35.657Z")
+        val date = instant.toNSDate()
+        println(date)
+
+        val formatter = NSDateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        println(formatter.stringFromDate(date))
+    }
+
+    @Test
     fun availableZoneIdsToNSTimeZone() {
         for (id in TimeZone.availableZoneIds) {
             val normalizedId = (NSTimeZone.abbreviationDictionary[id] ?: id) as String
