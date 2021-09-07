@@ -18,7 +18,8 @@ base {
 }
 
 //val JDK_6: String by project
-val JDK_8: String by project
+//val JDK_8: String by project
+val JDK_11: String by project
 val serializationVersion: String by project
 
 kotlin {
@@ -49,7 +50,7 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
-                jdkHome = JDK_8
+                jdkHome = JDK_11
             }
         }
 

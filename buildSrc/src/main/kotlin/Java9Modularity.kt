@@ -10,8 +10,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.*
 import org.jetbrains.kotlin.gradle.targets.jvm.*
 import java.io.*
-import java.lang.module.*
-import java.util.spi.*
 
 object Java9Modularity {
 
@@ -53,7 +51,6 @@ object Java9Modularity {
             val targetName = toCamelCase(compilation.target.targetName)
             val compilationName = if (compilation.name != KotlinCompilation.MAIN_COMPILATION_NAME) toCamelCase(compilation.name) else ""
             val compileModuleInfoTaskName = "compile${compilationName}ModuleInfo$targetName"
-            val checkModuleInfoTaskName = "check${compilationName}ModuleInfo$targetName"
 
             val compileKotlinTask = compilation.compileKotlinTask as AbstractCompile
             val modulePath = compileKotlinTask.classpath
@@ -61,10 +58,6 @@ object Java9Modularity {
 
             val compileModuleInfoTask = registerCompileModuleInfoTask(compileModuleInfoTaskName, modulePath, compileKotlinTask.destinationDirectory, moduleInfoSourceFile)
             tasks.getByName(compilation.compileAllTaskName).dependsOn(compileModuleInfoTask)
-
-            val checkModuleInfoTask = registerCheckModuleInfoTask(checkModuleInfoTaskName, modulePath, moduleInfoClassFile)
-            checkModuleInfoTask.configure { dependsOn(compilation.compileAllTaskName) }
-            tasks.getByName("check").dependsOn(checkModuleInfoTask)
         }
     }
 
@@ -84,33 +77,4 @@ object Java9Modularity {
                 )
             }
         }
-
-    private fun Project.registerCheckModuleInfoTask(taskName: String, modulePath: FileCollection, moduleInfoClassFile: File) =
-        tasks.register(taskName) {
-            dependsOn(modulePath)
-            doLast {
-                val jdeps = ToolProvider.findFirst("jdeps").orElseThrow { IllegalStateException("Tool 'jdeps' is not available") }
-                val moduleDescriptor = moduleInfoClassFile.inputStream().use { ModuleDescriptor.read(it) }
-                val moduleName = moduleDescriptor.name()
-                val expectedOutput = moduleDescriptor.toJdepsOutput(moduleInfoClassFile)
-
-                val outputCaptureStream = ByteArrayOutputStream()
-                val printStream = PrintStream(outputCaptureStream, true, Charsets.UTF_8)
-                jdeps.run(
-                    printStream, printStream,
-                    "--multi-release", "9",
-                    "--module-path", (modulePath + files(moduleInfoClassFile.parentFile)).asPath,
-                    "--check", moduleName
-                )
-                val actualOutput = outputCaptureStream.toString(Charsets.UTF_8).trim()
-
-                if (actualOutput != expectedOutput) {
-                    throw IllegalStateException("Module-info requirements section does not match!\n$actualOutput")
-                }
-            }
-        }
-
-    private fun ModuleDescriptor.toJdepsOutput(file: File, separator: String = System.lineSeparator()) =
-        "${name()} (${file.parentFile.toURI().toString().replace("file:", "file://")})$separator  [Module descriptor]$separator" +
-                requires().sortedBy { it.name() }.joinToString(separator) { requirement -> "    requires $requirement;" }
 }
