@@ -27,7 +27,6 @@ val JDK_11 by ext(jdkPath(11))
 
 allprojects {
     repositories {
-        mavenLocal()
         mavenCentral()
     }
 }
