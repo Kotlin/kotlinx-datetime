@@ -54,7 +54,6 @@ object Java9Modularity {
 
             val compileKotlinTask = compilation.compileKotlinTask as AbstractCompile
             val modulePath = compileKotlinTask.classpath
-            val moduleInfoClassFile = compileKotlinTask.destinationDirectory.file("module-info.class").get().asFile
 
             val compileModuleInfoTask = registerCompileModuleInfoTask(compileModuleInfoTaskName, modulePath, compileKotlinTask.destinationDirectory, moduleInfoSourceFile)
             tasks.getByName(compilation.compileAllTaskName).dependsOn(compileModuleInfoTask)
