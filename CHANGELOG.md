@@ -4,7 +4,7 @@
 
 #### Features
 
-- Added `iosSimulatorArm64`, `watchosSimulatorArm64`, `tvosSimulatorArm64`, `macosArm64` target support ([PR#142](https://github.com/Kotlin/kotlinx-datetime/pull/142)).
+- Added `iosSimulatorArm64`, `watchosSimulatorArm64`, `tvosSimulatorArm64`, `macosArm64` target support ([141](https://github.com/Kotlin/kotlinx-datetime/issues/141), [144](https://github.com/Kotlin/kotlinx-datetime/issues/144)).
 
 #### Changes
 

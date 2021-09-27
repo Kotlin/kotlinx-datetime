@@ -42,7 +42,7 @@ The library provides the basic set of types for working with date and time:
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
 it represents a difference between two LocalDate values decomposed into date units.
 - `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations on `Instant` and `LocalDate`. 
-- `UtcOffset` represents the UTC offset of an unspecified time zone at an unspecified moment.
+- `UtcOffset` represents the UTC offset without a reference to a time zone or a particular moment where and when this UTC offset is active.
 
 ### Type use-cases
 
