@@ -36,13 +36,14 @@ The library provides the basic set of types for working with date and time:
 - `Clock` to obtain the current instant;
 - `LocalDateTime` to represent date and time components without a reference to the particular time zone; 
 - `LocalDate` to represent the components of date only;
-- `TimeZone` and `ZoneOffset` provide time zone information to convert between `Instant` and `LocalDateTime`;
+- `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between `Instant` and `LocalDateTime`;
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
 it represents a difference between two LocalDate values decomposed into date units.
 - `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations on `Instant` and `LocalDate`. 
-  
+- `UtcOffset` represents the amount of time the local date/time at a particular time zone differs from the date/time at UTC.
+
 ### Type use-cases
 
 Here is some basic advice on how to choose which of the date-carrying types to use in what cases:
@@ -295,7 +296,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
              }
         }
     }
@@ -306,7 +307,7 @@ kotlin {
 
 ```groovy
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.0")
 }
 ```
 
@@ -346,7 +347,7 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 <dependency>
     <groupId>org.jetbrains.kotlinx</groupId>
     <artifactId>kotlinx-datetime-jvm</artifactId>
-    <version>0.2.1</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 

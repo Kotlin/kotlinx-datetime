@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.3.0
+
+#### Features
+
+- Added `iosSimulatorArm64`, `watchosSimulatorArm64`, `tvosSimulatorArm64`, `macosArm64` target support ([141](https://github.com/Kotlin/kotlinx-datetime/issues/141), [144](https://github.com/Kotlin/kotlinx-datetime/issues/144)).
+
+#### Changes
+
+- `ZoneOffset` was replaced by two other classes: `FixedOffsetDateTime`, which represents a time zone with a fixed offset, and `UtcOffset`, which represents just the UTC offset ([PR#125](https://github.com/Kotlin/kotlinx-datetime/pull/125)).
+- The `DayBased` and `MonthBased` subclasses of `DateTimeUnit.DateBased` are now accessed as `DateTimeUnit.DayBased` and `DateTimeUnit.MonthBased` as opposed to `DateTimeUnit.DateBased.DayBased` and `DateTimeUnit.DateBased.MonthBased` respectively ([PR#131](https://github.com/Kotlin/kotlinx-datetime/pull/131)).
+
 ## 0.2.1
 
 #### Fixes
