@@ -54,7 +54,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     }
 }
 
-// Workaround for https://github.com/Kotlin/kotlinx-datetime/issues/149
+// Workaround for https://issuetracker.google.com/issues/203956057
 private val ZoneId.isFixedOffset: Boolean
     get() = try {
         // On older Android versions, this can throw even though it shouldn't
