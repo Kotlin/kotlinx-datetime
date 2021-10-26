@@ -44,7 +44,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         internal fun ofZone(zoneId: ZoneId): TimeZone = when {
             zoneId is jtZoneOffset ->
                 FixedOffsetTimeZone(UtcOffset(zoneId))
-            zoneId.rules.isFixedOffset ->
+            zoneId.isFixedOffset ->
                 FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId)
             else ->
                 TimeZone(zoneId)
@@ -53,6 +53,15 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
     }
 }
+
+// Workaround for https://issuetracker.google.com/issues/203956057
+private val ZoneId.isFixedOffset: Boolean
+    get() = try {
+        // On older Android versions, this can throw even though it shouldn't
+        rules.isFixedOffset
+    } catch (e: ArrayIndexOutOfBoundsException) {
+        false // Happens for America/Costa_Rica, Africa/Cairo, Egypt
+    }
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone
