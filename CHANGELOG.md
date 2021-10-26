@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.3.1
+
+#### Fixes
+
+- Fixed a crash in desugared code on Android when trying to construct time zones with some specific identifiers ([149](https://github.com/Kotlin/kotlinx-datetime/issues/149))
+
 ## 0.3.0
 
 #### Features
