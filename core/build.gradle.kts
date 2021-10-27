@@ -99,9 +99,9 @@ kotlin {
 //        println("SOURCE_SET: $name")
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
-        languageSettings.apply {
+        languageSettings {
             //            progressiveMode = true
-            useExperimentalAnnotation("kotlin.Experimental")
+            optIn("kotlin.Experimental")
         }
     }
 
