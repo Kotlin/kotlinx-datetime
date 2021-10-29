@@ -362,8 +362,10 @@ git submodule init
 git submodule update
 ```
 
-The path to JDK 8 must be specified either with the environment variable `JDK_8` or 
-with the gradle property `JDK_8`. For local builds, you can use a later version of JDK if you don't have that 
-version installed.
+The project requires JDK 8 to build classes and to run tests. 
+Gradle will try to find it among the installed JDKs or [provision](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
+The path to JDK 8 can be additionally specified with the environment variable `JDK_8`. 
+<!-- For local builds, you can use a later version of JDK if you don't have that 
+version installed. -->
 
 After that, the project can be opened in IDEA and built with Gradle.

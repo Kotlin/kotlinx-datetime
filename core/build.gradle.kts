@@ -17,9 +17,12 @@ base {
     archivesBaseName = "kotlinx-datetime" // doesn't work
 }
 
-//val JDK_6: String by project
-val JDK_8: String by project
 val serializationVersion: String by project
+
+java {
+    toolchain { languageVersion.set(JavaLanguageVersion.of(8)) }
+}
+logger.info("Using JDK 8 toolchain installed in ${javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath}")
 
 kotlin {
     explicitApi()
@@ -51,28 +54,10 @@ kotlin {
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
         }
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-                jdkHome = JDK_8
-            }
+            // Set compilation options for JVM target here
         }
 
     }
-
-    /*
-    jvm("jvm6") {
-        this.withJava()
-        attributes {
-            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 6)
-        }
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.6"
-                jdkHome = JDK_6
-            }
-        }
-    }
-     */
 
     js {
         nodejs {
@@ -168,26 +153,12 @@ kotlin {
             }
         }
 
-        /*
-        val jvm6Main by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib")
-                api("org.threeten:threetenbp:1.4.0")
-
-            }
-        }
-        val jvm6Test by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-junit")
-            }
-        }
-        */
-
         val jvmMain by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib")
             }
         }
+
         val jvmTest by getting {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-test-junit")
@@ -230,7 +201,6 @@ kotlin {
 tasks {
     named("jvmTest", Test::class) {
         // maxHeapSize = "1024m"
-//        executable = "$JDK_6/bin/java"
     }
 }
 
