@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.plugin.*
-import java.util.*
+import java.util.Properties
 
 plugins {
     `kotlin-dsl`
@@ -9,6 +8,10 @@ repositories {
     mavenCentral()
 }
 
+val kotlinVersion = file("../gradle.properties").inputStream().use {
+    Properties().apply { load(it) }
+}.getProperty("kotlinVersion") ?: throw IllegalStateException("Property 'kotlinVersion' must be defined in ../gradle.properties")
+
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.30")
+    implementation(kotlin("gradle-plugin", kotlinVersion))
 }
