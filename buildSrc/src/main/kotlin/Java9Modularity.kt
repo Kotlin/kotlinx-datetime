@@ -1,11 +1,8 @@
 import org.gradle.api.*
-import org.gradle.api.file.*
 import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.kotlin.dsl.*
-import org.gradle.util.GUtil.*
 import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.*
 import org.jetbrains.kotlin.gradle.targets.jvm.*
@@ -26,54 +23,84 @@ object Java9Modularity {
             logger.warn("No Kotlin JVM targets found, can't configure compilation of module-info!")
         }
         jvmTargets.forEach { target ->
-            target.compilations.forEach { compilation ->
-                configureModuleInfoForKotlinCompilation(compilation)
-            }
-
-            if (multiRelease) {
-                tasks.getByName<Jar>(target.artifactsTaskName) {
-                    rename("module-info.class", "META-INF/versions/9/module-info.class")
+            val artifactTask = tasks.getByName<Jar>(target.artifactsTaskName) {
+                if (multiRelease) {
                     manifest {
                         attributes("Multi-Release" to true)
+                    }
+                }
+            }
+
+            target.compilations.forEach { compilation ->
+                val compileKotlinTask = compilation.compileKotlinTask as AbstractCompile
+                val defaultSourceSet = compilation.defaultSourceSet
+
+                // derive the names of the source set and compile module task
+                val sourceSetName = defaultSourceSet.name + "Module"
+                val compileModuleTaskName = compileKotlinTask.name + "Module"
+
+                kotlin.sourceSets.create(sourceSetName) {
+                    val sourceFile = this.kotlin.find { it.name == "module-info.java" }
+                    val targetFile = compileKotlinTask.destinationDirectory.file("../module-info.class").get().asFile
+
+                    // only configure the compilation if necessary
+                    if (sourceFile != null) {
+                        // the default source set depends on this new source set
+                        defaultSourceSet.dependsOn(this)
+
+                        // register a new compile module task
+                        val compileModuleTask = registerCompileModuleTask(compileModuleTaskName, compileKotlinTask, sourceFile, targetFile)
+
+                        // add the resulting module descriptor to this target's artifact
+                        artifactTask.dependsOn(compileModuleTask)
+                        artifactTask.from(targetFile) {
+                            if (multiRelease) {
+                                into("META-INF/versions/9/")
+                            }
+                        }
+                    } else {
+                        logger.info("No module-info.java file found in ${this.kotlin.srcDirs}, can't configure compilation of module-info!")
+                        // remove the source set to prevent Gradle warnings
+                        kotlin.sourceSets.remove(this)
                     }
                 }
             }
         }
     }
 
-    private fun Project.configureModuleInfoForKotlinCompilation(compilation: KotlinCompilation<*>) {
-        val defaultSourceSet = compilation.defaultSourceSet.kotlin
-        val moduleInfoSourceFile = defaultSourceSet.find { it.name == "module-info.java" }
-
-        if (moduleInfoSourceFile == null) {
-            logger.info("No module-info.java file found in ${defaultSourceSet.srcDirs}, can't configure compilation of module-info!")
-        } else {
-            val targetName = toCamelCase(compilation.target.targetName)
-            val compilationName = if (compilation.name != KotlinCompilation.MAIN_COMPILATION_NAME) toCamelCase(compilation.name) else ""
-            val compileModuleInfoTaskName = "compile${compilationName}ModuleInfo$targetName"
-
-            val compileKotlinTask = compilation.compileKotlinTask as AbstractCompile
-            val modulePath = compileKotlinTask.classpath
-
-            val compileModuleInfoTask = registerCompileModuleInfoTask(compileModuleInfoTaskName, modulePath, compileKotlinTask.destinationDirectory, moduleInfoSourceFile)
-            tasks.getByName(compilation.compileAllTaskName).dependsOn(compileModuleInfoTask)
-        }
-    }
-
-    private fun Project.registerCompileModuleInfoTask(taskName: String, modulePath: FileCollection, destinationDir: DirectoryProperty, moduleInfoSourceFile: File) =
+    private fun Project.registerCompileModuleTask(taskName: String, compileTask: AbstractCompile, sourceFile: File, targetFile: File) =
         tasks.register(taskName, JavaCompile::class) {
-            dependsOn(modulePath)
-            source(moduleInfoSourceFile)
+            // Also add the module-info.java source file to the Kotlin compile task;
+            // the Kotlin compiler will parse and check module dependencies,
+            // but it currently won't compile to a module-info.class file.
+            compileTask.source(sourceFile)
+
+
+            // Configure the module compile task.
+            dependsOn(compileTask)
+            source(sourceFile)
+            outputs.file(targetFile)
             classpath = files()
-            destinationDirectory.set(destinationDir)
+            destinationDirectory.set(compileTask.destinationDirectory)
             sourceCompatibility = JavaVersion.VERSION_1_9.toString()
             targetCompatibility = JavaVersion.VERSION_1_9.toString()
+
             doFirst {
+                // Provide the module path to the compiler instead of using a classpath.
+                // The module path should be the same as the classpath of the compiler.
                 options.compilerArgs = listOf(
                     "--release", "9",
-                    "--module-path", modulePath.asPath,
+                    "--module-path", compileTask.classpath.asPath,
                     "-Xlint:-requires-transitive-automatic"
                 )
+            }
+
+            doLast {
+                // Move the compiled file out of the Kotlin compile task's destination dir,
+                // so it won't disturb Gradle's caching mechanisms.
+                val compiledFile = destinationDirectory.file(targetFile.name).get().asFile
+                targetFile.parentFile.mkdirs()
+                compiledFile.renameTo(targetFile)
             }
         }
 }
