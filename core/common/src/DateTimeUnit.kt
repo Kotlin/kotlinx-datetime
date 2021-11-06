@@ -66,44 +66,51 @@ public sealed class DateTimeUnit {
 
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     public sealed class DateBased : DateTimeUnit() {
-        // TODO: investigate how to move subclasses up to DateTimeUnit scope
-        @Serializable(with = DayBasedDateTimeUnitSerializer::class)
-        public class DayBased(public val days: Int) : DateBased() {
-            init {
-                require(days > 0) { "Unit duration must be positive, but was $days days." }
-            }
+        @Suppress("TOPLEVEL_TYPEALIASES_ONLY")
+        @Deprecated("Use DateTimeUnit.DayBased", ReplaceWith("DateTimeUnit.DayBased", "kotlinx.datetime.DateTimeUnit"))
+        public typealias DayBased = DateTimeUnit.DayBased
+        @Suppress("TOPLEVEL_TYPEALIASES_ONLY")
+        @Deprecated("Use DateTimeUnit.MonthBased", ReplaceWith("DateTimeUnit.MonthBased", "kotlinx.datetime.DateTimeUnit"))
+        public typealias MonthBased = DateTimeUnit.MonthBased
+    }
 
-            override fun times(scalar: Int): DayBased = DayBased(safeMultiply(days, scalar))
-
-            override fun equals(other: Any?): Boolean =
-                    this === other || (other is DayBased && this.days == other.days)
-
-            override fun hashCode(): Int = days xor 0x10000
-
-            override fun toString(): String = if (days % 7 == 0)
-                formatToString(days / 7, "WEEK")
-            else
-                formatToString(days, "DAY")
+    @Serializable(with = DayBasedDateTimeUnitSerializer::class)
+    public class DayBased(public val days: Int) : DateBased() {
+        init {
+            require(days > 0) { "Unit duration must be positive, but was $days days." }
         }
-        @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
-        public class MonthBased(public val months: Int) : DateBased() {
-            init {
-                require(months > 0) { "Unit duration must be positive, but was $months months." }
-            }
 
-            override fun times(scalar: Int): MonthBased = MonthBased(safeMultiply(months, scalar))
+        override fun times(scalar: Int): DateTimeUnit.DayBased = DateTimeUnit.DayBased(safeMultiply(days, scalar))
 
-            override fun equals(other: Any?): Boolean =
-                    this === other || (other is MonthBased && this.months == other.months)
+        override fun equals(other: Any?): Boolean =
+            this === other || (other is DateTimeUnit.DayBased && this.days == other.days)
 
-            override fun hashCode(): Int = months xor 0x20000
+        override fun hashCode(): Int = days xor 0x10000
 
-            override fun toString(): String = when {
-                months % 12_00 == 0 -> formatToString(months / 12_00, "CENTURY")
-                months % 12 == 0 -> formatToString(months / 12, "YEAR")
-                months % 3 == 0 -> formatToString(months / 3, "QUARTER")
-                else -> formatToString(months, "MONTH")
-            }
+        override fun toString(): String = if (days % 7 == 0)
+            formatToString(days / 7, "WEEK")
+        else
+            formatToString(days, "DAY")
+    }
+
+    @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
+    public class MonthBased(public val months: Int) : DateBased() {
+        init {
+            require(months > 0) { "Unit duration must be positive, but was $months months." }
+        }
+
+        override fun times(scalar: Int): DateTimeUnit.MonthBased = DateTimeUnit.MonthBased(safeMultiply(months, scalar))
+
+        override fun equals(other: Any?): Boolean =
+            this === other || (other is DateTimeUnit.MonthBased && this.months == other.months)
+
+        override fun hashCode(): Int = months xor 0x20000
+
+        override fun toString(): String = when {
+            months % 12_00 == 0 -> formatToString(months / 12_00, "CENTURY")
+            months % 12 == 0 -> formatToString(months / 12, "YEAR")
+            months % 3 == 0 -> formatToString(months / 3, "QUARTER")
+            else -> formatToString(months, "MONTH")
         }
     }
 
@@ -117,11 +124,11 @@ public sealed class DateTimeUnit {
         public val SECOND: TimeBased = MILLISECOND * 1000
         public val MINUTE: TimeBased = SECOND * 60
         public val HOUR: TimeBased = MINUTE * 60
-        public val DAY: DateBased.DayBased = DateBased.DayBased(days = 1)
-        public val WEEK: DateBased.DayBased = DAY * 7
-        public val MONTH: DateBased.MonthBased = DateBased.MonthBased(months = 1)
-        public val QUARTER: DateBased.MonthBased = MONTH * 3
-        public val YEAR: DateBased.MonthBased = MONTH * 12
-        public val CENTURY: DateBased.MonthBased = YEAR * 100
+        public val DAY: DayBased = DayBased(days = 1)
+        public val WEEK: DayBased = DAY * 7
+        public val MONTH: MonthBased = MonthBased(months = 1)
+        public val QUARTER: MonthBased = MONTH * 3
+        public val YEAR: MonthBased = MONTH * 12
+        public val CENTURY: MonthBased = YEAR * 100
     }
 }

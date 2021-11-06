@@ -63,11 +63,11 @@ public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): Loc
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
         try {
             when (unit) {
-                is DateTimeUnit.DateBased.DayBased -> {
+                is DateTimeUnit.DayBased -> {
                     val addDays: Long = safeMultiply(value, unit.days.toLong())
                     ofEpochDayChecked(safeAdd(this.value.toEpochDay(), addDays))
                 }
-                is DateTimeUnit.DateBased.MonthBased ->
+                is DateTimeUnit.MonthBased ->
                     this.value.plusMonths(safeMultiply(value, unit.months.toLong()))
             }.let(::LocalDate)
         } catch (e: Exception) {
@@ -109,8 +109,8 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
 }
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.DateBased.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months).clampToInt()
-    is DateTimeUnit.DateBased.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days).clampToInt()
+    is DateTimeUnit.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months).clampToInt()
+    is DateTimeUnit.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days).clampToInt()
 }
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =

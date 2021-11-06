@@ -256,8 +256,8 @@ public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
 public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
     try {
         when (unit) {
-            is DateTimeUnit.DateBased.DayBased -> plusDays(safeMultiply(value, unit.days))
-            is DateTimeUnit.DateBased.MonthBased -> plusMonths(safeMultiply(value, unit.months))
+            is DateTimeUnit.DayBased -> plusDays(safeMultiply(value, unit.days))
+            is DateTimeUnit.MonthBased -> plusMonths(safeMultiply(value, unit.months))
         }
     } catch (e: ArithmeticException) {
         throw DateTimeArithmeticException("Arithmetic overflow when adding a value to a date", e)
@@ -286,8 +286,8 @@ public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     }
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.DateBased.MonthBased -> monthsUntil(other) / unit.months
-    is DateTimeUnit.DateBased.DayBased -> daysUntil(other) / unit.days
+    is DateTimeUnit.MonthBased -> monthsUntil(other) / unit.months
+    is DateTimeUnit.DayBased -> daysUntil(other) / unit.days
 }
 
 // org.threeten.bp.LocalDate#daysUntil

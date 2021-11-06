@@ -53,13 +53,13 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
     }
 }
 
-public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.DayBased> {
+public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
         element<Int>("days")
     }
 
-    override fun serialize(encoder: Encoder, value: DateTimeUnit.DateBased.DayBased) {
+    override fun serialize(encoder: Encoder, value: DateTimeUnit.DayBased) {
         encoder.encodeStructure(descriptor) {
             encodeIntElement(descriptor, 0, value.days)
         }
@@ -67,7 +67,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased
 
     @ExperimentalSerializationApi
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
-    override fun deserialize(decoder: Decoder): DateTimeUnit.DateBased.DayBased {
+    override fun deserialize(decoder: Decoder): DateTimeUnit.DayBased {
         var seen = false
         var days = 0
         decoder.decodeStructure(descriptor) {
@@ -88,17 +88,17 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased
             }
         }
         if (!seen) throw MissingFieldException("days")
-        return DateTimeUnit.DateBased.DayBased(days)
+        return DateTimeUnit.DayBased(days)
     }
 }
 
-public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBased.MonthBased> {
+public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
         element<Int>("months")
     }
 
-    override fun serialize(encoder: Encoder, value: DateTimeUnit.DateBased.MonthBased) {
+    override fun serialize(encoder: Encoder, value: DateTimeUnit.MonthBased) {
         encoder.encodeStructure(descriptor) {
             encodeIntElement(descriptor, 0, value.months)
         }
@@ -106,7 +106,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBas
 
     @ExperimentalSerializationApi
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
-    override fun deserialize(decoder: Decoder): DateTimeUnit.DateBased.MonthBased {
+    override fun deserialize(decoder: Decoder): DateTimeUnit.MonthBased {
         var seen = false
         var months = 0
         decoder.decodeStructure(descriptor) {
@@ -127,7 +127,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DateBas
             }
         }
         if (!seen) throw MissingFieldException("months")
-        return DateTimeUnit.DateBased.MonthBased(months)
+        return DateTimeUnit.MonthBased(months)
     }
 }
 
@@ -136,7 +136,7 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
         DateTimeUnit.DateBased::class,
-        arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class),
+        arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class),
         arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer))
 
     @InternalSerializationApi
@@ -164,7 +164,7 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
         DateTimeUnit::class,
-        arrayOf(DateTimeUnit.DateBased.DayBased::class, DateTimeUnit.DateBased.MonthBased::class, DateTimeUnit.TimeBased::class),
+        arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class, DateTimeUnit.TimeBased::class),
         arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
 
     @InternalSerializationApi
