@@ -98,7 +98,7 @@ kotlin {
         val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
 //        println("SOURCE_SET: $name")
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
-        resources.srcDir("$targetName/${suffix?.let { it + "Resources "} ?: "resources"}")
+        resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
         languageSettings.apply {
             //            progressiveMode = true
             useExperimentalAnnotation("kotlin.Experimental")
