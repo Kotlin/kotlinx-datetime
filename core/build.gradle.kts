@@ -18,8 +18,7 @@ base {
 }
 
 //val JDK_6: String by project
-//val JDK_8: String by project
-val JDK_11: String by project
+val JDK_8: String by project
 val serializationVersion: String by project
 
 kotlin {
@@ -54,7 +53,7 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
-                jdkHome = JDK_11
+                jdkHome = JDK_8
             }
         }
 
@@ -99,7 +98,7 @@ kotlin {
         val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
 //        println("SOURCE_SET: $name")
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
-        resources.srcDir("$targetName/${suffix?.let { it + "Resources " } ?: "resources"}")
+        resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
         languageSettings.apply {
             //            progressiveMode = true
             useExperimentalAnnotation("kotlin.Experimental")
@@ -199,7 +198,7 @@ kotlin {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", "3.2.0"))
+                implementation(npm("@js-joda/core",  "3.2.0"))
             }
         }
 
@@ -294,5 +293,3 @@ task("downloadWindowsZonesMapping") {
         }
     }
 }
-
-Java9Modularity.configureJava9ModuleInfo(project)
