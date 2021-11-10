@@ -17,12 +17,15 @@ base {
     archivesBaseName = "kotlinx-datetime" // doesn't work
 }
 
+val mainJavaToolchainVersion: String by project
 val serializationVersion: String by project
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(8)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    with(javaToolchains.launcherFor(toolchain).get().metadata) {
+        logger.info("Using JDK $languageVersion toolchain installed in $installationPath")
+    }
 }
-logger.info("Using JDK 8 toolchain installed in ${javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath}")
 
 kotlin {
     explicitApi()

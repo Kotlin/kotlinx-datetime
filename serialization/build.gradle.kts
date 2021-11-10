@@ -5,10 +5,11 @@ plugins {
     kotlin("plugin.serialization")
 }
 
+val mainJavaToolchainVersion: String by project
 val serializationVersion: String by project
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(8)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
 }
 
 kotlin {

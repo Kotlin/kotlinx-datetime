@@ -14,6 +14,7 @@ infra {
     }
 }
 
+val mainJavaToolchainVersion by ext(project.property("java.mainToolchainVersion"))
 
 allprojects {
     repositories {
