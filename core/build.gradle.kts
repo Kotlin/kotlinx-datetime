@@ -1,4 +1,5 @@
 import kotlinx.team.infra.mavenPublicationsPom
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
@@ -18,8 +19,7 @@ base {
 }
 
 //val JDK_6: String by project
-//val JDK_8: String by project
-val JDK_11: String by project
+val JDK_8: String by project
 val serializationVersion: String by project
 
 kotlin {
@@ -54,7 +54,7 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
-                jdkHome = JDK_11
+                jdkHome = JDK_8
             }
         }
 
@@ -199,7 +199,7 @@ kotlin {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core",  "3.2.0"))
+                implementation(npm("@js-joda/core", "3.2.0"))
             }
         }
 
@@ -232,6 +232,81 @@ tasks {
     named("jvmTest", Test::class) {
         // maxHeapSize = "1024m"
 //        executable = "$JDK_6/bin/java"
+    }
+
+    create("compileJavaModuleInfo", JavaCompile::class) {
+        val compileKotlinJvm = getByName<KotlinCompile>("compileKotlinJvm")
+        val sourceDir = file("jvm/java9/")
+        val targetFile = compileKotlinJvm.destinationDir.resolve("../module-info.class")
+
+        // Use a Java 11 compiler for the module info.
+        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(11)) })
+
+        // Always compile kotlin classes before the module descriptor.
+        dependsOn(compileKotlinJvm)
+
+        // Add the module-info source file.
+        source(sourceDir)
+
+        // Also add the module-info.java source file to the Kotlin compile task.
+        // The Kotlin compiler will parse and check module dependencies,
+        // but it currently won't compile to a module-info.class file.
+        // Note that module checking only works on JDK 9+,
+        // because the JDK built-in base modules are not available in earlier versions.
+        val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.orNull
+        // Note: extra sanity check, because `jdkHome` might be overridden, this can be
+        // removed once https://github.com/Kotlin/kotlinx-datetime/pull/155/files is merged.
+        val isJava8 = compileKotlinJvm.kotlinOptions.jdkHome?.contains("1.8") == true
+        if (!isJava8 && javaVersion?.isJava9Compatible == true) {
+            logger.info("Module-info checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
+            compileKotlinJvm.source(sourceDir)
+        } else {
+            logger.info("Module-info checking is disabled")
+        }
+
+        // This task outputs only the module-info class file.
+        outputs.file(targetFile)
+
+        // Use the same destination dir to see classes compiled by compileKotlinJvm.
+        destinationDir = compileKotlinJvm.destinationDir
+
+        // Configure JVM compatibility
+        sourceCompatibility = JavaVersion.VERSION_1_9.toString()
+        targetCompatibility = JavaVersion.VERSION_1_9.toString()
+
+        // Use an empty classpath, since we are using a module path instead.
+        classpath = files()
+
+        doFirst {
+            // Create the module path that will be passed to the compiler instead of a classpath.
+            // The module path should be the same as the classpath of the compiler.
+            val modulePath = compileKotlinJvm.classpath.asPath
+
+            options.compilerArgs = listOf(
+                "--release", "9",
+                "--module-path", modulePath,
+                "-Xlint:-requires-transitive-automatic"
+            )
+        }
+
+        doLast {
+            // Move the compiled file out of the Kotlin compile task's destination dir,
+            // so it won't disturb Gradle's caching mechanisms.
+            val compiledFile = destinationDir.resolve(targetFile.name)
+            targetFile.parentFile.mkdirs()
+            compiledFile.renameTo(targetFile)
+        }
+
+        // Configure the JAR task so it will include the compile module-info class file.
+        getByName<Jar>("jvmJar") {
+            dependsOn(this@create)
+            manifest {
+                attributes("Multi-Release" to true)
+            }
+            from(targetFile) {
+                into("META-INF/versions/9/")
+            }
+        }
     }
 }
 

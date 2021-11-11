@@ -22,8 +22,7 @@ fun jdkPath(version: Int): String {
             error("Specify path to JDK $version in JDK_$version environment variable or Gradle property")
 }
 //val JDK_6 by ext(jdkPath(6))
-//val JDK_8 by ext(jdkPath(8))
-val JDK_11 by ext(jdkPath(11))
+val JDK_8 by ext(jdkPath(8))
 
 allprojects {
     repositories {
