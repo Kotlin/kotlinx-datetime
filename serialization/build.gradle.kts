@@ -5,8 +5,12 @@ plugins {
     kotlin("plugin.serialization")
 }
 
-val JDK_8: String by project
+val mainJavaToolchainVersion: String by project
 val serializationVersion: String by project
+
+java {
+    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+}
 
 kotlin {
     infra {
@@ -32,13 +36,6 @@ kotlin {
         attributes {
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
         }
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-                jdkHome = JDK_8
-            }
-        }
-
     }
 
     js {
