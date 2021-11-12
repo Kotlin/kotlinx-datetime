@@ -208,9 +208,10 @@ tasks {
     }
 
     create("compileJavaModuleInfo", JavaCompile::class) {
+        val moduleName = "kotlinx.datetime" // this module's name
         val compileKotlinJvm = getByName<KotlinCompile>("compileKotlinJvm")
         val sourceDir = file("jvm/java9/")
-        val targetFile = compileKotlinJvm.destinationDir.resolve("../module-info.class")
+        val targetDir = compileKotlinJvm.destinationDir.resolve("../java9/")
 
         // Use a Java 11 compiler for the module info.
         javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(11)) })
@@ -227,56 +228,42 @@ tasks {
         // Note that module checking only works on JDK 9+,
         // because the JDK built-in base modules are not available in earlier versions.
         val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.orNull
-        // Note: extra sanity check, because `jdkHome` might be overridden, this can be
-        // removed once https://github.com/Kotlin/kotlinx-datetime/pull/155/files is merged.
-        val isJava8 = compileKotlinJvm.kotlinOptions.jdkHome?.contains("1.8") == true
-        if (!isJava8 && javaVersion?.isJava9Compatible == true) {
+        if (javaVersion?.isJava9Compatible == true) {
             logger.info("Module-info checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
             compileKotlinJvm.source(sourceDir)
         } else {
             logger.info("Module-info checking is disabled")
         }
 
-        // This task outputs only the module-info class file.
-        outputs.file(targetFile)
-
-        // Use the same destination dir to see classes compiled by compileKotlinJvm.
-        destinationDir = compileKotlinJvm.destinationDir
+        // Set the task outputs and destination dir
+        outputs.dir(targetDir)
+        destinationDir = targetDir
 
         // Configure JVM compatibility
         sourceCompatibility = JavaVersion.VERSION_1_9.toString()
         targetCompatibility = JavaVersion.VERSION_1_9.toString()
 
-        // Use an empty classpath, since we are using a module path instead.
-        classpath = files()
+        // Set the Java release version.
+        options.release.set(9)
 
-        doFirst {
-            // Create the module path that will be passed to the compiler instead of a classpath.
-            // The module path should be the same as the classpath of the compiler.
-            val modulePath = compileKotlinJvm.classpath.asPath
+        // Ignore warnings about using 'requires transitive' on automatic modules.
+        options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
 
-            options.compilerArgs = listOf(
-                "--release", "9",
-                "--module-path", modulePath,
-                "-Xlint:-requires-transitive-automatic"
-            )
-        }
+        // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
+        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDir}"))
 
-        doLast {
-            // Move the compiled file out of the Kotlin compile task's destination dir,
-            // so it won't disturb Gradle's caching mechanisms.
-            val compiledFile = destinationDir.resolve(targetFile.name)
-            targetFile.parentFile.mkdirs()
-            compiledFile.renameTo(targetFile)
-        }
+        // Use the classpath of the compileKotlinJvm task.
+        // Also ensure that the module path is used instead of classpath.
+        classpath = compileKotlinJvm.classpath
+        modularity.inferModulePath.set(true)
 
-        // Configure the JAR task so it will include the compile module-info class file.
+        // Configure the JAR task so that it will include the compiled module-info class file.
         getByName<Jar>("jvmJar") {
             dependsOn(this@create)
             manifest {
                 attributes("Multi-Release" to true)
             }
-            from(targetFile) {
+            from(targetDir) {
                 into("META-INF/versions/9/")
             }
         }
