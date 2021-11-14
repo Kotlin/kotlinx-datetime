@@ -19,6 +19,7 @@ base {
 }
 
 val mainJavaToolchainVersion: String by project
+val modularJavaToolchainVersion: String by project
 val serializationVersion: String by project
 
 java {
@@ -214,7 +215,7 @@ tasks {
         val targetDir = compileKotlinJvm.destinationDir.resolve("../java9/")
 
         // Use a Java 11 compiler for the module info.
-        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(11)) })
+        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
 
         // Always compile kotlin classes before the module descriptor.
         dependsOn(compileKotlinJvm)
