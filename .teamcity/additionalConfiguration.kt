@@ -5,6 +5,7 @@
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.commitStatusPublisher
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 
 fun Project.additionalConfiguration() {
     knownBuilds.buildAll.features {
@@ -17,5 +18,18 @@ fun Project.additionalConfiguration() {
             }
             param("github_oauth_user", "ilya-g")
         }
+    }
+    knownBuilds.buildOn(Platform.Linux).steps {
+        gradle {
+            id = "BuildJvmModular"
+            name = "Test building JVM target with module-info"
+            jdkHome = "%env.$jdk%"
+            jvmArgs = "-Xmx1g"
+            tasks = "clean jvmJar"
+            gradleParams = "--info --stacktrace -Pjava.mainToolchainVersion=11 -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter%"
+            buildFile = ""
+            gradleWrapperPath = ""
+        }
+        stepsOrder.add("BuildJvmModular")
     }
 }
