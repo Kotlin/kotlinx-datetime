@@ -203,13 +203,13 @@ kotlin {
 }
 
 tasks {
-    named("jvmTest", Test::class) {
+    val jvmTest by existing(Test::class) {
         // maxHeapSize = "1024m"
     }
 
-    create("compileJavaModuleInfo", JavaCompile::class) {
+    val compileJavaModuleInfo by registering(JavaCompile::class) {
         val moduleName = "kotlinx.datetime" // this module's name
-        val compileKotlinJvm = getByName<KotlinCompile>("compileKotlinJvm")
+        val compileKotlinJvm by getting(KotlinCompile::class)
         val sourceDir = file("jvm/java9/")
         val targetDir = compileKotlinJvm.destinationDir.resolve("../java9/")
 
@@ -227,7 +227,7 @@ tasks {
         // but it currently won't compile to a module-info.class file.
         // Note that module checking only works on JDK 9+,
         // because the JDK built-in base modules are not available in earlier versions.
-        val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.orNull
+        val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.getOrNull()
         if (javaVersion?.isJava9Compatible == true) {
             logger.info("Module-info checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
             compileKotlinJvm.source(sourceDir)
@@ -247,6 +247,7 @@ tasks {
         options.release.set(9)
 
         // Ignore warnings about using 'requires transitive' on automatic modules.
+        // not needed when compiling with recent JDKs, e.g. 17
         options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
 
         // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
@@ -256,21 +257,20 @@ tasks {
         // Also ensure that the module path is used instead of classpath.
         classpath = compileKotlinJvm.classpath
         modularity.inferModulePath.set(true)
+    }
 
-        // Configure the JAR task so that it will include the compiled module-info class file.
-        getByName<Jar>("jvmJar") {
-            dependsOn(this@create)
-            manifest {
-                attributes("Multi-Release" to true)
-            }
-            from(targetDir) {
-                into("META-INF/versions/9/")
-            }
+    // Configure the JAR task so that it will include the compiled module-info class file.
+    val jvmJar by existing(Jar::class) {
+        manifest {
+            attributes("Multi-Release" to true)
+        }
+        from(compileJavaModuleInfo) {
+            into("META-INF/versions/9/")
         }
     }
 }
 
-task("downloadWindowsZonesMapping") {
+val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
     val output = "$projectDir/nativeMain/cinterop/public/windows_zones.hpp"
     outputs.file(output)
