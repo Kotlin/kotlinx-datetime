@@ -5,6 +5,7 @@
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.commitStatusPublisher
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.GradleBuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 
 fun Project.additionalConfiguration() {
@@ -20,8 +21,7 @@ fun Project.additionalConfiguration() {
         }
     }
     knownBuilds.buildOn(Platform.Linux).steps {
-        gradle {
-            id = "BuildJvmModular"
+        items.add(0, GradleBuildStep {
             name = "Test building JVM target with module-info"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
@@ -29,7 +29,6 @@ fun Project.additionalConfiguration() {
             gradleParams = "--info --stacktrace -Pjava.mainToolchainVersion=11 -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter%"
             buildFile = ""
             gradleWrapperPath = ""
-        }
-        stepsOrder.add("BuildJvmModular")
+        })
     }
 }
