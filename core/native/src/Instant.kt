@@ -12,6 +12,8 @@ import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 public actual enum class DayOfWeek {
     MONDAY,
@@ -127,7 +129,6 @@ private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second 
 internal expect fun currentTime(): Instant
 
 @Serializable(with = InstantIso8601Serializer::class)
-@OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     init {
@@ -166,8 +167,8 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     public actual operator fun minus(other: Instant): Duration =
-        Duration.seconds(this.epochSeconds - other.epochSeconds) + // won't overflow given the instant bounds
-        Duration.nanoseconds(this.nanosecondsOfSecond - other.nanosecondsOfSecond)
+        (this.epochSeconds - other.epochSeconds).seconds + // won't overflow given the instant bounds
+        (this.nanosecondsOfSecond - other.nanosecondsOfSecond).nanoseconds
 
     actual override fun compareTo(other: Instant): Int {
         val s = epochSeconds.compareTo(other.epochSeconds)
@@ -302,7 +303,6 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         if (value > 0) Instant.MAX else Instant.MIN
     }
 
-@OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
     var thisLdt = toZonedDateTimeFailing(timeZone)
     val otherLdt = other.toZonedDateTimeFailing(timeZone)

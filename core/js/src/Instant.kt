@@ -14,9 +14,10 @@ import kotlinx.datetime.internal.JSJoda.ChronoUnit
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.*
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Serializable(with = InstantIso8601Serializer::class)
-@OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual val epochSeconds: Long
@@ -46,7 +47,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     public actual operator fun minus(other: Instant): Duration {
         val diff = jtDuration.between(other.value, this.value)
-        return Duration.seconds(diff.seconds().toDouble()) + Duration.nanoseconds(diff.nano().toDouble())
+        return diff.seconds().toDouble().seconds + diff.nano().toDouble().nanoseconds
     }
 
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value).toInt()
@@ -189,7 +190,6 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         if (value > 0) Instant.MAX else Instant.MIN
     }
 
-@OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod = try {
     var thisZdt = this.value.atZone(timeZone.zoneId)
     val otherZdt = other.value.atZone(timeZone.zoneId)

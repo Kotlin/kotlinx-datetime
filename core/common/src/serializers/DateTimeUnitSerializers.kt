@@ -26,7 +26,7 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
         }
     }
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.TimeBased {
         var seen = false
@@ -65,7 +65,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
         }
     }
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.DayBased {
         var seen = false
@@ -104,7 +104,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
         }
     }
 
-    @ExperimentalSerializationApi
+    @OptIn(ExperimentalSerializationApi::class)
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.MonthBased {
         var seen = false
@@ -149,11 +149,13 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
             SerializationStrategy<DateTimeUnit.DateBased>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-    @InternalSerializationApi
+
+    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit.DateBased>
         get() = DateTimeUnit.DateBased::class
 
-    @InternalSerializationApi
+
+    @OptIn(InternalSerializationApi::class)
     override val descriptor: SerialDescriptor
         get() = impl.descriptor
 
@@ -175,11 +177,13 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
     override fun findPolymorphicSerializerOrNull(encoder: Encoder, value: DateTimeUnit): SerializationStrategy<DateTimeUnit>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-    @InternalSerializationApi
+
+    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit>
         get() = DateTimeUnit::class
 
-    @InternalSerializationApi
+
+    @OptIn(InternalSerializationApi::class)
     override val descriptor: SerialDescriptor
         get() = impl.descriptor
 

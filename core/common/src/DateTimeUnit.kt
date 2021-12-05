@@ -8,6 +8,7 @@ package kotlinx.datetime
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.*
+import kotlin.time.Duration.Companion.nanoseconds
 
 @Serializable(with = DateTimeUnitSerializer::class)
 public sealed class DateTimeUnit {
@@ -52,9 +53,8 @@ public sealed class DateTimeUnit {
 
         override fun times(scalar: Int): TimeBased = TimeBased(safeMultiply(nanoseconds, scalar.toLong()))
 
-        @ExperimentalTime
         public val duration: Duration
-            get() = Duration.nanoseconds(nanoseconds)
+            get() = nanoseconds.nanoseconds
 
         override fun equals(other: Any?): Boolean =
                 this === other || (other is TimeBased && this.nanoseconds == other.nanoseconds)

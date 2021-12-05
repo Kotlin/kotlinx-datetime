@@ -9,7 +9,6 @@ import kotlinx.datetime.serializers.DatePeriodIso8601Serializer
 import kotlinx.datetime.serializers.DateTimePeriodIso8601Serializer
 import kotlin.math.*
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.serialization.Serializable
 
 @Serializable(with = DateTimePeriodIso8601Serializer::class)
@@ -307,7 +306,6 @@ public fun DateTimePeriod(
 ): DateTimePeriod = buildDateTimePeriod(totalMonths(years, months), days,
     totalNanoseconds(hours, minutes, seconds, nanoseconds))
 
-@OptIn(ExperimentalTime::class)
 public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = inWholeNanoseconds)
 
 public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
@@ -320,4 +318,3 @@ public operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
     safeAdd(totalMonths, other.totalMonths),
     safeAdd(days, other.days),
 )
-
