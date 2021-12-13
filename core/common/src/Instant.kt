@@ -9,7 +9,6 @@ import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.*
 
-@OptIn(ExperimentalTime::class)
 @Serializable(with = InstantIso8601Serializer::class)
 public expect class Instant : Comparable<Instant> {
 
@@ -51,7 +50,6 @@ public expect class Instant : Comparable<Instant> {
      *
      * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
      */
-    @ExperimentalTime
     public operator fun plus(duration: Duration): Instant
 
     /**
@@ -62,7 +60,6 @@ public expect class Instant : Comparable<Instant> {
      *
      * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
      */
-    @ExperimentalTime
     public operator fun minus(duration: Duration): Instant
 
     // questionable
@@ -75,7 +72,6 @@ public expect class Instant : Comparable<Instant> {
      * The result is never clamped, but note that for instants that are far apart,
      * the value returned may represent the duration between them inexactly due to the loss of precision.
      */
-    @ExperimentalTime
     public operator fun minus(other: Instant): Duration
 
     /**

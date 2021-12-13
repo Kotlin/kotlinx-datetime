@@ -4,11 +4,16 @@
  */
 
 package kotlinx.datetime.test
+
 import kotlinx.datetime.*
 import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 class InstantTest {
 
@@ -30,12 +35,11 @@ class InstantTest {
         assertNotEquals(notEqualInstant, instant)
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun instantArithmetic() {
         val instant = Clock.System.now().toEpochMilliseconds().let { Instant.fromEpochMilliseconds(it) } // round to millis
         val diffMillis = Random.nextLong(1000, 1_000_000_000)
-        val diff = Duration.milliseconds(diffMillis)
+        val diff = diffMillis.milliseconds
 
         val nextInstant = (instant.toEpochMilliseconds() + diffMillis).let { Instant.fromEpochMilliseconds(it) }
 
@@ -129,7 +133,6 @@ class InstantTest {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun instantCalendarArithmetic() {
         val zone = TimeZone.of("Europe/Berlin")
@@ -180,7 +183,7 @@ class InstantTest {
         checkComponents(instant5.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant5, zone))
         assertEquals(period, instant5.minus(instant1, zone))
-        assertEquals(Duration.hours(26), instant5.minus(instant1))
+        assertEquals(26.hours, instant5.minus(instant1))
         assertEquals(instant1.plus(DateTimeUnit.HOUR), instant5.minus(period, zone))
 
         val instant6 = instant1.plus(23, DateTimeUnit.HOUR, zone)
@@ -202,7 +205,6 @@ class InstantTest {
         assertEquals(pow2_32, instant3.epochSeconds)
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun unitMultiplesUntil() {
         val unit1000days = DateTimeUnit.DAY * 1000
@@ -227,7 +229,6 @@ class InstantTest {
         assertEquals(start, end.plus(-diffUs, DateTimeUnit.MICROSECOND, zone))
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")
@@ -237,15 +238,15 @@ class InstantTest {
         checkComponents(ldt1, 2019, 10, 27, 2, 59)
         assertEquals(instant1, ldt1.toInstant(offset1))
 
-        val instant2 = instant1 + Duration.hours(1)
+        val instant2 = instant1 + 1.hours
         val ldt2 = instant2.toLocalDateTime(zone)
         val offset2 = instant2.offsetIn(zone)
         assertEquals(ldt1, ldt2)
         assertEquals(instant2, ldt2.toInstant(offset2))
         assertNotEquals(offset1, offset2)
-        assertEquals(Duration.seconds(offset1.totalSeconds), Duration.seconds(offset2.totalSeconds) + Duration.hours(1))
+        assertEquals(offset1.totalSeconds.seconds, offset2.totalSeconds.seconds + 1.hours)
 
-        val instant3 = instant2 - Duration.hours(2)
+        val instant3 = instant2 - 2.hours
         val offset3 = instant3.offsetIn(zone)
         assertEquals(offset1, offset3)
     }
@@ -348,7 +349,6 @@ class InstantTest {
     /* Based on the ThreeTenBp project.
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
      */
-//    @ExperimentalTime
     @Test
     fun strings() {
         assertEquals("0000-01-02T00:00:00Z", LocalDateTime(0, 1, 2, 0, 0, 0, 0).toInstant(TimeZone.UTC).toString())
@@ -401,7 +401,6 @@ class InstantTest {
         assertEquals("+19999-12-31T23:59:59.000000009Z", LocalDateTime(19999, 12, 31, 23, 59, 59, 9).toInstant(TimeZone.UTC).toString())
     }
 
-    @ExperimentalTime
     @Test
     fun distantPastAndFuture() {
         val distantFutureString = "+100000-01-01T00:00:00Z"
@@ -414,10 +413,10 @@ class InstantTest {
         assertTrue(Instant.DISTANT_FUTURE.isDistantFuture)
         assertFalse(Instant.DISTANT_PAST.isDistantFuture)
         assertFalse(Instant.DISTANT_FUTURE.isDistantPast)
-        assertFalse((Instant.DISTANT_PAST + Duration.nanoseconds(1)).isDistantPast)
-        assertFalse((Instant.DISTANT_FUTURE - Duration.nanoseconds(1)).isDistantFuture)
-        assertTrue((Instant.DISTANT_PAST - Duration.nanoseconds(1)).isDistantPast)
-        assertTrue((Instant.DISTANT_FUTURE + Duration.nanoseconds(1)).isDistantFuture)
+        assertFalse((Instant.DISTANT_PAST + 1.nanoseconds).isDistantPast)
+        assertFalse((Instant.DISTANT_FUTURE - 1.nanoseconds).isDistantFuture)
+        assertTrue((Instant.DISTANT_PAST - 1.nanoseconds).isDistantPast)
+        assertTrue((Instant.DISTANT_FUTURE + 1.nanoseconds).isDistantFuture)
         assertTrue(Instant.MAX.isDistantFuture)
         assertFalse(Instant.MAX.isDistantPast)
         assertTrue(Instant.MIN.isDistantPast)
@@ -426,7 +425,6 @@ class InstantTest {
 
 }
 
-@OptIn(ExperimentalTime::class)
 class InstantRangeTest {
     private val UTC = TimeZone.UTC
     private val maxValidInstant = LocalDateTime.MAX.toInstant(UTC)
@@ -435,8 +433,8 @@ class InstantRangeTest {
     private val largePositiveLongs = listOf(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE - 50)
     private val largeNegativeLongs = listOf(Long.MIN_VALUE, Long.MIN_VALUE + 1, Long.MIN_VALUE + 50)
 
-    private val largePositiveInstants = listOf(Instant.MAX, Instant.MAX - Duration.seconds(1), Instant.MAX - Duration.seconds(50))
-    private val largeNegativeInstants = listOf(Instant.MIN, Instant.MIN + Duration.seconds(1), Instant.MIN + Duration.seconds(50))
+    private val largePositiveInstants = listOf(Instant.MAX, Instant.MAX - 1.seconds, Instant.MAX - 50.seconds)
+    private val largeNegativeInstants = listOf(Instant.MIN, Instant.MIN + 1.seconds, Instant.MIN + 50.seconds)
 
     private val smallInstants = listOf(
         Instant.fromEpochMilliseconds(0),
@@ -504,8 +502,8 @@ class InstantRangeTest {
                 assertEquals(Instant.MIN, instant - duration)
             }
         }
-        assertEquals(Instant.MAX, (Instant.MAX - Duration.seconds(4)) + Duration.seconds(5))
-        assertEquals(Instant.MIN, (Instant.MIN + Duration.seconds(10)) - Duration.seconds(12))
+        assertEquals(Instant.MAX, (Instant.MAX - 4.seconds) + 5.seconds)
+        assertEquals(Instant.MIN, (Instant.MIN + 10.seconds) - 12.seconds)
     }
 
     @Test
@@ -534,8 +532,8 @@ class InstantRangeTest {
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC)
         minValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC)
-        assertArithmeticFails { (maxValidInstant + Duration.nanoseconds(1)).plus(DateTimePeriod(nanoseconds = -2), UTC) }
-        assertArithmeticFails { (minValidInstant - Duration.nanoseconds(1)).plus(DateTimePeriod(nanoseconds = 2), UTC) }
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(DateTimePeriod(nanoseconds = -2), UTC) }
+        assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(DateTimePeriod(nanoseconds = 2), UTC) }
         // Overflowing a LocalDateTime in result
         assertArithmeticFails { maxValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC) }
         assertArithmeticFails { minValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC) }
@@ -557,8 +555,8 @@ class InstantRangeTest {
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
         minValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC)
-        assertArithmeticFails { (maxValidInstant + Duration.nanoseconds(1)).plus(-2, DateTimeUnit.NANOSECOND, UTC) }
-        assertArithmeticFails { (minValidInstant - Duration.nanoseconds(1)).plus(2, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(-2, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(2, DateTimeUnit.NANOSECOND, UTC) }
         // Overflowing a LocalDateTime in result
         assertArithmeticFails { maxValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC) }
         assertArithmeticFails { maxValidInstant.plus(1, DateTimeUnit.YEAR, UTC) }
@@ -586,8 +584,8 @@ class InstantRangeTest {
     fun periodUntilOutOfRange() {
         // Instant.periodUntil
         maxValidInstant.periodUntil(maxValidInstant, UTC)
-        assertArithmeticFails { (maxValidInstant + Duration.nanoseconds(1)).periodUntil(maxValidInstant, UTC) }
-        assertArithmeticFails { minValidInstant.periodUntil(minValidInstant - Duration.nanoseconds(1), UTC) }
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).periodUntil(maxValidInstant, UTC) }
+        assertArithmeticFails { minValidInstant.periodUntil(minValidInstant - 1.nanoseconds, UTC) }
     }
 
     @Test
@@ -603,11 +601,10 @@ class InstantRangeTest {
     fun unitsUntilOutOfRange() {
         // Instant.until
         // Overflowing a LocalDateTime in input
-        assertArithmeticFails { (maxValidInstant + Duration.nanoseconds(1)).until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC) }
-        assertArithmeticFails { maxValidInstant.until(maxValidInstant + Duration.nanoseconds(1), DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC) }
+        assertArithmeticFails { maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND, UTC) }
         // Overloads without a TimeZone should not fail on overflowing a LocalDateTime
-        (maxValidInstant + Duration.nanoseconds(1)).until(maxValidInstant, DateTimeUnit.NANOSECOND)
-        maxValidInstant.until(maxValidInstant + Duration.nanoseconds(1), DateTimeUnit.NANOSECOND)
+        (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
+        maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
     }
 }
-

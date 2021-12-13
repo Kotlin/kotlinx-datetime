@@ -9,6 +9,8 @@ import kotlinx.datetime.*
 import kotlinx.datetime.Clock
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.days
 
 class LocalDateTimeTest {
 
@@ -36,25 +38,23 @@ class LocalDateTimeTest {
         checkParsedComponents("-2008-01-02T23:59:59.999999990", -2008, 1, 2, 23, 59, 59, 999999990)
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun localDtToInstantConversion() {
         val ldt1 = "2019-10-01T18:43:15.100500".toLocalDateTime()
         val ldt2 = "2019-10-01T19:50:00.500600".toLocalDateTime()
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
-        assertEquals(with(Duration) { hours(1) + minutes(7) - seconds(15) + microseconds(400100) }, diff)
-        assertFailsWith<DateTimeArithmeticException> { (Instant.MAX - Duration.days(3)).toLocalDateTime(TimeZone.UTC) }
-        assertFailsWith<DateTimeArithmeticException> { (Instant.MIN + Duration.hours(6)).toLocalDateTime(TimeZone.UTC) }
+        assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
+        assertFailsWith<DateTimeArithmeticException> { (Instant.MAX - 3.days).toLocalDateTime(TimeZone.UTC) }
+        assertFailsWith<DateTimeArithmeticException> { (Instant.MIN + 6.hours).toLocalDateTime(TimeZone.UTC) }
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun localDtToInstantConversionRespectsTimezones() {
         val ldt1 = "2011-03-26T04:00:00".toLocalDateTime()
         val ldt2 = "2011-03-27T04:00:00".toLocalDateTime()
         val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
-        assertEquals(Duration.hours(23), diff)
+        assertEquals(23.hours, diff)
     }
 
     @Test
@@ -72,7 +72,6 @@ class LocalDateTimeTest {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun tomorrow() {
         val localFixed = LocalDateTime(2019, 1, 30, 0, 0, 0, 0)
@@ -140,4 +139,3 @@ fun checkEquals(expected: LocalDateTime, actual: LocalDateTime) {
     assertEquals(expected.hashCode(), actual.hashCode())
     assertEquals(expected.toString(), actual.toString())
 }
-

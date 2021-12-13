@@ -11,8 +11,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-#include <Windows.h>
-#include <Timezoneapi.h>
+#include <windows.h>
+#include <timezoneapi.h>
 #include <stdexcept>
 #include <string>
 #include <cstring>

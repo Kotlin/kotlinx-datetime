@@ -12,12 +12,13 @@ import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 import java.time.Instant as jtInstant
 import java.time.OffsetDateTime as jtOffsetDateTime
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
-@OptIn(ExperimentalTime::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual val epochSeconds: Long
@@ -43,8 +44,8 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     public actual operator fun minus(other: Instant): Duration =
-            Duration.seconds(this.value.epochSecond - other.value.epochSecond) + // won't overflow given the instant bounds
-            Duration.nanoseconds(this.value.nano - other.value.nano)
+        (this.value.epochSecond - other.value.epochSecond).seconds + // won't overflow given the instant bounds
+            (this.value.nano - other.value.nano).nanoseconds
 
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value)
 
@@ -153,7 +154,6 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         if (value > 0) Instant.MAX else Instant.MIN
     }
 
-@OptIn(ExperimentalTime::class)
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
     var thisZdt = this.atZone(timeZone)
     val otherZdt = other.atZone(timeZone)
