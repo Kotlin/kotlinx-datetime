@@ -10,11 +10,7 @@ import kotlinx.datetime.Clock
 import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.nanoseconds
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.microseconds
 
 class LocalDateTimeTest {
 
