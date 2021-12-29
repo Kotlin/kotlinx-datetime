@@ -7,7 +7,7 @@ package kotlinx.datetime
 
 import kotlin.native.concurrent.*
 
-public expect enum class Month {
+public enum class Month {
     JANUARY,
     FEBRUARY,
     MARCH,
@@ -21,10 +21,8 @@ public expect enum class Month {
     NOVEMBER,
     DECEMBER;
 
-//    val value: Int // member missing in java.time.Month has to be an extension
+    public val number: Int get() = ordinal + 1
 }
-
-public val Month.number: Int get() = ordinal + 1
 
 @SharedImmutable
 private val allMonths = Month.values().asList()

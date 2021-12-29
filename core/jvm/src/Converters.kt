@@ -6,6 +6,17 @@
 package kotlinx.datetime
 
 /**
+ * Converts this [kotlinx.datetime.Month][Month] value to a [java.time.Month][java.time.Month] value.
+ */
+public fun Month.toJavaMonth(): java.time.Month = java.time.Month.of(number)
+
+/**
+ * Converts this [java.time.Month][java.time.Month] value to a [kotlinx.datetime.Month][Month] value.
+ */
+public fun java.time.Month.toKotlinMonth(): Month = Month(value)
+
+
+/**
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
  */
 public fun Instant.toJavaInstant(): java.time.Instant = this.value

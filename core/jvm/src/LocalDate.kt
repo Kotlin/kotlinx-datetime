@@ -36,7 +36,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
-    public actual val month: Month get() = value.month
+    public actual val month: Month get() = value.month.toKotlinMonth()
     public actual val dayOfMonth: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
