@@ -5,6 +5,3 @@
 target
 build
 /local.properties
-/kotlinx-collections-immutable/dependency-reduced-pom.xml
-/benchmarks-runner/benchmarkResults
-/benchmarks-runner/localReferenceBenchmarkResults
