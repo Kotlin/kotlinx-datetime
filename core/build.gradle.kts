@@ -153,8 +153,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-common")
-                api("org.jetbrains.kotlin:kotlin-test-annotations-common")
+                api("org.jetbrains.kotlin:kotlin-test")
             }
         }
 
@@ -180,7 +179,6 @@ kotlin {
 
         val jsTest by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-js")
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
