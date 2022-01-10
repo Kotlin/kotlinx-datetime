@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.3.2
+
+#### Features
+
+- Update Kotlin dependency to 1.6.0 and remove `ExperimentalTime` from API involving `Duration` which became stable ([#156](https://github.com/Kotlin/kotlinx-datetime/issues/156))
+- Add an explicit `module-info` descriptor to JVM variant of the library ([#135](https://github.com/Kotlin/kotlinx-datetime/pull/135))
+- `kotlinx.datetime.Instant` conversions to and from JS `Date` ([#170](https://github.com/Kotlin/kotlinx-datetime/issues/170)).
+
+
 ## 0.3.1
 
 #### Fixes
