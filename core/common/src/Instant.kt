@@ -9,6 +9,23 @@ import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.*
 
+/**
+ * A moment in time.
+ *
+ * A point in time must be uniquely identified, so that it is independent of a time zone.
+ * For example, `1970-01-01, 00:00:00` does not represent a moment in time, since this would happen at different times
+ * in different time zones: someone in Tokyo would think its already `1970-01-01` several hours earlier than someone in
+ * Berlin would. To represent such entities, use [LocalDateTime].
+ * In contrast, "the moment the clocks in London first showed 00:00 on Jan 1, 2000" is a specific moment
+ * in time, as is "1970-01-01, 00:00:00 UTC", and so can be represented as an [Instant].
+ *
+ * Some ways in which [Instant] can be acquired are:
+ * - [Clock.now] can be used to query the current moment for the given clock. With [Clock.System], it is the current
+ *   moment as the platform sees it.
+ * - [Instant.parse] parses an ISO-8601 string.
+ * - [Instant.fromEpochMilliseconds] and [Instant.fromEpochSeconds] construct the instant values from the amount of time
+ *   since `1970-01-01T00:00:00Z` (the Unix epoch).
+ */
 @Serializable(with = InstantIso8601Serializer::class)
 public expect class Instant : Comparable<Instant> {
 
@@ -76,7 +93,7 @@ public expect class Instant : Comparable<Instant> {
 
     /**
      * Compares `this` instant with the [other] instant.
-     * Returns zero if this instant represent the same moment as the other (i.e. equal to other),
+     * Returns zero if this instant represents the same moment as the other (i.e. equal to other),
      * a negative number if this instant is earlier than the other,
      * and a positive number if this instant is later than the other.
      */
@@ -141,16 +158,16 @@ public expect class Instant : Comparable<Instant> {
         /**
          * An instant value that is far in the past.
          *
-         * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be converted to [LocalDateTime][Instant.toLocalDateTime]
-         * without exceptions on all supported platforms.
+         * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be [converted][Instant.toLocalDateTime] to
+         * [LocalDateTime] without exceptions on all supported platforms.
          */
         public val DISTANT_PAST: Instant // -100001-12-31T23:59:59.999999999Z
 
         /**
          * An instant value that is far in the future.
          *
-         * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be converted to [LocalDateTime][Instant.toLocalDateTime]
-         * without exceptions on all supported platforms.
+         * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be [converted][Instant.toLocalDateTime] to
+         * [LocalDateTime] without exceptions on all supported platforms.
          */
         public val DISTANT_FUTURE: Instant // +100000-01-01T00:00:00Z
 
@@ -159,11 +176,11 @@ public expect class Instant : Comparable<Instant> {
     }
 }
 
-/** Returns true if the instant is not later than [Instant.DISTANT_PAST]. */
+/** Returns true if the instant is [Instant.DISTANT_PAST] or earlier. */
 public val Instant.isDistantPast: Boolean
     get() = this <= Instant.DISTANT_PAST
 
-/** Returns true if the instant is not earlier than [Instant.DISTANT_FUTURE]. */
+/** Returns true if the instant is [Instant.DISTANT_FUTURE] or later. */
 public val Instant.isDistantFuture: Boolean
     get() = this >= Instant.DISTANT_FUTURE
 
@@ -215,8 +232,8 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * - negative or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
- * on JVM) if the number of months between the two dates exceeds an Int.
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ *     Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  */
 public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
 
@@ -298,8 +315,8 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * - positive or zero if this instant is later than the other,
  * - exactly zero if this instant is equal to the other.
  *
- * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime]. Also (only
- * on JVM) if the number of months between the two dates exceeds an Int.
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ *   Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  * @see Instant.periodUntil
  */
 public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =

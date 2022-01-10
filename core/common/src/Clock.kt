@@ -7,10 +7,22 @@ package kotlinx.datetime
 
 import kotlin.time.*
 
+/**
+ * A source of [Instant] values.
+ *
+ * @see Clock.System for the instance that queries the operating system.
+ */
 public interface Clock {
+    /**
+     * The current time, according to this clock.
+     */
     public fun now(): Instant
 
+    /**
+     * The [Clock] instance that queries the operating system as its source of knowledge of time.
+     */
     public object System : Clock {
+        /** @suppress */
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
     }
 
@@ -19,9 +31,15 @@ public interface Clock {
     }
 }
 
+/**
+ * Returns the current date at a given [time zone][timeZone], according to [this Clock][this].
+ */
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate =
         now().toLocalDateTime(timeZone).date
 
+/**
+ * Returns the [TimeSource] that wraps the [Instant] values from [Clock.now] intro [TimeMark] instances.
+ */
 @ExperimentalTime
 public fun Clock.asTimeSource(): TimeSource = object : TimeSource {
     override fun markNow(): TimeMark = InstantTimeMark(now(), this@asTimeSource)
