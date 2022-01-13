@@ -15,8 +15,8 @@ import kotlinx.serialization.Serializable
  * As such, these objects may denote different spans of time in different time zones: for someone in Berlin,
  * `2020-08-30` started and ended at different moments from those for someone in Tokyo.
  *
- * Since the arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
- * is `2020-08-31` everywhere), it is provided: see various [LocalDate.plus] and [LocalDate.minus] functions, as well
+ * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
+ * is `2020-08-31` everywhere): see various [LocalDate.plus] and [LocalDate.minus] functions, as well
  * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
  */
 @Serializable(with = LocalDateIso8601Serializer::class)
@@ -182,6 +182,11 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - zero if this date is equal to the other.
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see LocalDate.daysUntil
+ * @see LocalDate.monthsUntil
+ * @see LocalDate.yearsUntil
+ *
  */
 public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int
 

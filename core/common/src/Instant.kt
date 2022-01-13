@@ -17,7 +17,11 @@ import kotlin.time.*
  * in different time zones: someone in Tokyo would think its already `1970-01-01` several hours earlier than someone in
  * Berlin would. To represent such entities, use [LocalDateTime].
  * In contrast, "the moment the clocks in London first showed 00:00 on Jan 1, 2000" is a specific moment
- * in time, as is "1970-01-01, 00:00:00 UTC", and so can be represented as an [Instant].
+ * in time, as is "1970-01-01, 00:00:00 UTC+0", and so it can be represented as an [Instant].
+ *
+ * `Instant` uses UTC-SLS (smeared leap second) time scale. This time scale doesn't contain instants
+ * corresponding to leap seconds, but instead "smears" positive and negative leap seconds among the last 1000 seconds
+ * of the day when a leap second happens.
  *
  * Some ways in which [Instant] can be acquired are:
  * - [Clock.now] can be used to query the current moment for the given clock. With [Clock.System], it is the current
@@ -34,6 +38,8 @@ public expect class Instant : Comparable<Instant> {
      *
      * The difference between the rounded number of seconds and the actual number of seconds
      * is returned by [nanosecondsOfSecond] property expressed in nanoseconds.
+     *
+     * Note that this number doesn't include leap seconds added or removed since the epoch.
      *
      * @see Instant.fromEpochSeconds
      */

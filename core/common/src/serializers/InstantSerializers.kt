@@ -33,7 +33,7 @@ public object InstantIso8601Serializer: KSerializer<Instant> {
 }
 
 /**
- * A serializer for [Instant] that represents the values as second and nanosecond component of the Unix time.
+ * A serializer for [Instant] that represents an `Instant` value as second and nanosecond components of the Unix time.
  *
  * JSON example: `{"epochSeconds":1607505416,"nanosecondsOfSecond":124000}`
  */

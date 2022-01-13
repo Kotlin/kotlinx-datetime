@@ -15,7 +15,7 @@ import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlin.reflect.KClass
 
 /**
- * A serializer for [DateTimeUnit.TimeBased] that represents the unit as the [Long] number of nanoseconds.
+ * A serializer for [DateTimeUnit.TimeBased] unit that represents the unit as a [Long] number of nanoseconds.
  *
  * JSON example: `{"nanoseconds":1000000000}`
  */
@@ -59,7 +59,7 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
 }
 
 /**
- * A serializer for [DateTimeUnit.DayBased] that represents the unit as the [Int] number of days.
+ * A serializer for [DateTimeUnit.DayBased] unit that represents the unit as an [Int] number of days.
  *
  * JSON example: `{"days":2}`
  */
@@ -103,7 +103,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
 }
 
 /**
- * A serializer for [DateTimeUnit.MonthBased] that represents the unit as the [Int] number of months.
+ * A serializer for [DateTimeUnit.MonthBased] unit that represents the unit as an [Int] number of months.
  *
  * JSON example: `{"months":2}`
  */
@@ -147,7 +147,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
 }
 
 /**
- * A polymorphic serializer for [DateTimeUnit.DateBased] that represents the unit as the [Int] number of months or days.
+ * A polymorphic serializer for [DateTimeUnit.DateBased] unit that represents the unit as an [Int] number of months or days.
  *
  * JSON example: `{"type":"DayBased","days":15}`
  */

@@ -12,7 +12,7 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
- * A time zone, which is a collection of rules specifying which [LocalDateTime] values correspond to each [Instant].
+ * A time zone, which is a collection of rules specifying how to convert an [Instant] to a [LocalDateTime] and vice versa.
  */
 @Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
@@ -22,6 +22,8 @@ public expect open class TimeZone {
      * This identifier can be used later for finding this time zone with [TimeZone.of] function.
      */
     public val id: String
+
+    // TODO: Declare and document toString/equals/hashCode
 
     public companion object {
         /**
@@ -160,7 +162,7 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
 
 /**
- * Returns an instant that corresponds to this civil date/time value in the specified [UTC offset][offset].
+ * Returns an instant that corresponds to this civil date/time value that happens at the specified [UTC offset][offset].
  *
  * @see Instant.toLocalDateTime
  */

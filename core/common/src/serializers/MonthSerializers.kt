@@ -12,7 +12,7 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.*
 
 /**
- * A serializer for [Month] that represents the values as strings.
+ * A serializer for [Month] that represents the month value as a string.
  *
  * JSON example: `"JANUARY"`
  */

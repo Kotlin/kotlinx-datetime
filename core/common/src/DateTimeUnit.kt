@@ -14,24 +14,26 @@ import kotlin.time.Duration.Companion.nanoseconds
  * A unit for measuring time.
  *
  * See the predefined constants for time units, like [DateTimeUnit.NANOSECOND], [DateTimeUnit.DAY],
- * [DateTimeUnit.MONTH], or others.
+ * [DateTimeUnit.MONTH], and others.
  *
  * Two ways are provided to create custom [DateTimeUnit] instances:
- * - By multiplying an existing unit on the right by a scalar: for example, `DateTimeUnit.NANOSECOND * 10`.
+ * - By multiplying an existing unit on the right by an integer scalar: for example, `DateTimeUnit.NANOSECOND * 10`.
  * - By constructing an instance manually with [TimeBased], [DayBased], or [MonthBased]: for example,
  *   `TimeBased(nanoseconds = 10)`.
  *
- * Note that a day is not considered equal to 24 hours. See [DateTimeUnit.DAY] for a discussion.
+ * Note that a calendar day is not considered identical to 24 hours. See [DateTimeUnit.DayBased] for a discussion.
  */
 @Serializable(with = DateTimeUnitSerializer::class)
 public sealed class DateTimeUnit {
 
+    /** Produces a date-time unit that is a multiple of this unit by the specified integer [scalar] value. */
     public abstract operator fun times(scalar: Int): DateTimeUnit
 
     /**
-     * The date-time units that are independent of the time zone.
+     * A date-time unit that has the precise time duration.
      *
-     * Any such unit can be represented as some number of nanoseconds.
+     * Such units are independent of the time zone.
+     * Any such unit can be represented as some fixed number of nanoseconds.
      */
     @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
     public class TimeBased(
@@ -91,10 +93,11 @@ public sealed class DateTimeUnit {
     }
 
     /**
-     * The date-time unit equal to some number of days or months.
+     * A date-time unit equal to some number of days or months.
      *
-     * Unless used for operations on dates, measuring with such units requires knowledge of the time zone, as it is
-     * otherwise unknown when one date ends and another one begins.
+     * Operations involving `DateBased` units are performed with dates. The same operations on [Instants][Instant]
+     * require a [TimeZone] to find the corresponding [LocalDateTimes][LocalDateTime] first and then to perform
+     * the operation with the date component of these `LocalDateTime` values.
      */
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     public sealed class DateBased : DateTimeUnit() {
@@ -107,9 +110,14 @@ public sealed class DateTimeUnit {
     }
 
     /**
-     * The date-time unit equal to some number of days.
+     * A date-time unit equal to some number of calendar days.
      *
-     * A day is not considered equal to 24 hours. See [DateTimeUnit.DAY] for a discussion.
+     * A calendar day is not considered identical to 24 hours, thus a `DayBased`-unit cannot be expressed as a multiple of some [TimeBased]-unit.
+     *
+     * The reason lies in time zone transitions, because of which some days can be 23 or 25 hours.
+     * For example, we say that exactly a whole day has passed between `2019-10-27T02:59` and `2019-10-28T02:59`
+     * in Berlin, despite the fact that the clocks were turned back one hour, so there are, in fact, 25 hours
+     * between the two date-times.
      */
     @Serializable(with = DayBasedDateTimeUnitSerializer::class)
     public class DayBased(
@@ -136,7 +144,9 @@ public sealed class DateTimeUnit {
     }
 
     /**
-     * The date-time unit equal to some number of months.
+     * A date-time unit equal to some number of months.
+     *
+     * Since different months have different number of days, a `MonthBased`-unit cannot be expressed a multiple of some [DayBased]-unit.
      */
     @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
     public class MonthBased(
@@ -199,23 +209,14 @@ public sealed class DateTimeUnit {
         public val HOUR: TimeBased = MINUTE * 60
 
         /**
-         * A day.
+         * A calendar day.
          *
-         * We follow ISO-8601 in that we do not consider a day to be the same as 24 hours.
-         * The reason lies in time zone transitions, because of which some days can be 23 or 25 hours.
-         * For example, we say that exactly a whole day has passed between `2019-10-27T02:59` and `2019-10-28T02:59`
-         * in Berlin, despite the fact that the clocks were turned back one hour, so there are, in fact, 25 hours
-         * between the two date-times.
-         *
-         * It is for this reason that most operations with [DateBased] units require a [TimeZone], whereas those with
-         * [TimeBased] ones never do.
+         * Note that a calendar day is not the same as 24 hours.
          */
         public val DAY: DayBased = DayBased(days = 1)
 
         /**
-         * 7 days.
-         *
-         * It can not represented as some number of hours. Please see [DAY] for a discussion.
+         * A week, which is 7 calendar days.
          */
         public val WEEK: DayBased = DAY * 7
 
@@ -225,17 +226,17 @@ public sealed class DateTimeUnit {
         public val MONTH: MonthBased = MonthBased(months = 1)
 
         /**
-         * Three months.
+         * A quarter, which is three months.
          */
         public val QUARTER: MonthBased = MONTH * 3
 
         /**
-         * 12 months.
+         * A year, which is 12 months.
          */
         public val YEAR: MonthBased = MONTH * 12
 
         /**
-         * 100 years, or 1200 months.
+         * A century, which is 100 years, or 1200 months.
          */
         public val CENTURY: MonthBased = YEAR * 100
     }

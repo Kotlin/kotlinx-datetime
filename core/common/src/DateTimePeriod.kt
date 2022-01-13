@@ -12,11 +12,16 @@ import kotlin.time.Duration
 import kotlinx.serialization.Serializable
 
 /**
- * A difference between two [instants][Instant], decomposed into date and time units.
+ * A difference between two [instants][Instant], decomposed into date and time components.
  *
- * See [DatePeriod] for a special case that only stores date units.
- * A [DatePeriod] is automatically returned from all constructor functions for [DateTimePeriod] if it turns out that
- * the time components are zero.
+ * The date components are: [years], [months], [days].
+ *
+ * The time components are: [hours], [minutes], [seconds], [nanoseconds].
+ *
+ * A `DateTimePeriod` can be constructed using the same-named constructor function,
+ * [parsed][DateTimePeriod.parse] from a string, or returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
+ * All these functions can return a [DatePeriod] value, which is a subtype of `DateTimePeriod`,
+ * a special case that only stores date components, if all time components of the result happen to be zero.
  */
 @Serializable(with = DateTimePeriodIso8601Serializer::class)
 // TODO: could be error-prone without explicitly named params
@@ -24,9 +29,9 @@ public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
 
     /**
-     * The number of days.
+     * The number of calendar days.
      *
-     * We do not consider a day to be equal to 24 hours. Please see [DateTimeUnit.DAY] for a discussion.
+     * Note that a calendar day is not identical to 24 hours, see [DateTimeUnit.DayBased] for details.
      */
     public abstract val days: Int
     internal abstract val totalNanoseconds: Long
@@ -302,6 +307,15 @@ public sealed class DateTimePeriod {
  */
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
+/**
+ * A special case of [DateTimePeriod] that only stores date components and has all time components equal to zero.
+ *
+ * A `DatePeriod` is automatically returned from all constructor functions for [DateTimePeriod] if it turns out that
+ * the time components are zero.
+ *
+ * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations on [LocalDates][LocalDate],
+ * but they also can be passed anywhere where a [DateTimePeriod] is expected.
+ */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
     internal override val totalMonths: Int,
@@ -309,16 +323,16 @@ public class DatePeriod internal constructor(
 ) : DateTimePeriod() {
     public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
-    /** The constant 0. */
+    /** The number of whole hours in this period. Always equal to zero. */
     override val hours: Int get() = 0
 
-    /** The constant 0. */
+    /** The number of whole minutes in this period. Always equal to zero. */
     override val minutes: Int get() = 0
 
-    /** The constant 0. */
+    /** The number of whole seconds in this period. Always equal to zero. */
     override val seconds: Int get() = 0
 
-    /** The constant 0. */
+    /** The number of nanoseconds in this period. Always equal to zero. */
     override val nanoseconds: Int get() = 0
     internal override val totalNanoseconds: Long get() = 0
 
@@ -417,7 +431,7 @@ public fun DateTimePeriod(
 /**
  * Constructs a [DateTimePeriod] from a [Duration].
  *
- * If the duration is too long to be represented as a [Long] number of nanoseconds,
+ * If the duration value is too big to be represented as a [Long] number of nanoseconds,
  * the result will be [Long.MAX_VALUE] nanoseconds.
  */
 // TODO: maybe it's more consistent to throw here on overflow?
