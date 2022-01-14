@@ -12,7 +12,8 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
- * A time zone, which is a collection of rules specifying how to convert an [Instant] to a [LocalDateTime] and vice versa.
+ * A time zone, provides the conversion between [Instant] and [LocalDateTime] values
+ * using a collection of rules specifying which [LocalDateTime] value corresponds to each [Instant].
  */
 @Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
