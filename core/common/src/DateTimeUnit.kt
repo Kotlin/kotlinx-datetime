@@ -26,7 +26,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 @Serializable(with = DateTimeUnitSerializer::class)
 public sealed class DateTimeUnit {
 
-    /** Produces a date-time unit that is a multiple of this unit by the specified integer [scalar] value. */
+    /** Produces a date-time unit that is a multiple of this unit times the specified integer [scalar] value. */
     public abstract operator fun times(scalar: Int): DateTimeUnit
 
     /**
@@ -95,8 +95,8 @@ public sealed class DateTimeUnit {
     /**
      * A date-time unit equal to some number of days or months.
      *
-     * Operations involving `DateBased` units are performed with dates. The same operations on [Instants][Instant]
-     * require a [TimeZone] to find the corresponding [LocalDateTimes][LocalDateTime] first and then to perform
+     * Operations involving `DateBased` units are performed on dates. The same operations on [Instants][Instant]
+     * require a [TimeZone] to find the corresponding [LocalDateTimes][LocalDateTime] first to perform
      * the operation with the date component of these `LocalDateTime` values.
      */
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
@@ -211,32 +211,34 @@ public sealed class DateTimeUnit {
         /**
          * A calendar day.
          *
-         * Note that a calendar day is not the same as 24 hours.
+         * Note that a calendar day is not the same as 24 hours, see [DateTimeUnit.DayBased] for details.
          */
         public val DAY: DayBased = DayBased(days = 1)
 
         /**
-         * A week, which is 7 calendar days.
+         * A week, which is 7 [calendar days][DAY].
          */
         public val WEEK: DayBased = DAY * 7
 
         /**
          * A month.
+         *
+         * Note that a month doesn't have a constant number of calendar days in it.
          */
         public val MONTH: MonthBased = MonthBased(months = 1)
 
         /**
-         * A quarter, which is three months.
+         * A quarter, which is three [months][MONTH].
          */
         public val QUARTER: MonthBased = MONTH * 3
 
         /**
-         * A year, which is 12 months.
+         * A year, which is 12 [months][MONTH].
          */
         public val YEAR: MonthBased = MONTH * 12
 
         /**
-         * A century, which is 100 years, or 1200 months.
+         * A century, which is 100 [years][YEAR], or 1200 [months][MONTH].
          */
         public val CENTURY: MonthBased = YEAR * 100
     }

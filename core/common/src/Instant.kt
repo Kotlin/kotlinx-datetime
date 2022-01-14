@@ -19,7 +19,7 @@ import kotlin.time.*
  * In contrast, "the moment the clocks in London first showed 00:00 on Jan 1, 2000" is a specific moment
  * in time, as is "1970-01-01, 00:00:00 UTC+0", and so it can be represented as an [Instant].
  *
- * `Instant` uses UTC-SLS (smeared leap second) time scale. This time scale doesn't contain instants
+ * `Instant` uses the UTC-SLS (smeared leap second) time scale. This time scale doesn't contain instants
  * corresponding to leap seconds, but instead "smears" positive and negative leap seconds among the last 1000 seconds
  * of the day when a leap second happens.
  *

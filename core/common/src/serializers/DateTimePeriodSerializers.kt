@@ -95,7 +95,7 @@ public object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 /**
  * A serializer for [DatePeriod] that uses a different field for each component, only listing non-zero components.
  *
- * Deserializes the time components as well ensuring they are zero.
+ * Deserializes the time components as well when they are present ensuring they are zero.
  *
  * JSON example: `{"months":1,"days":15}`
  */

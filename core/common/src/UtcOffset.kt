@@ -58,7 +58,7 @@ public expect class UtcOffset {
  * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes.
  * For example, `UtcOffset(hours = 3, minutes = 61)` is invalid.
  *
- * However, the first non-null component of highest order can exceed these bounds,
+ * However, the non-null component of the highest order can exceed these bounds,
  * for example, `UtcOffset(minutes = 241)` is valid.
  *
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.

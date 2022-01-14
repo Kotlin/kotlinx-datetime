@@ -33,7 +33,7 @@ public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
 }
 
 /**
- * A serializer for [LocalDate] that represents the value as its components.
+ * A serializer for [LocalDate] that represents a value as its components.
  *
  * JSON example: `{"year":2020,"month":12,"day":9}`
  */

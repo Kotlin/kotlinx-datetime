@@ -314,7 +314,7 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  * the time components are zero.
  *
  * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations on [LocalDates][LocalDate],
- * but they also can be passed anywhere where a [DateTimePeriod] is expected.
+ * but they also can be passed anywhere a [DateTimePeriod] is expected.
  */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
