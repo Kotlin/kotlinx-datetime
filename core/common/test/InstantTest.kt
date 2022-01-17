@@ -83,6 +83,7 @@ class InstantTest {
             assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
         }
 
+        // TODO: assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")} // fails on Native
         assertInvalidFormat { Instant.parse("x") }
         assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:

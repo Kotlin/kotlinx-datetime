@@ -108,6 +108,11 @@ public expect class Instant : Comparable<Instant> {
     /**
      * Converts this instant to the ISO-8601 string representation.
      *
+     * The representation uses the UTC-SLS time scale, instead of UTC.
+     * In practice, this means that leap second handling will not be readjusted to the UTC.
+     * Leap seconds will not be added or skipped, so it is impossible to acquire a string
+     * where the component for seconds is 60, and for any day, it's possible to observe 23:59:59.
+     *
      * @see Instant.parse
      */
     public override fun toString(): String
@@ -156,6 +161,12 @@ public expect class Instant : Comparable<Instant> {
          * - `2020-08-30T18:40.00+03:00`
          * - `2020-08-30T18:40.00+03:30:20`
          *
+         * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
+         * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
+         * time is parsed, even if it's in the last 1000 seconds of the day.
+         * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered valid time.
+         * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
+         *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          */
         public fun parse(isoString: String): Instant
@@ -194,7 +205,7 @@ public val Instant.isDistantFuture: Boolean
  * Converts this string representing an instant in ISO-8601 format including date and time components and
  * the time zone offset to an [Instant] value.
  *
- * See [Instant.parse] for examples of instant string representations.
+ * See [Instant.parse] for examples of instant string representations and discussion of leap seconds.
  *
  * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
  */
