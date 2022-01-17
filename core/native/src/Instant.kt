@@ -91,7 +91,7 @@ private val instantParser: Parser<Instant>
             val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
                 listOf(1, 0, 0, 0)
             } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
-                // parsed a leap second, but it seems it isn't used
+                // TODO: throw an error on leap seconds to match what the other platforms do
                 listOf(0, 23, 59, 59)
             } else {
                 listOf(0, hoursVal, minutesVal, secondsVal)

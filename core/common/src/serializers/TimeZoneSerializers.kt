@@ -12,6 +12,11 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [TimeZone] that represents the time zone as its identifier.
+ *
+ * JSON example: `"Europe/Berlin"`
+ */
 public object TimeZoneSerializer: KSerializer<TimeZone> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TimeZone", PrimitiveKind.STRING)
@@ -24,6 +29,11 @@ public object TimeZoneSerializer: KSerializer<TimeZone> {
 
 }
 
+/**
+ * A serializer for [FixedOffsetTimeZone] that represents the time zone as its identifier.
+ *
+ * JSON example: `"+02:00"`
+ */
 public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FixedOffsetTimeZone", PrimitiveKind.STRING)
@@ -43,6 +53,14 @@ public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 
 }
 
+/**
+ * A serializer for [UtcOffset] that uses the ISO-8601 representation.
+ *
+ * JSON example: `"+02:00"`
+ *
+ * @see UtcOffset.parse
+ * @see UtcOffset.toString
+ */
 public object UtcOffsetSerializer: KSerializer<UtcOffset> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UtcOffset", PrimitiveKind.STRING)

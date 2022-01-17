@@ -8,6 +8,17 @@ package kotlinx.datetime
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 
+/**
+ * The date part of [LocalDateTime].
+ *
+ * This class represents dates without a reference to a particular time zone.
+ * As such, these objects may denote different spans of time in different time zones: for someone in Berlin,
+ * `2020-08-30` started and ended at different moments from those for someone in Tokyo.
+ *
+ * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
+ * is `2020-08-31` everywhere): see various [LocalDate.plus] and [LocalDate.minus] functions, as well
+ * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
+ */
 @Serializable(with = LocalDateIso8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
@@ -36,8 +47,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [monthNumber] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * given [monthNumber] and [year].
      */
     public constructor(year: Int, monthNumber: Int, dayOfMonth: Int)
 
@@ -50,8 +61,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [month] all values of the [Month] enum
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [month] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * given [month] and [year].
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int)
 
@@ -76,7 +87,6 @@ public expect class LocalDate : Comparable<LocalDate> {
      */
     public override fun compareTo(other: LocalDate): Int
 
-
     /**
      * Converts this date to the ISO-8601 string representation.
      *
@@ -95,7 +105,7 @@ public expect class LocalDate : Comparable<LocalDate> {
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 /**
- * Combines this date components with the specified time components into a [LocalDateTime] value.
+ * Combines this date's components with the specified time components into a [LocalDateTime] value.
  *
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
@@ -172,6 +182,11 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - zero if this date is equal to the other.
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see LocalDate.daysUntil
+ * @see LocalDate.monthsUntil
+ * @see LocalDate.yearsUntil
+ *
  */
 public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int
 
