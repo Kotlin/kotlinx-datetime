@@ -93,7 +93,7 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
 }
 
 /**
- * Converts the given [LocalDate] to [NSDate].
+ * Converts the given [LocalDateTime] to [NSDate].
  */
 public fun LocalDateTime.toNSDate(): NSDate? {
     val components = toNSDateComponents()
