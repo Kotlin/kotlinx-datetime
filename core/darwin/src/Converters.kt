@@ -79,7 +79,7 @@ public fun LocalDate.toNSDate(): NSDate? {
 }
 
 /**
- * Converts the given [LocalDate] to [NSDateComponents].
+ * Converts the given [LocalDateTime] to [NSDateComponents].
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
  */
