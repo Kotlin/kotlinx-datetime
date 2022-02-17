@@ -70,6 +70,15 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
 }
 
 /**
+ * Converts the given [LocalDate] to [NSDate].
+ */
+public fun LocalDate.toNSDate(): NSDate? {
+    val components = toNSDateComponents()
+    components.calendar = NSCalendar.currentCalendar
+    return components.date
+}
+
+/**
  * Converts the given [LocalDate] to [NSDateComponents].
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
@@ -81,4 +90,13 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
     components.second = second.convert()
     components.nanosecond = nanosecond.convert()
     return components
+}
+
+/**
+ * Converts the given [LocalDate] to [NSDate].
+ */
+public fun LocalDateTime.toNSDate(): NSDate? {
+    val components = toNSDateComponents()
+    components.calendar = NSCalendar.currentCalendar
+    return components.date
 }
