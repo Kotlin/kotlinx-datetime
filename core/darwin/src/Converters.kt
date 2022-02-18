@@ -71,10 +71,12 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
 
 /**
  * Converts the given [LocalDate] to [NSDate].
+ *
+ * The date calculated from the current components using the stored calendar.
  */
-public fun LocalDate.toNSDate(): NSDate? {
+public fun LocalDate.toNSDate(calendar: NSCalendar): NSDate? {
     val components = toNSDateComponents()
-    components.calendar = NSCalendar.currentCalendar
+    components.calendar = calendar
     return components.date
 }
 
@@ -94,9 +96,11 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
 
 /**
  * Converts the given [LocalDateTime] to [NSDate].
+ *
+ * The date calculated from the current components using the stored calendar.
  */
-public fun LocalDateTime.toNSDate(): NSDate? {
+public fun LocalDateTime.toNSDate(calendar: NSCalendar): NSDate? {
     val components = toNSDateComponents()
-    components.calendar = NSCalendar.currentCalendar
+    components.calendar = calendar
     return components.date
 }

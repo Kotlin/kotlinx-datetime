@@ -86,7 +86,7 @@ class ConvertersTest {
     @Test
     fun localDateToNSDateTest() {
         val date = LocalDate.parse("2019-02-04")
-        val nsDate = date.toNSDate()!!
+        val nsDate = date.toNSDate(calendar = gregorian)!!
         val formatter = NSDateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         assertEquals("2019-02-04", formatter.stringFromDate(nsDate))
@@ -106,7 +106,7 @@ class ConvertersTest {
     fun localDateTimeToNSDateTest() {
         val str = "2019-02-04T23:59:30.543"
         val dateTime = LocalDateTime.parse(str)
-        val nsDate = dateTime.toNSDate()!!
+        val nsDate = dateTime.toNSDate(calendar = gregorian)!!
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
