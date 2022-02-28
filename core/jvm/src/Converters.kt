@@ -26,6 +26,16 @@ public fun LocalDateTime.toJavaLocalDateTime(): java.time.LocalDateTime = this.v
  */
 public fun java.time.LocalDateTime.toKotlinLocalDateTime(): LocalDateTime = LocalDateTime(this)
 
+/**
+ * Converts this [kotlinx.datetime.LocalDateTime][LocalTime] value to a [java.time.LocalTime][java.time.LocalTime] value.
+ */
+public fun LocalTime.toJavaLocalTime(): java.time.LocalTime = this.value
+
+/**
+ * Converts this [java.time.LocalTime][java.time.LocalTime] value to a [kotlinx.datetime.LocalTime][LocalTime] value.
+ */
+public fun java.time.LocalTime.toKotlinLocalTime(): LocalTime = LocalTime(this)
+
 
 /**
  * Converts this [kotlinx.datetime.LocalDate][LocalDate] value to a [java.time.LocalDate][java.time.LocalDate] value.

@@ -9,6 +9,7 @@ import kotlin.random.Random
 import kotlin.test.*
 import java.time.Instant as JTInstant
 import java.time.LocalDateTime as JTLocalDateTime
+import java.time.LocalTime as JTLocalTime
 import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
@@ -49,6 +50,14 @@ class ConvertersTest {
             Random.nextInt(60),
             Random.nextInt(1_000_000_000))
 
+    private fun randomTime(): LocalTime {
+        val hour = Random.nextInt(24)
+        val minute = Random.nextInt(60)
+        val second = Random.nextInt(60)
+        val nanosecond = Random.nextInt(1_000_000_000)
+        return LocalTime(hour, minute, second, nanosecond)
+    }
+
     @Test
     fun localDateTime() {
         fun test(ktDateTime: LocalDateTime) {
@@ -63,6 +72,23 @@ class ConvertersTest {
 
         repeat(1000) {
             test(randomDateTime())
+        }
+    }
+
+    @Test
+    fun localTime() {
+        fun test(ktTime: LocalTime) {
+            val jtTime = with(ktTime) { JTLocalTime.of(hour, minute, second, nanosecond) }
+
+            assertEquals(ktTime, jtTime.toKotlinLocalTime())
+            assertEquals(jtTime, ktTime.toJavaLocalTime())
+
+            assertEquals(ktTime, jtTime.toString().toLocalTime())
+            assertEquals(jtTime, ktTime.toString().let(JTLocalTime::parse))
+        }
+
+        repeat(1000) {
+            test(randomTime())
         }
     }
 

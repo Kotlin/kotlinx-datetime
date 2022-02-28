@@ -107,6 +107,9 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /** Returns the date part of this date/time value. */
     public val date: LocalDate
 
+    /** Returns the time part of this date/time value. */
+    public val time: LocalTime
+
     /**
      * Compares `this` date/time value with the [other] date/time value.
      * Returns zero if this value is equal to the other,

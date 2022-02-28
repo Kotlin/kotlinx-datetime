@@ -82,3 +82,17 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
     components.nanosecond = nanosecond.convert()
     return components
 }
+
+/**
+ * Converts the given [LocalTime] to [NSDateComponents].
+ *
+ * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
+ */
+public fun LocalTime.toNSDateComponents(): NSDateComponents {
+    val components = date.toNSDateComponents()
+    components.hour = hour.convert()
+    components.minute = minute.convert()
+    components.second = second.convert()
+    components.nanosecond = nanosecond.convert()
+    return components
+}
