@@ -158,7 +158,9 @@ val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).t
 
 `LocalTime` can be constructed from four components, hour, minute, second and nanosecond:
 ```kotlin
-val knownTime = LocalTime(23, 59, 12, 999)
+val knownTime = LocalTime(23, 59, 12)
+val timeWithMillis = LocalTime(23, 59, 12, 999)
+val hourMinute = LocalTime(12, 13)
 ```
 
 ### Converting instant to and from unix time
