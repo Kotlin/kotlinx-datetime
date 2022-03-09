@@ -9,7 +9,7 @@ import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
 /**
- * The representation of a specific civil time without a reference to a particular time zone.
+ * The representation of a specific civil time without a reference to a date or a particular time zone.
  *
  * This class does not describe specific *moments in time*, which are represented as [Instant] values.
  * Instead, its instances can be thought of as clock readings, something that an observer in a particular time zone
@@ -17,18 +17,15 @@ import kotlinx.serialization.Serializable
  * For example, `18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
  * this on their clocks at different times.
  *
- * The main purpose of this class is to provide human-readable representations of [Instant] values, or to transfer them
- * as data.
- *
- * The arithmetic on [LocalTime] values is not provided, since without accounting for the time zone transitions it may give misleading results.
+ * The arithmetic on [LocalTime] values is not provided, since without accounting for the time zone
+ * transitions or things like daylight saving or leap seconds it may give misleading results.
  */
 @Serializable(LocalTimeIso8601Serializer::class)
 public expect class LocalTime : Comparable<LocalTime> {
     public companion object {
 
         /**
-         * Parses a string that represents a time value in ISO-8601 format including time components
-         * but without any time zone component and returns the parsed [LocalTime] value.
+         * Parses a string that represents a time value in ISO-8601 and returns the parsed [LocalTime] value.
          *
          * Examples of time in ISO-8601 format:
          * - `18:43`
@@ -58,20 +55,24 @@ public expect class LocalTime : Comparable<LocalTime> {
      */
     public constructor(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
-    /** Returns the hour-of-day time component of this date/time value. */
+    /** Returns the hour-of-day time component of this time value. */
     public val hour: Int
-    /** Returns the minute-of-hour time component of this date/time value. */
+    /** Returns the minute-of-hour time component of this time value. */
     public val minute: Int
-    /** Returns the second-of-minute time component of this date/time value. */
+    /** Returns the second-of-minute time component of this time value. */
     public val second: Int
-    /** Returns the nanosecond-of-second time component of this date/time value. */
+    /** Returns the nanosecond-of-second time component of this time value. */
     public val nanosecond: Int
 
     /**
      * Compares `this` time value with the [other] time value.
-     * Returns zero if this value is equal to the other,
-     * a negative number if this value represents earlier civil time than the other,
-     * and a positive number if this value represents later civil time than the other.
+     * Returns zero if this value is equal to the other, a negative number if this value occurs earlier
+     * in the course of a typical day than the other, and a positive number if this value occurs
+     * later in the course of a typical day than the other.
+     *
+     * Note that, on days when there is a time overlap (for example, due to the daylight saving time
+     * transitions in autumn), a "lesser" wall-clock reading can, in fact, happen later than the
+     * "greater" one.
      */
     public override operator fun compareTo(other: LocalTime): Int
 
@@ -84,8 +85,7 @@ public expect class LocalTime : Comparable<LocalTime> {
 }
 
 /**
- * Converts this string representing a time value in ISO-8601 format including time components
- * but without any time zone component to a [LocalTime] value.
+ * Converts this string representing a time value in ISO-8601 format to a [LocalTime] value.
  *
  * See [LocalTime.parse] for examples of time string representations.
  *

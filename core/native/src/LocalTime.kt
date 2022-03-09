@@ -91,8 +91,8 @@ public actual class LocalTime actual constructor(
             return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt())
         }
 
-        public actual val MIN: LocalTime = LocalTime(0, 0, 0, 0)
-        public actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
+        internal actual val MIN: LocalTime = LocalTime(0, 0, 0, 0)
+        internal actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
     }
 
     // Several times faster than using `compareBy`

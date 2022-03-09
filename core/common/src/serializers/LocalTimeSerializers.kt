@@ -10,6 +10,14 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [LocalTime] that uses the ISO-8601 representation.
+ *
+ * JSON example: `"12:01:03.999"`
+ *
+ * @see LocalDate.parse
+ * @see LocalDate.toString
+ */
 public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
@@ -23,6 +31,11 @@ public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
     }
 }
 
+/**
+ * A serializer for [LocalTime] that represents a value as its components.
+ *
+ * JSON example: `{"hour":12,"minute":1,"second":3,"nanosecond":999}`
+ */
 public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
@@ -42,10 +55,10 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
             var nanosecond = 0
             loop@while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
-                    0 -> hour = decodeShortElement(descriptor, 3)
-                    1 -> minute = decodeShortElement(descriptor, 4)
-                    2 -> second = decodeShortElement(descriptor, 5)
-                    3 -> nanosecond = decodeIntElement(descriptor, 6)
+                    0 -> hour = decodeShortElement(descriptor, 0)
+                    1 -> minute = decodeShortElement(descriptor, 1)
+                    2 -> second = decodeShortElement(descriptor, 2)
+                    3 -> nanosecond = decodeIntElement(descriptor, 3)
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
                     else -> throw SerializationException("Unexpected index: $index")
                 }
