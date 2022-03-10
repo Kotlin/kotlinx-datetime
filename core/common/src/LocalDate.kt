@@ -113,6 +113,14 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
     LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
 
+/**
+ * Combines this date's components with the specified [LocalTime] components into a [LocalDateTime] value.
+ *
+ * For finding an instant that corresponds to the start of a date in a particular time zone consider using
+ * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
+ */
+public fun LocalDate.atTime(time: LocalTime): LocalDateTime = atTime(time.hour, time.minute, time.second, time.nanosecond)
+
 
 /**
  * Returns a date that is the result of adding components of [DatePeriod] to this date. The components are

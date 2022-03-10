@@ -9,7 +9,7 @@ import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
 /**
- * The representation of a specific civil time without a reference to a date or a particular time zone.
+ * The time part of [LocalDateTime].
  *
  * This class does not describe specific *moments in time*, which are represented as [Instant] values.
  * Instead, its instances can be thought of as clock readings, something that an observer in a particular time zone
@@ -92,3 +92,20 @@ public expect class LocalTime : Comparable<LocalTime> {
  * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
  */
 public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
+
+/**
+ * Combines this time's components with the specified date components into a [LocalDateTime] value.
+ */
+public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int = 0): LocalDateTime =
+    LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+
+/**
+ * Combines this time's components with the specified date components into a [LocalDateTime] value.
+ */
+public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): LocalDateTime =
+    LocalDateTime(year, month, dayOfMonth, hour, minute, second, nanosecond)
+
+/**
+ * Combines this time's components with the specified [LocalDate] components into a [LocalDateTime] value.
+ */
+public fun LocalTime.atDate(date: LocalDate): LocalDateTime = atDate(date.year, date.monthNumber, date.dayOfMonth)

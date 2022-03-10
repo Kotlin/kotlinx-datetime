@@ -62,6 +62,8 @@ class LocalDateTest {
     fun atTime() {
         val date = LocalDate(2016, Month.FEBRUARY, 29)
         val datetime = date.atTime(12, 1, 59)
+        val datetimeWithLocalTime = date.atTime(LocalTime(12, 1, 59))
+        assertEquals(datetime, datetimeWithLocalTime)
         checkComponents(datetime, 2016, 2, 29, 12, 1, 59)
         checkLocalDateTimePart(date, datetime)
     }

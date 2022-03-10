@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.Clock
+import kotlin.math.min
 import kotlin.test.*
 
 class LocalTimeTest {
@@ -84,6 +85,20 @@ class LocalTimeTest {
         assertFailsWith<IllegalArgumentException> { LocalTime(0, 0, 0, 1_000_000_000) }
     }
 
+    @Test
+    fun atDate() {
+        val time = LocalTime(12, 1, 59)
+        val datetime = time.atDate(2016, 2, 29)
+        val datetimeWithLocalDate = time.atDate(LocalDate(2016, 2, 29))
+        assertEquals(datetime, datetimeWithLocalDate)
+        checkComponents(datetime, 2016, 2, 29, 12, 1, 59)
+        checkLocalDateTimePart(time, datetime)
+    }
+
+    private fun checkLocalDateTimePart(time: LocalTime, datetime: LocalDateTime) {
+        checkEquals(time, datetime.time)
+        checkComponents(time, datetime.hour, datetime.minute, datetime.second, datetime.nanosecond)
+    }
 }
 
 fun checkComponents(value: LocalTime, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0) {
