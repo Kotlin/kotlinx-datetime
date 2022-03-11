@@ -11,14 +11,16 @@ import kotlinx.serialization.Serializable
 /**
  * The time part of [LocalDateTime].
  *
- * This class does not describe specific *moments in time*, which are represented as [Instant] values.
- * Instead, its instances can be thought of as clock readings, something that an observer in a particular time zone
- * could witness.
- * For example, `18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
- * this on their clocks at different times.
+ * This class represents time-of-day without a referencing a specific date.
+ * To reconstruct a full [LocalDateTime], representing civil date and time, [LocalTime] needs to be
+ * combined with [LocalDate] via [LocalDate.atTime] or [LocalTime.atDate].
+ *
+ * Also, [LocalTime] does not reference a particular time zone.
+ * Therefore, even on the same date, [LocalTime] denotes different moments of time.
+ * For example, `18:43` happens at different moments in Berlin and in Tokyo.
  *
  * The arithmetic on [LocalTime] values is not provided, since without accounting for the time zone
- * transitions or things like daylight saving or leap seconds it may give misleading results.
+ * transitions it may give misleading results.
  */
 @Serializable(LocalTimeIso8601Serializer::class)
 public expect class LocalTime : Comparable<LocalTime> {

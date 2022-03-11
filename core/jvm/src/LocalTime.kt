@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 @file:JvmName("LocalTimeJvmKt")
+
 package kotlinx.datetime
 
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
@@ -12,14 +13,17 @@ import java.time.format.DateTimeParseException
 import java.time.LocalTime as jtLocalTime
 
 @Serializable(with = LocalTimeIso8601Serializer::class)
-public actual class LocalTime internal constructor(internal val value: jtLocalTime) : Comparable<LocalTime> {
+public actual class LocalTime internal constructor(internal val value: jtLocalTime) :
+    Comparable<LocalTime> {
 
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
-            this(try {
-                jtLocalTime.of(hour, minute, second, nanosecond)
-            } catch (e: DateTimeException) {
-                throw IllegalArgumentException(e)
-            })
+            this(
+                try {
+                    jtLocalTime.of(hour, minute, second, nanosecond)
+                } catch (e: DateTimeException) {
+                    throw IllegalArgumentException(e)
+                }
+            )
 
     public actual val hour: Int get() = value.hour
     public actual val minute: Int get() = value.minute
@@ -27,7 +31,7 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual val nanosecond: Int get() = value.nano
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is LocalTime && this.value == other.value)
+        (this === other) || (other is LocalTime && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
