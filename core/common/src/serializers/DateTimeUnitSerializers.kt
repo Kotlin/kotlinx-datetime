@@ -152,6 +152,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
  * JSON example: `{"type":"DayBased","days":15}`
  */
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@OptIn(InternalSerializationApi::class)
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
@@ -169,7 +170,6 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
             SerializationStrategy<DateTimeUnit.DateBased>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit.DateBased>
         get() = DateTimeUnit.DateBased::class
 
@@ -186,6 +186,7 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
  * JSON example: `{"type":"MonthBased","days":15}`
  */
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@OptIn(InternalSerializationApi::class)
 public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
@@ -201,7 +202,6 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
     override fun findPolymorphicSerializerOrNull(encoder: Encoder, value: DateTimeUnit): SerializationStrategy<DateTimeUnit>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit>
         get() = DateTimeUnit::class
 
