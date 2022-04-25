@@ -71,41 +71,6 @@ class ThreeTenBpLocalTimeTest {
         }
     }
 
-    @Test
-    fun strings() {
-        val data = arrayOf(
-            Pair(LocalTime.of(0, 0, 0, 0), "00:00"),
-            Pair(LocalTime.of(1, 0, 0, 0), "01:00"),
-            Pair(LocalTime.of(23, 0, 0, 0), "23:00"),
-            Pair(LocalTime.of(0, 1, 0, 0), "00:01"),
-            Pair(LocalTime.of(12, 30, 0, 0), "12:30"),
-            Pair(LocalTime.of(23, 59, 0, 0), "23:59"),
-            Pair(LocalTime.of(0, 0, 1, 0), "00:00:01"),
-            Pair(LocalTime.of(0, 0, 59, 0), "00:00:59"),
-            Pair(LocalTime.of(0, 0, 0, 100000000), "00:00:00.100"),
-            Pair(LocalTime.of(0, 0, 0, 10000000), "00:00:00.010"),
-            Pair(LocalTime.of(0, 0, 0, 1000000), "00:00:00.001"),
-            Pair(LocalTime.of(0, 0, 0, 100000), "00:00:00.000100"),
-            Pair(LocalTime.of(0, 0, 0, 10000), "00:00:00.000010"),
-            Pair(LocalTime.of(0, 0, 0, 1000), "00:00:00.000001"),
-            Pair(LocalTime.of(0, 0, 0, 100), "00:00:00.000000100"),
-            Pair(LocalTime.of(0, 0, 0, 10), "00:00:00.000000010"),
-            Pair(LocalTime.of(0, 0, 0, 1), "00:00:00.000000001"),
-            Pair(LocalTime.of(0, 0, 0, 999999999), "00:00:00.999999999"),
-            Pair(LocalTime.of(0, 0, 0, 99999999), "00:00:00.099999999"),
-            Pair(LocalTime.of(0, 0, 0, 9999999), "00:00:00.009999999"),
-            Pair(LocalTime.of(0, 0, 0, 999999), "00:00:00.000999999"),
-            Pair(LocalTime.of(0, 0, 0, 99999), "00:00:00.000099999"),
-            Pair(LocalTime.of(0, 0, 0, 9999), "00:00:00.000009999"),
-            Pair(LocalTime.of(0, 0, 0, 999), "00:00:00.000000999"),
-            Pair(LocalTime.of(0, 0, 0, 99), "00:00:00.000000099"),
-            Pair(LocalTime.of(0, 0, 0, 9), "00:00:00.000000009"))
-        for ((time, str) in data) {
-            assertEquals(str, time.toString())
-            assertEquals(time, LocalTime.parse(str))
-        }
-    }
-
     private fun LocalTime.plusSeconds(secondsToAdd: Long): LocalTime {
         if (secondsToAdd == 0L) {
             return this

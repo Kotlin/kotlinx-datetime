@@ -36,6 +36,7 @@ The library provides the basic set of types for working with date and time:
 - `Clock` to obtain the current instant;
 - `LocalDateTime` to represent date and time components without a reference to the particular time zone; 
 - `LocalDate` to represent the components of date only;
+- `LocalTime` to represent the components of time only;
 - `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between `Instant` and `LocalDateTime`;
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
@@ -61,6 +62,8 @@ Here is some basic advice on how to choose which of the date-carrying types to u
   Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
   
 - Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birth date).
+
+- Use `LocalTime` to represent a time of the event that does not have a specific date associated with it.
  
 ## Operations
 
@@ -143,6 +146,23 @@ Note, that today's date really depends on the time zone in which you're observin
 val knownDate = LocalDate(2020, 2, 21)
 ```
 
+### Getting local time components
+
+`LocalTime` type represents local time without date. You can obtain it from `Instant`
+by converting it to `LocalDateTime` and taking its `time` property.
+
+```kotlin
+val now: Instant = Clock.System.now()
+val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
+```
+
+`LocalTime` can be constructed from four components, hour, minute, second and nanosecond:
+```kotlin
+val knownTime = LocalTime(hour = 23, minute = 59, second = 12)
+val timeWithNanos = LocalTime(hour = 23, minute = 59, second = 12, nanosecond = 999)
+val hourMinute = LocalTime(hour = 12, minute = 13)
+```
+
 ### Converting instant to and from unix time
 
 An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
@@ -150,7 +170,7 @@ To convert back, use `Instant.fromEpochMilliseconds(Long)` companion object func
 
 ### Converting instant and local date/time to and from string
 
-Currently, `Instant`, `LocalDateTime`, and `LocalDate` only support ISO-8601 format.
+Currently, `Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` only support ISO-8601 format.
 The `toString()` function is used to convert the value to a string in that format, and 
 the `parse` function in companion object is used to parse a string representation back. 
 
@@ -168,10 +188,14 @@ where it feels more convenient:
 
 `LocalDate` uses format with just year, month, and date components, e.g. `2010-06-01`.
 
+`LocalTime` uses format with just hour, minute, second and (if non-zero) nanosecond components, e.g. `12:01:03`.
+
 ```kotlin
 "2010-06-01T22:19:44.475Z".toInstant()
 "2010-06-01T22:19:44".toLocalDateTime()
 "2010-06-01".toLocalDate()
+"12:01:03".toLocalTime()
+"12:0:03.999".toLocalTime()
 ```
 
 ### Instant arithmetic
