@@ -158,12 +158,12 @@ class LocalDateTest {
             val end = LocalDate.parse(v2)
             assertEquals(length, start.until(end, unit), "$v2 - $v1 = $length($unit)")
             assertEquals(-length, end.until(start, unit), "$v1 - $v2 = -$length($unit)")
-            @Suppress("NON_EXHAUSTIVE_WHEN_ON_SEALED_CLASS")
             when (unit) {
                 DateTimeUnit.YEAR -> assertEquals(length, start.yearsUntil(end))
                 DateTimeUnit.MONTH -> assertEquals(length, start.monthsUntil(end))
                 DateTimeUnit.WEEK -> assertEquals(length, start.daysUntil(end) / 7)
                 DateTimeUnit.DAY -> assertEquals(length, start.daysUntil(end))
+                else -> error(unit)
             }
         }
 
