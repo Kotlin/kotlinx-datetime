@@ -119,7 +119,7 @@ public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond:
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
  */
-public fun LocalDate.atTime(time: LocalTime): LocalDateTime = atTime(time.hour, time.minute, time.second, time.nanosecond)
+public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this, time)
 
 
 /**
