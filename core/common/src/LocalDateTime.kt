@@ -83,6 +83,11 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
+    /**
+     * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts.
+     */
+    public constructor(date: LocalDate, time: LocalTime)
+
     /** Returns the year component of the date. */
     public val year: Int
     /** Returns the number-of-month (1..12) component of the date. */

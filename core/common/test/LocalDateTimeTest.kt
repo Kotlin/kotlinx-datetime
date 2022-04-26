@@ -86,6 +86,15 @@ class LocalDateTimeTest {
         println(localFixed.dayOfWeek)
     }
 
+    @Test
+    fun constructFromParts() {
+        val dt = Clock.System.now().toLocalDateTime(TimeZone.UTC)
+        val dt2 = LocalDateTime(dt.date, dt.time)
+        assertEquals(dt2, dt)
+        assertEquals(dt2.date, dt.date)
+        assertEquals(dt2.time, dt.time)
+    }
+
     /* Based on the ThreeTenBp project.
      * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
      */

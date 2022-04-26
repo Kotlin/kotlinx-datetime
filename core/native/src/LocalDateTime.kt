@@ -22,8 +22,8 @@ internal val localDateTimeParser: Parser<LocalDateTime>
         }
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
-public actual class LocalDateTime internal constructor(
-    public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
+public actual class LocalDateTime
+public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
         public actual fun parse(isoString: String): LocalDateTime =
             localDateTimeParser.parse(isoString)

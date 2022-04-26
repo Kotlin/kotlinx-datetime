@@ -27,6 +27,9 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(year, month.number, dayOfMonth, hour, minute, second, nanosecond)
 
+    public actual constructor(date: LocalDate, time: LocalTime) :
+            this(jtLocalDateTime.of(date.value, time.value))
+
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month

@@ -110,4 +110,4 @@ public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): Local
 /**
  * Combines this time's components with the specified [LocalDate] components into a [LocalDateTime] value.
  */
-public fun LocalTime.atDate(date: LocalDate): LocalDateTime = atDate(date.year, date.monthNumber, date.dayOfMonth)
+public fun LocalTime.atDate(date: LocalDate): LocalDateTime = LocalDateTime(date, this)
