@@ -210,7 +210,7 @@ tasks {
         val moduleName = "kotlinx.datetime" // this module's name
         val compileKotlinJvm by getting(KotlinCompile::class)
         val sourceDir = file("jvm/java9/")
-        val targetDir = compileKotlinJvm.destinationDir.resolve("../java9/")
+        val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
 
         // Use a Java 11 compiler for the module info.
         javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
@@ -236,7 +236,7 @@ tasks {
 
         // Set the task outputs and destination dir
         outputs.dir(targetDir)
-        destinationDir = targetDir
+        destinationDirectory.set(targetDir)
 
         // Configure JVM compatibility
         sourceCompatibility = JavaVersion.VERSION_1_9.toString()
@@ -250,11 +250,11 @@ tasks {
         options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
 
         // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
-        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDir}"))
+        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDirectory.get()}"))
 
         // Use the classpath of the compileKotlinJvm task.
         // Also ensure that the module path is used instead of classpath.
-        classpath = compileKotlinJvm.classpath
+        classpath = compileKotlinJvm.libraries
         modularity.inferModulePath.set(true)
     }
 

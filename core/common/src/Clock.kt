@@ -28,7 +28,7 @@ public fun Clock.asTimeSource(): TimeSource = object : TimeSource {
 }
 
 @ExperimentalTime
-private class InstantTimeMark(private val instant: Instant, private val clock: Clock) : TimeMark() {
+private class InstantTimeMark(private val instant: Instant, private val clock: Clock) : TimeMark {
     override fun elapsedNow(): Duration = clock.now() - instant
 
     override fun plus(duration: Duration): TimeMark = InstantTimeMark(instant + duration, clock)
