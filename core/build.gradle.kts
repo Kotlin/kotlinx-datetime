@@ -66,7 +66,11 @@ kotlin {
 
     js {
         nodejs {
-//            testTask { }
+            testTask {
+                useMocha {
+                    timeout = "5s"
+                }
+            }
         }
         compilations.all {
             kotlinOptions {
