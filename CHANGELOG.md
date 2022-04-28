@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.3
+
+- Just updated Kotlin dependency to 1.7.0-Beta and kotlinx.serialization to 1.3.2
+
 ## 0.3.2
 
 #### Features
