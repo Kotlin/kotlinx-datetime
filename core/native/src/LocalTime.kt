@@ -62,6 +62,12 @@ public actual class LocalTime actual constructor(
         public actual fun parse(isoString: String): LocalTime =
             localTimeParser.parse(isoString)
 
+        public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
+            ofSecondOfDay(secondOfDay, 0)
+
+        public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime =
+            ofNanoOfDay(nanosecondOfDay)
+
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
             // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
@@ -116,6 +122,9 @@ public actual class LocalTime actual constructor(
         val nod: Long = toNanoOfDay()
         return (nod xor (nod ushr 32)).toInt()
     }
+
+    public actual val secondOfDay: Int get() = toSecondOfDay()
+    public actual val nanosecondOfDay: Long get() = toNanoOfDay()
 
     // org.threeten.bp.LocalTime#toNanoOfDay
     internal fun toNanoOfDay(): Long {
