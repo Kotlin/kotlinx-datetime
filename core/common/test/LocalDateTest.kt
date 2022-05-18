@@ -17,7 +17,14 @@ class LocalDateTest {
         assertEquals(expected.toString(), actual.toString())
     }
 
-    private fun checkComponents(value: LocalDate, year: Int, month: Int, day: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
+    private fun checkComponents(
+        value: LocalDate,
+        year: Int,
+        month: Int,
+        day: Int,
+        dayOfWeek: Int? = null,
+        dayOfYear: Int? = null
+    ) {
         assertEquals(year, value.year)
         assertEquals(month, value.monthNumber)
         assertEquals(Month(month), value.month)
@@ -31,7 +38,14 @@ class LocalDateTest {
 
     private fun checkLocalDateTimePart(date: LocalDate, datetime: LocalDateTime) {
         checkEquals(date, datetime.date)
-        checkComponents(date, datetime.year, datetime.monthNumber, datetime.dayOfMonth, datetime.dayOfWeek.isoDayNumber, datetime.dayOfYear)
+        checkComponents(
+            date,
+            datetime.year,
+            datetime.monthNumber,
+            datetime.dayOfMonth,
+            datetime.dayOfWeek.isoDayNumber,
+            datetime.dayOfYear
+        )
     }
 
     @Test
@@ -72,8 +86,10 @@ class LocalDateTest {
     fun atStartOfDay() {
         val paris = TimeZone.of("Europe/Paris")
         val parisDate = LocalDate(2008, 6, 30)
-        assertEquals(parisDate.atTime(0, 0).toInstant(paris),
-                parisDate.atStartOfDayIn(paris), "paris")
+        assertEquals(
+            parisDate.atTime(0, 0).toInstant(paris),
+            parisDate.atStartOfDayIn(paris), "paris"
+        )
 
         // TODO: Find another TZ transition that works in Windows
 //        val gaza = TimeZone.of("Asia/Gaza")
@@ -83,8 +99,10 @@ class LocalDateTest {
 
         val fixed = TimeZone.of("UTC+14")
         val fixedDate = LocalDate(2007, 4, 1)
-        assertEquals(fixedDate.atTime(0, 0).toInstant(fixed),
-                fixedDate.atStartOfDayIn(fixed), "fixed")
+        assertEquals(
+            fixedDate.atTime(0, 0).toInstant(fixed),
+            fixedDate.atStartOfDayIn(fixed), "fixed"
+        )
     }
 
     @Test
@@ -136,21 +154,22 @@ class LocalDateTest {
     @Test
     fun unitsUntil() {
         val data = listOf(
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.DAY, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.WEEK, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.DAY, 1)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.WEEK, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.DAY, 7)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.WEEK, 1)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.YEAR, 0)),
-                Pair(Pair("2012-06-30", "2012-07-29"), Pair(DateTimeUnit.MONTH, 0)),
-                Pair(Pair("2012-06-30", "2012-07-30"), Pair(DateTimeUnit.MONTH, 1)),
-                Pair(Pair("2012-06-30", "2012-07-31"), Pair(DateTimeUnit.MONTH, 1)))
+            Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.DAY, 0)),
+            Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.WEEK, 0)),
+            Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.MONTH, 0)),
+            Pair(Pair("2012-06-30", "2012-06-30"), Pair(DateTimeUnit.YEAR, 0)),
+            Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.DAY, 1)),
+            Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.WEEK, 0)),
+            Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.MONTH, 0)),
+            Pair(Pair("2012-06-30", "2012-07-01"), Pair(DateTimeUnit.YEAR, 0)),
+            Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.DAY, 7)),
+            Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.WEEK, 1)),
+            Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.MONTH, 0)),
+            Pair(Pair("2012-06-30", "2012-07-07"), Pair(DateTimeUnit.YEAR, 0)),
+            Pair(Pair("2012-06-30", "2012-07-29"), Pair(DateTimeUnit.MONTH, 0)),
+            Pair(Pair("2012-06-30", "2012-07-30"), Pair(DateTimeUnit.MONTH, 1)),
+            Pair(Pair("2012-06-30", "2012-07-31"), Pair(DateTimeUnit.MONTH, 1))
+        )
         for ((values, interval) in data) {
             val (v1, v2) = values
             val (unit, length) = interval
@@ -177,7 +196,10 @@ class LocalDateTest {
         val diffDays = LocalDate.MIN.until(LocalDate.MAX, unit1000days)
         val diffYears = LocalDate.MIN.until(LocalDate.MAX, unit4years)
         assertTrue(diffDays in 0..Int.MAX_VALUE, "difference in $unit1000days should fit in Int, was $diffDays")
-        assertTrue(diffDays > diffYears, "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears")
+        assertTrue(
+            diffDays > diffYears,
+            "difference in $unit1000days unit must be more than in $unit4years unit, was $diffDays $diffYears"
+        )
     }
 
     @Test
@@ -221,16 +243,32 @@ class LocalDateTest {
             assertEquals(Int.MIN_VALUE, LocalDate.MAX.until(LocalDate.MIN, DateTimeUnit.DAY))
         }
     }
+
+    @Test
+    fun isToday() {
+        val timeZone: TimeZone = TimeZone.currentSystemDefault()
+        val todayInstant: Instant = Clock.System.now()
+        val todayDate: LocalDate = todayInstant.toLocalDateTime(timeZone).date
+
+        assertTrue(todayDate.isToday())
+
+        val pastDate = LocalDate(year = 2020, monthNumber = 1, dayOfMonth = 1)
+        assertFalse(pastDate.isToday())
+
+        val yesterday: LocalDate = todayInstant.minus(1, DateTimeUnit.DAY, timeZone).toLocalDateTime(timeZone).date
+        assertFalse(yesterday.isToday())
+
+        val tomorrow: LocalDate = todayInstant.plus(1, DateTimeUnit.DAY, timeZone).toLocalDateTime(timeZone).date
+        assertFalse(tomorrow.isToday())
+    }
 }
-
-
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
     assertFailsWith<IllegalArgumentException> { constructor(2007, 2, 29) }
     assertEquals(29, constructor(2008, 2, 29).dayOfMonth)
     assertFailsWith<IllegalArgumentException> { constructor(2007, 4, 31) }
     assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 0) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007,1, 32) }
+    assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 32) }
     assertFailsWith<IllegalArgumentException> { constructor(Int.MIN_VALUE, 1, 1) }
     assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 32) }
     assertFailsWith<IllegalArgumentException> { constructor(2007, 0, 1) }

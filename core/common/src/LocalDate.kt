@@ -282,3 +282,8 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
+
+/**
+ * Returns true if the date is today.
+ */
+public fun LocalDate.isToday(): Boolean = this.compareTo(Clock.System.todayAt(TimeZone.currentSystemDefault())) == 0
