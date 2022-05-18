@@ -248,9 +248,9 @@ class LocalDateTest {
     fun isToday() {
         val timeZone: TimeZone = TimeZone.currentSystemDefault()
         val todayInstant: Instant = Clock.System.now()
-        val todayDate: LocalDate = todayInstant.toLocalDateTime(timeZone).date
 
-        assertTrue(todayDate.isToday())
+        val today: LocalDate = todayInstant.toLocalDateTime(timeZone).date
+        assertTrue(today.isToday())
 
         val pastDate = LocalDate(year = 2020, monthNumber = 1, dayOfMonth = 1)
         assertFalse(pastDate.isToday())
