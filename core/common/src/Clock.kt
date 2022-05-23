@@ -33,8 +33,8 @@ public interface Clock {
 /**
  * Returns the current date at the given [time zone][timeZone], according to [this Clock][this].
  */
-public fun Clock.todayAt(timeZone: TimeZone): LocalDate =
-        now().toLocalDateTime(timeZone).date
+public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
+    now().toLocalDateTime(timeZone).date
 
 /**
  * Returns a [TimeSource] that uses this [Clock] to mark a time instant and to find the amount of time elapsed since that mark.
@@ -52,3 +52,6 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
 
     override fun minus(duration: Duration): TimeMark = InstantTimeMark(instant - duration, clock)
 }
+
+@Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
+public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)

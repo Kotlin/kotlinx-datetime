@@ -137,7 +137,7 @@ by converting it to `LocalDateTime` and taking its `date` property.
 val now: Instant = Clock.System.now()
 val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
 // or more short
-val today: LocalDate = Clock.System.todayAt(TimeZone.currentSystemDefault())
+val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
 ```
 Note, that today's date really depends on the time zone in which you're observing the current moment.
 
