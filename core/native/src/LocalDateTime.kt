@@ -121,8 +121,8 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
     val totalNanos: Long = seconds % SECONDS_PER_DAY * NANOS_PER_ONE.toLong() + // at most a day
         currentNanoOfDay
     val totalDays = seconds / SECONDS_PER_DAY + // max/24*60*60 < max * 0.000012
-        floorDiv(totalNanos, NANOS_PER_DAY) // max 2 days
-    val newNanoOfDay: Long = floorMod(totalNanos, NANOS_PER_DAY)
+        totalNanos.floorDiv(NANOS_PER_DAY) // max 2 days
+    val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
     return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
 }

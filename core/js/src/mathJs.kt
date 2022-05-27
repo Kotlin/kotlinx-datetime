@@ -58,34 +58,3 @@ internal actual fun safeMultiply(a: Int, b: Int): Int {
     if (result > Int.MAX_VALUE || result < Int.MIN_VALUE) throw ArithmeticException("Multiplication overflows Int range: $a * $b.")
     return result.toInt()
 }
-
-/**
- * Returns the floor division.
- *
- * This returns `0` for `floorDiv(0, 4)`.
- * This returns `-1` for `floorDiv(-1, 4)`.
- * This returns `-1` for `floorDiv(-2, 4)`.
- * This returns `-1` for `floorDiv(-3, 4)`.
- * This returns `-1` for `floorDiv(-4, 4)`.
- * This returns `-2` for `floorDiv(-5, 4)`.
- *
- * @param a  the dividend
- * @param b  the divisor
- * @return the floor division
- */
-internal fun floorDiv(a: Long, b: Long): Long = if (a >= 0) a / b else (a + 1) / b - 1
-
-/**
- * Returns the floor modulus.
- *
- * This returns `0` for `floorMod(0, 4)`.
- * This returns `1` for `floorMod(-1, 4)`.
- * This returns `2` for `floorMod(-2, 4)`.
- * This returns `3` for `floorMod(-3, 4)`.
- * This returns `0` for `floorMod(-4, 4)`.
- *
- * @param a  the dividend
- * @param b  the divisor
- * @return the floor modulus (positive)
- */
-internal fun floorMod(a: Long, b: Long): Long = (a % b + b) % b

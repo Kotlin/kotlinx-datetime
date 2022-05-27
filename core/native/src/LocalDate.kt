@@ -140,7 +140,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     // org.threeten.bp.LocalDate#getDayOfWeek
     public actual val dayOfWeek: DayOfWeek
         get() {
-            val dow0 = floorMod(toEpochDay() + 3, 7)
+            val dow0 = (toEpochDay() + 3).mod(7)
             return DayOfWeek(dow0 + 1)
         }
 
@@ -190,8 +190,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         }
         val monthCount = year * 12 + (monthNumber - 1)
         val calcMonths = safeAdd(monthCount, monthsToAdd)
-        val newYear = floorDiv(calcMonths, 12)
-        val newMonth = floorMod(calcMonths, 12) + 1
+        val newYear = calcMonths.floorDiv(12)
+        val newMonth = calcMonths.mod(12) + 1
         return resolvePreviousValid(newYear, newMonth, dayOfMonth)
     }
 
