@@ -199,16 +199,18 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
             if (epochMilliseconds < MIN_SECOND * MILLIS_PER_ONE) MIN
             else if (epochMilliseconds > MAX_SECOND * MILLIS_PER_ONE) MAX
-            else Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
-                (floorMod(epochMilliseconds, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
+            else Instant(
+                epochMilliseconds.floorDiv(MILLIS_PER_ONE.toLong()),
+                (epochMilliseconds.mod(MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt()
+            )
 
         /**
          * @throws ArithmeticException if arithmetic overflow occurs
          * @throws IllegalArgumentException if the boundaries of Instant are overflown
          */
         private fun fromEpochSecondsThrowing(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
-            val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
-            val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
+            val secs = safeAdd(epochSeconds, nanosecondAdjustment.floorDiv(NANOS_PER_ONE.toLong()))
+            val nos = nanosecondAdjustment.mod(NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
         }
 
@@ -333,8 +335,8 @@ internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String {
     val seconds = epochSeconds + offset.totalSeconds
     if (seconds >= -SECONDS_0000_TO_1970) { // current era
         val zeroSecs: Long = seconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
-        val hi: Long = floorDiv(zeroSecs, SECONDS_PER_10000_YEARS) + 1
-        val lo: Long = floorMod(zeroSecs, SECONDS_PER_10000_YEARS)
+        val hi: Long = zeroSecs.floorDiv(SECONDS_PER_10000_YEARS) + 1
+        val lo: Long = zeroSecs.mod(SECONDS_PER_10000_YEARS)
         val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
             .toLocalDateTime(TimeZone.UTC)
         if (hi > 0) {
