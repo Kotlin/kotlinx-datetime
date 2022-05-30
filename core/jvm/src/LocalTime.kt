@@ -29,6 +29,8 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual val minute: Int get() = value.minute
     public actual val second: Int get() = value.second
     public actual val nanosecond: Int get() = value.nano
+    public actual fun toSecondOfDay(): Int = value.toSecondOfDay()
+    public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay()
 
     override fun equals(other: Any?): Boolean =
         (this === other) || (other is LocalTime && this.value == other.value)
@@ -44,6 +46,18 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
             jtLocalTime.parse(isoString).let(::LocalTime)
         } catch (e: DateTimeParseException) {
             throw DateTimeFormatException(e)
+        }
+
+        public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
+            jtLocalTime.ofSecondOfDay(secondOfDay.toLong()).let(::LocalTime)
+        } catch (e: DateTimeException) {
+            throw IllegalArgumentException(e)
+        }
+
+        public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime = try {
+            jtLocalTime.ofNanoOfDay(nanosecondOfDay).let(::LocalTime)
+        } catch (e: DateTimeException) {
+            throw IllegalArgumentException(e)
         }
 
         internal actual val MIN: LocalTime = LocalTime(jtLocalTime.MIN)

@@ -6,8 +6,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.Clock
-import kotlin.math.min
 import kotlin.test.*
 
 class LocalTimeTest {
@@ -83,6 +81,58 @@ class LocalTimeTest {
         assertFailsWith<IllegalArgumentException> { LocalTime(0, 0, 60) }
         assertFailsWith<IllegalArgumentException> { LocalTime(0, 0, 0, -1) }
         assertFailsWith<IllegalArgumentException> { LocalTime(0, 0, 0, 1_000_000_000) }
+    }
+
+    @Test
+    fun fromNanosecondOfDay() {
+        val data = mapOf(
+            0L to LocalTime(0, 0),
+            5000000001L to LocalTime(0, 0, 5, 1),
+            44105123456789L to LocalTime(12, 15, 5, 123456789),
+            86399999999999L to LocalTime(23, 59, 59, 999999999),
+        )
+
+        data.forEach { (nanosecondOfDay, localTime) ->
+            assertEquals(nanosecondOfDay, localTime.toNanosecondOfDay())
+            assertEquals(localTime, LocalTime.fromNanosecondOfDay(nanosecondOfDay))
+        }
+    }
+
+    @Test
+    fun fromNanosecondOfDayInvalid() {
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(-1) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(86400000000000L) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(Long.MAX_VALUE) }
+    }
+
+    @Test
+    fun fromSecondOfDay() {
+        val data = mapOf(
+            0 to LocalTime(0, 0),
+            5 to LocalTime(0, 0, 5),
+            44105 to LocalTime(12, 15, 5),
+            86399 to LocalTime(23, 59, 59),
+        )
+
+        data.forEach { (secondOfDay, localTime) ->
+            assertEquals(secondOfDay, localTime.toSecondOfDay())
+            assertEquals(localTime, LocalTime.fromSecondOfDay(secondOfDay))
+        }
+    }
+
+    @Test
+    fun fromSecondOfDayInvalid() {
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(-1) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(86400) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(Int.MAX_VALUE) }
+    }
+
+    @Test
+    fun fromSecondOfDayIgnoresNanosecond() {
+        assertEquals(
+            0,
+            LocalTime(0, 0, 0, 100).toSecondOfDay(),
+        )
     }
 
     @Test

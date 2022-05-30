@@ -40,6 +40,20 @@ public expect class LocalTime : Comparable<LocalTime> {
          */
         public fun parse(isoString: String): LocalTime
 
+        /**
+         * Returns a LocalTime with the specified [secondOfDay]. The nanosecond field will be set to zero.
+         *
+         * @throws IllegalArgumentException if the boundaries of [secondOfDay] are exceeded.
+         */
+        public fun fromSecondOfDay(secondOfDay: Int): LocalTime
+
+        /**
+         * Returns a LocalTime with the specified [nanosecondOfDay].
+         *
+         * @throws IllegalArgumentException if the boundaries of [nanosecondOfDay] are exceeded.
+         */
+        public fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime
+
         internal val MIN: LocalTime
         internal val MAX: LocalTime
     }
@@ -65,6 +79,12 @@ public expect class LocalTime : Comparable<LocalTime> {
     public val second: Int
     /** Returns the nanosecond-of-second time component of this time value. */
     public val nanosecond: Int
+
+    /** Returns the time as a second of a day, from 0 to 24 * 60 * 60 - 1. */
+    public fun toSecondOfDay(): Int
+
+    /** Returns the time as a nanosecond of a day, from 0 to 24 * 60 * 60 * 1_000_000_000 - 1. */
+    public fun toNanosecondOfDay(): Long
 
     /**
      * Compares `this` time value with the [other] time value.

@@ -62,6 +62,12 @@ public actual class LocalTime actual constructor(
         public actual fun parse(isoString: String): LocalTime =
             localTimeParser.parse(isoString)
 
+        public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
+            ofSecondOfDay(secondOfDay, 0)
+
+        public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime =
+            ofNanoOfDay(nanosecondOfDay)
+
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
             // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
@@ -117,20 +123,22 @@ public actual class LocalTime actual constructor(
         return (nod xor (nod ushr 32)).toInt()
     }
 
+    // org.threeten.bp.LocalTime#toSecondOfDay
+    public actual fun toSecondOfDay(): Int {
+        var total: Int = hour * SECONDS_PER_HOUR
+        total += minute * SECONDS_PER_MINUTE
+        total += second
+        return total
+    }
+
+    public actual fun toNanosecondOfDay(): Long = toNanoOfDay()
+
     // org.threeten.bp.LocalTime#toNanoOfDay
     internal fun toNanoOfDay(): Long {
         var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
         total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
         total += second.toLong() * NANOS_PER_ONE
         total += nanosecond.toLong()
-        return total
-    }
-
-    // org.threeten.bp.LocalTime#toSecondOfDay
-    internal fun toSecondOfDay(): Int {
-        var total: Int = hour * SECONDS_PER_HOUR
-        total += minute * SECONDS_PER_MINUTE
-        total += second
         return total
     }
 
