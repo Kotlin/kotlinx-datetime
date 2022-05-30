@@ -49,15 +49,13 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jtLocalTime.ofSecondOfDay(secondOfDay, 0).let(::LocalTime)
         } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
+            throw IllegalArgumentException(e)
         }
 
         public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime = try {
             jtLocalTime.ofNanoOfDay(nanosecondOfDay).let(::LocalTime)
         } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
+            throw IllegalArgumentException(e)
         }
 
         internal actual val MIN: LocalTime = LocalTime(jtLocalTime.MIN)
