@@ -81,10 +81,10 @@ public expect class LocalTime : Comparable<LocalTime> {
     public val nanosecond: Int
 
     /** Returns the time as a second of a day, from 0 to 24 * 60 * 60 - 1. */
-    public val secondOfDay: Int
+    public fun toSecondOfDay(): Int
 
-    /** Returns the time as a nanosecond of a day, from 0 to 24 * 60 * 60 * 1000 - 1. */
-    public val nanosecondOfDay: Long
+    /** Returns the time as a nanosecond of a day, from 0 to 24 * 60 * 60 * 1_000_000_000 - 1. */
+    public fun toNanosecondOfDay(): Long
 
     /**
      * Compares `this` time value with the [other] time value.

@@ -88,20 +88,20 @@ class LocalTimeTest {
         val data = mapOf(
             0L to LocalTime(0, 0),
             5000000001L to LocalTime(0, 0, 5, 1),
-            44105000000100L to LocalTime(12, 15, 5, 100),
-            86399000000999L to LocalTime(23, 59, 59, 999),
+            44105123456789L to LocalTime(12, 15, 5, 123456789),
+            86399999999999L to LocalTime(23, 59, 59, 999999999),
         )
 
         data.forEach { (nanosecondOfDay, localTime) ->
-            assertEquals(nanosecondOfDay, localTime.nanosecondOfDay)
+            assertEquals(nanosecondOfDay, localTime.toNanosecondOfDay())
             assertEquals(localTime, LocalTime.fromNanosecondOfDay(nanosecondOfDay))
         }
     }
 
     @Test
     fun fromNanosecondOfDayInvalid() {
-        LocalTime.fromNanosecondOfDay(0)
         assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(-1) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(86400000000000L) }
         assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(Long.MAX_VALUE) }
     }
 
@@ -115,15 +115,15 @@ class LocalTimeTest {
         )
 
         data.forEach { (secondOfDay, localTime) ->
-            assertEquals(secondOfDay, localTime.secondOfDay)
+            assertEquals(secondOfDay, localTime.toSecondOfDay())
             assertEquals(localTime, LocalTime.fromSecondOfDay(secondOfDay))
         }
     }
 
     @Test
     fun fromSecondOfDayInvalid() {
-        LocalTime.fromSecondOfDay(0)
         assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(-1) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(86400) }
         assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(Int.MAX_VALUE) }
     }
 
@@ -131,7 +131,7 @@ class LocalTimeTest {
     fun fromSecondOfDayIgnoresNanosecond() {
         assertEquals(
             0,
-            LocalTime(0, 0, 0, 100).secondOfDay,
+            LocalTime(0, 0, 0, 100).toSecondOfDay(),
         )
     }
 

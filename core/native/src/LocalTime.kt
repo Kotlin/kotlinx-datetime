@@ -123,8 +123,15 @@ public actual class LocalTime actual constructor(
         return (nod xor (nod ushr 32)).toInt()
     }
 
-    public actual val secondOfDay: Int get() = toSecondOfDay()
-    public actual val nanosecondOfDay: Long get() = toNanoOfDay()
+    // org.threeten.bp.LocalTime#toSecondOfDay
+    public actual fun toSecondOfDay(): Int {
+        var total: Int = hour * SECONDS_PER_HOUR
+        total += minute * SECONDS_PER_MINUTE
+        total += second
+        return total
+    }
+
+    public actual fun toNanosecondOfDay(): Long = toNanoOfDay()
 
     // org.threeten.bp.LocalTime#toNanoOfDay
     internal fun toNanoOfDay(): Long {
@@ -132,14 +139,6 @@ public actual class LocalTime actual constructor(
         total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
         total += second.toLong() * NANOS_PER_ONE
         total += nanosecond.toLong()
-        return total
-    }
-
-    // org.threeten.bp.LocalTime#toSecondOfDay
-    internal fun toSecondOfDay(): Int {
-        var total: Int = hour * SECONDS_PER_HOUR
-        total += minute * SECONDS_PER_MINUTE
-        total += second
         return total
     }
 

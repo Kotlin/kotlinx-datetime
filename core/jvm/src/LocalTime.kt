@@ -29,8 +29,8 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual val minute: Int get() = value.minute
     public actual val second: Int get() = value.second
     public actual val nanosecond: Int get() = value.nano
-    public actual val secondOfDay: Int get() = value.toSecondOfDay()
-    public actual val nanosecondOfDay: Long get() = value.toNanoOfDay()
+    public actual fun toSecondOfDay(): Int = value.toSecondOfDay()
+    public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay()
 
     override fun equals(other: Any?): Boolean =
         (this === other) || (other is LocalTime && this.value == other.value)
