@@ -119,7 +119,7 @@ class LocalDateTest {
         assertEquals(origin, origin.plus(0, DateTimeUnit.DAY))
         assertEquals(origin, origin.plus(DatePeriod(days = 0)))
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val days1 = Random.nextInt(-3652..3652)
             val days2 = Random.nextInt(-3652..3652)
             val ldtBefore = origin + DatePeriod(days = days1)

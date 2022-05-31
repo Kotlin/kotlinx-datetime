@@ -30,6 +30,7 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual val second: Int get() = value.second
     public actual val nanosecond: Int get() = value.nano
     public actual fun toSecondOfDay(): Int = value.toSecondOfDay()
+    public actual fun toMillisecondOfDay(): Int = (value.toNanoOfDay() / NANOS_PER_MILLI).toInt()
     public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay()
 
     override fun equals(other: Any?): Boolean =
@@ -51,6 +52,12 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jtLocalTime.ofSecondOfDay(secondOfDay.toLong()).let(::LocalTime)
         } catch (e: DateTimeException) {
+            throw IllegalArgumentException(e)
+        }
+
+        public actual fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime = try {
+            jtLocalTime.ofNanoOfDay(millisecondOfDay * 1_000_000L).let(::LocalTime)
+        } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
 

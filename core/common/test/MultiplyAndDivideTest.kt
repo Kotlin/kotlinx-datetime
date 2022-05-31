@@ -1,9 +1,9 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.test.math
+package kotlinx.datetime.test
 import kotlin.random.*
 import kotlin.test.*
 import kotlinx.datetime.*
@@ -55,7 +55,7 @@ class MultiplyAndDivideTest {
 
     @Test
     fun randomProductFitsInLong() {
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val a = Random.nextInt().toLong()
             val b = Random.nextInt().toLong()
             val m = Random.nextInt(1, Int.MAX_VALUE).toLong()

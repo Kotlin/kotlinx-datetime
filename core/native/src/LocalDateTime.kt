@@ -103,7 +103,7 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBa
 /** @throws ArithmeticException on arithmetic overflow. */
 internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBased): Long {
     val daysUntil = date.daysUntil(other.date)
-    val timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
+    val timeUntil: Long = other.time.toNanosecondOfDay() - time.toNanosecondOfDay()
     return multiplyAddAndDivide(daysUntil.toLong(), NANOS_PER_DAY, timeUntil, unit.nanoseconds)
 }
 
@@ -117,7 +117,7 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
     if (seconds == 0) {
         return this
     }
-    val currentNanoOfDay = time.toNanoOfDay() // at most a day
+    val currentNanoOfDay = time.toNanosecondOfDay() // at most a day
     val totalNanos: Long = seconds % SECONDS_PER_DAY * NANOS_PER_ONE.toLong() + // at most a day
         currentNanoOfDay
     val totalDays = seconds / SECONDS_PER_DAY + // max/24*60*60 < max * 0.000012
