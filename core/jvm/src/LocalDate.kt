@@ -23,6 +23,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
+
+        public actual fun fromEpochDays(epochDays: Int): LocalDate =
+            LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
@@ -49,6 +52,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
+
+    public actual fun toEpochDays(): Int = value.toEpochDay().clampToInt()
 }
 
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =

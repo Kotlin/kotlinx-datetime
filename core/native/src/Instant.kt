@@ -105,7 +105,7 @@ private val instantParser: Parser<Instant>
             } catch (e: ArithmeticException) {
                 throw DateTimeFormatException(e)
             }
-            val epochDay = localDate.toEpochDay().toLong()
+            val epochDay = localDate.toEpochDays().toLong()
             val instantSecs = epochDay * 86400 - offset.totalSeconds + localTime.toSecondOfDay() + secDelta
             try {
                 Instant(instantSecs, nano)

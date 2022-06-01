@@ -118,9 +118,3 @@ internal fun zoneIdByOffset(totalSeconds: Int): String {
         buf.toString()
     }
 }
-
-// org.threeten.bp.chrono.IsoChronology#isLeapYear
-internal fun isLeapYear(year: Int): Boolean {
-    val prolepticYear: Long = year.toLong()
-    return prolepticYear and 3 == 0L && (prolepticYear % 100 != 0L || prolepticYear % 400 == 0L)
-}
