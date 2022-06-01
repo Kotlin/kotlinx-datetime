@@ -6,10 +6,12 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlin.math.*
+import kotlin.random.*
 import kotlin.test.*
 
 class LocalTimeTest {
-    
+
     @Test
     fun localTimeParsing() {
         fun checkParsedComponents(value: String, hour: Int, minute: Int, second: Int, nanosecond: Int) {
@@ -63,7 +65,8 @@ class LocalTimeTest {
             Pair(LocalTime(0, 0, 0, 9999), "00:00:00.000009999"),
             Pair(LocalTime(0, 0, 0, 999), "00:00:00.000000999"),
             Pair(LocalTime(0, 0, 0, 99), "00:00:00.000000099"),
-            Pair(LocalTime(0, 0, 0, 9), "00:00:00.000000009"))
+            Pair(LocalTime(0, 0, 0, 9), "00:00:00.000000009"),
+        )
         for ((time, str) in data) {
             assertEquals(str, time.toString())
             assertEquals(time, LocalTime.parse(str))
@@ -89,9 +92,18 @@ class LocalTimeTest {
             0L to LocalTime(0, 0),
             5000000001L to LocalTime(0, 0, 5, 1),
             44105123456789L to LocalTime(12, 15, 5, 123456789),
-            86399999999999L to LocalTime(23, 59, 59, 999999999),
-        )
-
+            NANOS_PER_DAY - 1 to LocalTime(23, 59, 59, 999999999),
+        ) + buildMap {
+            repeat(STRESS_TEST_ITERATIONS) {
+                val hour = Random.nextInt(24)
+                val minute = Random.nextInt(60)
+                val second = Random.nextInt(60)
+                val nanosecond = Random.nextInt(1_000_000_000)
+                val nanosecondOfDay =
+                    hour * NANOS_PER_HOUR + minute * NANOS_PER_MINUTE + second * NANOS_PER_ONE.toLong() + nanosecond
+                put(nanosecondOfDay, LocalTime(hour, minute, second, nanosecond))
+            }
+        }
         data.forEach { (nanosecondOfDay, localTime) ->
             assertEquals(nanosecondOfDay, localTime.toNanosecondOfDay())
             assertEquals(localTime, LocalTime.fromNanosecondOfDay(nanosecondOfDay))
@@ -101,30 +113,69 @@ class LocalTimeTest {
     @Test
     fun fromNanosecondOfDayInvalid() {
         assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(-1) }
-        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(86400000000000L) }
-        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(Long.MAX_VALUE) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromNanosecondOfDay(NANOS_PER_DAY) }
+        repeat(STRESS_TEST_ITERATIONS) {
+            assertFailsWith<IllegalArgumentException> {
+                LocalTime.fromNanosecondOfDay(NANOS_PER_DAY + Random.nextLong().absoluteValue)
+            }
+        }
+    }
+
+    @Test
+    fun fromMillisecondOfDay() {
+        val data = mapOf(
+            0 to LocalTime(0, 0),
+            5001 to LocalTime(0, 0, 5, 1000000),
+            44105123 to LocalTime(12, 15, 5, 123000000),
+            MILLIS_PER_DAY - 1 to LocalTime(23, 59, 59, 999000000),
+        ) + buildMap {
+            repeat(STRESS_TEST_ITERATIONS) {
+                val hour = Random.nextInt(24)
+                val minute = Random.nextInt(60)
+                val second = Random.nextInt(60)
+                val millisecond = Random.nextInt(1000)
+                val millisecondOfDay =
+                    (hour * SECONDS_PER_HOUR + minute * SECONDS_PER_MINUTE + second) * MILLIS_PER_ONE +
+                        millisecond
+                put(millisecondOfDay, LocalTime(hour, minute, second, millisecond * NANOS_PER_MILLI))
+            }
+        }
+        data.forEach { (millisecondOfDay, localTime) ->
+            assertEquals(millisecondOfDay, localTime.toMillisecondOfDay())
+            assertEquals(localTime, LocalTime.fromMillisecondOfDay(millisecondOfDay))
+        }
+    }
+
+    @Test
+    fun fromMillisecondOfDayInvalid() {
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromMillisecondOfDay(-1) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromMillisecondOfDay(MILLIS_PER_DAY) }
+        repeat(STRESS_TEST_ITERATIONS) {
+            assertFailsWith<IllegalArgumentException> {
+                LocalTime.fromMillisecondOfDay(MILLIS_PER_DAY + Random.nextInt().absoluteValue)
+            }
+        }
     }
 
     @Test
     fun fromSecondOfDay() {
-        val data = mapOf(
-            0 to LocalTime(0, 0),
-            5 to LocalTime(0, 0, 5),
-            44105 to LocalTime(12, 15, 5),
-            86399 to LocalTime(23, 59, 59),
-        )
-
-        data.forEach { (secondOfDay, localTime) ->
-            assertEquals(secondOfDay, localTime.toSecondOfDay())
-            assertEquals(localTime, LocalTime.fromSecondOfDay(secondOfDay))
+        var t = LocalTime(0, 0, 0, 0)
+        for (i in 0 until SECONDS_PER_DAY) {
+            assertEquals(i, t.toSecondOfDay())
+            assertEquals(t, LocalTime.fromSecondOfDay(t.toSecondOfDay()))
+            t = t.plusSeconds(1)
         }
     }
 
     @Test
     fun fromSecondOfDayInvalid() {
         assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(-1) }
-        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(86400) }
-        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(Int.MAX_VALUE) }
+        assertFailsWith<IllegalArgumentException> { LocalTime.fromSecondOfDay(SECONDS_PER_DAY) }
+        repeat(STRESS_TEST_ITERATIONS) {
+            assertFailsWith<IllegalArgumentException> {
+                LocalTime.fromSecondOfDay(SECONDS_PER_DAY + Random.nextInt().absoluteValue)
+            }
+        }
     }
 
     @Test
@@ -165,4 +216,19 @@ fun checkEquals(expected: LocalTime, actual: LocalTime) {
     assertEquals(expected, actual)
     assertEquals(expected.hashCode(), actual.hashCode())
     assertEquals(expected.toString(), actual.toString())
+}
+
+private fun LocalTime.plusSeconds(secondsToAdd: Long): LocalTime {
+    if (secondsToAdd == 0L) {
+        return this
+    }
+    val sofd: Int = hour * SECONDS_PER_HOUR + minute * SECONDS_PER_MINUTE + second
+    val newSofd: Int = ((secondsToAdd % SECONDS_PER_DAY).toInt() + sofd + SECONDS_PER_DAY) % SECONDS_PER_DAY
+    if (sofd == newSofd) {
+        return this
+    }
+    val newHour: Int = newSofd / SECONDS_PER_HOUR
+    val newMinute: Int = newSofd / SECONDS_PER_MINUTE % MINUTES_PER_HOUR
+    val newSecond: Int = newSofd % SECONDS_PER_MINUTE
+    return LocalTime(newHour, newMinute, newSecond, nanosecond)
 }

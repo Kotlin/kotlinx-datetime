@@ -30,7 +30,7 @@ class ConvertersTest {
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val seconds = Random.nextLong(1_000_000_000_000)
             val nanos = Random.nextInt()
             test(seconds, nanos)
@@ -70,7 +70,7 @@ class ConvertersTest {
             assertEquals(jtDateTime, ktDateTime.toString().let(JTLocalDateTime::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(randomDateTime())
         }
     }
@@ -87,7 +87,7 @@ class ConvertersTest {
             assertEquals(jtTime, ktTime.toString().let(JTLocalTime::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(randomTime())
         }
     }
@@ -104,7 +104,7 @@ class ConvertersTest {
             assertEquals(jtDate, ktDate.toString().let(JTLocalDate::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(randomDate())
         }
     }
@@ -128,7 +128,7 @@ class ConvertersTest {
             assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(Random.nextInt(-1000, 1000), Random.nextInt(-1000, 1000), Random.nextInt(-1000, 1000))
         }
     }

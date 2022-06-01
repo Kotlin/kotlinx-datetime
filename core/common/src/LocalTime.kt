@@ -41,16 +41,42 @@ public expect class LocalTime : Comparable<LocalTime> {
         public fun parse(isoString: String): LocalTime
 
         /**
-         * Returns a LocalTime with the specified [secondOfDay]. The nanosecond field will be set to zero.
+         * Constructs a [LocalTime] that represents the specified number of seconds since the start of a calendar day.
+         * The fractional parts of the second will be zero.
          *
-         * @throws IllegalArgumentException if the boundaries of [secondOfDay] are exceeded.
+         * @throws IllegalArgumentException if [secondOfDay] is outside the `0 until 86400` range,
+         * with 86400 being the number of seconds in a calendar day.
+         *
+         * @see LocalTime.toSecondOfDay
+         * @see LocalTime.fromMillisecondOfDay
+         * @see LocalTime.fromNanosecondOfDay
          */
         public fun fromSecondOfDay(secondOfDay: Int): LocalTime
 
         /**
-         * Returns a LocalTime with the specified [nanosecondOfDay].
+         * Constructs a [LocalTime] that represents the specified number of milliseconds since the start of
+         * a calendar day.
+         * The sub-millisecond parts of the `LocalTime` will be zero.
          *
-         * @throws IllegalArgumentException if the boundaries of [nanosecondOfDay] are exceeded.
+         * @throws IllegalArgumentException if [millisecondOfDay] is outside the `0 until 86400 * 1_000` range,
+         * with 86400 being the number of seconds in a calendar day.
+         *
+         * @see LocalTime.fromSecondOfDay
+         * @see LocalTime.toMillisecondOfDay
+         * @see LocalTime.fromNanosecondOfDay
+         */
+        public fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime
+
+        /**
+         * Constructs a [LocalTime] that represents the specified number of nanoseconds since the start of
+         * a calendar day.
+         *
+         * @throws IllegalArgumentException if [nanosecondOfDay] is outside the `0 until 86400 * 1_000_000_000` range,
+         * with 86400 being the number of seconds in a calendar day.
+         *
+         * @see LocalTime.fromSecondOfDay
+         * @see LocalTime.fromMillisecondOfDay
+         * @see LocalTime.toNanosecondOfDay
          */
         public fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime
 
@@ -80,10 +106,13 @@ public expect class LocalTime : Comparable<LocalTime> {
     /** Returns the nanosecond-of-second time component of this time value. */
     public val nanosecond: Int
 
-    /** Returns the time as a second of a day, from 0 to 24 * 60 * 60 - 1. */
+    /** Returns the time as a second of a day, in `0 until 24 * 60 * 60`. */
     public fun toSecondOfDay(): Int
 
-    /** Returns the time as a nanosecond of a day, from 0 to 24 * 60 * 60 * 1_000_000_000 - 1. */
+    /** Returns the time as a millisecond of a day, in `0 until 24 * 60 * 60 * 1_000`. */
+    public fun toMillisecondOfDay(): Int
+
+    /** Returns the time as a nanosecond of a day, in `0 until 24 * 60 * 60 * 1_000_000_000`. */
     public fun toNanosecondOfDay(): Long
 
     /**

@@ -13,22 +13,6 @@ import kotlin.math.abs
  * All code below was taken from various places of https://github.com/ThreeTen/threetenbp with few changes
  */
 
-
-/**
- * The number of seconds per hour.
- */
-internal const val SECONDS_PER_HOUR = 60 * 60
-
-/**
- * The number of seconds per minute.
- */
-internal const val SECONDS_PER_MINUTE = 60
-
-/**
- * The number of minutes per hour.
- */
-internal const val MINUTES_PER_HOUR = 60
-
 /**
  * The number of days in a 400 year cycle.
  */
@@ -45,25 +29,6 @@ internal const val DAYS_0000_TO_1970 = DAYS_PER_CYCLE * 5 - (30 * 365 + 7)
 // days in a 10,000 year cycle = 146097 * 25
 // seconds per day = 86400
 internal const val SECONDS_PER_10000_YEARS = 146097L * 25L * 86400L
-
-/**
- * Hours per day.
- */
-internal const val HOURS_PER_DAY = 24
-
-/**
- * Seconds per day.
- */
-internal const val SECONDS_PER_DAY: Int = SECONDS_PER_HOUR * HOURS_PER_DAY
-
-internal const val NANOS_PER_MINUTE: Long = NANOS_PER_ONE * SECONDS_PER_MINUTE.toLong()
-
-internal const val NANOS_PER_HOUR = NANOS_PER_ONE * SECONDS_PER_HOUR.toLong()
-
-/**
- * Nanos per day.
- */
-internal const val NANOS_PER_DAY: Long = NANOS_PER_ONE * SECONDS_PER_DAY.toLong()
 
 internal const val SECONDS_0000_TO_1970 = (146097L * 5L - (30L * 365L + 7L)) * 86400L
 

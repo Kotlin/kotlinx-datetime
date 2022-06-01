@@ -263,7 +263,7 @@ class InstantTest {
 
     @Test
     fun diffInvariant() {
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
             val instant1 = Instant.fromEpochMilliseconds(millis1)
@@ -279,7 +279,7 @@ class InstantTest {
 
     @Test
     fun diffInvariantSameAsDate() {
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
             with(TimeZone.UTC) TZ@ {

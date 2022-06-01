@@ -49,7 +49,7 @@ public actual class LocalTime actual constructor(
 
     init {
         fun check(value: Int, lower: Int, upper: Int, str: String) =
-            require(value >= lower && value <= upper) {
+            require(value in lower..upper) {
                 "Invalid time: $str must be a number between $lower and $upper, got $value"
             }
         check(hour, 0, 23, "hour")
@@ -65,14 +65,16 @@ public actual class LocalTime actual constructor(
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
 
+        public actual fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime =
+            ofNanoOfDay(millisecondOfDay.toLong() * NANOS_PER_MILLI)
+
         public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime =
             ofNanoOfDay(nanosecondOfDay)
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
-            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-            require(secondOfDay >= 0 && secondOfDay < SECONDS_PER_DAY)
-            require(nanoOfSecond >= 0 && nanoOfSecond < NANOS_PER_ONE)
+            require(secondOfDay in 0 until SECONDS_PER_DAY)
+            require(nanoOfSecond in 0 until NANOS_PER_ONE)
             val hours = (secondOfDay / SECONDS_PER_HOUR)
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE)
@@ -119,7 +121,7 @@ public actual class LocalTime actual constructor(
     }
 
     override fun hashCode(): Int {
-        val nod: Long = toNanoOfDay()
+        val nod: Long = this.toNanosecondOfDay()
         return (nod xor (nod ushr 32)).toInt()
     }
 
@@ -131,10 +133,11 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    public actual fun toNanosecondOfDay(): Long = toNanoOfDay()
+    public actual fun toMillisecondOfDay(): Int =
+        toSecondOfDay() * MILLIS_PER_ONE + nanosecond / NANOS_PER_MILLI
 
     // org.threeten.bp.LocalTime#toNanoOfDay
-    internal fun toNanoOfDay(): Long {
+    public actual fun toNanosecondOfDay(): Long {
         var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
         total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
         total += second.toLong() * NANOS_PER_ONE
