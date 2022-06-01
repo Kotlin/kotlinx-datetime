@@ -44,7 +44,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * Constructs a [LocalTime] that represents the specified number of seconds since the start of a calendar day.
          * The fractional parts of the second will be zero.
          *
-         * @throws IllegalArgumentException if [secondOfDay] is outside the `0..86400 - 1` range,
+         * @throws IllegalArgumentException if [secondOfDay] is outside the `0 until 86400` range,
          * with 86400 being the number of seconds in a calendar day.
          *
          * @see LocalTime.toSecondOfDay
@@ -58,7 +58,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * a calendar day.
          * The sub-millisecond parts of the `LocalTime` will be zero.
          *
-         * @throws IllegalArgumentException if [millisecondOfDay] is outside the `0..86400 * 1_000 - 1` range,
+         * @throws IllegalArgumentException if [millisecondOfDay] is outside the `0 until 86400 * 1_000` range,
          * with 86400 being the number of seconds in a calendar day.
          *
          * @see LocalTime.fromSecondOfDay
@@ -71,7 +71,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * Constructs a [LocalTime] that represents the specified number of nanoseconds since the start of
          * a calendar day.
          *
-         * @throws IllegalArgumentException if [nanosecondOfDay] is outside the `0..86400 * 1_000_000_000 - 1` range,
+         * @throws IllegalArgumentException if [nanosecondOfDay] is outside the `0 until 86400 * 1_000_000_000` range,
          * with 86400 being the number of seconds in a calendar day.
          *
          * @see LocalTime.fromSecondOfDay

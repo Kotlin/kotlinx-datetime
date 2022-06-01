@@ -49,7 +49,7 @@ public actual class LocalTime actual constructor(
 
     init {
         fun check(value: Int, lower: Int, upper: Int, str: String) =
-            require(value >= lower && value <= upper) {
+            require(value in lower..upper) {
                 "Invalid time: $str must be a number between $lower and $upper, got $value"
             }
         check(hour, 0, 23, "hour")
@@ -133,9 +133,8 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    public actual fun toMillisecondOfDay(): Int {
-        return toSecondOfDay() * MILLIS_PER_ONE + nanosecond / NANOS_PER_MILLI
-    }
+    public actual fun toMillisecondOfDay(): Int =
+        toSecondOfDay() * MILLIS_PER_ONE + nanosecond / NANOS_PER_MILLI
 
     // org.threeten.bp.LocalTime#toNanoOfDay
     public actual fun toNanosecondOfDay(): Long {
