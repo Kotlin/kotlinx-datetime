@@ -255,12 +255,12 @@ class LocalDateTest {
         var test = LocalDate(0, 1, 1)
         for (i in eraBeginning..699999) {
             assertEquals(test, LocalDate.fromEpochDays(i))
-            test = test.plus(DateTimeUnit.DAY)
+            test = test.next
         }
         test = LocalDate(0, 1, 1)
         for (i in eraBeginning downTo -2000000 + 1) {
             assertEquals(test, LocalDate.fromEpochDays(i))
-            test = test.minus(DateTimeUnit.DAY)
+            test = test.previous
         }
     }
 
