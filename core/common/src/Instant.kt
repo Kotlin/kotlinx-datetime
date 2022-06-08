@@ -85,7 +85,6 @@ public expect class Instant : Comparable<Instant> {
      */
     public operator fun minus(duration: Duration): Instant
 
-    // questionable
     /**
      * Returns the [Duration] between two instants: [other] and `this`.
      *
