@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
 
 plugins {
     kotlin("multiplatform")
@@ -276,6 +278,7 @@ tasks {
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
     val output = "$projectDir/native/cinterop/public/windows_zones.hpp"
+    val initialFileContents = File(output).readBytes()
     outputs.file(output)
     doLast {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -303,7 +306,8 @@ val downloadWindowsZonesMapping by tasks.registering {
             }
         }
         val sortedMapping = mapping.toSortedMap()
-        File(output).printWriter().use { out ->
+        val bos = ByteArrayOutputStream()
+        PrintWriter(bos).use { out ->
             out.println("""// generated with gradle task `$name`""")
             out.println("""#include <unordered_map>""")
             out.println("""#include <string>""")
@@ -330,6 +334,12 @@ val downloadWindowsZonesMapping by tasks.registering {
                 ++i
             }
             out.println("};")
+        }
+        val newFileContents = bos.toByteArray()
+        if (!(initialFileContents contentEquals newFileContents)) {
+            File(output).writeBytes(newFileContents)
+            throw GradleException("The mappings between Windows and IANA timezone names changed. " +
+                "The new mappings were written to the filesystem.")
         }
     }
 }
