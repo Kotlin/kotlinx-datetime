@@ -275,7 +275,7 @@ tasks {
 
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
-    val output = "$projectDir/nativeMain/cinterop/public/windows_zones.hpp"
+    val output = "$projectDir/native/cinterop/public/windows_zones.hpp"
     outputs.file(output)
     doLast {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -302,17 +302,18 @@ val downloadWindowsZonesMapping by tasks.registering {
                 }
             }
         }
+        val sortedMapping = mapping.toSortedMap()
         File(output).printWriter().use { out ->
             out.println("""// generated with gradle task `$name`""")
             out.println("""#include <unordered_map>""")
             out.println("""#include <string>""")
             out.println("""static const std::unordered_map<std::string, std::string> standard_to_windows = {""")
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", \"$windowsName\" },")
             }
             out.println("};")
             out.println("""static const std::unordered_map<std::string, std::string> windows_to_standard = {""")
-            val reverseMap = mutableMapOf<String, String>()
+            val reverseMap = sortedMapOf<String, String>()
             for ((usualName, windowsName) in mapping) {
                 if (reverseMap[windowsName] == null) {
                     reverseMap[windowsName] = usualName
@@ -324,7 +325,7 @@ val downloadWindowsZonesMapping by tasks.registering {
             out.println("};")
             out.println("""static const std::unordered_map<std::string, size_t> zone_ids = {""")
             var i = 0
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", $i },")
                 ++i
             }
