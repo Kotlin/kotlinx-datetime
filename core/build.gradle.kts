@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
 
 plugins {
     kotlin("multiplatform")
@@ -275,7 +277,8 @@ tasks {
 
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
-    val output = "$projectDir/nativeMain/cinterop/public/windows_zones.hpp"
+    val output = "$projectDir/native/cinterop/public/windows_zones.hpp"
+    val initialFileContents = File(output).readBytes()
     outputs.file(output)
     doLast {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -302,17 +305,19 @@ val downloadWindowsZonesMapping by tasks.registering {
                 }
             }
         }
-        File(output).printWriter().use { out ->
+        val sortedMapping = mapping.toSortedMap()
+        val bos = ByteArrayOutputStream()
+        PrintWriter(bos).use { out ->
             out.println("""// generated with gradle task `$name`""")
             out.println("""#include <unordered_map>""")
             out.println("""#include <string>""")
             out.println("""static const std::unordered_map<std::string, std::string> standard_to_windows = {""")
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", \"$windowsName\" },")
             }
             out.println("};")
             out.println("""static const std::unordered_map<std::string, std::string> windows_to_standard = {""")
-            val reverseMap = mutableMapOf<String, String>()
+            val reverseMap = sortedMapOf<String, String>()
             for ((usualName, windowsName) in mapping) {
                 if (reverseMap[windowsName] == null) {
                     reverseMap[windowsName] = usualName
@@ -324,11 +329,17 @@ val downloadWindowsZonesMapping by tasks.registering {
             out.println("};")
             out.println("""static const std::unordered_map<std::string, size_t> zone_ids = {""")
             var i = 0
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", $i },")
                 ++i
             }
             out.println("};")
+        }
+        val newFileContents = bos.toByteArray()
+        if (!(initialFileContents contentEquals newFileContents)) {
+            File(output).writeBytes(newFileContents)
+            throw GradleException("The mappings between Windows and IANA timezone names changed. " +
+                "The new mappings were written to the filesystem.")
         }
     }
 }
