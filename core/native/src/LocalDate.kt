@@ -8,6 +8,9 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
+import kotlinx.datetime.internal.safeAdd
+import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
@@ -42,8 +45,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     init {
         // org.threeten.bp.LocalDate#create
         require(isValidYear(year)) { "Invalid date: the year is out of range" }
-        require(monthNumber >= 1 && monthNumber <= 12) { "Invalid date: month must be a number between 1 and 12, got $monthNumber" }
-        require(dayOfMonth >= 1 && dayOfMonth <= 31) { "Invalid date: day of month must be a number between 1 and 31, got $dayOfMonth" }
+        require(monthNumber in 1..12) { "Invalid date: month must be a number between 1 and 12, got $monthNumber" }
+        require(dayOfMonth in 1..31) { "Invalid date: day of month must be a number between 1 and 31, got $dayOfMonth" }
         if (dayOfMonth > 28 && dayOfMonth > monthNumber.monthLength(isLeapYear(year))) {
             if (dayOfMonth == 29) {
                 throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
@@ -60,16 +63,12 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
             localDateParser.parse(isoString)
 
         // org.threeten.bp.LocalDate#toEpochDay
-        /**
-         * @throws IllegalArgumentException if the result exceeds the boundaries
-         */
-        internal fun ofEpochDay(epochDay: Int): LocalDate {
+        public actual fun fromEpochDays(epochDays: Int): LocalDate {
             // LocalDate(-999999, 1, 1).toEpochDay(), LocalDate(999999, 12, 31).toEpochDay()
-            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-            require(epochDay >= MIN_EPOCH_DAY && epochDay <= MAX_EPOCH_DAY) {
+            require(epochDays in MIN_EPOCH_DAY..MAX_EPOCH_DAY) {
                 "Invalid date: boundaries of LocalDate exceeded"
             }
-            var zeroDay = epochDay + DAYS_0000_TO_1970
+            var zeroDay = epochDays + DAYS_0000_TO_1970
             // find the march-based year
             zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
 
@@ -106,7 +105,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     }
 
     // org.threeten.bp.LocalDate#toEpochDay
-    internal fun toEpochDay(): Int {
+    public actual fun toEpochDays(): Int {
         val y = year
         val m = monthNumber
         var total = 0
@@ -140,7 +139,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     // org.threeten.bp.LocalDate#getDayOfWeek
     public actual val dayOfWeek: DayOfWeek
         get() {
-            val dow0 = (toEpochDay() + 3).mod(7)
+            val dow0 = (toEpochDays() + 3).mod(7)
             return DayOfWeek(dow0 + 1)
         }
 
@@ -170,15 +169,6 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         return LocalDate(year, month, newDay)
     }
 
-    // org.threeten.bp.LocalDate#plusYears
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusYears(yearsToAdd: Int): LocalDate =
-        if (yearsToAdd == 0) this
-        else resolvePreviousValid(safeAdd(year, yearsToAdd), monthNumber, dayOfMonth)
-
     // org.threeten.bp.LocalDate#plusMonths
     /**
      * @throws IllegalArgumentException if the result exceeds the boundaries
@@ -195,14 +185,6 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         return resolvePreviousValid(newYear, newMonth, dayOfMonth)
     }
 
-    // org.threeten.bp.LocalDate#plusWeeks
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plusWeeks(value: Int): LocalDate =
-        plusDays(safeMultiply(value, 7))
-
     // org.threeten.bp.LocalDate#plusDays
     /**
      * @throws IllegalArgumentException if the result exceeds the boundaries
@@ -210,7 +192,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
      */
     internal fun plusDays(daysToAdd: Int): LocalDate =
         if (daysToAdd == 0) this
-        else ofEpochDay(safeAdd(toEpochDay(), daysToAdd))
+        else fromEpochDays(safeAdd(toEpochDays(), daysToAdd))
 
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDate && compareTo(other) == 0)
@@ -292,7 +274,7 @@ public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
 
 // org.threeten.bp.LocalDate#daysUntil
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
-    other.toEpochDay() - this.toEpochDay()
+    other.toEpochDays() - this.toEpochDays()
 
 // org.threeten.bp.LocalDate#getProlepticMonth
 internal val LocalDate.prolepticMonth get() = (year * 12) + (monthNumber - 1)

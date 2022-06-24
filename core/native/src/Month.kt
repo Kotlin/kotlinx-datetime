@@ -27,12 +27,3 @@ internal fun Month.firstDayOfYear(leapYear: Boolean): Int {
         Month.DECEMBER -> 335 + leap
     }
 }
-
-// From threetenbp
-internal fun Int.monthLength(leapYear: Boolean): Int {
-    return when (this) {
-        2 -> if (leapYear) 29 else 28
-        4, 6, 9, 11 -> 30
-        else -> 31
-    }
-}

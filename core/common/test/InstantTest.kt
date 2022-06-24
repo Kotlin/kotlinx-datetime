@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
+import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*

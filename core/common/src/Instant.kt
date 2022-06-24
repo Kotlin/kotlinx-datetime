@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.*
@@ -126,6 +127,8 @@ public expect class Instant : Comparable<Instant> {
          * Returns an [Instant] that is [epochMilliseconds] number of milliseconds from the epoch instant `1970-01-01T00:00:00Z`.
          *
          * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+         *
+         * @see Instant.toEpochMilliseconds
          */
         public fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
 

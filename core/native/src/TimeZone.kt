@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
@@ -145,7 +146,7 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
     val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
     val localEpochDay = localSecond.floorDiv(SECONDS_PER_DAY.toLong()).toInt()
     val secsOfDay = localSecond.mod(SECONDS_PER_DAY.toLong()).toInt()
-    val date: LocalDate = LocalDate.ofEpochDay(localEpochDay) // may throw
+    val date: LocalDate = LocalDate.fromEpochDays(localEpochDay) // may throw
     val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)
     return LocalDateTime(date, time)
 }

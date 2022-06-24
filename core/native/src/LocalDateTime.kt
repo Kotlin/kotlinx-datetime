@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -71,7 +72,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
-        val epochDay = date.toEpochDay().toLong()
+        val epochDay = date.toEpochDays().toLong()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
         secs -= offset.totalSeconds
         return secs

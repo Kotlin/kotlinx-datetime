@@ -6,7 +6,7 @@
 package kotlinx.datetime.test
 import kotlin.random.*
 import kotlin.test.*
-import kotlinx.datetime.*
+import kotlinx.datetime.internal.*
 
 class MultiplyAndDivideTest {
 

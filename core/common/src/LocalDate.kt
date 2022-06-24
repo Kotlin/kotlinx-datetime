@@ -32,6 +32,15 @@ public expect class LocalDate : Comparable<LocalDate> {
          */
         public fun parse(isoString: String): LocalDate
 
+        /**
+         * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
+         *
+         * @throws IllegalArgumentException if the result exceeds the platform-specific boundaries of [LocalDate].
+         *
+         * @see LocalDate.toEpochDays
+         */
+        public fun fromEpochDays(epochDays: Int): LocalDate
+
         internal val MIN: LocalDate
         internal val MAX: LocalDate
     }
@@ -78,6 +87,15 @@ public expect class LocalDate : Comparable<LocalDate> {
     public val dayOfWeek: DayOfWeek
     /** Returns the day-of-year component of the date. */
     public val dayOfYear: Int
+
+    /**
+     * Returns the number of days since the epoch day `1970-01-01`.
+     *
+     * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+     *
+     * @see LocalDate.fromEpochDays
+     */
+    public fun toEpochDays(): Int
 
     /**
      * Compares `this` date with the [other] date.
