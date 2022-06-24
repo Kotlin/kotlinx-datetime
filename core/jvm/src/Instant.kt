@@ -6,6 +6,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.safeMultiply
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException

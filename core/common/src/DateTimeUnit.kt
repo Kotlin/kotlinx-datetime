@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.*

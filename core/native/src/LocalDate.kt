@@ -8,6 +8,9 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
+import kotlinx.datetime.internal.safeAdd
+import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
