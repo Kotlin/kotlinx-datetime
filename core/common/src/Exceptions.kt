@@ -5,6 +5,9 @@
 
 package kotlinx.datetime
 
+/**
+ * Thrown by date-time arithmetic operations if the result can not be computed or represented.
+ */
 public class DateTimeArithmeticException: RuntimeException {
     public constructor(): super()
     public constructor(message: String): super(message)
@@ -12,6 +15,9 @@ public class DateTimeArithmeticException: RuntimeException {
     public constructor(message: String, cause: Throwable): super(message, cause)
 }
 
+/**
+ * Thrown when attempting to construct a [TimeZone] with an invalid ID.
+ */
 public class IllegalTimeZoneException: IllegalArgumentException {
     public constructor(): super()
     public constructor(message: String): super(message)
