@@ -347,6 +347,8 @@ val downloadWindowsZonesMapping by tasks.registering {
 }
 
 tasks.withType<AbstractDokkaLeafTask>().configureEach {
+    pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
+
     dokkaSourceSets.configureEach {
         // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
         skipDeprecated.set(true)
