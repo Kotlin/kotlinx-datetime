@@ -20,7 +20,10 @@ import kotlinx.serialization.Serializable
  * The main purpose of this class is to provide human-readable representations of [Instant] values, or to transfer them
  * as data.
  *
- * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it may give misleading results.
+ * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it 
+ * may give misleading results. For example, assuming March 26, 2023, 22:00 as a value of `LocalDateTime`, adding 10 hours
+ * is ambigous because that is when daylight savings kick in in some timzones: For the US, if you just add 10 hours to 
+ * the clock at this particular day, it would be 8:00, but if you just waited 10 hours it would be 9:00.
  */
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
