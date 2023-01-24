@@ -351,7 +351,7 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-@Deprecated("Use the plus overload with explicit amount of units", ReplaceWith("this.plus(1, unit, timeZone)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
@@ -362,7 +362,7 @@ public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
-@Deprecated("Use the minus overload with explicit amount of units", ReplaceWith("this.minus(1, unit, timeZone)"))
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit, timeZone)"))
 public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
     plus(-1, unit, timeZone)
 
@@ -373,7 +373,7 @@ public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
-@Deprecated("Use the plus overload with explicit amount of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
     plus(1L, unit)
 
@@ -384,7 +384,7 @@ public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
-@Deprecated("Use the minus overload with explicit amount of units", ReplaceWith("this.minus(1, unit)"))
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
 public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
     plus(-1L, unit)
 

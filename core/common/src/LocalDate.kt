@@ -250,7 +250,7 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-@Deprecated("Use the plus overload with explicit amount of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
@@ -260,7 +260,7 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-@Deprecated("Use the minus overload with explicit amount of units", ReplaceWith("this.minus(1, unit)"))
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
 public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, unit)
 
 /**
