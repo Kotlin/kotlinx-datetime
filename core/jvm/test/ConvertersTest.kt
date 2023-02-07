@@ -196,6 +196,5 @@ class ConvertersTest {
 
         assertEquals(jtClock.instant().epochSecond, ktClock.now().epochSeconds)
         assertEquals(jtClock.instant().toEpochMilli(), ktClock.now().toEpochMilliseconds())
-        assertEquals(jtClock.instant().toEpochMilli(), ktClock.now().toEpochMilliseconds())
     }
 }
