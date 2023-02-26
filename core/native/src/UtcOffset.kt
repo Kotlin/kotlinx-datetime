@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -23,59 +24,7 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun parse(offsetString: String): UtcOffset {
-            if (offsetString == "Z") {
-                return ZERO
-            }
-
-            // parse - +h, +hh, +hhmm, +hh:mm, +hhmmss, +hh:mm:ss
-            val hours: Int
-            val minutes: Int
-            val seconds: Int
-            when (offsetString.length) {
-                2 -> return parse(offsetString[0].toString() + "0" + offsetString[1])
-                3 -> {
-                    hours = parseNumber(offsetString, 1, false)
-                    minutes = 0
-                    seconds = 0
-                }
-                5 -> {
-                    hours = parseNumber(offsetString, 1, false)
-                    minutes = parseNumber(offsetString, 3, false)
-                    seconds = 0
-                }
-                6 -> {
-                    hours = parseNumber(offsetString, 1, false)
-                    minutes = parseNumber(offsetString, 4, true)
-                    seconds = 0
-                }
-                7 -> {
-                    hours = parseNumber(offsetString, 1, false)
-                    minutes = parseNumber(offsetString, 3, false)
-                    seconds = parseNumber(offsetString, 5, false)
-                }
-                9 -> {
-                    hours = parseNumber(offsetString, 1, false)
-                    minutes = parseNumber(offsetString, 4, true)
-                    seconds = parseNumber(offsetString, 7, true)
-                }
-                else -> throw DateTimeFormatException("Invalid ID for UtcOffset, invalid format: $offsetString")
-            }
-            val first: Char = offsetString[0]
-            if (first != '+' && first != '-') {
-                throw DateTimeFormatException(
-                    "Invalid ID for UtcOffset, plus/minus not found when expected: $offsetString")
-            }
-            try {
-                return if (first == '-') {
-                    ofHoursMinutesSeconds(-hours, -minutes, -seconds)
-                } else {
-                    ofHoursMinutesSeconds(hours, minutes, seconds)
-                }
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException(e)
-            }
-        }
+        public actual fun parse(offsetString: String): UtcOffset = parse(offsetString, lenientFormat)
 
         private fun validateTotal(totalSeconds: Int) {
             if (totalSeconds !in -18 * SECONDS_PER_HOUR .. 18 * SECONDS_PER_HOUR) {
@@ -129,24 +78,11 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
                 UtcOffset(totalSeconds = seconds)
             }
         }
-
-        // org.threeten.bp.ZoneOffset#parseNumber
-        private fun parseNumber(offsetId: CharSequence, pos: Int, precededByColon: Boolean): Int {
-            if (precededByColon && offsetId[pos - 1] != ':') {
-                throw DateTimeFormatException("Invalid ID for UtcOffset, colon not found when expected: $offsetId")
-            }
-            val ch1 = offsetId[pos]
-            val ch2 = offsetId[pos + 1]
-            if (ch1 < '0' || ch1 > '9' || ch2 < '0' || ch2 > '9') {
-                throw DateTimeFormatException("Invalid ID for UtcOffset, non numeric characters found: $offsetId")
-            }
-            return (ch1 - '0') * 10 + (ch2 - '0')
-        }
     }
 }
 
 @ThreadLocal
-private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf()
+private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf(0 to UtcOffset.ZERO)
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
 public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
@@ -160,3 +96,4 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
         }
     }
 
+private const val lenientFormat = "('Z'|'z')|+(HH':'mm(|':'ss))|+(H|HH(|mm(|ss)))"

@@ -16,7 +16,7 @@ class ThreeTenBpLocalDateTest {
 
     @Test
     fun dayOfWeek() {
-        var dow = DayOfWeek.MONDAY
+        var dow = kotlinx.datetime.DayOfWeek.MONDAY
         for (month in 1..12) {
             val length = month.monthLength(false)
             for (i in 1..length) {

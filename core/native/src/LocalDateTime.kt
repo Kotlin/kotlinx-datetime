@@ -8,26 +8,16 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
-import kotlinx.serialization.Serializable
-
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
-internal val localDateTimeParser: Parser<LocalDateTime>
-    get() = localDateParser
-        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-        .chain(localTimeParser)
-        .map { (date, time) ->
-            LocalDateTime(date, time)
-        }
+import kotlinx.datetime.serializers.*
+import kotlinx.serialization.*
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime =
-            localDateTimeParser.parse(isoString)
+        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, LocalDateTimeFormat.ISO)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
@@ -68,7 +58,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = date.toString() + 'T' + time.toString()
+    actual override fun toString(): String = format(LocalDateTimeFormat.ISO)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {

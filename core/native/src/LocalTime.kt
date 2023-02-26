@@ -9,36 +9,9 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
-
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_TIME
-internal val localTimeParser: Parser<LocalTime>
-    get() = intParser(2, 2) // hour
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // minute
-        .chain(optional(
-            concreteCharParser(':')
-                .chainSkipping(intParser(2, 2)) // second
-                .chain(optional(
-                    concreteCharParser('.')
-                        .chainSkipping(fractionParser(0, 9, 9))
-                ))
-        ))
-        .map {
-            val (hourMinute, secNano) = it
-            val (hour, minute) = hourMinute
-            val (sec, nanosecond) = when (secNano) {
-                null -> Pair(0, 0)
-                else -> Pair(secNano.first, secNano.second ?: 0)
-            }
-            try {
-                LocalTime.of(hour, minute, sec, nanosecond)
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException(e)
-            }
-        }
 
 @Serializable(LocalTimeIso8601Serializer::class)
 public actual class LocalTime actual constructor(
@@ -60,8 +33,7 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime =
-            localTimeParser.parse(isoString)
+        public actual fun parse(isoString: String): LocalTime = parse(isoString, LocalTimeFormat.ISO)
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
@@ -146,34 +118,7 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    // org.threeten.bp.LocalTime#toString
-    actual override fun toString(): String {
-        val buf = StringBuilder(18)
-        val hourValue = hour
-        val minuteValue = minute
-        val secondValue = second
-        val nanoValue: Int = nanosecond
-        buf.append(if (hourValue < 10) "0" else "").append(hourValue)
-            .append(if (minuteValue < 10) ":0" else ":").append(minuteValue)
-        if (secondValue > 0 || nanoValue > 0) {
-            buf.append(if (secondValue < 10) ":0" else ":").append(secondValue)
-            if (nanoValue > 0) {
-                buf.append('.')
-                when {
-                    nanoValue % 1000000 == 0 -> {
-                        buf.append((nanoValue / 1000000 + 1000).toString().substring(1))
-                    }
-                    nanoValue % 1000 == 0 -> {
-                        buf.append((nanoValue / 1000 + 1000000).toString().substring(1))
-                    }
-                    else -> {
-                        buf.append((nanoValue + 1000000000).toString().substring(1))
-                    }
-                }
-            }
-        }
-        return buf.toString()
-    }
+    actual override fun toString(): String = format(LocalTimeFormat.ISO)
 
     override fun equals(other: Any?): Boolean =
         other is LocalTime && this.compareTo(other) == 0

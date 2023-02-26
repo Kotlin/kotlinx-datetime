@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal
 
+import kotlin.native.concurrent.*
+
 internal fun Long.clampToInt(): Int =
         when {
             this > Int.MAX_VALUE -> Int.MAX_VALUE
@@ -178,4 +180,52 @@ internal fun multiplyAndAdd(d: Long, n: Long, r: Long): Long {
         mr -= n
     }
     return safeAdd(safeMultiply(md, n), mr)
+}
+
+@ThreadLocal
+internal val POWERS_OF_TEN = intArrayOf(
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000
+)
+
+/**
+ * The fraction [fractionalPart]/10^[digits].
+ */
+internal class DecimalFraction(
+    /**
+     * The numerator of the fraction.
+     */
+    val fractionalPart: Int,
+    /**
+     * The number of digits after the decimal point.
+     */
+    val digits: Int
+): Comparable<DecimalFraction> {
+    init {
+        require(digits >= 0) { "Digits must be non-negative, but was $digits" }
+    }
+
+    /**
+     * The integral numerator of the fraction, but with [newDigits] digits after the decimal point.
+     */
+    fun fractionalPartWithNDigits(newDigits: Int): Int = when {
+        newDigits == digits -> fractionalPart
+        newDigits > digits -> fractionalPart * POWERS_OF_TEN[newDigits - digits]
+        else -> (fractionalPart / POWERS_OF_TEN[digits - newDigits - 1] + 5) / 10
+    }
+
+    override fun compareTo(other: DecimalFraction): Int =
+        maxOf(digits, other.digits).let { maxPrecision ->
+            fractionalPartWithNDigits(maxPrecision).compareTo(other.fractionalPartWithNDigits(maxPrecision))
+        }
+
+    override fun equals(other: Any?): Boolean = other is DecimalFraction && compareTo(other) == 0
 }
