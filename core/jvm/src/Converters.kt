@@ -96,8 +96,6 @@ public fun java.time.ZoneOffset.toKotlinUtcOffset(): UtcOffset = UtcOffset(this)
 /**
  * Converts this [java.time.Clock][java.time.Clock] to a [kotlinx.datetime.Clock][Clock].
  */
-public fun java.time.Clock.toKotlinClock(): Clock = this.let {
-    object : Clock {
-        override fun now() = it.instant().toKotlinInstant()
-    }
+public fun java.time.Clock.toKotlinClock(): Clock = object : Clock {
+    override fun now() = instant().toKotlinInstant()
 }
