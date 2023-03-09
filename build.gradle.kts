@@ -19,7 +19,9 @@ val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVe
 
 allprojects {
     repositories {
+        addTrainRepositories(project)
         mavenCentral()
     }
 }
 
+logger.info("Using Kotlin compiler version: ${org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION}")
