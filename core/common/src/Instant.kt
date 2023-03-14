@@ -161,8 +161,8 @@ public expect class Instant : Comparable<Instant> {
          * - `2020-08-30T18:43:00Z`
          * - `2020-08-30T18:43:00.500Z`
          * - `2020-08-30T18:43:00.123456789Z`
-         * - `2020-08-30T18:40.00+03:00`
-         * - `2020-08-30T18:40.00+03:30:20`
+         * - `2020-08-30T18:40:00+03:00`
+         * - `2020-08-30T18:40:00+03:30:20`
          *
          * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
          * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
