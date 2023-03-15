@@ -30,7 +30,7 @@ public interface UtcOffsetFormatBuilder : UtcOffsetFormatBuilderFields, FormatBu
 public class UtcOffsetFormat internal constructor(private val actualFormat: Format<UtcOffsetFieldContainer>) {
     public companion object {
         public fun build(block: UtcOffsetFormatBuilder.() -> Unit): UtcOffsetFormat {
-            val builder = Builder(UtcOffsetFieldContainerFormatBuilder())
+            val builder = Builder(AppendableFormatStructure(UtcOffsetFormatBuilderSpec))
             builder.block()
             return UtcOffsetFormat(builder.build())
         }
@@ -56,10 +56,10 @@ public class UtcOffsetFormat internal constructor(private val actualFormat: Form
         }
     }
 
-    private class Builder(override val actualBuilder: UtcOffsetFieldContainerFormatBuilder) :
+    private class Builder(override val actualBuilder: AppendableFormatStructure<UtcOffsetFieldContainer>) :
         AbstractFormatBuilder<UtcOffsetFieldContainer, UtcOffsetFormatBuilder, Builder>, UtcOffsetFormatBuilder {
 
-        override fun createEmpty(): Builder = Builder(UtcOffsetFieldContainerFormatBuilder())
+        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): UtcOffsetFormatBuilder = this
         override fun appendOffsetTotalHours(minDigits: Int) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
@@ -126,26 +126,15 @@ internal class UtcOffsetMinuteOfHourDirective(minDigits: Int) :
 internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
     SignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits)
 
-internal class UtcOffsetFieldContainerFormatBuilder : AbstractBuilder<UtcOffsetFieldContainer>() {
-    companion object {
-        const val name = "uo"
-    }
-
-    override fun formatFromSubBuilder(
-        name: String,
-        block: Builder<*>.() -> Unit
-    ): FormatStructure<UtcOffsetFieldContainer>? =
-        if (name == UtcOffsetFieldContainerFormatBuilder.name) UtcOffsetFieldContainerFormatBuilder().apply(block)
-            .build() else null
-
-    override fun formatFromDirective(letter: Char, length: Int): FormatStructure<UtcOffsetFieldContainer>? {
-        return when (letter) {
-            'H' -> BasicFormatStructure(UtcOffsetWholeHoursDirective(length))
-            'm' -> BasicFormatStructure(UtcOffsetMinuteOfHourDirective(length))
-            's' -> BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(length))
-            else -> null
-        }
-    }
-
-    override fun createSibling(): Builder<UtcOffsetFieldContainer> = UtcOffsetFieldContainerFormatBuilder()
+internal object UtcOffsetFormatBuilderSpec: BuilderSpec<UtcOffsetFieldContainer>(
+    mapOf(
+        "uo" to UtcOffsetFormatBuilderSpec
+    ),
+    mapOf(
+        'H' to { length -> BasicFormatStructure(UtcOffsetWholeHoursDirective(length)) },
+        'm' to { length -> BasicFormatStructure(UtcOffsetMinuteOfHourDirective(length)) },
+        's' to { length -> BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(length)) },
+    )
+) {
+    const val name = "uo"
 }

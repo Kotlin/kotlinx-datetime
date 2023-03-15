@@ -78,7 +78,7 @@ public interface TimeFormatBuilder : TimeFormatBuilderFields, FormatBuilder<Time
 public class LocalTimeFormat private constructor(private val actualFormat: Format<TimeFieldContainer>) {
     public companion object {
         public fun build(block: TimeFormatBuilder.() -> Unit): LocalTimeFormat {
-            val builder = Builder(TimeFieldContainerFormatBuilder())
+            val builder = Builder(AppendableFormatStructure(TimeFormatBuilderSpec))
             builder.block()
             return LocalTimeFormat(builder.build())
         }
@@ -111,7 +111,7 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
         }
     }
 
-    private class Builder(override val actualBuilder: TimeFieldContainerFormatBuilder) :
+    private class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
         AbstractFormatBuilder<TimeFieldContainer, TimeFormatBuilder, Builder>, TimeFormatBuilder {
         override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
@@ -119,7 +119,7 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun createEmpty(): Builder = Builder(TimeFieldContainerFormatBuilder())
+        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): TimeFormatBuilder = this
         override fun appendFormatString(formatString: String) = super.appendFormatString(formatString)
     }
@@ -231,27 +231,16 @@ internal class SecondDirective(minDigits: Int) :
 internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits)
 
-internal class TimeFieldContainerFormatBuilder : AbstractBuilder<TimeFieldContainer>() {
-    companion object {
-        const val name = "lt"
-    }
-
-    override fun formatFromSubBuilder(
-        name: String,
-        block: Builder<*>.() -> Unit
-    ): FormatStructure<TimeFieldContainer>? =
-        if (name == TimeFieldContainerFormatBuilder.name) TimeFieldContainerFormatBuilder().apply(block)
-            .build() else null
-
-    override fun formatFromDirective(letter: Char, length: Int): FormatStructure<TimeFieldContainer>? {
-        return when (letter) {
-            'h' -> BasicFormatStructure(HourDirective(length))
-            'm' -> BasicFormatStructure(MinuteDirective(length))
-            's' -> BasicFormatStructure(SecondDirective(length))
-            'f' -> BasicFormatStructure(FractionalSecondDirective(length, null))
-            else -> null
-        }
-    }
-
-    override fun createSibling(): Builder<TimeFieldContainer> = TimeFieldContainerFormatBuilder()
+internal object TimeFormatBuilderSpec: BuilderSpec<TimeFieldContainer>(
+    mapOf(
+        "lt" to TimeFormatBuilderSpec
+    ),
+    mapOf(
+        'h' to { length -> BasicFormatStructure(HourDirective(length)) },
+        'm' to { length -> BasicFormatStructure(MinuteDirective(length)) },
+        's' to { length -> BasicFormatStructure(SecondDirective(length)) },
+        'f' to { length -> BasicFormatStructure(FractionalSecondDirective(length, null)) },
+    )
+) {
+    const val name = "lt"
 }

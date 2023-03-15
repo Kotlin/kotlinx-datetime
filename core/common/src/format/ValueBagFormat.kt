@@ -262,7 +262,7 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
          */
         public fun build(block: ValueBagFormatBuilder.() -> Unit): ValueBagFormat {
-            val builder = Builder(ValueBagFormatBuilderImpl())
+            val builder = Builder(AppendableFormatStructure(ValueBagFormatBuilderSpec))
             builder.block()
             return ValueBagFormat(builder.build())
         }
@@ -317,7 +317,7 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
         }
     }
 
-    private class Builder(override val actualBuilder: ValueBagFormatBuilderImpl) :
+    private class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
         AbstractFormatBuilder<ValueBagContents, ValueBagFormatBuilder, Builder>, ValueBagFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
@@ -347,7 +347,7 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
 
         override fun appendFormatString(formatString: String) = super.appendFormatString(formatString)
 
-        override fun createEmpty(): Builder = Builder(ValueBagFormatBuilderImpl())
+        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): ValueBagFormatBuilder = this
     }
 
@@ -407,31 +407,12 @@ internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
     StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones)
 
-private class ValueBagFormatBuilderImpl : AbstractBuilder<ValueBagContents>() {
-    override fun formatFromSubBuilder(name: String, block: Builder<*>.() -> Unit): FormatStructure<ValueBagContents>? =
-        when (name) {
-            DateFieldContainerFormatBuilder.name -> {
-                val builder = DateFieldContainerFormatBuilder()
-                block(builder)
-                builder.build()
-            }
 
-            TimeFieldContainerFormatBuilder.name -> {
-                val builder = TimeFieldContainerFormatBuilder()
-                block(builder)
-                builder.build()
-            }
-
-            UtcOffsetFieldContainerFormatBuilder.name -> {
-                val builder = UtcOffsetFieldContainerFormatBuilder()
-                block(builder)
-                builder.build()
-            }
-
-            else -> null
-        }
-
-    override fun formatFromDirective(letter: Char, length: Int): FormatStructure<ValueBagContents>? = null
-
-    override fun createSibling(): Builder<ValueBagContents> = ValueBagFormatBuilderImpl()
-}
+internal object ValueBagFormatBuilderSpec: BuilderSpec<ValueBagContents>(
+    mapOf(
+        DateFormatBuilderSpec.name to DateFormatBuilderSpec,
+        TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
+        UtcOffsetFormatBuilderSpec.name to UtcOffsetFormatBuilderSpec,
+    ),
+    emptyMap()
+)

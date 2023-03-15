@@ -5,18 +5,35 @@
 
 package kotlinx.datetime.internal.format
 
-internal interface Builder<T> {
-    fun build(): ConcatenatedFormatStructure<T>
-    fun add(format: NonConcatenatedFormatStructure<T>)
-    fun formatFromSubBuilder(name: String, block: Builder<*>.() -> Unit): FormatStructure<T>?
-    fun formatFromDirective(letter: Char, length: Int): FormatStructure<T>?
-    fun createSibling(): Builder<T>
-}
+internal abstract class BuilderSpec<in T>(
+    val subBuilders: Map<String, BuilderSpec<T>>,
+    val formats: Map<Char, (Int) -> FormatStructure<T>>,
+)
 
-internal abstract class AbstractBuilder<T>: Builder<T> {
+internal class AppendableFormatStructure<T>(
+    private val spec: BuilderSpec<T>
+) {
     private var builder = ConcatenatedFormatStructureBuilder<T>()
-    override fun build(): ConcatenatedFormatStructure<T> = builder.build()
-    override fun add(format: NonConcatenatedFormatStructure<T>) { builder.add(format) }
+    fun build(): ConcatenatedFormatStructure<T> = builder.build()
+    fun add(format: FormatStructure<T>) {
+        when (format) {
+            is NonConcatenatedFormatStructure -> builder.add(format)
+            is ConcatenatedFormatStructure -> format.formats.forEach { builder.add(it) }
+        }
+    }
+
+    fun formatFromSubBuilder(
+        name: String,
+        block: AppendableFormatStructure<*>.() -> Unit
+    ): FormatStructure<T>? =
+        spec.subBuilders[name]?.let { subSpec ->
+            AppendableFormatStructure(subSpec).apply(block).build()
+        }
+
+    fun formatFromDirective(letter: Char, length: Int): FormatStructure<T>? =
+        spec.formats[letter]?.invoke(length)
+
+    fun createSibling(): AppendableFormatStructure<T> = AppendableFormatStructure(spec)
 
     private class ConcatenatedFormatStructureBuilder<T>(
         private val list: MutableList<NonConcatenatedFormatStructure<T>> = mutableListOf()
@@ -25,9 +42,3 @@ internal abstract class AbstractBuilder<T>: Builder<T> {
         fun build(): ConcatenatedFormatStructure<T> = ConcatenatedFormatStructure(list)
     }
 }
-
-internal fun <T, E : T> Builder<E>.add(format: FormatStructure<T>) = when (format) {
-    is NonConcatenatedFormatStructure -> add(format)
-    is ConcatenatedFormatStructure -> format.formats.forEach { add(it) }
-}
-

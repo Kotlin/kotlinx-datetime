@@ -29,9 +29,9 @@ package kotlinx.datetime.internal.format
  *   there are `-15` years and `-10` months, `-P15Y10M` is output, but if there are `15` years and `-10` months,
  *   `P15Y-10M` is output.
  */
-internal fun <T> Builder<T>.appendFormatString(format: String, start: Int = 0): Int {
+internal fun <T> AppendableFormatStructure<T>.appendFormatString(format: String, start: Int = 0): Int {
     val alternatives = mutableListOf<ConcatenatedFormatStructure<T>>()
-    var currentBuilder: Builder<T> = createSibling()
+    var currentBuilder: AppendableFormatStructure<T> = createSibling()
     var inSingleQuotes = false
     var inDoubleQuotes = false
     var fragmentBeginning: Int? = null

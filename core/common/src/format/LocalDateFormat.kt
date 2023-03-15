@@ -7,7 +7,6 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.internal.LruCache
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 
@@ -24,7 +23,7 @@ public interface DateFormatBuilder : DateFormatBuilderFields, FormatBuilder<Date
 public class LocalDateFormat private constructor(private val actualFormat: Format<DateFieldContainer>) {
     public companion object {
         public fun build(block: DateFormatBuilder.() -> Unit): LocalDateFormat {
-            val builder = Builder(DateFieldContainerFormatBuilder())
+            val builder = Builder(AppendableFormatStructure(DateFormatBuilderSpec))
             builder.block()
             return LocalDateFormat(builder.build())
         }
@@ -55,7 +54,7 @@ public class LocalDateFormat private constructor(private val actualFormat: Forma
         }
     }
 
-    private class Builder(override val actualBuilder: DateFieldContainerFormatBuilder) :
+    private class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
         AbstractFormatBuilder<DateFieldContainer, DateFormatBuilder, Builder>, DateFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
@@ -68,7 +67,7 @@ public class LocalDateFormat private constructor(private val actualFormat: Forma
 
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
 
-        override fun createEmpty(): Builder = Builder(DateFieldContainerFormatBuilder())
+        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): DateFormatBuilder = this
     }
 
@@ -157,28 +156,15 @@ internal class MonthNameDirective(names: List<String>) :
 internal class DayDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits)
 
-internal class DateFieldContainerFormatBuilder : AbstractBuilder<DateFieldContainer>() {
-
-    companion object {
-        const val name = "ld"
-    }
-
-    override fun formatFromSubBuilder(
-        name: String,
-        block: Builder<*>.() -> Unit
-    ): FormatStructure<DateFieldContainer>? =
-        if (name == DateFieldContainerFormatBuilder.name)
-            DateFieldContainerFormatBuilder().apply(block).build()
-        else null
-
-    override fun formatFromDirective(letter: Char, length: Int): FormatStructure<DateFieldContainer>? {
-        return when (letter) {
-            'y' -> BasicFormatStructure(YearDirective(length, outputPlusOnExceededPadding = false))
-            'm' -> BasicFormatStructure(MonthDirective(length))
-            'd' -> BasicFormatStructure(DayDirective(length))
-            else -> null
-        }
-    }
-
-    override fun createSibling(): Builder<DateFieldContainer> = DateFieldContainerFormatBuilder()
+internal object DateFormatBuilderSpec: BuilderSpec<DateFieldContainer>(
+    mapOf(
+        "ld" to DateFormatBuilderSpec
+    ),
+    mapOf(
+        'y' to { length -> BasicFormatStructure(YearDirective(length, outputPlusOnExceededPadding = false)) },
+        'm' to { length -> BasicFormatStructure(MonthDirective(length)) },
+        'd' to { length -> BasicFormatStructure(DayDirective(length)) },
+    )
+) {
+    const val name = "ld"
 }

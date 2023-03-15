@@ -97,7 +97,7 @@ public fun <Self> FormatBuilder<Self>.appendLiteral(char: Char): Unit = appendLi
 internal interface AbstractFormatBuilder<Target, out UserSelf, ActualSelf> :
     FormatBuilder<UserSelf> where ActualSelf : AbstractFormatBuilder<Target, UserSelf, ActualSelf> {
 
-    val actualBuilder: Builder<Target>
+    val actualBuilder: AppendableFormatStructure<Target>
     fun createEmpty(): ActualSelf
     fun castToGeneric(actualSelf: ActualSelf): UserSelf
 

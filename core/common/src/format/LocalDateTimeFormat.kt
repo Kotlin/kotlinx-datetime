@@ -6,7 +6,6 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.LruCache
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
@@ -18,7 +17,7 @@ public interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuil
 public class LocalDateTimeFormat private constructor(private val actualFormat: Format<DateTimeFieldContainer>) {
     public companion object {
         public fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {
-            val builder = Builder(DateTimeFieldContainerFormatBuilder())
+            val builder = Builder(AppendableFormatStructure(DateTimeFormatBuilderSpec))
             builder.block()
             return LocalDateTimeFormat(builder.build())
         }
@@ -58,7 +57,7 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
         }
     }
 
-    private class Builder(override val actualBuilder: DateTimeFieldContainerFormatBuilder) :
+    private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractFormatBuilder<DateTimeFieldContainer, DateTimeFormatBuilder, Builder>, DateTimeFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
@@ -74,7 +73,7 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun createEmpty(): Builder = Builder(DateTimeFieldContainerFormatBuilder())
+        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): DateTimeFormatBuilder = this
     }
 
@@ -104,28 +103,12 @@ internal class IncompleteLocalDateTime(
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
 }
 
-private class DateTimeFieldContainerFormatBuilder : AbstractBuilder<DateTimeFieldContainer>() {
-    override fun formatFromSubBuilder(
-        name: String,
-        block: Builder<*>.() -> Unit
-    ): FormatStructure<DateTimeFieldContainer>? =
-        when (name) {
-            DateFieldContainerFormatBuilder.name -> {
-                val builder = DateFieldContainerFormatBuilder()
-                block(builder)
-                builder.build()
-            }
-
-            TimeFieldContainerFormatBuilder.name -> {
-                val builder = TimeFieldContainerFormatBuilder()
-                block(builder)
-                builder.build()
-            }
-
-            else -> null
-        }
-
-    override fun formatFromDirective(letter: Char, length: Int): FormatStructure<DateTimeFieldContainer>? = null
-
-    override fun createSibling(): Builder<DateTimeFieldContainer> = DateTimeFieldContainerFormatBuilder()
+internal object DateTimeFormatBuilderSpec: BuilderSpec<DateTimeFieldContainer>(
+    mapOf(
+        DateFormatBuilderSpec.name to DateFormatBuilderSpec,
+        TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
+    ),
+    emptyMap()
+) {
+    const val name = "ld"
 }
