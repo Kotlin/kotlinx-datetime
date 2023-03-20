@@ -37,6 +37,89 @@ internal class ParserStructure<in Output>(
 ) {
     override fun toString(): String =
         "${operations.joinToString(", ")}(${followedBy.joinToString(";")})"
+
+    fun canStartWithNumber(): Boolean =
+        when (operations.firstOrNull()?.let { it is NumberSpanParserOperation }) {
+            null -> followedBy.any { it.canStartWithNumber() }
+            true -> true
+            false -> false
+        }
+}
+
+// TODO: O(size of the resulting parser ^ 2), but can be O(size of the resulting parser)
+internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
+    fun <T> ParserStructure<T>.append(other: ParserStructure<T>): ParserStructure<T> = if (followedBy.isEmpty()) {
+        ParserStructure(operations + other.operations, other.followedBy)
+    } else {
+        ParserStructure(operations, followedBy.map { it.append(other) })
+    }
+    fun <T> ParserStructure<T>.simplify(): ParserStructure<T> {
+        val newOperations = mutableListOf<ParserOperation<T>>()
+        var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
+        // joining together the number consumers in this parser before the first alternative
+        for (op in operations) {
+            if (op is NumberSpanParserOperation) {
+                if (currentNumberSpan != null) {
+                    currentNumberSpan.addAll(op.consumers)
+                } else {
+                    currentNumberSpan = op.consumers.toMutableList()
+                }
+            } else {
+                if (currentNumberSpan != null) {
+                    newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+                    currentNumberSpan = null
+                }
+                newOperations.add(op)
+            }
+        }
+        val mergedTails = followedBy.flatMap {
+            val simplified = it.simplify()
+            // parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
+            // unless `p` is empty. For example, ((a|b)|(c|d)) is equivalent to (a|b|c|d).
+            // As a special case, `ParserStructure(emptyList(), emptyList())` represents a parser that recognizes an empty
+            // string. For example, (|a|b) is not equivalent to (a|b).
+            if (simplified.operations.isEmpty())
+                simplified.followedBy.ifEmpty { listOf(simplified) }
+            else
+                listOf(simplified)
+        }
+        return if (currentNumberSpan == null) {
+            // the last operation was not a number span, or it was a number span that we are allowed to interrupt
+            ParserStructure(newOperations, mergedTails)
+        } else if (mergedTails.none {
+                it.operations.firstOrNull()?.let { it is NumberSpanParserOperation } == true
+            }) {
+            // the last operation was a number span, but there are no alternatives that start with a number span.
+            newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+            ParserStructure(newOperations, mergedTails)
+        } else {
+            val newTails = mergedTails.map {
+                when (val firstOperation = it.operations.firstOrNull()) {
+                    is NumberSpanParserOperation -> {
+                        ParserStructure(
+                            listOf(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers)) + it.operations.drop(
+                                1
+                            ),
+                            it.followedBy
+                        )
+                    }
+
+                    null -> ParserStructure(
+                        listOf(NumberSpanParserOperation(currentNumberSpan)),
+                        it.followedBy
+                    )
+
+                    else -> ParserStructure(
+                        listOf(NumberSpanParserOperation(currentNumberSpan)) + it.operations,
+                        it.followedBy
+                    )
+                }
+            }
+            ParserStructure(newOperations, newTails)
+        }
+    }
+    val naiveParser = foldRight(ParserStructure<T>(emptyList(), emptyList())) { parser, acc -> parser.append(acc) }
+    return naiveParser.simplify()
 }
 
 internal class Parser<Output>(
