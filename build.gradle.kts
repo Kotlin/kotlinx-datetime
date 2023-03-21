@@ -23,6 +23,7 @@ allprojects {
         mavenCentral()
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        // outputs the compiler version to logs so we can check whether the train configuration applied
         kotlinOptions.freeCompilerArgs += "-version"
     }
 }
