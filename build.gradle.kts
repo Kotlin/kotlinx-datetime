@@ -22,6 +22,7 @@ allprojects {
         addTrainRepositories(project)
         mavenCentral()
     }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions.freeCompilerArgs += "-version"
+    }
 }
-
-logger.info("Using Kotlin compiler version: ${org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION}")
