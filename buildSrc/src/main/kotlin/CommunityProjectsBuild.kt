@@ -31,7 +31,6 @@ private val LOGGER: Logger = Logger.getLogger("Kotlin settings logger")
 fun RepositoryHandler.addTrainRepositories(project: Project) {
     if (project.rootProject.properties["build_snapshot_train"]?.toString()?.toBoolean() == true) {
         mavenLocal()
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
     // A kotlin-dev space repository with dev versions of Kotlin.
     val devRepoUrl = project.rootProject.properties["kotlin_repo_url"] as? String ?: return

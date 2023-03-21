@@ -16,7 +16,6 @@ val props = Properties().apply {
 fun RepositoryHandler.addTrainRepositories(project: Project) {
     if (project.rootProject.properties["build_snapshot_train"]?.toString()?.toBoolean() == true) {
         mavenLocal()
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
     (project.rootProject.properties["kotlin_repo_url"] as? String)?.let(::maven)
 }
