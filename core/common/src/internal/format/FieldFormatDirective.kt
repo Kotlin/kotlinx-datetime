@@ -51,7 +51,9 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
 
     init {
         require(minDigits >= 0)
-        require(maxDigits >= minDigits)
+        require(maxDigits >= minDigits) {
+            "The maximum number of digits ($maxDigits) is less than the minimum number of digits ($minDigits)"
+        }
     }
 
     override fun formatter(): FormatterOperation<Target> =
@@ -146,8 +148,8 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
 
     override fun parser(signsInverted: Boolean): ParserStructure<Target> =
         SignedIntParser(
-            minDigits,
-            maxDigits,
+            minDigits = minDigits,
+            maxDigits = maxDigits,
             field::setWithoutReassigning,
             field.name,
             plusOnExceedsPad = outputPlusOnExceededPadding,

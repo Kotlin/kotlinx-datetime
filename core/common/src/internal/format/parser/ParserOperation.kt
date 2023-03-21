@@ -184,19 +184,6 @@ internal fun <Output> SignedIntParser(
     signsInverted: Boolean = false,
 ): ParserStructure<Output> {
     val parsers = mutableListOf<List<ParserOperation<Output>>>(
-        listOf(
-            NumberSpanParserOperation(
-                listOf(
-                    UnsignedIntConsumer(
-                        minDigits,
-                        minDigits,
-                        setter,
-                        name,
-                        multiplyByMinus1 = signsInverted
-                    )
-                )
-            )
-        ),
     )
     if (!signsInverted) {
         parsers.add(
@@ -219,11 +206,42 @@ internal fun <Output> SignedIntParser(
     if (plusOnExceedsPad) {
         parsers.add(
             listOf(
+                NumberSpanParserOperation(
+                    listOf(
+                        UnsignedIntConsumer(
+                            minDigits,
+                            minDigits,
+                            setter,
+                            name,
+                            multiplyByMinus1 = signsInverted
+                        )
+                    )
+                )
+            )
+        )
+        parsers.add(
+            listOf(
                 PlainStringParserOperation("+"),
                 NumberSpanParserOperation(
                     listOf(
                         UnsignedIntConsumer(
                             minDigits?.let { it + 1 },
+                            maxDigits,
+                            setter,
+                            name,
+                            multiplyByMinus1 = signsInverted
+                        )
+                    )
+                )
+            )
+        )
+    } else {
+        parsers.add(
+            listOf(
+                NumberSpanParserOperation(
+                    listOf(
+                        UnsignedIntConsumer(
+                            minDigits,
                             maxDigits,
                             setter,
                             name,
