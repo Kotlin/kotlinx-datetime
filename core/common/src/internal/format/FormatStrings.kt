@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal.format
 
+import kotlin.native.concurrent.*
+
 /**
  * String format:
  * * A string in single or double quotes is a literal.
@@ -167,4 +169,5 @@ internal fun <T> AppendableFormatStructure<T>.appendFormatString(format: String,
 }
 
 // TODO: think about what could eventually become useful
+@SharedImmutable
 private val reservedChars: List<Char> = listOf()
