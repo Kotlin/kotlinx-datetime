@@ -33,7 +33,7 @@ internal sealed class NumberConsumer<in Receiver>(
 // TODO: should the parser reject excessive padding?
 internal class UnsignedIntConsumer<in Receiver>(
     minLength: Int?,
-    maxLength: Int?,
+    private val maxLength: Int?,
     private val setter: (Receiver, Int) -> (Unit),
     name: String,
     private val multiplyByMinus1: Boolean = false,
@@ -44,9 +44,16 @@ internal class UnsignedIntConsumer<in Receiver>(
     }
 
     // TODO: ensure length
-    override fun Receiver.consume(input: String) = when (val result = input.toIntOrNull()) {
-        null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
-        else -> setter(this, if (multiplyByMinus1) -result else result)
+    override fun Receiver.consume(input: String) {
+        if (maxLength != null) {
+            if (input.length > maxLength) {
+                throw NumberFormatException("Expected at most $maxLength digits for $whatThisExpects but got $input")
+            }
+        }
+        when (val result = input.toIntOrNull()) {
+            null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
+            else -> setter(this, if (multiplyByMinus1) -result else result)
+        }
     }
 }
 
