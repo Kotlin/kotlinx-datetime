@@ -106,11 +106,12 @@ internal class NumberSpanParserOperation<Output>(
  * Matches the longest suitable string from `strings` and calls [consume] with the matched string.
  */
 internal class StringSetParserOperation<Output>(
-    strings: Set<String>,
+    strings: Collection<String>,
     private val setter: (Output, String) -> Unit,
-    private val whatThisExpects: String
-) :
-    ParserOperation<Output> {
+    private val whatThisExpects: String,
+) : ParserOperation<Output> {
+
+    // TODO: tries don't have good performance characteristics for small sets, add a special case for small sets
 
     private class TrieNode(
         val children: MutableList<Pair<String, TrieNode>> = mutableListOf(),
@@ -125,7 +126,7 @@ internal class StringSetParserOperation<Output>(
             for (char in string) {
                 val searchResult = node.children.binarySearchBy(char.toString()) { it.first }
                 node = if (searchResult < 0) {
-                    TrieNode().also { node.children.add(-searchResult + 1, char.toString() to it) }
+                    TrieNode().also { node.children.add(-searchResult - 1, char.toString() to it) }
                 } else {
                     node.children[searchResult].second
                 }

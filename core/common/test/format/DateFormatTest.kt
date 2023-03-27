@@ -84,6 +84,54 @@ class DateFormatTest {
         }, dates)
     }
 
+    @Test
+    fun testDayMonthNameYear() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(2008, 7, 5), ("05 July 2008" to setOf()))
+            put(LocalDate(2007, 12, 31), ("31 December 2007" to setOf()))
+            put(LocalDate(999, 11, 30), ("30 November 0999" to setOf()))
+            put(LocalDate(-1, 1, 2), ("02 January -0001" to setOf()))
+            put(LocalDate(9999, 10, 31), ("31 October 9999" to setOf()))
+            put(LocalDate(-9999, 9, 30), ("30 September -9999" to setOf()))
+            put(LocalDate(10000, 8, 1), ("01 August 10000" to setOf()))
+            put(LocalDate(-10000, 7, 1), ("01 July -10000" to setOf()))
+            put(LocalDate(123456, 6, 1), ("01 June 123456" to setOf()))
+            put(LocalDate(-123456, 5, 1), ("01 May -123456" to setOf()))
+        }
+        val format = LocalDateFormat.build {
+            appendDayOfMonth(2)
+            appendLiteral(' ')
+            appendMonthName(listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+            appendLiteral(' ')
+            appendYear(4)
+        }
+        test(format, dates)
+    }
+
+    @Test
+    fun testRomanNumerals() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(2008, 7, 5), ("05 VII 2008" to setOf()))
+            put(LocalDate(2007, 12, 31), ("31 XII 2007" to setOf()))
+            put(LocalDate(999, 11, 30), ("30 XI 999" to setOf()))
+            put(LocalDate(-1, 1, 2), ("02 I -1" to setOf()))
+            put(LocalDate(9999, 10, 31), ("31 X 9999" to setOf()))
+            put(LocalDate(-9999, 9, 30), ("30 IX -9999" to setOf()))
+            put(LocalDate(10000, 8, 1), ("01 VIII 10000" to setOf()))
+            put(LocalDate(-10000, 7, 1), ("01 VII -10000" to setOf()))
+            put(LocalDate(123456, 6, 1), ("01 VI 123456" to setOf()))
+            put(LocalDate(-123456, 5, 1), ("01 V -123456" to setOf()))
+        }
+        val format = LocalDateFormat.build {
+            appendDayOfMonth(2)
+            appendLiteral(' ')
+            appendMonthName(listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
+            appendLiteral(' ')
+            appendYear()
+        }
+        test(format, dates)
+    }
+
     private fun test(format: LocalDateFormat, strings: Map<LocalDate, Pair<String, Set<String>>>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

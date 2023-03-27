@@ -42,12 +42,12 @@ internal interface FieldFormatDirective<in Target> {
  */
 internal abstract class UnsignedIntFieldFormatDirective<in Target>(
     final override val field: UnsignedFieldSpec<Target>,
-    val minDigits: Int,
+    private val minDigits: Int,
 ) : FieldFormatDirective<Target> {
 
     final override val signGetter: ((Target) -> Int)? = null
 
-    val maxDigits: Int = field.maxDigits
+    private val maxDigits: Int = field.maxDigits
 
     init {
         require(minDigits >= 0)
@@ -96,11 +96,19 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
 
     final override val signGetter: ((Target) -> Int)? = null
 
+    private fun getStringValue(target: Target): String = values[field.getNotNull(target) - field.minValue]
+
+    private fun setStringValue(target: Target, value: String) {
+        field.setWithoutReassigning(target, values.indexOf(value) + field.minValue)
+    }
+
     override fun formatter(): FormatterOperation<Target> =
-        TODO()
+        StringFormatterOperation(::getStringValue)
 
     override fun parser(signsInverted: Boolean): ParserStructure<Target> =
-        TODO()
+        ParserStructure(listOf(
+            StringSetParserOperation(values, ::setStringValue, "One of $values for ${field.name}")
+        ), emptyList())
 }
 
 internal abstract class StringFieldFormatDirective<in Target>(
