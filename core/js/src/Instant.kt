@@ -35,7 +35,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             Instant(plusFix(seconds.toDouble(), nanoseconds))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
-            if (seconds > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         }
     }
 

@@ -609,4 +609,13 @@ class InstantRangeTest {
         (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
         maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
     }
+
+    // https://github.com/Kotlin/kotlinx-datetime/issues/263
+    @Test
+    fun addSmallDurationsToLargeInstants() {
+        for (smallDuration in listOf(1.nanoseconds, 999_999.nanoseconds, 1.seconds - 1.nanoseconds)) {
+            assertEquals(expected = Instant.MAX, actual = Instant.MAX + smallDuration)
+            assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
+        }
+    }
 }

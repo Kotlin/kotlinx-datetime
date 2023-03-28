@@ -159,9 +159,9 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         try {
             plus(secondsToAdd, nanosecondsToAdd.toLong())
         } catch (e: IllegalArgumentException) {
-            if (secondsToAdd > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         } catch (e: ArithmeticException) {
-            if (secondsToAdd > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         }
     }
 
