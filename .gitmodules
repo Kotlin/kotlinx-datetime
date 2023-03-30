@@ -1,3 +1,0 @@
-[submodule "date-cpp-library/date"]
-	path = thirdparty/date
-	url = https://github.com/HowardHinnant/date
