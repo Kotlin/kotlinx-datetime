@@ -35,13 +35,13 @@ class TimeZoneTest {
     @Test
     fun available() {
         val allTzIds = TimeZone.availableZoneIds
-        assertContains(allTzIds, "Europe/Berlin")
-        assertContains(allTzIds, "Europe/Moscow")
-        assertContains(allTzIds, "America/New_York")
+        assertContains(allTzIds, "Europe/Berlin", "Europe/Berlin not in $allTzIds")
+        assertContains(allTzIds, "Europe/Moscow", "Europe/Moscow not in $allTzIds")
+        assertContains(allTzIds, "America/New_York", "America/New_York not in $allTzIds")
 
-        assertNotEquals(0, allTzIds.size)
-        assertTrue(TimeZone.currentSystemDefault().id in allTzIds)
-        assertTrue("UTC" in allTzIds)
+        assertTrue(TimeZone.currentSystemDefault().id in allTzIds,
+            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds")
+        assertTrue("UTC" in allTzIds, "The UTC timezone not in $allTzIds")
     }
 
     @Test

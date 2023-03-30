@@ -113,7 +113,6 @@ fun parseRfc2822(input: String): Pair<LocalDateTime, String> {
     val abbreviation = input.substringAfterLast(" ")
     val dateTime = input.substringBeforeLast(" ")
     val components = dateTime.split(Regex(" +"))
-    val dayOfWeek = components[0]
     val month = components[1]
     val dayOfMonth = components[2].toInt()
     val time = LocalTime.parse(components[3])

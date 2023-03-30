@@ -381,15 +381,6 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 
 ## Building
 
-Before building, ensure that you have [thirdparty/date](thirdparty/date) submodule initialized and updated. 
-IDEA does that automatically when cloning the repository, and if you cloned it in the command line, you may need
-to run additionally:
-
-```kotlin
-git submodule init
-git submodule update
-```
-
 The project requires JDK 8 to build classes and to run tests. 
 Gradle will try to find it among the installed JDKs or [provision](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
 The path to JDK 8 can be additionally specified with the environment variable `JDK_8`. 
