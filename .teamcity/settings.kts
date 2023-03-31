@@ -72,8 +72,9 @@ fun Project.buildVersion() = BuildType {
     commonConfigure()
 
     params {
-        param(versionSuffixParameter, "SNAPSHOT")
-        param(teamcitySuffixParameter, "%build.counter%")
+        param(versionSuffixParameter.name, "SNAPSHOT")
+        param(teamcitySuffixParameter.name, "%build.counter%")
+        param(gradleParametersParameter.name, "-P${versionSuffixParameter.name}=${versionSuffixParameter.ref} -P${teamcitySuffixParameter.name}=${teamcitySuffixParameter.ref} --info --stacktrace --continue")
     }
 
     steps {
@@ -81,7 +82,7 @@ fun Project.buildVersion() = BuildType {
             name = "Generate build chain version"
             jdkHome = "%env.$jdk%"
             tasks = ""
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter%"
+            gradleParams = gradleParametersParameter.ref
             buildFile = ""
             gradleWrapperPath = ""
         }
@@ -111,10 +112,10 @@ fun Project.buildAll(versionBuild: BuildType) = BuildType {
 fun Project.build(platform: Platform, versionBuild: BuildType) = buildType("Build", platform) {
 
     dependsOnSnapshot(versionBuild)
-
     params {
-        param(versionSuffixParameter, versionBuild.depParamRefs[versionSuffixParameter].ref)
-        param(teamcitySuffixParameter, versionBuild.depParamRefs[teamcitySuffixParameter].ref)
+        param(versionSuffixParameter.name, versionBuild.depParamRefs[versionSuffixParameter].ref)
+        param(teamcitySuffixParameter.name, versionBuild.depParamRefs[teamcitySuffixParameter].ref)
+        param(gradleParametersParameter.name, "-P${versionSuffixParameter.name}=${versionSuffixParameter.ref} -P${teamcitySuffixParameter.name}=${teamcitySuffixParameter.ref} --info --stacktrace --continue")
     }
 
     steps {
@@ -124,7 +125,7 @@ fun Project.build(platform: Platform, versionBuild: BuildType) = buildType("Buil
             jvmArgs = "-Xmx1g"
             tasks = "clean publishToBuildLocal check"
             // --continue is needed to run tests for all targets even if one target fails
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter% --continue"
+            gradleParams = gradleParametersParameter.ref
             buildFile = ""
             gradleWrapperPath = ""
         }
@@ -144,9 +145,10 @@ fun Project.deployVersion() = BuildType {
         param("teamcity.ui.settings.readOnly", "false")
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
-        param(versionSuffixParameter, "dev-%build.counter%")
+        param(versionSuffixParameter.name, "dev-%build.counter%")
         param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
+        param(gradleParametersParameter.name, "-P${versionSuffixParameter.name}=${versionSuffixParameter.ref} -P${teamcitySuffixParameter.name}=${teamcitySuffixParameter.ref} --info --stacktrace")
     }
 
     requirements {
@@ -158,7 +160,7 @@ fun Project.deployVersion() = BuildType {
         gradle {
             name = "Verify Gradle Configuration"
             tasks = "clean publishPrepareVersion"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = gradleParametersParameter.ref
             buildFile = ""
             jdkHome = "%env.$jdk%"
         }
@@ -186,8 +188,10 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
     enablePersonalBuilds = false
     maxRunningBuilds = 1
     params {
-        param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
-        param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
+        param(versionSuffixParameter.name, "${configureBuild.depParamRefs[versionSuffixParameter]}")
+        param(releaseVersionParameter.name, "${configureBuild.depParamRefs[releaseVersionParameter]}")
+        param(gradleParametersParameter.name, "-P${versionSuffixParameter.name}=${versionSuffixParameter.ref} -P${teamcitySuffixParameter.name}=${teamcitySuffixParameter.ref} --info --stacktrace")
+
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
@@ -202,7 +206,7 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
             name = "Deploy ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = gradleParametersParameter.ref
             tasks = "clean publish"
             buildFile = ""
             gradleWrapperPath = ""

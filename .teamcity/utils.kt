@@ -5,9 +5,10 @@
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 
-const val versionSuffixParameter = "versionSuffix"
-const val teamcitySuffixParameter = "teamcitySuffix"
-const val releaseVersionParameter = "releaseVersion"
+val versionSuffixParameter = ParameterRef("versionSuffix")
+val teamcitySuffixParameter = ParameterRef("teamcitySuffix")
+val releaseVersionParameter = ParameterRef("releaseVersion")
+val gradleParametersParameter = ParameterRef("gradleParameters")
 
 const val bintrayUserName = "%env.BINTRAY_USER%"
 const val bintrayToken = "%env.BINTRAY_API_KEY%"
