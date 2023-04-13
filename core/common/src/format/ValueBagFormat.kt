@@ -299,6 +299,15 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
             appendFormatString("ld<'-'mm'-'dd>('T'|'t')lt<hh':'mm':'ss(|'.'f)>uo<('Z'|'z')|+(HH(|':'mm(|':'ss)))>")
         }
 
+        public val RFC_1123 : ValueBagFormat = build {
+            appendDayOfWeek(listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+            appendLiteral(", ")
+            appendDayOfMonth()
+            appendLiteral(' ')
+            appendMonthName(listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+            appendFormatString(" ld<yyyy> lt<hh':'mm':'ss> uo<'GMT'|+(HHmm)>")
+        }
+
         internal val Cache = LruCache<String, ValueBagFormat>(16) { fromFormatString(it) }
     }
 
