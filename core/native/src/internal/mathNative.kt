@@ -74,3 +74,22 @@ internal actual fun safeMultiply(a: Int, b: Int): Int {
     }
     return total.toInt()
 }
+
+
+/**
+ * Returns the largest (closest to positive infinity) [Long] value that is less than or equal to the algebraic quotient.
+ * There is one special case, if the dividend is the [Long.MIN_VALUE] and the divisor is `-1`,
+ * then integer overflow occurs and the result is equal to [Long.MIN_VALUE].
+ *
+ * Normal integer division operates under the round to zero rounding mode (truncation).
+ * This operation instead acts under the round toward negative infinity (floor) rounding mode.
+ * The floor rounding mode gives different results from truncation when the exact result is negative.
+ */
+public fun floorDiv(x: Long, y: Long): Long {
+    var r = x / y
+    // if the signs are different and modulo not zero, round down
+    if (x xor y < 0 && r * y != x) {
+        r--
+    }
+    return r
+}

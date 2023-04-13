@@ -140,6 +140,25 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     public actual fun toEpochMilliseconds(): Long =
         epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
+    public actual fun truncatedTo(unit: DateTimeUnit): Instant {
+        if (unit === DateTimeUnit.NANOSECOND) {
+            return this
+        }
+        val nanos = when {
+            unit is DateTimeUnit.TimeBased -> unit.nanoseconds
+            unit is DateTimeUnit.DayBased && unit.days == 1 -> NANOS_PER_DAY
+            else -> throw DateTimeArithmeticException("Unit $unit is too large to be used for truncation")
+        }
+        if (nanos > NANOS_PER_DAY) throw DateTimeArithmeticException("Unit $unit is too large to be used for truncation")
+        if ((NANOS_PER_DAY % nanos) != 0L) {
+            throw DateTimeArithmeticException("Unit must divide into a standard day without remainder")
+        }
+        val nod: Long = (this.epochSeconds % SECONDS_PER_DAY) * NANOS_PER_ONE + this.nanosecondsOfSecond
+        val result: Long = floorDiv(nod, nanos) * nanos
+        val delta = nod - result
+        return this.minus(delta.nanoseconds)
+    }
+
     // org.threeten.bp.Instant#plus(long, long)
     /**
      * @throws ArithmeticException if arithmetic overflow occurs
