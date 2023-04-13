@@ -114,6 +114,13 @@ internal class IncompleteUtcOffset(
 ) : UtcOffsetFieldContainer, Copyable<IncompleteUtcOffset> {
     fun toUtcOffset(): UtcOffset = UtcOffset(totalHours, minutesOfHour, secondsOfMinute)
 
+    override fun equals(other: Any?): Boolean =
+        other is IncompleteUtcOffset && totalHours == other.totalHours &&
+                minutesOfHour == other.minutesOfHour && secondsOfMinute == other.secondsOfMinute
+
+    override fun hashCode(): Int =
+        totalHours.hashCode() * 31 + minutesOfHour.hashCode() * 31 + secondsOfMinute.hashCode()
+
     override fun copy(): IncompleteUtcOffset = IncompleteUtcOffset(totalHours, minutesOfHour, secondsOfMinute)
 }
 

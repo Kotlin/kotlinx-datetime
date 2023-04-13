@@ -135,6 +135,13 @@ internal class IncompleteLocalDate(
 
     override fun copy(): IncompleteLocalDate = IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek)
 
+    override fun equals(other: Any?): Boolean =
+        other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
+            dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek
+
+    override fun hashCode(): Int =
+        year.hashCode() * 31 + monthNumber.hashCode() * 31 + dayOfMonth.hashCode() * 31 + isoDayOfWeek.hashCode() * 31
+
     override fun toString(): String =
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }

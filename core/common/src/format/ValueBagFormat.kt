@@ -222,6 +222,10 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant")
         return Instant.fromEpochSeconds(totalSeconds, nanosecond ?: 0)
     }
+
+    override fun equals(other: Any?): Boolean = other is ValueBag && contents == other.contents
+
+    override fun hashCode(): Int = contents.hashCode()
 }
 
 /**
@@ -403,7 +407,13 @@ internal class ValueBagContents internal constructor(
     var timeZoneId: String? = null,
 ) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
     Copyable<ValueBagContents> {
-   override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
+    override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
+
+    override fun equals(other: Any?): Boolean =
+        other is ValueBagContents && other.date == date && other.time == time &&
+            other.offset == offset && other.timeZoneId == timeZoneId
+    override fun hashCode(): Int =
+        date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
 }
 
 internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)

@@ -234,6 +234,13 @@ internal class IncompleteLocalTime(
 
     override fun copy(): IncompleteLocalTime = IncompleteLocalTime(hour, isPm, minute, second, nanosecond)
 
+    override fun equals(other: Any?): Boolean =
+        other is IncompleteLocalTime && hourField == other.hourField && minute == other.minute &&
+            second == other.second && nanosecond == other.nanosecond
+
+    override fun hashCode(): Int =
+        hourField.hashCode() * 31 + minute.hashCode() * 31 + second.hashCode() * 31 + nanosecond.hashCode()
+
     override fun toString(): String =
         "${hour ?: "??"}:${minute ?: "??"}:${second ?: "??"}.${
             nanosecond?.let {
