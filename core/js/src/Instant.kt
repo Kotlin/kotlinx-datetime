@@ -5,19 +5,19 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.JSJoda.ZonedDateTime
-import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
-import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
-import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
-import kotlinx.datetime.internal.JSJoda.Clock as jtClock
-import kotlinx.datetime.internal.JSJoda.ChronoUnit
-import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.internal.JSJoda.ChronoUnit
+import kotlinx.datetime.internal.JSJoda.ZonedDateTime
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
+import toJsChronoUnit
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.datetime.internal.JSJoda.Clock as jtClock
+import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
+import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
+import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
@@ -29,6 +29,13 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
     public actual fun toEpochMilliseconds(): Long =
             epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
+
+    public actual fun truncatedTo(unit: DateTimeUnit): Instant = try {
+        Instant(value.truncatedTo(unit.toJsChronoUnit()))
+    } catch (e: Throwable) {
+        if (!e.isJodaDateTimeException()) throw e
+        throw UnsupportedDateTimeUnitException(e)
+    }
 
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         return try {

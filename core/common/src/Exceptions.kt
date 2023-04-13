@@ -31,3 +31,16 @@ internal class DateTimeFormatException: IllegalArgumentException {
     constructor(cause: Throwable): super(cause)
     constructor(message: String, cause: Throwable): super(message, cause)
 }
+
+
+/**
+ * [kotlinx.datetime.DateTimeUnit] includes some units that are not supported by the underlying platform.
+ * This exception is thrown when an unsupported unit is used.
+ *
+ */
+public class UnsupportedDateTimeUnitException: RuntimeException {
+    public constructor(): super()
+    public constructor(message: String): super(message)
+    public constructor(cause: Throwable): super(cause)
+    public constructor(message: String, cause: Throwable): super(message, cause)
+}
