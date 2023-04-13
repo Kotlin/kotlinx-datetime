@@ -67,6 +67,20 @@ public expect class Instant : Comparable<Instant> {
     public fun toEpochMilliseconds(): Long
 
     /**
+     * Returns the copy of this instant truncated to the specified [unit].
+     *
+     * Truncating the instant returns a copy of the original with fields
+     * smaller than the specified unit set to zero.
+     *
+     * For example, truncating with the [DateTimeUnit.MINUTE] unit will
+     * round down to the nearest minute, setting the seconds and nanoseconds to zero.
+     *
+     * @param unit the unit to truncate to
+     * @return the truncated instant
+     */
+    public fun truncatedTo(unit: DateTimeUnit): Instant
+
+    /**
      * Returns an instant that is the result of adding the specified [duration] to this instant.
      *
      * If the [duration] is positive, the returned instant is later than this instant.

@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
+import java.time.temporal.UnsupportedTemporalTypeException
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -32,6 +33,14 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         value.toEpochMilli()
     } catch (e: ArithmeticException) {
         if (value.isAfter(java.time.Instant.EPOCH)) Long.MAX_VALUE else Long.MIN_VALUE
+    }
+
+    public actual fun truncatedTo(unit: DateTimeUnit): Instant = try {
+        Instant(value.truncatedTo(unit.toJavaChronoUnit()))
+    } catch (e: DateTimeException) {
+        throw DateTimeArithmeticException(e)
+    } catch (e: UnsupportedTemporalTypeException) {
+        throw UnsupportedDateTimeUnitException(e)
     }
 
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->

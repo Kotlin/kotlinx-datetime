@@ -43,7 +43,7 @@ public sealed class DateTimeUnit {
          */
         public val nanoseconds: Long
     ) : DateTimeUnit() {
-        private val unitName: String
+        internal val unitName: String
         private val unitScale: Long
 
         init {

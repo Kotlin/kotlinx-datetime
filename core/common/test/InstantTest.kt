@@ -618,4 +618,20 @@ class InstantRangeTest {
             assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
         }
     }
+
+    @Test
+    fun truncatedToTest() {
+        fun assertTruncatedTo(instant: Instant, unit: DateTimeUnit, expected: Instant) {
+            assertEquals(expected, instant.truncatedTo(unit))
+        }
+
+        val instant = Instant.parse("2021-02-03T11:22:33.123456789Z")
+        assertTruncatedTo(instant, DateTimeUnit.NANOSECOND, instant)
+        assertTruncatedTo(instant, DateTimeUnit.MICROSECOND, Instant.parse("2021-02-03T11:22:33.123456Z"))
+        assertTruncatedTo(instant, DateTimeUnit.MILLISECOND, Instant.parse("2021-02-03T11:22:33.123Z"))
+        assertTruncatedTo(instant, DateTimeUnit.SECOND, Instant.parse("2021-02-03T11:22:33Z"))
+        assertTruncatedTo(instant, DateTimeUnit.MINUTE, Instant.parse("2021-02-03T11:22:00Z"))
+        assertTruncatedTo(instant, DateTimeUnit.HOUR, Instant.parse("2021-02-03T11:00:00Z"))
+        assertTruncatedTo(instant, DateTimeUnit.DAY, Instant.parse("2021-02-03T00:00:00Z"))
+    }
 }
