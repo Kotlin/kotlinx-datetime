@@ -239,9 +239,7 @@ private class DayOfWeekInMonth(length: Int) : AbstractUnicodeDirective(length), 
 
 private class AmPmMarker(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {
     override val formatLetter = 'a'
-    override fun addToFormat(builder: TimeFormatBuilder) {
-        TODO()
-    }
+    override fun addToFormat(builder: TimeFormatBuilder) = localizedDirective()
 }
 
 private class HourOfDay(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {

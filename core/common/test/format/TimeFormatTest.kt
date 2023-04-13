@@ -50,6 +50,25 @@ class TimeFormatTest {
         }, times)
     }
 
+    @Test
+    fun testAmPmHour() {
+        val times = buildMap<LocalTime, Pair<String, Set<String>>> {
+            put(LocalTime(0, 0, 0, 0), ("12:00 AM" to setOf()))
+            put(LocalTime(1, 0, 0, 0), ("01:00 AM" to setOf()))
+            put(LocalTime(11, 0, 0, 0), ("11:00 AM" to setOf()))
+            put(LocalTime(12, 0, 0, 0), ("12:00 PM" to setOf()))
+            put(LocalTime(13, 0, 0, 0), ("01:00 PM" to setOf()))
+            put(LocalTime(23, 0, 0, 0), ("11:00 PM" to setOf()))
+        }
+        test(LocalTimeFormat.build {
+            appendAmPmHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendLiteral(' ')
+            appendAmPmMarker("AM", "PM")
+        }, times)
+    }
+
     private fun test(format: LocalTimeFormat, strings: Map<LocalTime, Pair<String, Set<String>>>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

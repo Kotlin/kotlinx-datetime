@@ -156,7 +156,7 @@ internal class StringSetParserOperation<Output>(
         var node = trie
         var index = startIndex
         var lastMatch: Int? = null
-        loop@ while (index < input.length) {
+        loop@ while (index <= input.length) {
             if (node.isTerminal) lastMatch = index
             for ((key, child) in node.children) {
                 if (input.startsWith(key, index)) {

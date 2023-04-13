@@ -23,6 +23,23 @@ public interface TimeFormatBuilderFields {
     public fun appendHour(minLength: Int = 1)
 
     /**
+     * Appends the number of hours in the 12-hour clock.
+     *
+     * The number is padded with zeroes to the specified [minLength] when formatting.
+     * When parsing, the number is expected to be at least [minLength] digits long.
+     *
+     * @throws IllegalArgumentException if [minLength] is not in the range 1..2.
+     */
+    public fun appendAmPmHour(minLength: Int = 1)
+
+    /**
+     * Appends the AM/PM marker, using the specified strings.
+     *
+     * [amString] is used for the AM marker (0-11 hours), [pmString] is used for the PM marker (12-23 hours).
+     */
+    public fun appendAmPmMarker(amString: String, pmString: String)
+
+    /**
      * Appends the number of minutes.
      *
      * The number is padded with zeroes to the specified [minLength] when formatting.
@@ -90,7 +107,7 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
          *
          * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
          */
-        public val ISO : LocalTimeFormat = fromFormatString("hh':'mm(|':'ss(|'.'f))")
+        public val ISO: LocalTimeFormat = fromFormatString("hh':'mm(|':'ss(|'.'f))")
 
         internal val Cache = LruCache<String, LocalTimeFormat>(16) { fromFormatString(it) }
     }
@@ -114,6 +131,12 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
     private class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
         AbstractFormatBuilder<TimeFieldContainer, TimeFormatBuilder, Builder>, TimeFormatBuilder {
         override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
+        override fun appendAmPmHour(minLength: Int) =
+            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+
+        override fun appendAmPmMarker(amString: String, pmString: String) =
+            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
@@ -159,7 +182,7 @@ internal object TimeFields {
     val minute = UnsignedFieldSpec(TimeFieldContainer::minute, minValue = 0, maxValue = 59)
     val second = UnsignedFieldSpec(TimeFieldContainer::second, minValue = 0, maxValue = 59, defaultValue = 0)
     val fractionOfSecond = GenericFieldSpec(TimeFieldContainer::fractionOfSecond, defaultValue = DecimalFraction(0, 9))
-    val amPm = GenericFieldSpec(TimeFieldContainer::isPm)
+    val isPm = GenericFieldSpec(TimeFieldContainer::isPm)
     val hourOfAmPm = UnsignedFieldSpec(TimeFieldContainer::hourOfAmPm, minValue = 1, maxValue = 12)
 }
 
@@ -177,15 +200,15 @@ internal class IncompleteLocalTime(
     var hourField: Int? = hour
 
     override var hourOfAmPm: Int?
-        get() = hourField?.let { (it % 12) + 1 }
+        get() = hourField?.let { (it + 11) % 12 + 1 }
         set(value) {
-            hourField = value?.let { it + 12 * if (isPm == true) 1 else 0 }
+            hourField = value?.let { it + if (isPm == true) 12 else 0 }
         }
 
     override var isPm: Boolean? = isPm
         set(value) {
             if (value != null) {
-                hourField = hourField?.let { (it % 12) + 12 * if (value) 1 else 0 }
+                hourField = hourField?.let { (it % 12) + if (value) 12 else 0 }
             }
             field = value
         }
@@ -222,6 +245,17 @@ internal class IncompleteLocalTime(
 internal class HourDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hour, minDigits)
 
+internal class AmPmHourDirective(minDigits: Int) :
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hourOfAmPm, minDigits)
+
+internal class AmPmMarkerDirective(amString: String, pmString: String) :
+    NamedEnumIntFieldFormatDirective<TimeFieldContainer, Boolean>(
+        TimeFields.isPm, mapOf(
+            false to amString,
+            true to pmString,
+        )
+    )
+
 internal class MinuteDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.minute, minDigits)
 
@@ -231,7 +265,7 @@ internal class SecondDirective(minDigits: Int) :
 internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits)
 
-internal object TimeFormatBuilderSpec: BuilderSpec<TimeFieldContainer>(
+internal object TimeFormatBuilderSpec : BuilderSpec<TimeFieldContainer>(
     mapOf(
         "lt" to TimeFormatBuilderSpec
     ),

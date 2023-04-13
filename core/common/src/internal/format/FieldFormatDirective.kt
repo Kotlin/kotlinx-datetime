@@ -111,6 +111,37 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         ), emptyList())
 }
 
+/**
+ * A directive for a string-based format of an enum field.
+ */
+internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
+    final override val field: FieldSpec<Target, Type>,
+    private val mapping: Map<Type, String>,
+) : FieldFormatDirective<Target> {
+
+    final override val signGetter: ((Target) -> Int)? = null
+
+    private val reverseMapping = mapping.entries.associate { it.value to it.key }
+
+    private fun getStringValue(target: Target): String = mapping[field.getNotNull(target)]
+        ?: throw IllegalStateException(
+            "The value ${field.getNotNull(target)} is does not have a corresponding string representation"
+        )
+
+    private fun setStringValue(target: Target, value: String) {
+        field.setWithoutReassigning(target, reverseMapping[value]
+            ?: throw IllegalStateException("The string value $value does not have a corresponding enum value"))
+    }
+
+    override fun formatter(): FormatterOperation<Target> =
+        StringFormatterOperation(::getStringValue)
+
+    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+        ParserStructure(listOf(
+            StringSetParserOperation(mapping.values, ::setStringValue, "One of ${mapping.values} for ${field.name}")
+        ), emptyList())
+}
+
 internal abstract class StringFieldFormatDirective<in Target>(
     final override val field: FieldSpec<Target, String>,
     private val acceptedStrings: Set<String>,
