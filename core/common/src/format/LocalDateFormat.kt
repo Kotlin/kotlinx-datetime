@@ -15,6 +15,7 @@ public interface DateFormatBuilderFields {
     public fun appendMonthNumber(minLength: Int = 1)
     public fun appendMonthName(names: List<String>)
     public fun appendDayOfMonth(minLength: Int = 1)
+    public fun appendDayOfWeek(names: List<String>)
 }
 
 @DateTimeBuilder
@@ -66,6 +67,8 @@ public class LocalDateFormat private constructor(private val actualFormat: Forma
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfWeek(names: List<String>) =
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
         override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): DateFormatBuilder = this
@@ -162,6 +165,9 @@ internal class MonthNameDirective(names: List<String>) :
 
 internal class DayDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits)
+
+internal class DayOfWeekDirective(names: List<String>) :
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names)
 
 internal object DateFormatBuilderSpec: BuilderSpec<DateFieldContainer>(
     mapOf(

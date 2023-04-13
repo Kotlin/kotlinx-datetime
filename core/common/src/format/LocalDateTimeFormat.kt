@@ -67,6 +67,8 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
         override fun appendMonthName(names: List<String>) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfWeek(names: List<String>) =
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
         override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
         override fun appendAmPmHour(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
