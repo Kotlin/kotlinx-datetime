@@ -102,6 +102,29 @@ internal class NumberSpanParserOperation<Output>(
     override fun toString(): String = whatThisExpects
 }
 
+internal class SignParser<Output>(
+    private val isNegativeSetter: (Output, Boolean) -> Unit,
+    private val withPlusSign: Boolean,
+    private val whatThisExpects: String,
+) : ParserOperation<Output> {
+    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+        if (startIndex >= input.length)
+            return ParseResult.Ok(startIndex)
+        val char = input[startIndex]
+        if (char == '-') {
+            isNegativeSetter(this, true)
+            return ParseResult.Ok(startIndex + 1)
+        }
+        if (char == '+' && withPlusSign) {
+            isNegativeSetter(this, false)
+            return ParseResult.Ok(startIndex + 1)
+        }
+        return ParseResult.Error("Expected $whatThisExpects but got $char", startIndex)
+    }
+
+    override fun toString(): String = whatThisExpects
+}
+
 /**
  * Matches the longest suitable string from `strings` and calls [consume] with the matched string.
  */
@@ -182,28 +205,25 @@ internal fun <Output> SignedIntParser(
     setter: (Output, Int) -> Unit,
     name: String,
     plusOnExceedsPad: Boolean = false,
-    signsInverted: Boolean = false,
 ): ParserStructure<Output> {
     val parsers = mutableListOf<List<ParserOperation<Output>>>(
     )
-    if (!signsInverted) {
-        parsers.add(
-            listOf(
-                PlainStringParserOperation("-"),
-                NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minDigits,
-                            maxDigits,
-                            setter,
-                            name,
-                            multiplyByMinus1 = !signsInverted
-                        )
+    parsers.add(
+        listOf(
+            PlainStringParserOperation("-"),
+            NumberSpanParserOperation(
+                listOf(
+                    UnsignedIntConsumer(
+                        minDigits,
+                        maxDigits,
+                        setter,
+                        name,
+                        multiplyByMinus1 = true
                     )
                 )
-            ),
-        )
-    }
+            )
+        ),
+    )
     if (plusOnExceedsPad) {
         parsers.add(
             listOf(
@@ -214,7 +234,7 @@ internal fun <Output> SignedIntParser(
                             minDigits,
                             setter,
                             name,
-                            multiplyByMinus1 = signsInverted
+                            multiplyByMinus1 = false
                         )
                     )
                 )
@@ -230,7 +250,7 @@ internal fun <Output> SignedIntParser(
                             maxDigits,
                             setter,
                             name,
-                            multiplyByMinus1 = signsInverted
+                            multiplyByMinus1 = false
                         )
                     )
                 )
@@ -246,7 +266,7 @@ internal fun <Output> SignedIntParser(
                             maxDigits,
                             setter,
                             name,
-                            multiplyByMinus1 = signsInverted
+                            multiplyByMinus1 = false
                         )
                     )
                 )

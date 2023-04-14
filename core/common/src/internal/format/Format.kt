@@ -25,13 +25,13 @@ internal class ConstantFormatStructure<in T>(
 // TODO: should itself also be a field with the default value "not negative"
 internal class SignedFormatStructure<in T>(
     val format: FormatStructure<T>,
-    val plusSignRequired: Boolean,
+    val withPlusSign: Boolean,
 ) : NonConcatenatedFormatStructure<T> {
 
-    internal val fields = basicFormats(format).mapNotNull(FieldFormatDirective<T>::signGetter).toSet()
+    internal val fields = basicFormats(format).mapNotNull { it.field.sign }.toSet()
 
     init {
-        require(fields.isNotEmpty()) { "Signed format must contain at least one field with a negative sign" }
+        require(fields.isNotEmpty()) { "Signed format must contain at least one field with a sign" }
     }
 
     override fun toString(): String = "SignedFormatStructure($format)"
@@ -60,16 +60,18 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
             fun checkIfAllNegative(value: T): Boolean {
                 var seenNonZero = false
                 for (check in fields) {
-                    val sign = check(value)
-                    if (sign > 0) return false
-                    if (sign < 0) seenNonZero = true
+                    when {
+                        check.isNegative.get(value) == true -> seenNonZero = true
+                        check.isZero(value) -> continue
+                        else -> return false
+                    }
                 }
                 return seenNonZero
             }
             SignedFormatter(
                 innerFormat,
                 ::checkIfAllNegative,
-                plusSignRequired
+                withPlusSign
             ) to fieldSpecs
         }
 
@@ -119,31 +121,29 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
 internal fun <T, E> FieldSpec<T, E>.toComparisonPredicate(): ComparisonPredicate<T, E>? =
     defaultValue?.let { ComparisonPredicate(it, accessor::get) }
 
-private fun <T> FormatStructure<T>.parser(signsInverted: Boolean = false): ParserStructure<T> = when (this) {
+private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
     is ConstantFormatStructure ->
         ParserStructure(operations = listOf(PlainStringParserOperation(string)), followedBy = emptyList())
     is SignedFormatStructure -> {
-        ParserStructure(
-            operations = emptyList(),
-            followedBy = listOf(
-                format.parser(signsInverted = signsInverted).let {
-                    if (!plusSignRequired) it else
-                        listOf(
-                            ConstantFormatStructure<T>("+").parser(signsInverted),
-                            it
-                        ).concat()
+        listOf(ParserStructure(
+            operations = listOf(SignParser(
+                isNegativeSetter = { value, isNegative ->
+                    for (field in fields) {
+                        val wasNegative = field.isNegative.get(value) == true
+                        field.isNegative.set(value, isNegative xor wasNegative)
+                    }
                 },
-                listOf(
-                    ConstantFormatStructure<T>("-").parser(signsInverted),
-                   format.parser(signsInverted = !signsInverted),
-                ).concat()
-            )
-        )
+                withPlusSign = withPlusSign,
+                whatThisExpects = "sign for ${this.fields}"
+            )),
+            emptyList()
+        ), format.parser()
+        ).concat()
     }
-    is BasicFormatStructure -> directive.parser(signsInverted)
+    is BasicFormatStructure -> directive.parser()
     is AlternativesFormatStructure ->
-        ParserStructure(operations = emptyList(), followedBy = formats.map { it.parser(signsInverted) })
-    is ConcatenatedFormatStructure -> formats.map { it.parser(signsInverted) }.concat()
+        ParserStructure(operations = emptyList(), followedBy = formats.map { it.parser() })
+    is ConcatenatedFormatStructure -> formats.map { it.parser() }.concat()
 }
 
 internal class Format<T>(private val directives: ConcatenatedFormatStructure<T>) {

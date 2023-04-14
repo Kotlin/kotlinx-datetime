@@ -9,9 +9,12 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
+import kotlin.math.*
+import kotlin.reflect.*
 
 internal interface UtcOffsetFieldContainer {
-    var totalHours: Int?
+    var isNegative: Boolean?
+    var totalHoursAbs: Int?
     var minutesOfHour: Int?
     var secondsOfMinute: Int?
 }
@@ -87,51 +90,78 @@ public fun UtcOffset.Companion.parse(input: String, formatString: String): UtcOf
 public fun UtcOffset.Companion.parse(input: String, format: UtcOffsetFormat): UtcOffset = format.parse(input)
 
 internal fun UtcOffset.toIncompleteUtcOffset(): IncompleteUtcOffset =
-    IncompleteUtcOffset(totalSeconds / 3600, (totalSeconds / 60) % 60, totalSeconds % 60)
+    IncompleteUtcOffset(
+        totalSeconds < 0,
+        totalSeconds.absoluteValue / 3600,
+        (totalSeconds.absoluteValue / 60) % 60,
+        totalSeconds.absoluteValue % 60
+    )
 
 internal object OffsetFields {
-    val totalHours = SignedFieldSpec(
-        UtcOffsetFieldContainer::totalHours,
+    private val sign = object: FieldSign<UtcOffsetFieldContainer> {
+        override val isNegative = UtcOffsetFieldContainer::isNegative
+        override fun isZero(obj: UtcOffsetFieldContainer): Boolean =
+            (obj.totalHoursAbs ?: 0) == 0 && (obj.minutesOfHour ?: 0) == 0 && (obj.secondsOfMinute ?: 0) == 0
+    }
+    val totalHoursAbs = UnsignedFieldSpec(
+        UtcOffsetFieldContainer::totalHoursAbs,
         defaultValue = 0,
-        maxAbsoluteValue = 18,
+        minValue = 0,
+        maxValue = 18,
+        sign = sign,
     )
-    val minutesOfHour = SignedFieldSpec(
+    val minutesOfHour = UnsignedFieldSpec(
         UtcOffsetFieldContainer::minutesOfHour,
         defaultValue = 0,
-        maxAbsoluteValue = 59,
+        minValue = 0,
+        maxValue = 59,
+        sign = sign,
     )
-    val secondsOfMinute = SignedFieldSpec(
+    val secondsOfMinute = UnsignedFieldSpec(
         UtcOffsetFieldContainer::secondsOfMinute,
         defaultValue = 0,
-        maxAbsoluteValue = 59,
+        minValue = 0,
+        maxValue = 59,
+        sign = sign,
     )
 }
 
 internal class IncompleteUtcOffset(
-    override var totalHours: Int? = null,
+    override var isNegative: Boolean? = null,
+    override var totalHoursAbs: Int? = null,
     override var minutesOfHour: Int? = null,
     override var secondsOfMinute: Int? = null,
 ) : UtcOffsetFieldContainer, Copyable<IncompleteUtcOffset> {
-    fun toUtcOffset(): UtcOffset = UtcOffset(totalHours, minutesOfHour, secondsOfMinute)
+
+    fun toUtcOffset(): UtcOffset {
+        val sign = if (isNegative == true) -1 else 1
+        return UtcOffset(
+            totalHoursAbs?.let { it * sign }, minutesOfHour?.let { it * sign }, secondsOfMinute?.let { it * sign }
+        )
+    }
 
     override fun equals(other: Any?): Boolean =
-        other is IncompleteUtcOffset && totalHours == other.totalHours &&
+        other is IncompleteUtcOffset && isNegative == other.isNegative && totalHoursAbs == other.totalHoursAbs &&
                 minutesOfHour == other.minutesOfHour && secondsOfMinute == other.secondsOfMinute
 
     override fun hashCode(): Int =
-        totalHours.hashCode() * 31 + minutesOfHour.hashCode() * 31 + secondsOfMinute.hashCode()
+        isNegative.hashCode() + totalHoursAbs.hashCode() + minutesOfHour.hashCode() + secondsOfMinute.hashCode()
 
-    override fun copy(): IncompleteUtcOffset = IncompleteUtcOffset(totalHours, minutesOfHour, secondsOfMinute)
+    override fun copy(): IncompleteUtcOffset =
+        IncompleteUtcOffset(isNegative, totalHoursAbs, minutesOfHour, secondsOfMinute)
+
+    override fun toString(): String =
+        "${isNegative?.let { if (it) "-" else "+" } ?: " " }${totalHoursAbs ?: "??"}:${minutesOfHour ?: "??"}:${secondsOfMinute ?: "??"}"
 }
 
 internal class UtcOffsetWholeHoursDirective(minDigits: Int) :
-    SignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHours, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHoursAbs, minDigits)
 
 internal class UtcOffsetMinuteOfHourDirective(minDigits: Int) :
-    SignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits)
 
 internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
-    SignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits)
 
 internal object UtcOffsetFormatBuilderSpec: BuilderSpec<UtcOffsetFieldContainer>(
     mapOf(

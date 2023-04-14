@@ -42,8 +42,8 @@ internal fun <T> AppendableFormatStructure<T>.appendFormatString(format: String,
         currentBuilder.add(
             when (sign) {
                 null -> format
-                '+' -> SignedFormatStructure(format, plusSignRequired = true)
-                '-' -> SignedFormatStructure(format, plusSignRequired = false)
+                '+' -> SignedFormatStructure(format, withPlusSign = true)
+                '-' -> SignedFormatStructure(format, withPlusSign = false)
                 else -> throw IllegalArgumentException("Unexpected sign $sign")
             }
         )

@@ -9,6 +9,14 @@ import kotlin.reflect.*
 
 private typealias Accessor<Object, Field> = KMutableProperty1<Object, Field?>
 
+internal interface FieldSign<in Target> {
+    /**
+     * The field that is `true` if the value of the field is known to be negative, and `false` otherwise.
+     */
+    val isNegative: Accessor<in Target, Boolean>
+    fun isZero(obj: Target): Boolean
+}
+
 /**
  * A specification of a field.
  *
@@ -33,6 +41,11 @@ internal interface FieldSpec<in Target, Type> {
      * The name of the field.
      */
     val name: String
+
+    /**
+     * The sign corresponding to the field value, or `null` if the field has none.
+     */
+    val sign: FieldSign<Target>?
 }
 
 internal abstract class AbstractFieldSpec<in Target, Type>: FieldSpec<Target, Type> {
@@ -76,6 +89,7 @@ internal class GenericFieldSpec<in Target, Type>(
     override val accessor: Accessor<in Target, Type>,
     override val name: String = accessor.name,
     override val defaultValue: Type? = null,
+    override val sign: FieldSign<Target>? = null,
 ) : AbstractFieldSpec<Target, Type>()
 
 /**
@@ -93,6 +107,7 @@ internal class UnsignedFieldSpec<in Target>(
     val maxValue: Int,
     override val name: String = accessor.name,
     override val defaultValue: Int? = null,
+    override val sign: FieldSign<Target>? = null,
 ) : AbstractFieldSpec<Target, Int>() {
     /**
      * The maximum length of the field when represented as a decimal number.
@@ -110,6 +125,7 @@ internal class SignedFieldSpec<in Target>(
     val maxAbsoluteValue: Int?,
     override val name: String = accessor.name,
     override val defaultValue: Int? = null,
+    override val sign: FieldSign<Target>? = null,
 ) : AbstractFieldSpec<Target, Int>() {
     val maxDigits: Int? = when {
         maxAbsoluteValue == null -> null

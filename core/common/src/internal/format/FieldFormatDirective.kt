@@ -20,11 +20,6 @@ internal interface FieldFormatDirective<in Target> {
     val field: FieldSpec<Target, *>
 
     /**
-     * For numeric signed values, the way to check if the field is negative. For everything else, `null`.
-     */
-    val signGetter: ((Target) -> Int)?
-
-    /**
      * The formatter operation that formats the field.
      */
     fun formatter(): FormatterOperation<Target>
@@ -32,7 +27,7 @@ internal interface FieldFormatDirective<in Target> {
     /**
      * The parser structure that parses the field.
      */
-    fun parser(signsInverted: Boolean): ParserStructure<Target>
+    fun parser(): ParserStructure<Target>
 }
 
 /**
@@ -44,8 +39,6 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
     final override val field: UnsignedFieldSpec<Target>,
     private val minDigits: Int,
 ) : FieldFormatDirective<Target> {
-
-    final override val signGetter: ((Target) -> Int)? = null
 
     private val maxDigits: Int = field.maxDigits
 
@@ -62,7 +55,7 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
             zeroPadding = minDigits,
         )
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+    override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(
                 NumberSpanParserOperation(
@@ -94,8 +87,6 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         }
     }
 
-    final override val signGetter: ((Target) -> Int)? = null
-
     private fun getStringValue(target: Target): String = values[field.getNotNull(target) - field.minValue]
 
     private fun setStringValue(target: Target, value: String) {
@@ -105,7 +96,7 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
     override fun formatter(): FormatterOperation<Target> =
         StringFormatterOperation(::getStringValue)
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+    override fun parser(): ParserStructure<Target> =
         ParserStructure(listOf(
             StringSetParserOperation(values, ::setStringValue, "One of $values for ${field.name}")
         ), emptyList())
@@ -118,8 +109,6 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
     final override val field: FieldSpec<Target, Type>,
     private val mapping: Map<Type, String>,
 ) : FieldFormatDirective<Target> {
-
-    final override val signGetter: ((Target) -> Int)? = null
 
     private val reverseMapping = mapping.entries.associate { it.value to it.key }
 
@@ -136,7 +125,7 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
     override fun formatter(): FormatterOperation<Target> =
         StringFormatterOperation(::getStringValue)
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+    override fun parser(): ParserStructure<Target> =
         ParserStructure(listOf(
             StringSetParserOperation(mapping.values, ::setStringValue, "One of ${mapping.values} for ${field.name}")
         ), emptyList())
@@ -147,8 +136,6 @@ internal abstract class StringFieldFormatDirective<in Target>(
     private val acceptedStrings: Set<String>,
 ) : FieldFormatDirective<Target> {
 
-    final override val signGetter: ((Target) -> Int)? = null
-
     init {
         require(acceptedStrings.isNotEmpty())
     }
@@ -156,7 +143,7 @@ internal abstract class StringFieldFormatDirective<in Target>(
     override fun formatter(): FormatterOperation<Target> =
         StringFormatterOperation(field::getNotNull)
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+    override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(StringSetParserOperation(acceptedStrings, field::setWithoutReassigning, field.name)),
             emptyList()
@@ -170,9 +157,6 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
     private val outputPlusOnExceededPadding: Boolean = false,
 ) : FieldFormatDirective<Target> {
 
-    final override val signGetter: ((Target) -> Int) = ::signGetterImpl
-    private fun signGetterImpl(target: Target): Int = (field.accessor.get(target) ?: 0).sign
-
     init {
         require(minDigits == null || minDigits >= 0)
         require(maxDigits == null || minDigits == null || maxDigits >= minDigits)
@@ -185,14 +169,13 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
             outputPlusOnExceedsPad = outputPlusOnExceededPadding,
         )
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> =
+    override fun parser(): ParserStructure<Target> =
         SignedIntParser(
             minDigits = minDigits,
             maxDigits = maxDigits,
             field::setWithoutReassigning,
             field.name,
             plusOnExceedsPad = outputPlusOnExceededPadding,
-            signsInverted = signsInverted
         )
 }
 
@@ -201,12 +184,10 @@ internal abstract class DecimalFractionFieldFormatDirective<in Target>(
     private val minDigits: Int?,
     private val maxDigits: Int?,
 ) : FieldFormatDirective<Target> {
-    override val signGetter: ((Target) -> Int)? = null
-
     override fun formatter(): FormatterOperation<Target> =
         DecimalFractionFormatterOperation(field::getNotNull, minDigits, maxDigits)
 
-    override fun parser(signsInverted: Boolean): ParserStructure<Target> = ParserStructure(
+    override fun parser(): ParserStructure<Target> = ParserStructure(
         listOf(
             NumberSpanParserOperation(
                 listOf(FractionPartConsumer(minDigits, maxDigits, field::setWithoutReassigning, field.name))

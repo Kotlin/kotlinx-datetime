@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 import kotlinx.datetime.internal.safeMultiply
+import kotlin.math.*
 
 /**
  * A collection of date-time fields.
@@ -69,9 +70,11 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      * If any of the fields are already set, they will be overwritten.
      */
     public fun populateFrom(utcOffset: UtcOffset) {
-        offsetTotalHours = utcOffset.totalSeconds / 3600
-        offsetMinutesOfHour = (utcOffset.totalSeconds % 3600) / 60
-        offsetSecondsOfMinute = utcOffset.totalSeconds % 60
+        offsetIsNegative = utcOffset.totalSeconds < 0
+        val seconds = utcOffset.totalSeconds.absoluteValue
+        offsetTotalHours = seconds / 3600
+        offsetMinutesOfHour = (seconds % 3600) / 60
+        offsetSecondsOfMinute = seconds % 60
     }
 
     /**
@@ -123,11 +126,13 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     /** Returns the nanosecond-of-second time component of this date/time value. */
     public var nanosecond: Int? by contents.time::nanosecond
 
-    /** The total amount of full hours in the UTC offset. */
-    public var offsetTotalHours: Int? by contents.offset::totalHours
-    /** The amount of minutes that don't add to a whole hour in the UTC offset. */
+    /** True if the offset is negative. */
+    public var offsetIsNegative: Boolean? by contents.offset::isNegative
+    /** The total amount of full hours in the UTC offset, in the range [0; 18]. */
+    public var offsetTotalHours: Int? by contents.offset::totalHoursAbs
+    /** The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59]. */
     public var offsetMinutesOfHour: Int? by contents.offset::minutesOfHour
-    /** The amount of seconds that don't add to a whole minute in the UTC offset. */
+    /** The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59]. */
     public var offsetSecondsOfMinute: Int? by contents.offset::secondsOfMinute
 
     public var timeZoneId: String? by contents::timeZoneId
