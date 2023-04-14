@@ -130,7 +130,8 @@ private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
                 isNegativeSetter = { value, isNegative ->
                     for (field in fields) {
                         val wasNegative = field.isNegative.get(value) == true
-                        field.isNegative.set(value, isNegative xor wasNegative)
+                        // TODO: replacing `!=` with `xor` fails on JS
+                        field.isNegative.set(value, isNegative != wasNegative)
                     }
                 },
                 withPlusSign = withPlusSign,
