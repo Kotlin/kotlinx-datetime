@@ -37,13 +37,6 @@ internal class ParserStructure<in Output>(
 ) {
     override fun toString(): String =
         "${operations.joinToString(", ")}(${followedBy.joinToString(";")})"
-
-    fun canStartWithNumber(): Boolean =
-        when (operations.firstOrNull()?.let { it is NumberSpanParserOperation }) {
-            null -> followedBy.any { it.canStartWithNumber() }
-            true -> true
-            false -> false
-        }
 }
 
 // TODO: O(size of the resulting parser ^ 2), but can be O(size of the resulting parser)
@@ -142,8 +135,8 @@ internal class Parser<Output>(
         input: CharSequence,
         startIndex: Int,
         allowDanglingInput: Boolean,
-        onError: (ParseException) -> Unit,
-        onSuccess: (Output) -> Unit
+        onError: (ParseError) -> Unit,
+        onSuccess: (Int, Output) -> Unit
     ) {
         var states = mutableListOf(ParserState(defaultState(), StructureIndex(0, commands), startIndex))
         while (states.isNotEmpty()) {
@@ -165,9 +158,9 @@ internal class Parser<Output>(
                     }.also {
                         if (it.isEmpty()) {
                             if (allowDanglingInput || state.inputPosition == input.length) {
-                                onSuccess(state.output)
+                                onSuccess(state.inputPosition, state.output)
                             } else {
-                                onError(ParseException("There is more input to consume", state.inputPosition))
+                                onError(ParseError(state.inputPosition) { "There is more input to consume" })
                             }
                         }
                     }
@@ -178,32 +171,39 @@ internal class Parser<Output>(
 
 
     fun match(input: CharSequence, startIndex: Int = 0): Output {
-        val errors = mutableListOf<ParseException>()
-        parse(input, startIndex, allowDanglingInput = false, { errors.add(it) }, { return@match it })
+        val errors = mutableListOf<ParseError>()
+        parse(input, startIndex, allowDanglingInput = false, { errors.add(it) }, { _, out -> return@match out })
         errors.sortByDescending { it.position }
         // `errors` can not be empty because each parser will have (successes + failures) >= 1, and here, successes == 0
-        errors.first().let {
+        ParseException(errors.first()).let {
             for (error in errors.drop(1)) {
-                it.addSuppressed(error)
+                it.addSuppressed(ParseException(error))
             }
             throw it
         }
     }
 
-    // TODO: only take the longest match from the given start position
     fun find(input: CharSequence, startIndex: Int = 0): Output? {
-        forEachNonInternalIndex(input, startIndex) { index ->
-            parse(input, index, allowDanglingInput = true, {}, { return@find it })
+        iterateOverIndices(input, startIndex) { index ->
+            parse(input, index, allowDanglingInput = true, {}, { _, out -> return@find out })
+            null
         }
         return null
     }
 
-    // TODO: skip the indices in already-parsed parts of the input
-    // TODO: only take the longest match from the given start position
     fun findAll(input: CharSequence, startIndex: Int = 0): List<Output> =
         mutableListOf<Output>().apply {
-            forEachNonInternalIndex(input, startIndex) { index ->
-                parse(input, index, allowDanglingInput = true, {}, { add(it) })
+            iterateOverIndices(input, startIndex) { index ->
+                var result: Output? = null
+                var maxParsed: Int? = null
+                parse(input, index, allowDanglingInput = true, {}) { newIndex, out ->
+                    if (newIndex > (maxParsed ?: -1)) {
+                        result = out
+                        maxParsed = newIndex
+                    }
+                }
+                result?.let { add(it) }
+                maxParsed
             }
         }
 
@@ -220,38 +220,24 @@ internal class Parser<Output>(
 }
 
 /**
- * Iterates over all the indices in [input] that are not in the middle of either a word or a number.
+ * Iterates over the indices in [input] that are not in the middle of a number.
  *
- * For example, in the string "Tom is 10", the start indices of the following strings are returned:
- * - "Tom is 10"
- * - " is 10"
- * - "is 10"
- * - " 10"
- * - "10"
+ * The purpose is to avoid parsing "2020-01-01" in "202020-01-01".
  *
- * The purpose is to avoid parsing "UTC" in "OUTCOME" or "2020-01-01" in "202020-01-01".
+ * [startIndex] is the first index to consider.
+ * [block] is invoked for each index that is not in the middle of a number. It may return the next index to consider.
  */
-// TODO: permit starting parsing in the middle of the word, since, in some languages, spaces are not used
-private inline fun forEachNonInternalIndex(input: CharSequence, startIndex: Int, block: (Int) -> Unit) {
-    val OUTSIDE_SPAN = 0
-    val IN_NUMBER = 1
-    val IN_WORD = 2
-    var currentState = OUTSIDE_SPAN
+private inline fun iterateOverIndices(input: CharSequence, startIndex: Int, block: (Int) -> Int?) {
     // `Regex.find` allows lookbehinds to see the string before the `startIndex`, so we do that as well
-    if (startIndex != 0) {
-        if (input[startIndex - 1].isDigit()) {
-            currentState = IN_NUMBER
-        } else if (input[startIndex - 1].isLetter()) {
-            currentState = IN_WORD
+    var i = if (startIndex > 0 && input[startIndex - 1].isLetterOrDigit()) startIndex
+    else block(startIndex) ?: (startIndex + 1)
+    while (i < input.length) {
+        i = block(i) ?: (i + 1)
+        if (input[i - 1].isDigit()) {
+            while (i < input.length && input[i].isDigit()) {
+                i++
+            }
         }
-    }
-    for (i in startIndex..input.length) {
-        if (input[i].isDigit() && currentState == IN_NUMBER || input[i].isLetter() && currentState == IN_WORD) {
-            continue
-        }
-        if (input[i].isDigit()) currentState = IN_NUMBER
-        if (input[i].isLetter()) currentState = IN_WORD
-        block(i)
     }
 }
 

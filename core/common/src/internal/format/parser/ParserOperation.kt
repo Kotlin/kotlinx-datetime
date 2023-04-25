@@ -21,12 +21,11 @@ internal class PlainStringParserOperation<Output>(val string: String) : ParserOp
 
     override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
         if (startIndex + string.length > input.length)
-            return ParseResult.Error("Unexpected end of input: yet to parse '$string'", startIndex)
+            return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse '$string'" }
         for (i in string.indices) {
-            if (input[startIndex + i] != string[i]) return ParseResult.Error(
-                "Expected $string but got ${input[startIndex + i]}",
-                startIndex
-            )
+            if (input[startIndex + i] != string[i]) return ParseResult.Error(startIndex) {
+                "Expected $string but got ${input[startIndex + i]}"
+            }
         }
         return ParseResult.Ok(startIndex + string.length)
     }
@@ -71,16 +70,15 @@ internal class NumberSpanParserOperation<Output>(
 
     override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
         if (startIndex + minLength > input.length)
-            return ParseResult.Error("Unexpected end of input: yet to parse $whatThisExpects", startIndex)
+            return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse $whatThisExpects" }
         var digitsInRow = 0
         while (startIndex + digitsInRow < input.length && input[startIndex + digitsInRow].isDigit()) {
             ++digitsInRow
         }
         if (digitsInRow < minLength)
-            return ParseResult.Error(
-                "Only found $digitsInRow digits in a row, but need to parse $whatThisExpects",
-                startIndex
-            )
+            return ParseResult.Error(startIndex) {
+                "Only found $digitsInRow digits in a row, but need to parse $whatThisExpects"
+            }
         val lengths = consumers.map { it.length ?: (digitsInRow - minLength + 1) }
         var index = startIndex
         for (i in lengths.indices) {
@@ -88,11 +86,9 @@ internal class NumberSpanParserOperation<Output>(
             try {
                 with(consumers[i]) { consume(numberString) }
             } catch (e: Throwable) {
-                return ParseResult.Error(
-                    "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}",
-                    index,
-                    e
-                )
+                return ParseResult.Error(index, e) {
+                    "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}"
+                }
             }
             index += lengths[i]
         }
@@ -119,7 +115,7 @@ internal class SignParser<Output>(
             isNegativeSetter(this, false)
             return ParseResult.Ok(startIndex + 1)
         }
-        return ParseResult.Error("Expected $whatThisExpects but got $char", startIndex)
+        return ParseResult.Error(startIndex) { "Expected $whatThisExpects but got $char" }
     }
 
     override fun toString(): String = whatThisExpects
@@ -194,7 +190,7 @@ internal class StringSetParserOperation<Output>(
             setter(this, input.subSequence(startIndex, lastMatch).toString())
             ParseResult.Ok(lastMatch)
         } else {
-            ParseResult.Error("Expected $whatThisExpects but got ${input[startIndex]}", startIndex)
+            ParseResult.Error(startIndex) { "Expected $whatThisExpects but got ${input[startIndex]}" }
         }
     }
 }
