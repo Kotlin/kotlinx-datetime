@@ -76,12 +76,14 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): DateTimeFormatBuilder = this
     }
+
+    override fun toString(): String = actualFormat.toString()
 
 }
 

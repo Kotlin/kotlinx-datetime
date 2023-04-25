@@ -74,6 +74,8 @@ public class LocalDateFormat private constructor(private val actualFormat: Forma
         override fun castToGeneric(actualSelf: Builder): DateFormatBuilder = this
     }
 
+    override fun toString(): String = actualFormat.toString()
+
 }
 
 public fun LocalDate.format(formatString: String): String =
@@ -155,19 +157,54 @@ internal class YearDirective(digits: Int, outputPlusOnExceededPadding: Boolean) 
         minDigits = digits,
         maxDigits = null,
         outputPlusOnExceededPadding = outputPlusOnExceededPadding,
-    )
+    ) {
+    override val formatStringRepresentation: Pair<String?, String>? = when {
+        outputPlusOnExceededPadding -> null
+        else -> DateFormatBuilderSpec.name to ("y".repeat(digits))
+    }
+    override val builderRepresentation: String = when {
+        digits == 1 && !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}()"
+        !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}($digits)"
+        digits == 1 -> "${DateFormatBuilder::appendYear.name}(outputPlusOnExceededPadding = true)"
+        else -> "${DateFormatBuilder::appendYear.name}($digits, $outputPlusOnExceededPadding)"
+    }
+}
 
 internal class MonthDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, minDigits)
+    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        DateFormatBuilderSpec.name to ("m".repeat(minDigits))
+    override val builderRepresentation: String = when (minDigits) {
+        1 -> "${DateFormatBuilder::appendMonthNumber.name}()"
+        else -> "${DateFormatBuilder::appendMonthNumber.name}($minDigits)"
+    }
+}
 
 internal class MonthNameDirective(names: List<String>) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names)
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names) {
+    override val formatStringRepresentation: Pair<String?, String>? = null
+    override val builderRepresentation: String =
+        "${DateFormatBuilder::appendMonthName.name}(${names.repr(String::repr)})"
+}
 
 internal class DayDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits)
+    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        DateFormatBuilderSpec.name to "d".repeat(minDigits)
+
+    override val builderRepresentation: String = when (minDigits) {
+        1 -> "${DateFormatBuilder::appendDayOfMonth.name}()"
+        else -> "${DateFormatBuilder::appendDayOfMonth.name}($minDigits)"
+    }
+}
 
 internal class DayOfWeekDirective(names: List<String>) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names)
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names) {
+    override val formatStringRepresentation: Pair<String?, String>? = null
+
+    override val builderRepresentation: String =
+        "${DateFormatBuilder::appendDayOfWeek.name}(${names.repr(String::repr)})"
+}
 
 internal object DateFormatBuilderSpec: BuilderSpec<DateFieldContainer>(
     mapOf(

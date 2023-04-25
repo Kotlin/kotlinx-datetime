@@ -356,7 +356,7 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
         override fun appendOffsetTotalHours(minDigits: Int) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
@@ -375,6 +375,8 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
         override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): ValueBagFormatBuilder = this
     }
+
+    override fun toString(): String = actualFormat.toString()
 
 }
 
@@ -436,7 +438,12 @@ internal class ValueBagContents internal constructor(
 internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
 
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
-    StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones)
+    StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
+
+    override val formatStringRepresentation: Pair<String?, String>? = null
+
+    override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
+}
 
 
 internal object ValueBagFormatBuilderSpec: BuilderSpec<ValueBagContents>(

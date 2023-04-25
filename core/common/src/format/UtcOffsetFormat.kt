@@ -10,7 +10,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 import kotlin.math.*
-import kotlin.reflect.*
 
 internal interface UtcOffsetFieldContainer {
     var isNegative: Boolean?
@@ -76,6 +75,8 @@ public class UtcOffsetFormat internal constructor(private val actualFormat: Form
         override fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit) =
             super.withSharedSign(outputPlus, block)
     }
+
+    override fun toString(): String = actualFormat.toString()
 
 }
 
@@ -155,13 +156,31 @@ internal class IncompleteUtcOffset(
 }
 
 internal class UtcOffsetWholeHoursDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHoursAbs, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHoursAbs, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        UtcOffsetFormatBuilderSpec.name to "H".repeat(minDigits)
+
+    override val builderRepresentation: String =
+        "${UtcOffsetFormatBuilder::appendOffsetTotalHours.name}($minDigits)"
+}
 
 internal class UtcOffsetMinuteOfHourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        UtcOffsetFormatBuilderSpec.name to "m".repeat(minDigits)
+
+    override val builderRepresentation: String =
+        "${UtcOffsetFormatBuilder::appendOffsetMinutesOfHour.name}($minDigits)"
+}
 
 internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits)
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        UtcOffsetFormatBuilderSpec.name to "s".repeat(minDigits)
+
+    override val builderRepresentation: String =
+        "${UtcOffsetFormatBuilder::appendOffsetSecondsOfMinute.name}($minDigits)"
+}
 
 internal object UtcOffsetFormatBuilderSpec: BuilderSpec<UtcOffsetFieldContainer>(
     mapOf(

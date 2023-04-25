@@ -67,7 +67,7 @@ public interface TimeFormatBuilderFields {
      *
      * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
      */
-    public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
+    public fun appendSecondFraction(minLength: Int = 1, maxLength: Int? = null)
 }
 
 @DateTimeBuilder
@@ -139,13 +139,15 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
 
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
         override fun castToGeneric(actualSelf: Builder): TimeFormatBuilder = this
         override fun appendFormatString(formatString: String) = super.appendFormatString(formatString)
     }
+
+    override fun toString(): String = actualFormat.toString()
 
 }
 
@@ -251,9 +253,19 @@ internal class IncompleteLocalTime(
 
 internal class HourDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hour, minDigits)
+{
+    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("h".repeat(minDigits))
+
+    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendHour.name}($minDigits)"
+}
 
 internal class AmPmHourDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hourOfAmPm, minDigits)
+{
+    override val formatStringRepresentation: Pair<String?, String>? = null
+
+    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendAmPmHour.name}($minDigits)"
+}
 
 internal class AmPmMarkerDirective(amString: String, pmString: String) :
     NamedEnumIntFieldFormatDirective<TimeFieldContainer, Boolean>(
@@ -262,15 +274,45 @@ internal class AmPmMarkerDirective(amString: String, pmString: String) :
             true to pmString,
         )
     )
+{
+    override val formatStringRepresentation: Pair<String?, String>? = null
+
+    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendAmPmMarker.name}($amString, $pmString)"
+}
 
 internal class MinuteDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.minute, minDigits)
+{
+    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("m".repeat(minDigits))
+
+    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendMinute.name}($minDigits)"
+}
 
 internal class SecondDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.second, minDigits)
+{
+    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("s".repeat(minDigits))
 
-internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int? = null) :
+    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendSecond.name}($minDigits)"
+}
+
+internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits)
+{
+    override val formatStringRepresentation: Pair<String?, String>? =
+        if (maxDigits == null) {
+            TimeFormatBuilderSpec.name to "f".repeat(minDigits)
+        } else {
+            null
+        }
+
+    override val builderRepresentation: String = when {
+        minDigits == 1 && maxDigits == null -> "${TimeFormatBuilderFields::appendSecondFraction.name}()"
+        minDigits == 1 -> "${TimeFormatBuilderFields::appendSecondFraction.name}(maxLength = $maxDigits)"
+        maxDigits == null -> "${TimeFormatBuilderFields::appendSecondFraction.name}($minDigits)"
+        else -> "${TimeFormatBuilderFields::appendSecondFraction.name}($minDigits, $maxDigits)"
+    }
+}
 
 internal object TimeFormatBuilderSpec : BuilderSpec<TimeFieldContainer>(
     mapOf(
