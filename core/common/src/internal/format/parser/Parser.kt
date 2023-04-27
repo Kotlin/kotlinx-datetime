@@ -183,27 +183,37 @@ internal class Parser<Output>(
         }
     }
 
-    fun find(input: CharSequence, startIndex: Int = 0): Output? {
+    private fun <T> findLongestAtIndex(input: CharSequence, index: Int, transform: (Output) -> T?): Pair<T?, Int?> {
+        var result: T? = null
+        var maxParsed: Int? = null
+        parse(input, index, allowDanglingInput = true, {}) { newIndex, out ->
+            if (newIndex > (maxParsed ?: -1)) {
+                maxParsed = newIndex
+                transform(out)?.let {
+                    result = it
+                }
+            }
+        }
+        return Pair(result, maxParsed)
+    }
+
+    fun<T> find(input: CharSequence, startIndex: Int = 0, transform: (Output) -> T?): T? {
         iterateOverIndices(input, startIndex) { index ->
-            parse(input, index, allowDanglingInput = true, {}, { _, out -> return@find out })
-            null
+            val (value, newIndex) = findLongestAtIndex(input, index, transform)
+            if (value != null) {
+                return value
+            }
+            newIndex
         }
         return null
     }
 
-    fun findAll(input: CharSequence, startIndex: Int = 0): List<Output> =
-        mutableListOf<Output>().apply {
+    fun<T> findAll(input: CharSequence, startIndex: Int = 0, transform: (Output) -> T?): List<T> =
+        mutableListOf<T>().apply {
             iterateOverIndices(input, startIndex) { index ->
-                var result: Output? = null
-                var maxParsed: Int? = null
-                parse(input, index, allowDanglingInput = true, {}) { newIndex, out ->
-                    if (newIndex > (maxParsed ?: -1)) {
-                        result = out
-                        maxParsed = newIndex
-                    }
-                }
-                result?.let { add(it) }
-                maxParsed
+                val (value, newIndex) = findLongestAtIndex(input, index, transform)
+                value?.let { add(it) }
+                newIndex
             }
         }
 

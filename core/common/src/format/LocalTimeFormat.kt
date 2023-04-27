@@ -91,8 +91,8 @@ public interface TimeFormatBuilder : TimeFormatBuilderFields, FormatBuilder<Time
     override fun appendFormatString(formatString: String)
 }
 
-public class LocalTimeFormat private constructor(private val actualFormat: Format<TimeFieldContainer>) :
-    DateTimeFormat<LocalTime> by LocalTimeFormatImpl(actualFormat) {
+public class LocalTimeFormat private constructor(private val actualFormat: StringFormat<TimeFieldContainer>) :
+    Format<LocalTime> by LocalTimeFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: TimeFormatBuilder.() -> Unit): LocalTimeFormat {
             val builder = Builder(AppendableFormatStructure(TimeFormatBuilderSpec))
@@ -203,11 +203,11 @@ internal class IncompleteLocalTime(
         get() = if (isPm != null) hourField else null
         set(value) {
             if (value != null) {
+                isPm = value.mod(24) >= 12
                 hourField = value
-                isPm = value >= 12
             } else {
-                hourField = null
                 isPm = null
+                hourField = null
             }
         }
 
@@ -310,8 +310,8 @@ internal object TimeFormatBuilderSpec : BuilderSpec<TimeFieldContainer>(
     const val name = "lt"
 }
 
-private class LocalTimeFormatImpl(actualFormat: Format<TimeFieldContainer>) :
-    AbstractDateTimeFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
+private class LocalTimeFormatImpl(actualFormat: StringFormat<TimeFieldContainer>) :
+    AbstractFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime = value.toIncompleteLocalTime()
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalTime): LocalTime = intermediate.toLocalTime()

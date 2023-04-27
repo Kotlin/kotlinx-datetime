@@ -274,10 +274,10 @@ public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuil
 }
 
 /**
- * A [Format] for [ValueBag] values.
+ * A [StringFormat] for [ValueBag] values.
  */
-public class ValueBagFormat private constructor(private val actualFormat: Format<ValueBagContents>) :
-    DateTimeFormat<ValueBag> by ValueBagFormatImpl(actualFormat) {
+public class ValueBagFormat private constructor(private val actualFormat: StringFormat<ValueBagContents>) :
+    Format<ValueBag> by ValueBagFormatImpl(actualFormat) {
     public companion object {
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
@@ -452,8 +452,8 @@ internal object ValueBagFormatBuilderSpec : BuilderSpec<ValueBagContents>(
     emptyMap()
 )
 
-private class ValueBagFormatImpl(actualFormat: Format<ValueBagContents>) :
-    AbstractDateTimeFormat<ValueBag, ValueBagContents>(actualFormat) {
+private class ValueBagFormatImpl(actualFormat: StringFormat<ValueBagContents>) :
+    AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
     override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
 
     override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)

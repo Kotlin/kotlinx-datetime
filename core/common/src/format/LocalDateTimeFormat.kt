@@ -8,14 +8,13 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.LruCache
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.parser.*
 
 @DateTimeBuilder
 public interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
     FormatBuilder<DateTimeFormatBuilder>
 
-public class LocalDateTimeFormat private constructor(private val actualFormat: Format<DateTimeFieldContainer>) :
-    DateTimeFormat<LocalDateTime> by LocalDateTimeFormatImpl(actualFormat) {
+public class LocalDateTimeFormat private constructor(private val actualFormat: StringFormat<DateTimeFieldContainer>) :
+    Format<LocalDateTime> by LocalDateTimeFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {
             val builder = Builder(AppendableFormatStructure(DateTimeFormatBuilderSpec))
@@ -115,8 +114,8 @@ internal object DateTimeFormatBuilderSpec : BuilderSpec<DateTimeFieldContainer>(
     const val name = "ld"
 }
 
-private class LocalDateTimeFormatImpl(actualFormat: Format<DateTimeFieldContainer>) :
-    AbstractDateTimeFormat<LocalDateTime, DateTimeFieldContainer>(actualFormat) {
+private class LocalDateTimeFormatImpl(actualFormat: StringFormat<DateTimeFieldContainer>) :
+    AbstractFormat<LocalDateTime, DateTimeFieldContainer>(actualFormat) {
     override fun intermediateFromValue(value: LocalDateTime): DateTimeFieldContainer =
         value.toIncompleteLocalDateTime()
 

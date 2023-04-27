@@ -8,7 +8,6 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.parser.*
 
 public interface DateFormatBuilderFields {
     public fun appendYear(minDigits: Int = 1, outputPlusOnExceededPadding: Boolean = false)
@@ -21,8 +20,8 @@ public interface DateFormatBuilderFields {
 @DateTimeBuilder
 public interface DateFormatBuilder : DateFormatBuilderFields, FormatBuilder<DateFormatBuilder>
 
-public class LocalDateFormat private constructor(private val actualFormat: Format<DateFieldContainer>)
-    : DateTimeFormat<LocalDate> by LocalDateFormatImpl(actualFormat) {
+public class LocalDateFormat private constructor(private val actualFormat: StringFormat<DateFieldContainer>)
+    : Format<LocalDate> by LocalDateFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: DateFormatBuilder.() -> Unit): LocalDateFormat {
             val builder = Builder(AppendableFormatStructure(DateFormatBuilderSpec))
@@ -204,8 +203,8 @@ internal object DateFormatBuilderSpec: BuilderSpec<DateFieldContainer>(
     const val name = "ld"
 }
 
-private class LocalDateFormatImpl(actualFormat: Format<IncompleteLocalDate>)
-    : AbstractDateTimeFormat<LocalDate, IncompleteLocalDate>(actualFormat)
+private class LocalDateFormatImpl(actualFormat: StringFormat<IncompleteLocalDate>)
+    : AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat)
 {
     override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
 

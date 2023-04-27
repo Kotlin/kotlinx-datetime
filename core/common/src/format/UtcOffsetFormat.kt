@@ -8,7 +8,6 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.parser.*
 import kotlin.math.*
 
 internal interface UtcOffsetFieldContainer {
@@ -29,8 +28,8 @@ public interface UtcOffsetFormatBuilder : UtcOffsetFormatBuilderFields, FormatBu
     public fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit)
 }
 
-public class UtcOffsetFormat internal constructor(private val actualFormat: Format<UtcOffsetFieldContainer>) :
-    DateTimeFormat<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
+public class UtcOffsetFormat internal constructor(private val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
+    Format<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: UtcOffsetFormatBuilder.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure(UtcOffsetFormatBuilderSpec))
@@ -180,8 +179,8 @@ internal object UtcOffsetFormatBuilderSpec : BuilderSpec<UtcOffsetFieldContainer
     const val name = "uo"
 }
 
-private class UtcOffsetFormatImpl(actualFormat: Format<UtcOffsetFieldContainer>) :
-    AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
+private class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
+    AbstractFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
     override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset = value.toIncompleteUtcOffset()
 
     override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()

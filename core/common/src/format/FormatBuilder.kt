@@ -125,7 +125,7 @@ internal interface AbstractFormatBuilder<Target, out UserSelf, ActualSelf> :
         )
     }
 
-    fun build(): Format<Target> = Format(actualBuilder.build())
+    fun build(): StringFormat<Target> = StringFormat(actualBuilder.build())
 }
 
 internal interface Copyable<Self> {
