@@ -21,7 +21,8 @@ public interface DateFormatBuilderFields {
 @DateTimeBuilder
 public interface DateFormatBuilder : DateFormatBuilderFields, FormatBuilder<DateFormatBuilder>
 
-public class LocalDateFormat private constructor(private val actualFormat: Format<DateFieldContainer>) {
+public class LocalDateFormat private constructor(private val actualFormat: Format<DateFieldContainer>)
+    : DateTimeFormat<LocalDate> by LocalDateFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: DateFormatBuilder.() -> Unit): LocalDateFormat {
             val builder = Builder(AppendableFormatStructure(DateFormatBuilderSpec))
@@ -37,22 +38,6 @@ public class LocalDateFormat private constructor(private val actualFormat: Forma
         }
 
         internal val Cache = LruCache<String, LocalDateFormat>(16) { fromFormatString(it) }
-    }
-
-    public fun format(date: LocalDate): String =
-        StringBuilder().also {
-            actualFormat.formatter.format(date.toIncompleteLocalDate(), it)
-        }.toString()
-
-    public fun parse(input: String): LocalDate {
-        val parser = Parser(::IncompleteLocalDate, IncompleteLocalDate::copy, actualFormat.parser)
-        try {
-            return parser.match(input).toLocalDate()
-        } catch (e: ParseException) {
-            throw DateTimeFormatException("Failed to parse date from '$input'", e)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Invalid date '$input'", e)
-        }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
@@ -217,4 +202,14 @@ internal object DateFormatBuilderSpec: BuilderSpec<DateFieldContainer>(
     )
 ) {
     const val name = "ld"
+}
+
+private class LocalDateFormatImpl(actualFormat: Format<IncompleteLocalDate>)
+    : AbstractDateTimeFormat<LocalDate, IncompleteLocalDate>(actualFormat)
+{
+    override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
+
+    override fun valueFromIntermediate(intermediate: IncompleteLocalDate): LocalDate = intermediate.toLocalDate()
+
+    override fun newIntermediate(): IncompleteLocalDate = IncompleteLocalDate()
 }

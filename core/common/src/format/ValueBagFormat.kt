@@ -91,7 +91,8 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      */
     public fun populateFrom(instant: Instant, offset: UtcOffset) {
         val smallerInstant = Instant.fromEpochSeconds(
-            instant.epochSeconds % SECONDS_PER_10000_YEARS, instant.nanosecondsOfSecond)
+            instant.epochSeconds % SECONDS_PER_10000_YEARS, instant.nanosecondsOfSecond
+        )
         populateFrom(smallerInstant.toLocalDateTime(offset))
         populateFrom(offset)
         year = year!! + ((instant.epochSeconds / SECONDS_PER_10000_YEARS) * 10000).toInt()
@@ -99,16 +100,20 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 
     /** Returns the year component of the date. */
     public var year: Int? by contents.date::year
+
     /** Returns the number-of-month (1..12) component of the date. */
     public var monthNumber: Int? by contents.date::monthNumber
+
     /** Returns the month ([Month]) component of the date. */
     public var month: Month?
         get() = monthNumber?.let { Month(it) }
         set(value) {
             monthNumber = value?.number
         }
+
     /** Returns the day-of-month component of the date. */
     public var dayOfMonth: Int? by contents.date::dayOfMonth
+
     /** Returns the day-of-week component of the date. */
     public var dayOfWeek: DayOfWeek?
         get() = contents.date.isoDayOfWeek?.let { DayOfWeek(it) }
@@ -119,19 +124,25 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     // public var dayOfYear: Int
     /** Returns the hour-of-day time component of this date/time value. */
     public var hour: Int? by contents.time::hour
+
     /** Returns the minute-of-hour time component of this date/time value. */
     public var minute: Int? by contents.time::minute
+
     /** Returns the second-of-minute time component of this date/time value. */
     public var second: Int? by contents.time::second
+
     /** Returns the nanosecond-of-second time component of this date/time value. */
     public var nanosecond: Int? by contents.time::nanosecond
 
     /** True if the offset is negative. */
     public var offsetIsNegative: Boolean? by contents.offset::isNegative
+
     /** The total amount of full hours in the UTC offset, in the range [0; 18]. */
     public var offsetTotalHours: Int? by contents.offset::totalHoursAbs
+
     /** The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59]. */
     public var offsetMinutesOfHour: Int? by contents.offset::minutesOfHour
+
     /** The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59]. */
     public var offsetSecondsOfMinute: Int? by contents.offset::secondsOfMinute
 
@@ -239,8 +250,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
  */
 @DateTimeBuilder
 public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
-    UtcOffsetFormatBuilderFields, FormatBuilder<ValueBagFormatBuilder>
-{
+    UtcOffsetFormatBuilderFields, FormatBuilder<ValueBagFormatBuilder> {
     /**
      * Appends the IANA time zone identifier.
      */
@@ -266,7 +276,8 @@ public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuil
 /**
  * A [Format] for [ValueBag] values.
  */
-public class ValueBagFormat private constructor(private val actualFormat: Format<ValueBagContents>) {
+public class ValueBagFormat private constructor(private val actualFormat: Format<ValueBagContents>) :
+    DateTimeFormat<ValueBag> by ValueBagFormatImpl(actualFormat) {
     public companion object {
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
@@ -299,12 +310,12 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
-        public val ISO_INSTANT : ValueBagFormat = build {
+        public val ISO_INSTANT: ValueBagFormat = build {
             appendYear(minDigits = 4, outputPlusOnExceededPadding = true)
             appendFormatString("ld<'-'mm'-'dd>('T'|'t')lt<hh':'mm':'ss(|'.'f)>uo<('Z'|'z')|+(HH(|':'mm(|':'ss)))>")
         }
 
-        public val RFC_1123 : ValueBagFormat = build {
+        public val RFC_1123: ValueBagFormat = build {
             appendDayOfWeek(listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
             appendLiteral(", ")
             appendDayOfMonth()
@@ -314,26 +325,6 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
         }
 
         internal val Cache = LruCache<String, ValueBagFormat>(16) { fromFormatString(it) }
-    }
-
-    /**
-     * Formats the given [ValueBag] as a string.
-     */
-    public fun format(bag: ValueBag): String =
-        StringBuilder().also {
-            actualFormat.formatter.format(bag.contents, it)
-        }.toString()
-
-    /**
-     * Parses a [ValueBag] from the given string.
-     */
-    public fun parse(input: String): ValueBag {
-        val parser = Parser(::ValueBagContents, ValueBagContents::copy, actualFormat.parser)
-        try {
-            return ValueBag(parser.match(input))
-        } catch (e: ParseException) {
-            throw DateTimeFormatException("Failed to parse a value bag from '$input'", e)
-        }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
@@ -346,18 +337,23 @@ public class ValueBagFormat private constructor(private val actualFormat: Format
 
         override fun appendMonthName(names: List<String>) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
+
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
         override fun appendDayOfWeek(names: List<String>) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
+
         override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
         override fun appendAmPmHour(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+
         override fun appendAmPmMarker(amString: String, pmString: String) =
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
+
         override fun appendOffsetTotalHours(minDigits: Int) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
 
@@ -431,6 +427,7 @@ internal class ValueBagContents internal constructor(
     override fun equals(other: Any?): Boolean =
         other is ValueBagContents && other.date == date && other.time == time &&
             other.offset == offset && other.timeZoneId == timeZoneId
+
     override fun hashCode(): Int =
         date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
 }
@@ -446,7 +443,7 @@ internal class TimeZoneIdDirective(knownZones: Set<String>) :
 }
 
 
-internal object ValueBagFormatBuilderSpec: BuilderSpec<ValueBagContents>(
+internal object ValueBagFormatBuilderSpec : BuilderSpec<ValueBagContents>(
     mapOf(
         DateFormatBuilderSpec.name to DateFormatBuilderSpec,
         TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
@@ -454,3 +451,12 @@ internal object ValueBagFormatBuilderSpec: BuilderSpec<ValueBagContents>(
     ),
     emptyMap()
 )
+
+private class ValueBagFormatImpl(actualFormat: Format<ValueBagContents>) :
+    AbstractDateTimeFormat<ValueBag, ValueBagContents>(actualFormat) {
+    override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
+
+    override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)
+
+    override fun newIntermediate(): ValueBagContents = ValueBagContents()
+}

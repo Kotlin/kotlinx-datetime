@@ -14,7 +14,8 @@ import kotlinx.datetime.internal.format.parser.*
 public interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
     FormatBuilder<DateTimeFormatBuilder>
 
-public class LocalDateTimeFormat private constructor(private val actualFormat: Format<DateTimeFieldContainer>) {
+public class LocalDateTimeFormat private constructor(private val actualFormat: Format<DateTimeFieldContainer>) :
+    DateTimeFormat<LocalDateTime> by LocalDateTimeFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {
             val builder = Builder(AppendableFormatStructure(DateTimeFormatBuilderSpec))
@@ -22,7 +23,8 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
             return LocalDateTimeFormat(builder.build())
         }
 
-        public fun fromFormatString(formatString: String): LocalDateTimeFormat = build { appendFormatString(formatString) }
+        public fun fromFormatString(formatString: String): LocalDateTimeFormat =
+            build { appendFormatString(formatString) }
 
         /**
          * ISO-8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
@@ -41,39 +43,28 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: F
         internal val Cache = LruCache<String, LocalDateTimeFormat>(16) { fromFormatString(it) }
     }
 
-    public fun format(date: LocalDateTime): String =
-        StringBuilder().also {
-            actualFormat.formatter.format(date.toIncompleteLocalDateTime(), it)
-        }.toString()
-
-    public fun parse(input: String): LocalDateTime {
-        val parser = Parser(::IncompleteLocalDateTime, IncompleteLocalDateTime::copy, actualFormat.parser)
-        try {
-            return parser.match(input).toLocalDateTime()
-        } catch (e: ParseException) {
-            throw DateTimeFormatException("Failed to parse date-time from '$input'", e)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Invalid date-time '$input'", e)
-        }
-    }
-
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractFormatBuilder<DateTimeFieldContainer, DateTimeFormatBuilder, Builder>, DateTimeFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+
         override fun appendMonthNumber(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
 
         override fun appendMonthName(names: List<String>) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
+
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
         override fun appendDayOfWeek(names: List<String>) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
+
         override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
         override fun appendAmPmHour(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+
         override fun appendAmPmMarker(amString: String, pmString: String) =
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+
         override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
         override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
@@ -95,23 +86,26 @@ public fun LocalDateTime.format(format: LocalDateTimeFormat): String = format.fo
 public fun LocalDateTime.Companion.parse(input: String, formatString: String): LocalDateTime =
     LocalDateTimeFormat.Cache.get(formatString).parse(input)
 
-public fun LocalDateTime.Companion.parse(input: String, format: LocalDateTimeFormat): LocalDateTime = format.parse(input)
+public fun LocalDateTime.Companion.parse(input: String, format: LocalDateTimeFormat): LocalDateTime =
+    format.parse(input)
 
 internal fun LocalDateTime.toIncompleteLocalDateTime(): IncompleteLocalDateTime =
     IncompleteLocalDateTime(date.toIncompleteLocalDate(), time.toIncompleteLocalTime())
 
-internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
+internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer, Copyable<DateTimeFieldContainer> {
+    fun toLocalDateTime(): LocalDateTime
+}
 
 internal class IncompleteLocalDateTime(
     val date: IncompleteLocalDate = IncompleteLocalDate(),
     val time: IncompleteLocalTime = IncompleteLocalTime(),
-) : DateTimeFieldContainer, DateFieldContainer by date, TimeFieldContainer by time, Copyable<IncompleteLocalDateTime> {
-    fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
+) : DateTimeFieldContainer, DateFieldContainer by date, TimeFieldContainer by time, Copyable<DateTimeFieldContainer> {
+    override fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
 
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
 }
 
-internal object DateTimeFormatBuilderSpec: BuilderSpec<DateTimeFieldContainer>(
+internal object DateTimeFormatBuilderSpec : BuilderSpec<DateTimeFieldContainer>(
     mapOf(
         DateFormatBuilderSpec.name to DateFormatBuilderSpec,
         TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
@@ -119,4 +113,15 @@ internal object DateTimeFormatBuilderSpec: BuilderSpec<DateTimeFieldContainer>(
     emptyMap()
 ) {
     const val name = "ld"
+}
+
+private class LocalDateTimeFormatImpl(actualFormat: Format<DateTimeFieldContainer>) :
+    AbstractDateTimeFormat<LocalDateTime, DateTimeFieldContainer>(actualFormat) {
+    override fun intermediateFromValue(value: LocalDateTime): DateTimeFieldContainer =
+        value.toIncompleteLocalDateTime()
+
+    override fun valueFromIntermediate(intermediate: DateTimeFieldContainer): LocalDateTime =
+        intermediate.toLocalDateTime()
+
+    override fun newIntermediate(): DateTimeFieldContainer = IncompleteLocalDateTime()
 }

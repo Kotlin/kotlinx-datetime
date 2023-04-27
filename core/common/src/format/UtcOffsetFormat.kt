@@ -29,7 +29,8 @@ public interface UtcOffsetFormatBuilder : UtcOffsetFormatBuilderFields, FormatBu
     public fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit)
 }
 
-public class UtcOffsetFormat internal constructor(private val actualFormat: Format<UtcOffsetFieldContainer>) {
+public class UtcOffsetFormat internal constructor(private val actualFormat: Format<UtcOffsetFieldContainer>) :
+    DateTimeFormat<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: UtcOffsetFormatBuilder.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure(UtcOffsetFormatBuilderSpec))
@@ -40,22 +41,6 @@ public class UtcOffsetFormat internal constructor(private val actualFormat: Form
         public fun fromFormatString(formatString: String): UtcOffsetFormat = build { appendFormatString(formatString) }
 
         internal val Cache = LruCache<String, UtcOffsetFormat>(16) { fromFormatString(it) }
-    }
-
-    public fun format(date: UtcOffset): String =
-        StringBuilder().also {
-            actualFormat.formatter.format(date.toIncompleteUtcOffset(), it)
-        }.toString()
-
-    public fun parse(input: String): UtcOffset {
-        val parser = Parser(::IncompleteUtcOffset, IncompleteUtcOffset::copy, actualFormat.parser)
-        try {
-            return parser.match(input).toUtcOffset()
-        } catch (e: ParseException) {
-            throw DateTimeFormatException("Failed to parse date from '$input'", e)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Invalid date '$input'", e)
-        }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<UtcOffsetFieldContainer>) :
@@ -99,7 +84,7 @@ internal fun UtcOffset.toIncompleteUtcOffset(): IncompleteUtcOffset =
     )
 
 internal object OffsetFields {
-    private val sign = object: FieldSign<UtcOffsetFieldContainer> {
+    private val sign = object : FieldSign<UtcOffsetFieldContainer> {
         override val isNegative = UtcOffsetFieldContainer::isNegative
         override fun isZero(obj: UtcOffsetFieldContainer): Boolean =
             (obj.totalHoursAbs ?: 0) == 0 && (obj.minutesOfHour ?: 0) == 0 && (obj.secondsOfMinute ?: 0) == 0
@@ -143,7 +128,7 @@ internal class IncompleteUtcOffset(
 
     override fun equals(other: Any?): Boolean =
         other is IncompleteUtcOffset && isNegative == other.isNegative && totalHoursAbs == other.totalHoursAbs &&
-                minutesOfHour == other.minutesOfHour && secondsOfMinute == other.secondsOfMinute
+            minutesOfHour == other.minutesOfHour && secondsOfMinute == other.secondsOfMinute
 
     override fun hashCode(): Int =
         isNegative.hashCode() + totalHoursAbs.hashCode() + minutesOfHour.hashCode() + secondsOfMinute.hashCode()
@@ -152,7 +137,7 @@ internal class IncompleteUtcOffset(
         IncompleteUtcOffset(isNegative, totalHoursAbs, minutesOfHour, secondsOfMinute)
 
     override fun toString(): String =
-        "${isNegative?.let { if (it) "-" else "+" } ?: " " }${totalHoursAbs ?: "??"}:${minutesOfHour ?: "??"}:${secondsOfMinute ?: "??"}"
+        "${isNegative?.let { if (it) "-" else "+" } ?: " "}${totalHoursAbs ?: "??"}:${minutesOfHour ?: "??"}:${secondsOfMinute ?: "??"}"
 }
 
 internal class UtcOffsetWholeHoursDirective(minDigits: Int) :
@@ -182,7 +167,7 @@ internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
         "${UtcOffsetFormatBuilder::appendOffsetSecondsOfMinute.name}($minDigits)"
 }
 
-internal object UtcOffsetFormatBuilderSpec: BuilderSpec<UtcOffsetFieldContainer>(
+internal object UtcOffsetFormatBuilderSpec : BuilderSpec<UtcOffsetFieldContainer>(
     mapOf(
         "uo" to UtcOffsetFormatBuilderSpec
     ),
@@ -193,4 +178,13 @@ internal object UtcOffsetFormatBuilderSpec: BuilderSpec<UtcOffsetFieldContainer>
     )
 ) {
     const val name = "uo"
+}
+
+private class UtcOffsetFormatImpl(actualFormat: Format<UtcOffsetFieldContainer>) :
+    AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
+    override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset = value.toIncompleteUtcOffset()
+
+    override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
+
+    override fun newIntermediate(): IncompleteUtcOffset = IncompleteUtcOffset()
 }

@@ -293,7 +293,7 @@ private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
     is ConcatenatedFormatStructure -> formats.map { it.parser() }.concat()
 }
 
-internal class Format<T>(private val directives: ConcatenatedFormatStructure<T>) {
+internal class Format<in T>(private val directives: ConcatenatedFormatStructure<T>) {
     val formatter: FormatterStructure<T> by lazy {
         directives.formatter()
     }

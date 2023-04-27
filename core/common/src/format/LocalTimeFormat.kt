@@ -8,7 +8,6 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.parser.*
 
 
 public interface TimeFormatBuilderFields {
@@ -92,7 +91,8 @@ public interface TimeFormatBuilder : TimeFormatBuilderFields, FormatBuilder<Time
     override fun appendFormatString(formatString: String)
 }
 
-public class LocalTimeFormat private constructor(private val actualFormat: Format<TimeFieldContainer>) {
+public class LocalTimeFormat private constructor(private val actualFormat: Format<TimeFieldContainer>) :
+    DateTimeFormat<LocalTime> by LocalTimeFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: TimeFormatBuilder.() -> Unit): LocalTimeFormat {
             val builder = Builder(AppendableFormatStructure(TimeFormatBuilderSpec))
@@ -110,22 +110,6 @@ public class LocalTimeFormat private constructor(private val actualFormat: Forma
         public val ISO: LocalTimeFormat = fromFormatString("hh':'mm(|':'ss(|'.'f))")
 
         internal val Cache = LruCache<String, LocalTimeFormat>(16) { fromFormatString(it) }
-    }
-
-    public fun format(time: LocalTime): String =
-        StringBuilder().also {
-            actualFormat.formatter.format(time.toIncompleteLocalTime(), it)
-        }.toString()
-
-    public fun parse(input: String): LocalTime {
-        val parser = Parser(::IncompleteLocalTime, IncompleteLocalTime::copy, actualFormat.parser)
-        try {
-            return parser.match(input).toLocalTime()
-        } catch (e: ParseException) {
-            throw DateTimeFormatException("Failed to parse time from '$input'", e)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Invalid time '$input'", e)
-        }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
@@ -252,16 +236,15 @@ internal class IncompleteLocalTime(
 }
 
 internal class HourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hour, minDigits)
-{
-    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("h".repeat(minDigits))
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hour, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        TimeFormatBuilderSpec.name to ("h".repeat(minDigits))
 
     override val builderRepresentation: String = "${TimeFormatBuilderFields::appendHour.name}($minDigits)"
 }
 
 internal class AmPmHourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hourOfAmPm, minDigits)
-{
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hourOfAmPm, minDigits) {
     override val formatStringRepresentation: Pair<String?, String>? = null
 
     override val builderRepresentation: String = "${TimeFormatBuilderFields::appendAmPmHour.name}($minDigits)"
@@ -273,32 +256,31 @@ internal class AmPmMarkerDirective(amString: String, pmString: String) :
             false to amString,
             true to pmString,
         )
-    )
-{
+    ) {
     override val formatStringRepresentation: Pair<String?, String>? = null
 
-    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendAmPmMarker.name}($amString, $pmString)"
+    override val builderRepresentation: String =
+        "${TimeFormatBuilderFields::appendAmPmMarker.name}($amString, $pmString)"
 }
 
 internal class MinuteDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.minute, minDigits)
-{
-    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("m".repeat(minDigits))
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.minute, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        TimeFormatBuilderSpec.name to ("m".repeat(minDigits))
 
     override val builderRepresentation: String = "${TimeFormatBuilderFields::appendMinute.name}($minDigits)"
 }
 
 internal class SecondDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.second, minDigits)
-{
-    override val formatStringRepresentation: Pair<String?, String> = TimeFormatBuilderSpec.name to ("s".repeat(minDigits))
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.second, minDigits) {
+    override val formatStringRepresentation: Pair<String?, String> =
+        TimeFormatBuilderSpec.name to ("s".repeat(minDigits))
 
     override val builderRepresentation: String = "${TimeFormatBuilderFields::appendSecond.name}($minDigits)"
 }
 
 internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null) :
-    DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits)
-{
+    DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
     override val formatStringRepresentation: Pair<String?, String>? =
         if (maxDigits == null) {
             TimeFormatBuilderSpec.name to "f".repeat(minDigits)
@@ -326,4 +308,13 @@ internal object TimeFormatBuilderSpec : BuilderSpec<TimeFieldContainer>(
     )
 ) {
     const val name = "lt"
+}
+
+private class LocalTimeFormatImpl(actualFormat: Format<TimeFieldContainer>) :
+    AbstractDateTimeFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
+    override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime = value.toIncompleteLocalTime()
+
+    override fun valueFromIntermediate(intermediate: IncompleteLocalTime): LocalTime = intermediate.toLocalTime()
+
+    override fun newIntermediate(): IncompleteLocalTime = IncompleteLocalTime()
 }
