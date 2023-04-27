@@ -267,7 +267,7 @@ public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuil
      * * `lt` for [LocalTime] format,
      * * `uo` for [UtcOffset] format.
      *
-     * Example: `ld<mm'-'dd>', 'lt<hh':'mm>' ('uo<+(hhmm)>')'` can format a string like `12-25 03:04 (+0506)`.
+     * Example: `ld<mm-dd>, lt<hh:mm> '('uo<+(hhmm)>')'` can format a string like `12-25 03:04 (+0506)`.
      */
     // overriding the documentation.
     public override fun appendFormatString(formatString: String)
@@ -312,7 +312,7 @@ public class ValueBagFormat private constructor(private val actualFormat: String
          */
         public val ISO_INSTANT: ValueBagFormat = build {
             appendYear(minDigits = 4, outputPlusOnExceededPadding = true)
-            appendFormatString("ld<'-'mm'-'dd>('T'|'t')lt<hh':'mm':'ss(|'.'f)>uo<('Z'|'z')|+(HH(|':'mm(|':'ss)))>")
+            appendFormatString("ld<-mm-dd>('T'|'t')lt<hh:mm:ss(|.f)>uo<('Z'|'z')|+(HH(|:mm(|:ss)))>")
         }
 
         public val RFC_1123: ValueBagFormat = build {
@@ -321,7 +321,7 @@ public class ValueBagFormat private constructor(private val actualFormat: String
             appendDayOfMonth()
             appendLiteral(' ')
             appendMonthName(listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
-            appendFormatString(" ld<yyyy> lt<hh':'mm':'ss> uo<'GMT'|+(HHmm)>")
+            appendFormatString(" ld<yyyy> lt<hh:mm:ss> uo<'GMT'|+(HHmm)>")
         }
 
         internal val Cache = LruCache<String, ValueBagFormat>(16) { fromFormatString(it) }

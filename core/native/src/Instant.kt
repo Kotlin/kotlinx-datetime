@@ -28,8 +28,6 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
-private const val instantFormat = "ld<yyyy'-'mm'-'dd>'T'lt<hh':'mm':'ss(|'.'f)>uo<'Z'|'z'|+HH(|':'mm(|':'ss))>"
-
 /**
  * The minimum supported epoch second.
  */

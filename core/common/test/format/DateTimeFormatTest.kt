@@ -24,7 +24,7 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44:00" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
-        test(LocalDateTimeFormat.fromFormatString("ld<yyyy'-'mm'-'dd> lt<hh:mm:ss>"), dateTimes)
+        test(LocalDateTimeFormat.fromFormatString("ld<yyyy-mm-dd> lt<hh:mm:ss>"), dateTimes)
         test(LocalDateTimeFormat.build {
             appendYear(4)
             appendLiteral('-')
@@ -54,7 +54,7 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
-        test(LocalDateTimeFormat.fromFormatString("ld<yyyy'-'mm'-'dd> lt<hh:mm>"), dateTimes)
+        test(LocalDateTimeFormat.fromFormatString("ld<yyyy-mm-dd> lt<hh:mm>"), dateTimes)
         test(LocalDateTimeFormat.build {
             appendYear(4)
             appendLiteral('-')

@@ -12,7 +12,7 @@ import kotlin.native.concurrent.*
  * * A string in single or double quotes is a literal.
  * * `designator<format>` means that `format` must be parsed and formatted in the context of a sub-builder chosen by
  *   `designator`.
- *   For example, in a `LocalDateTime` format builder, `ld<yyyy'-'mm'-'dd>` means that the `yyyy'-'mm'-'dd` format
+ *   For example, in a `LocalDateTime` format builder, `ld<yyyy-mm-dd>` means that the `yyyy-mm-dd` format
  *   must be parsed and formatted in the context of a `LocalDate` builder.
  * * `format1|format2` means that either `format1` or `format2` must be used. For parsing, this means that, first,
  *   parsing `format1` is attempted, and if it fails, parsing `format2` is attempted. For formatting, this construct is
@@ -23,9 +23,7 @@ import kotlin.native.concurrent.*
  * * Parentheses, as in `(format)`, are used to establish precedence. For example, `hh:mm(|:ss)` means
  *   `hh:mm` or `hh:mm:ss`, but `hh:mm|:ss` means `hh:mm` or `:ss`.
  * * Symbol `+` before a signed numeric field means that the sign must always be present.
- * * Symbol `-` before a signed numeric field means that the sign must be present only if the value is negative.
- *   This is the default, but the symbol can still be useful, see below.
- * * Symbols `+` and `-` can be used before a format grouped in parentheses, as in `-(format)` and `+(format)`.
+ * * The symbol `+` can be used before a format grouped in parentheses, as in `+(format)`.
  *   In this case, the sign will be output for the whole group, possibly affecting the signs of the fields inside the
  *   group if necessary. For example, `-('P'yy'Y'mm'M')` in a `DatePeriod` means that, if
  *   there are `-15` years and `-10` months, `-P15Y10M` is output, but if there are `15` years and `-10` months,
@@ -129,7 +127,7 @@ internal fun <T> AppendableFormatStructure<T>.appendFormatString(format: String,
                 } else if (c == '|') {
                     alternatives.add(currentBuilder.build())
                     currentBuilder = currentBuilder.createSibling()
-                } else if (c == '+' || c == '-') {
+                } else if (c == '+') {
                     require(sign == null) {
                         "Found '$c' on position $i, but a sign '$sign' was already specified at position ${i - 1}"
                     }

@@ -36,7 +36,7 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: S
          */
         public val ISO: LocalDateTimeFormat = build {
             appendYear(4, outputPlusOnExceededPadding = true)
-            appendFormatString("ld<'-'mm'-'dd>('T'|'t')lt<hh':'mm(|':'ss(|'.'f))>")
+            appendFormatString("ld<-mm-dd>('T'|'t')lt<hh:mm(|:ss(|.f))>")
         }
 
         internal val Cache = LruCache<String, LocalDateTimeFormat>(16) { fromFormatString(it) }
