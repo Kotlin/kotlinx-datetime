@@ -275,6 +275,14 @@ tasks {
             into("META-INF/versions/9/")
         }
     }
+
+    // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
+    // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
+    val clean by existing(Delete::class) {
+        setDelete(fileTree(buildDir) {
+            exclude("tmp/.cache/expanded/expanded.lock")
+        })
+    }
 }
 
 val downloadWindowsZonesMapping by tasks.registering {
