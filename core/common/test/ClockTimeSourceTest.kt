@@ -28,6 +28,26 @@ class ClockTimeSourceTest {
     }
 
     @Test
+    fun elapsed() {
+        val clock = object : Clock {
+            var instant = Clock.System.now()
+            override fun now(): Instant = instant
+        }
+        val timeSource = clock.asTimeSource()
+        val mark = timeSource.markNow()
+        assertEquals(Duration.ZERO, mark.elapsedNow())
+
+        clock.instant += 1.days
+        assertEquals(1.days, mark.elapsedNow())
+
+        clock.instant -= 2.days
+        assertEquals(-1.days, mark.elapsedNow())
+
+        clock.instant = Instant.MAX
+        assertEquals(Duration.INFINITE, mark.elapsedNow())
+    }
+
+    @Test
     fun differentSources() {
         val mark1 = Clock.System.asTimeSource().markNow()
         val mark2 = object : Clock {

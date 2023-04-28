@@ -46,7 +46,7 @@ public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = object : TimeS
 
 @ExperimentalTime
 private class InstantTimeMark(private val instant: Instant, private val clock: Clock) : ComparableTimeMark {
-    override fun elapsedNow(): Duration = clock.now() - instant
+    override fun elapsedNow(): Duration = saturatingDiff(clock.now(), instant)
 
     override fun plus(duration: Duration): ComparableTimeMark = InstantTimeMark(instant.saturatingAdd(duration), clock)
     override fun minus(duration: Duration): ComparableTimeMark = InstantTimeMark(instant.saturatingAdd(-duration), clock)
