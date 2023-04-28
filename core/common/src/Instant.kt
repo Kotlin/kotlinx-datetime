@@ -239,7 +239,7 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
         plus(negatedPeriod, timeZone)
     } else {
         val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -(totalNanoseconds+1)) }
-        plus(negatedPeriod, timeZone).plus(DateTimeUnit.NANOSECOND)
+        plus(negatedPeriod, timeZone).plus(1, DateTimeUnit.NANOSECOND)
     }
 
 /**
@@ -351,6 +351,7 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
 
 /**
@@ -361,6 +362,7 @@ public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit, timeZone)"))
 public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
     plus(-1, unit, timeZone)
 
@@ -371,6 +373,7 @@ public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
     plus(1L, unit)
 
@@ -381,6 +384,7 @@ public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
 public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
     plus(-1L, unit)
 
@@ -452,7 +456,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
     if (value != Long.MIN_VALUE) {
         plus(-value, unit, timeZone)
     } else {
-        plus(-(value + 1), unit, timeZone).plus(unit, timeZone)
+        plus(-(value + 1), unit, timeZone).plus(1, unit, timeZone)
     }
 
 /**
@@ -477,7 +481,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     if (value != Long.MIN_VALUE) {
         plus(-value, unit)
     } else {
-        plus(-(value + 1), unit).plus(unit)
+        plus(-(value + 1), unit).plus(1, unit)
     }
 
 /**

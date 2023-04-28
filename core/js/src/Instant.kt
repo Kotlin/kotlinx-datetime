@@ -138,6 +138,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
 private fun Instant.atZone(zone: TimeZone): ZonedDateTime = value.atZone(zone.zoneId)
 private fun jtInstant.checkZone(zone: TimeZone): jtInstant = apply { atZone(zone.zoneId) }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
         plus(1, unit, timeZone)
 

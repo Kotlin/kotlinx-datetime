@@ -273,6 +273,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
     plus(1L, unit, timeZone)
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =

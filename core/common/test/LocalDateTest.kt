@@ -104,9 +104,9 @@ class LocalDateTest {
     fun addComponents() {
         val startDate = LocalDate(2016, 2, 29)
         checkComponents(startDate.plus(1, DateTimeUnit.DAY), 2016, 3, 1)
-        checkComponents(startDate.plus(DateTimeUnit.YEAR), 2017, 2, 28)
+        checkComponents(startDate.plus(1, DateTimeUnit.YEAR), 2017, 2, 28)
         checkComponents(startDate + DatePeriod(years = 4), 2020, 2, 29)
-        assertEquals(startDate, startDate.plus(DateTimeUnit.DAY).minus(DateTimeUnit.DAY))
+        assertEquals(startDate, startDate.plus(1, DateTimeUnit.DAY).minus(1, DateTimeUnit.DAY))
         assertEquals(startDate, startDate.plus(3, DateTimeUnit.DAY).minus(3, DateTimeUnit.DAY))
         assertEquals(startDate, startDate + DatePeriod(years = 4) - DatePeriod(years = 4))
 
@@ -121,9 +121,9 @@ class LocalDateTest {
     fun tomorrow() {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
 
-        val nextMonthPlusDay1 = today.plus(DateTimeUnit.MONTH).plus(1, DateTimeUnit.DAY)
+        val nextMonthPlusDay1 = today.plus(1, DateTimeUnit.MONTH).plus(1, DateTimeUnit.DAY)
         val nextMonthPlusDay2 = today + DatePeriod(months = 1, days = 1)
-        val nextMonthPlusDay3 = today.plus(DateTimeUnit.DAY).plus(1, DateTimeUnit.MONTH)
+        val nextMonthPlusDay3 = today.plus(1, DateTimeUnit.DAY).plus(1, DateTimeUnit.MONTH)
     }
 
     @Test

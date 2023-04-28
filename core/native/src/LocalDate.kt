@@ -232,6 +232,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     }
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1, unit)
 
