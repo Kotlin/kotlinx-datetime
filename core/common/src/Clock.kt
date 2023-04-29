@@ -45,7 +45,7 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
  * parameter.
  */
 @ExperimentalTime
-public fun TimeSource.toClock(offset: Instant = Instant.fromEpochSeconds(0)): Clock = object : Clock {
+public fun TimeSource.asClock(offset: Instant = Instant.fromEpochSeconds(0)): Clock = object : Clock {
     private val startMark: TimeMark = markNow()
     override fun now() = offset + startMark.elapsedNow()
 }

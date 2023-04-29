@@ -13,9 +13,9 @@ import kotlin.time.Duration.Companion.seconds
 @ExperimentalTime
 class ClockTest {
     @Test
-    fun timeSourceToClock() {
+    fun timeSourceAsClock() {
         val timeSource = TestTimeSource()
-        val clock = timeSource.toClock()
+        val clock = timeSource.asClock()
 
         assertEquals(Instant.fromEpochSeconds(0), clock.now())
         assertEquals(Instant.fromEpochSeconds(0), clock.now())
@@ -28,21 +28,21 @@ class ClockTest {
     @Test
     fun syncMultipleClocksFromTimeSource() {
         val timeSource = TestTimeSource()
-        val clock1 = timeSource.toClock()
+        val clock1 = timeSource.asClock()
 
         assertEquals(0, clock1.now().epochSeconds)
 
         timeSource += 1.seconds
         assertEquals(1, clock1.now().epochSeconds)
 
-        val clock2 = timeSource.toClock(offset = Instant.fromEpochSeconds(1))
+        val clock2 = timeSource.asClock(offset = Instant.fromEpochSeconds(1))
         assertEquals(clock1.now(), clock2.now())
 
         timeSource += 1.seconds
         assertEquals(2, clock1.now().epochSeconds)
         assertEquals(clock1.now(), clock2.now())
 
-        val clock3 = timeSource.toClock(offset = clock2.now())
+        val clock3 = timeSource.asClock(offset = clock2.now())
         timeSource += 1.seconds
         assertEquals(3, clock3.now().epochSeconds)
         assertEquals(clock1.now(), clock2.now())
