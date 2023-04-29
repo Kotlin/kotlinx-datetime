@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
+import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
@@ -83,6 +84,7 @@ class InstantTest {
             assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
         }
 
+        // TODO: assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")} // fails on Native
         assertInvalidFormat { Instant.parse("x") }
         assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
@@ -161,12 +163,12 @@ class InstantTest {
         expectBetween(instant1, instant2, 24, DateTimeUnit.HOUR)
         assertEquals(instant1, instant2.minus(DateTimePeriod(hours = 24), zone))
 
-        val instant3 = instant1.plus(DateTimeUnit.DAY, zone)
+        val instant3 = instant1.plus(1, DateTimeUnit.DAY, zone)
         checkComponents(instant3.toLocalDateTime(zone), 2019, 10, 28, 2, 59)
         expectBetween(instant1, instant3, 25, DateTimeUnit.HOUR)
         expectBetween(instant1, instant3, 1, DateTimeUnit.DAY)
         assertEquals(1, instant1.daysUntil(instant3, zone))
-        assertEquals(instant1.minus(DateTimeUnit.HOUR), instant2.minus(DateTimeUnit.DAY, zone))
+        assertEquals(instant1.minus(1, DateTimeUnit.HOUR), instant2.minus(1, DateTimeUnit.DAY, zone))
 
         val instant4 = instant1.plus(14, DateTimeUnit.MONTH, zone)
         checkComponents(instant4.toLocalDateTime(zone), 2020, 12, 27, 2, 59)
@@ -176,7 +178,7 @@ class InstantTest {
         expectBetween(instant1, instant4, 61, DateTimeUnit.WEEK)
         expectBetween(instant1, instant4, 366 + 31 + 30, DateTimeUnit.DAY)
         expectBetween(instant1, instant4, (366 + 31 + 30) * 24 + 1, DateTimeUnit.HOUR)
-        assertEquals(instant1.plus(DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
+        assertEquals(instant1.plus(1, DateTimeUnit.HOUR), instant4.minus(14, DateTimeUnit.MONTH, zone))
 
         val period = DateTimePeriod(days = 1, hours = 1)
         val instant5 = instant1.plus(period, zone)
@@ -184,7 +186,7 @@ class InstantTest {
         assertEquals(period, instant1.periodUntil(instant5, zone))
         assertEquals(period, instant5.minus(instant1, zone))
         assertEquals(26.hours, instant5.minus(instant1))
-        assertEquals(instant1.plus(DateTimeUnit.HOUR), instant5.minus(period, zone))
+        assertEquals(instant1.plus(1, DateTimeUnit.HOUR), instant5.minus(period, zone))
 
         val instant6 = instant1.plus(23, DateTimeUnit.HOUR, zone)
         checkComponents(instant6.toLocalDateTime(zone), 2019, 10, 28, 0, 59)
@@ -262,7 +264,7 @@ class InstantTest {
 
     @Test
     fun diffInvariant() {
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
             val instant1 = Instant.fromEpochMilliseconds(millis1)
@@ -278,7 +280,7 @@ class InstantTest {
 
     @Test
     fun diffInvariantSameAsDate() {
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
             with(TimeZone.UTC) TZ@ {
@@ -606,5 +608,14 @@ class InstantRangeTest {
         // Overloads without a TimeZone should not fail on overflowing a LocalDateTime
         (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
         maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
+    }
+
+    // https://github.com/Kotlin/kotlinx-datetime/issues/263
+    @Test
+    fun addSmallDurationsToLargeInstants() {
+        for (smallDuration in listOf(1.nanoseconds, 999_999.nanoseconds, 1.seconds - 1.nanoseconds)) {
+            assertEquals(expected = Instant.MAX, actual = Instant.MAX + smallDuration)
+            assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
+        }
     }
 }

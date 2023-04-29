@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -25,6 +25,16 @@ public fun LocalDateTime.toJavaLocalDateTime(): java.time.LocalDateTime = this.v
  * Converts this [java.time.LocalDateTime][java.time.LocalDateTime] value to a [kotlinx.datetime.LocalDateTime][LocalDateTime] value.
  */
 public fun java.time.LocalDateTime.toKotlinLocalDateTime(): LocalDateTime = LocalDateTime(this)
+
+/**
+ * Converts this [kotlinx.datetime.LocalDateTime][LocalTime] value to a [java.time.LocalTime][java.time.LocalTime] value.
+ */
+public fun LocalTime.toJavaLocalTime(): java.time.LocalTime = this.value
+
+/**
+ * Converts this [java.time.LocalTime][java.time.LocalTime] value to a [kotlinx.datetime.LocalTime][LocalTime] value.
+ */
+public fun java.time.LocalTime.toKotlinLocalTime(): LocalTime = LocalTime(this)
 
 
 /**

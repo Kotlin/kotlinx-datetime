@@ -10,6 +10,14 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [LocalDate] that uses the ISO-8601 representation.
+ *
+ * JSON example: `"2020-01-01"`
+ *
+ * @see LocalDate.parse
+ * @see LocalDate.toString
+ */
 public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =
@@ -24,6 +32,11 @@ public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
 
 }
 
+/**
+ * A serializer for [LocalDate] that represents a value as its components.
+ *
+ * JSON example: `{"year":2020,"month":12,"day":9}`
+ */
 public object LocalDateComponentSerializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =

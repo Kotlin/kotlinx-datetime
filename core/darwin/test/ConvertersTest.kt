@@ -31,7 +31,7 @@ class ConvertersTest {
         val gregorianCalendarStart = Instant.parse("1582-10-15T00:00:00Z").toEpochMilliseconds()
         val minBoundMillis = (NSDate.distantPast.timeIntervalSince1970 * 1000 + 0.5).toLong()
         val maxBoundMillis = (NSDate.distantFuture.timeIntervalSince1970 * 1000 - 0.5).toLong()
-        repeat (1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val millis = Random.nextLong(minBoundMillis, maxBoundMillis)
             val instant = Instant.fromEpochMilliseconds(millis)
             val date = instant.toNSDate()

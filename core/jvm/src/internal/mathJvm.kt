@@ -1,9 +1,9 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime
+package kotlinx.datetime.internal
 
 internal actual fun safeMultiply(a: Long, b: Long): Long = Math.multiplyExact(a, b)
 internal actual fun safeMultiply(a: Int, b: Int): Int = Math.multiplyExact(a, b)

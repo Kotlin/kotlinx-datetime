@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 @file:JvmName("LocalDateTimeJvmKt")
@@ -27,6 +27,9 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(year, month.number, dayOfMonth, hour, minute, second, nanosecond)
 
+    public actual constructor(date: LocalDate, time: LocalTime) :
+            this(jtLocalDateTime.of(date.value, time.value))
+
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month
@@ -40,6 +43,8 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual val nanosecond: Int get() = value.nano
 
     public actual val date: LocalDate get() = LocalDate(value.toLocalDate()) // cache?
+
+    public actual val time: LocalTime get() = LocalTime(value.toLocalTime())
 
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is LocalDateTime && this.value == other.value)

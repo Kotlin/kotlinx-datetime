@@ -77,9 +77,8 @@ kotlin {
 
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-common")
+                api("org.jetbrains.kotlin:kotlin-test")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-                api("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
 
@@ -93,7 +92,6 @@ kotlin {
         val jsMain by getting
         val jsTest by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-js")
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }

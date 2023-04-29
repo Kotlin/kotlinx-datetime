@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -8,6 +8,17 @@ package kotlinx.datetime
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 
+/**
+ * The date part of [LocalDateTime].
+ *
+ * This class represents dates without a reference to a particular time zone.
+ * As such, these objects may denote different spans of time in different time zones: for someone in Berlin,
+ * `2020-08-30` started and ended at different moments from those for someone in Tokyo.
+ *
+ * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
+ * is `2020-08-31` everywhere): see various [LocalDate.plus] and [LocalDate.minus] functions, as well
+ * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
+ */
 @Serializable(with = LocalDateIso8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
@@ -20,6 +31,15 @@ public expect class LocalDate : Comparable<LocalDate> {
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          */
         public fun parse(isoString: String): LocalDate
+
+        /**
+         * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
+         *
+         * @throws IllegalArgumentException if the result exceeds the platform-specific boundaries of [LocalDate].
+         *
+         * @see LocalDate.toEpochDays
+         */
+        public fun fromEpochDays(epochDays: Int): LocalDate
 
         internal val MIN: LocalDate
         internal val MAX: LocalDate
@@ -36,8 +56,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [monthNumber] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * given [monthNumber] and [year].
      */
     public constructor(year: Int, monthNumber: Int, dayOfMonth: Int)
 
@@ -50,8 +70,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [month] all values of the [Month] enum
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [month] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * given [month] and [year].
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int)
 
@@ -69,13 +89,21 @@ public expect class LocalDate : Comparable<LocalDate> {
     public val dayOfYear: Int
 
     /**
+     * Returns the number of days since the epoch day `1970-01-01`.
+     *
+     * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+     *
+     * @see LocalDate.fromEpochDays
+     */
+    public fun toEpochDays(): Int
+
+    /**
      * Compares `this` date with the [other] date.
      * Returns zero if this date represent the same day as the other (i.e. equal to other),
      * a negative number if this date is earlier than the other,
      * and a positive number if this date is later than the other.
      */
     public override fun compareTo(other: LocalDate): Int
-
 
     /**
      * Converts this date to the ISO-8601 string representation.
@@ -95,13 +123,21 @@ public expect class LocalDate : Comparable<LocalDate> {
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 /**
- * Combines this date components with the specified time components into a [LocalDateTime] value.
+ * Combines this date's components with the specified time components into a [LocalDateTime] value.
  *
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
  */
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
     LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+
+/**
+ * Combines this date's components with the specified [LocalTime] components into a [LocalDateTime] value.
+ *
+ * For finding an instant that corresponds to the start of a date in a particular time zone consider using
+ * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
+ */
+public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this, time)
 
 
 /**
@@ -172,6 +208,11 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - zero if this date is equal to the other.
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see LocalDate.daysUntil
+ * @see LocalDate.monthsUntil
+ * @see LocalDate.yearsUntil
+ *
  */
 public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int
 
@@ -209,6 +250,7 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
@@ -218,6 +260,7 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
 public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, unit)
 
 /**

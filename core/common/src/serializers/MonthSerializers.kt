@@ -5,12 +5,17 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.Month
+import kotlinx.datetime.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.*
 
+/**
+ * A serializer for [Month] that represents the month value as a string.
+ *
+ * JSON example: `"JANUARY"`
+ */
 @Suppress("INVISIBLE_MEMBER")
 public object MonthSerializer: KSerializer<Month> {
     private val impl = EnumSerializer("Month", Month.values())

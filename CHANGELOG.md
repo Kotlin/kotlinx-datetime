@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 0.4.0
+
+- Add the `LocalTime` class for representing time-of-day ([#57](https://github.com/Kotlin/kotlinx-datetime/pull/57)). Thank you, @bishiboosh!
+- Provide `LocalTime#toSecondOfDay`, `LocalTime.fromSecondOfDay`, and various other functions for compact representation of `LocalTime` ([#204](https://github.com/Kotlin/kotlinx-datetime/pull/204)). Thank you, @vanniktech!
+- Provide `LocalDate#toEpochDays`, `LocalDate.fromEpochDays` for representing a `LocalDate` as a single number ([#214](https://github.com/Kotlin/kotlinx-datetime/pull/214)).
+- Rename `Clock.todayAt` to `Clock.todayIn` for naming consistency ([#206](https://github.com/Kotlin/kotlinx-datetime/pull/206)).
+- Update the Kotlin dependency to 1.7.0.
+
+## 0.3.3
+
+- Just updated Kotlin dependency to 1.7.0-Beta and kotlinx.serialization to 1.3.2
+
+## 0.3.2
+
+#### Features
+
+- Update Kotlin dependency to 1.6.0 and remove `ExperimentalTime` from API involving `Duration` which became stable ([#156](https://github.com/Kotlin/kotlinx-datetime/issues/156))
+- Add an explicit `module-info` descriptor to JVM variant of the library ([#135](https://github.com/Kotlin/kotlinx-datetime/pull/135))
+- `kotlinx.datetime.Instant` conversions to and from JS `Date` ([#170](https://github.com/Kotlin/kotlinx-datetime/issues/170)).
+
+
 ## 0.3.1
 
 #### Fixes

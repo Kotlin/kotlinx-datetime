@@ -10,6 +10,14 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [Instant] that uses the ISO-8601 representation.
+ *
+ * JSON example: `"2020-12-09T09:16:56.000124Z"`
+ *
+ * @see Instant.toString
+ * @see Instant.parse
+ */
 public object InstantIso8601Serializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
@@ -24,6 +32,11 @@ public object InstantIso8601Serializer: KSerializer<Instant> {
 
 }
 
+/**
+ * A serializer for [Instant] that represents an `Instant` value as second and nanosecond components of the Unix time.
+ *
+ * JSON example: `{"epochSeconds":1607505416,"nanosecondsOfSecond":124000}`
+ */
 public object InstantComponentSerializer: KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =

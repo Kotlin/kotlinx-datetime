@@ -5,9 +5,11 @@ pluginManagement {
         gradlePluginPortal()
     }
     val kotlinVersion: String by settings
+    val dokkaVersion: String by settings
     plugins {
         kotlin("multiplatform") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
+        id("org.jetbrains.dokka") version dokkaVersion
     }
 }
 

@@ -11,6 +11,8 @@ import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
 import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit
+import kotlinx.datetime.internal.safeAdd
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.*
@@ -33,7 +35,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             Instant(plusFix(seconds.toDouble(), nanoseconds))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
-            if (seconds > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         }
     }
 
@@ -93,8 +95,8 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             /* Performing normalization here because otherwise this fails:
                assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(),
                             Instant.fromEpochSeconds(0, Long.MAX_VALUE).nanosecondsOfSecond) */
-            val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
-            val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
+            val secs = safeAdd(epochSeconds, nanosecondAdjustment.floorDiv(NANOS_PER_ONE.toLong()))
+            val nos = nanosecondAdjustment.mod(NANOS_PER_ONE.toLong()).toInt()
             Instant(jtInstant.ofEpochSecond(secs, nos))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException() && e !is ArithmeticException) throw e
@@ -136,6 +138,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
 private fun Instant.atZone(zone: TimeZone): ZonedDateTime = value.atZone(zone.zoneId)
 private fun jtInstant.checkZone(zone: TimeZone): jtInstant = apply { atZone(zone.zoneId) }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
         plus(1, unit, timeZone)
 

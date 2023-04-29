@@ -5,7 +5,7 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
@@ -14,6 +14,11 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlin.reflect.KClass
 
+/**
+ * A serializer for [DateTimeUnit.TimeBased] unit that represents the unit as a [Long] number of nanoseconds.
+ *
+ * JSON example: `{"nanoseconds":1000000000}`
+ */
 public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
@@ -53,6 +58,11 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
     }
 }
 
+/**
+ * A serializer for [DateTimeUnit.DayBased] unit that represents the unit as an [Int] number of days.
+ *
+ * JSON example: `{"days":2}`
+ */
 public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
@@ -92,6 +102,11 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
     }
 }
 
+/**
+ * A serializer for [DateTimeUnit.MonthBased] unit that represents the unit as an [Int] number of months.
+ *
+ * JSON example: `{"months":2}`
+ */
 public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBased> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
@@ -131,7 +146,13 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
     }
 }
 
+/**
+ * A polymorphic serializer for [DateTimeUnit.DateBased] unit that represents the unit as an [Int] number of months or days.
+ *
+ * JSON example: `{"type":"DayBased","days":15}`
+ */
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@OptIn(InternalSerializationApi::class)
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
@@ -149,11 +170,8 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
             SerializationStrategy<DateTimeUnit.DateBased>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-
-    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit.DateBased>
         get() = DateTimeUnit.DateBased::class
-
 
     @OptIn(InternalSerializationApi::class)
     override val descriptor: SerialDescriptor
@@ -161,7 +179,14 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
 
 }
 
+/**
+ * A polymorphic serializer for [DateTimeUnit] that represents the unit as the [Int] number of months or days, or
+ * the [Long] number of nanoseconds.
+ *
+ * JSON example: `{"type":"MonthBased","days":15}`
+ */
 @Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@OptIn(InternalSerializationApi::class)
 public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 
     private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
@@ -177,11 +202,8 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
     override fun findPolymorphicSerializerOrNull(encoder: Encoder, value: DateTimeUnit): SerializationStrategy<DateTimeUnit>? =
         impl.findPolymorphicSerializerOrNull(encoder, value)
 
-
-    @OptIn(InternalSerializationApi::class)
     override val baseClass: KClass<DateTimeUnit>
         get() = DateTimeUnit::class
-
 
     @OptIn(InternalSerializationApi::class)
     override val descriptor: SerialDescriptor

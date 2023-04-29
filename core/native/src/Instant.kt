@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.math.*
@@ -91,7 +92,7 @@ private val instantParser: Parser<Instant>
             val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
                 listOf(1, 0, 0, 0)
             } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
-                // parsed a leap second, but it seems it isn't used
+                // TODO: throw an error on leap seconds to match what the other platforms do
                 listOf(0, 23, 59, 59)
             } else {
                 listOf(0, hoursVal, minutesVal, secondsVal)
@@ -105,7 +106,7 @@ private val instantParser: Parser<Instant>
             } catch (e: ArithmeticException) {
                 throw DateTimeFormatException(e)
             }
-            val epochDay = localDate.toEpochDay().toLong()
+            val epochDay = localDate.toEpochDays().toLong()
             val instantSecs = epochDay * 86400 - offset.totalSeconds + localTime.toSecondOfDay() + secDelta
             try {
                 Instant(instantSecs, nano)
@@ -158,9 +159,9 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         try {
             plus(secondsToAdd, nanosecondsToAdd.toLong())
         } catch (e: IllegalArgumentException) {
-            if (secondsToAdd > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         } catch (e: ArithmeticException) {
-            if (secondsToAdd > 0) MAX else MIN
+            if (duration.isPositive()) MAX else MIN
         }
     }
 
@@ -199,16 +200,18 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
             if (epochMilliseconds < MIN_SECOND * MILLIS_PER_ONE) MIN
             else if (epochMilliseconds > MAX_SECOND * MILLIS_PER_ONE) MAX
-            else Instant(floorDiv(epochMilliseconds, MILLIS_PER_ONE.toLong()),
-                (floorMod(epochMilliseconds, MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt())
+            else Instant(
+                epochMilliseconds.floorDiv(MILLIS_PER_ONE.toLong()),
+                (epochMilliseconds.mod(MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt()
+            )
 
         /**
          * @throws ArithmeticException if arithmetic overflow occurs
          * @throws IllegalArgumentException if the boundaries of Instant are overflown
          */
         private fun fromEpochSecondsThrowing(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
-            val secs = safeAdd(epochSeconds, floorDiv(nanosecondAdjustment, NANOS_PER_ONE.toLong()))
-            val nos = floorMod(nanosecondAdjustment, NANOS_PER_ONE.toLong()).toInt()
+            val secs = safeAdd(epochSeconds, nanosecondAdjustment.floorDiv(NANOS_PER_ONE.toLong()))
+            val nos = nanosecondAdjustment.mod(NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
         }
 
@@ -270,6 +273,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
     plus(1L, unit, timeZone)
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -333,8 +337,8 @@ internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String {
     val seconds = epochSeconds + offset.totalSeconds
     if (seconds >= -SECONDS_0000_TO_1970) { // current era
         val zeroSecs: Long = seconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
-        val hi: Long = floorDiv(zeroSecs, SECONDS_PER_10000_YEARS) + 1
-        val lo: Long = floorMod(zeroSecs, SECONDS_PER_10000_YEARS)
+        val hi: Long = zeroSecs.floorDiv(SECONDS_PER_10000_YEARS) + 1
+        val lo: Long = zeroSecs.mod(SECONDS_PER_10000_YEARS)
         val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
             .toLocalDateTime(TimeZone.UTC)
         if (hi > 0) {

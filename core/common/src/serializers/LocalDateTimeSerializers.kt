@@ -5,11 +5,19 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [LocalDateTime] that uses the ISO-8601 representation.
+ *
+ * JSON example: `"2007-12-31T23:59:01"`
+ *
+ * @see LocalDateTime.parse
+ * @see LocalDateTime.toString
+ */
 public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
@@ -24,6 +32,11 @@ public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
 
 }
 
+/**
+ * A serializer for [LocalDateTime] that represents a value as its components.
+ *
+ * JSON example: `{"year":2008,"month":7,"day":5,"hour":2,"minute":1}`
+ */
 public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =

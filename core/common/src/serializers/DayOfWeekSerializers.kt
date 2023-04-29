@@ -11,6 +11,11 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.internal.*
 
+/**
+ * A serializer for [DayOfWeek] that represents the values as strings.
+ *
+ * JSON example: `"MONDAY"`
+ */
 @Suppress("INVISIBLE_MEMBER")
 public object DayOfWeekSerializer: KSerializer<DayOfWeek> {
     private val impl = EnumSerializer("Month", DayOfWeek.values())

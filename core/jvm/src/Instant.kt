@@ -6,6 +6,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.safeMultiply
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -119,6 +121,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     }
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
         plus(1L, unit, timeZone)
 

@@ -22,6 +22,13 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
+
+        public actual fun fromEpochDays(epochDays: Int): LocalDate = try {
+            LocalDate(jtLocalDate.ofEpochDay(epochDays))
+        } catch (e: Throwable) {
+            if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
+            throw e
+        }
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
@@ -49,8 +56,11 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value).toInt()
+
+    public actual fun toEpochDays(): Int = value.toEpochDay().toInt()
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plusNumber(1, unit)
 public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(value, unit)
 public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plusNumber(-value, unit)

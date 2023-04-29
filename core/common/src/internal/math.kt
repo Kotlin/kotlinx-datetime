@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime
+package kotlinx.datetime.internal
 
 internal fun Long.clampToInt(): Int =
         when {
@@ -11,10 +11,6 @@ internal fun Long.clampToInt(): Int =
             this < Int.MIN_VALUE -> Int.MIN_VALUE
             else -> toInt()
         }
-
-internal const val NANOS_PER_MILLI = 1_000_000
-internal const val MILLIS_PER_ONE = 1_000
-internal const val NANOS_PER_ONE = 1_000_000_000
 
 internal expect fun safeMultiply(a: Long, b: Long): Long
 internal expect fun safeMultiply(a: Int, b: Int): Int

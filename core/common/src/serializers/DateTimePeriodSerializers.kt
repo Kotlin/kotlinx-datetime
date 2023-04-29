@@ -5,13 +5,17 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+/**
+ * A serializer for [DateTimePeriod] that uses a different field for each component, only listing non-zero components.
+ *
+ * JSON example: `{"days":1,"hours":-1}`
+ */
 public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
@@ -66,6 +70,14 @@ public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
 }
 
+/**
+ * A serializer for [DateTimePeriod] that represents it as an ISO-8601 duration string.
+ *
+ * JSON example: `"P1DT-1H"`
+ *
+ * @see DateTimePeriod.toString
+ * @see DateTimePeriod.parse
+ */
 public object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
@@ -80,6 +92,13 @@ public object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
 }
 
+/**
+ * A serializer for [DatePeriod] that uses a different field for each component, only listing non-zero components.
+ *
+ * Deserializes the time components as well when they are present ensuring they are zero.
+ *
+ * JSON example: `{"months":1,"days":15}`
+ */
 public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
     private fun unexpectedNonzero(fieldName: String, value: Long) {
@@ -134,12 +153,21 @@ public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 
 }
 
+/**
+ * A serializer for [DatePeriod] that represents it as an ISO-8601 duration string.
+ *
+ * Deserializes the time components as well, as long as they are zero.
+ *
+ * JSON example: `"P2Y1M"`
+ *
+ * @see DatePeriod.toString
+ * @see DatePeriod.parse
+ */
 public object DatePeriodIso8601Serializer: KSerializer<DatePeriod> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("DatePeriod", PrimitiveKind.STRING)
 
-    // TODO: consider whether should fail when parsing "P1YT0H0M0.0S"
     override fun deserialize(decoder: Decoder): DatePeriod =
         when (val period = DateTimePeriod.parse(decoder.decodeString())) {
             is DatePeriod -> period

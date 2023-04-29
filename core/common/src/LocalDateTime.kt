@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -8,6 +8,20 @@ package kotlinx.datetime
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
+/**
+ * The representation of a specific civil date and time without a reference to a particular time zone.
+ *
+ * This class does not describe specific *moments in time*, which are represented as [Instant] values.
+ * Instead, its instances can be thought of as clock readings, something that an observer in a particular time zone
+ * could witness.
+ * For example, `2020-08-30T18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
+ * this on their clocks at different times.
+ *
+ * The main purpose of this class is to provide human-readable representations of [Instant] values, or to transfer them
+ * as data.
+ *
+ * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it may give misleading results.
+ */
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
@@ -69,6 +83,11 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
+    /**
+     * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts.
+     */
+    public constructor(date: LocalDate, time: LocalTime)
+
     /** Returns the year component of the date. */
     public val year: Int
     /** Returns the number-of-month (1..12) component of the date. */
@@ -93,12 +112,16 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /** Returns the date part of this date/time value. */
     public val date: LocalDate
 
+    /** Returns the time part of this date/time value. */
+    public val time: LocalTime
+
     /**
      * Compares `this` date/time value with the [other] date/time value.
      * Returns zero if this value is equal to the other,
      * a negative number if this value represents earlier civil time than the other,
      * and a positive number if this value represents later civil time than the other.
      */
+    // TODO: add a note about pitfalls of comparing localdatetimes falling in the Autumn transition
     public override operator fun compareTo(other: LocalDateTime): Int
 
     /**

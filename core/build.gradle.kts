@@ -3,10 +3,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
+import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    id("org.jetbrains.dokka")
     `maven-publish`
 }
 
@@ -66,7 +70,11 @@ kotlin {
 
     js {
         nodejs {
-//            testTask { }
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
         }
         compilations.all {
             kotlinOptions {
@@ -85,13 +93,12 @@ kotlin {
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
-        val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
+        val suffix = name.substring(suffixIndex).lowercase().takeIf { it != "main" }
 //        println("SOURCE_SET: $name")
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
         languageSettings {
             //            progressiveMode = true
-            optIn("kotlin.Experimental")
         }
     }
 
@@ -153,8 +160,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-common")
-                api("org.jetbrains.kotlin:kotlin-test-annotations-common")
+                api("org.jetbrains.kotlin:kotlin-test")
             }
         }
 
@@ -180,7 +186,6 @@ kotlin {
 
         val jsTest by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-js")
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
@@ -212,7 +217,7 @@ tasks {
         val moduleName = "kotlinx.datetime" // this module's name
         val compileKotlinJvm by getting(KotlinCompile::class)
         val sourceDir = file("jvm/java9/")
-        val targetDir = compileKotlinJvm.destinationDir.resolve("../java9/")
+        val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
 
         // Use a Java 11 compiler for the module info.
         javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
@@ -238,7 +243,7 @@ tasks {
 
         // Set the task outputs and destination dir
         outputs.dir(targetDir)
-        destinationDir = targetDir
+        destinationDirectory.set(targetDir)
 
         // Configure JVM compatibility
         sourceCompatibility = JavaVersion.VERSION_1_9.toString()
@@ -252,11 +257,11 @@ tasks {
         options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
 
         // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
-        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDir}"))
+        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDirectory.get()}"))
 
         // Use the classpath of the compileKotlinJvm task.
         // Also ensure that the module path is used instead of classpath.
-        classpath = compileKotlinJvm.classpath
+        classpath = compileKotlinJvm.libraries
         modularity.inferModulePath.set(true)
     }
 
@@ -269,11 +274,20 @@ tasks {
             into("META-INF/versions/9/")
         }
     }
+
+    // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
+    // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
+    val clean by existing(Delete::class) {
+        setDelete(fileTree(buildDir) {
+            exclude("tmp/.cache/expanded/expanded.lock")
+        })
+    }
 }
 
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
-    val output = "$projectDir/nativeMain/cinterop/public/windows_zones.hpp"
+    val output = "$projectDir/native/cinterop/public/windows_zones.hpp"
+    val initialFileContents = File(output).readBytes()
     outputs.file(output)
     doLast {
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -300,17 +314,19 @@ val downloadWindowsZonesMapping by tasks.registering {
                 }
             }
         }
-        File(output).printWriter().use { out ->
+        val sortedMapping = mapping.toSortedMap()
+        val bos = ByteArrayOutputStream()
+        PrintWriter(bos).use { out ->
             out.println("""// generated with gradle task `$name`""")
             out.println("""#include <unordered_map>""")
             out.println("""#include <string>""")
             out.println("""static const std::unordered_map<std::string, std::string> standard_to_windows = {""")
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", \"$windowsName\" },")
             }
             out.println("};")
             out.println("""static const std::unordered_map<std::string, std::string> windows_to_standard = {""")
-            val reverseMap = mutableMapOf<String, String>()
+            val reverseMap = sortedMapOf<String, String>()
             for ((usualName, windowsName) in mapping) {
                 if (reverseMap[windowsName] == null) {
                     reverseMap[windowsName] = usualName
@@ -322,11 +338,31 @@ val downloadWindowsZonesMapping by tasks.registering {
             out.println("};")
             out.println("""static const std::unordered_map<std::string, size_t> zone_ids = {""")
             var i = 0
-            for ((usualName, windowsName) in mapping) {
+            for ((usualName, windowsName) in sortedMapping) {
                 out.println("\t{ \"$usualName\", $i },")
                 ++i
             }
             out.println("};")
+        }
+        val newFileContents = bos.toByteArray()
+        if (!(initialFileContents contentEquals newFileContents)) {
+            File(output).writeBytes(newFileContents)
+            throw GradleException("The mappings between Windows and IANA timezone names changed. " +
+                "The new mappings were written to the filesystem.")
+        }
+    }
+}
+
+tasks.withType<AbstractDokkaLeafTask>().configureEach {
+    pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
+
+    dokkaSourceSets.configureEach {
+        // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
+        skipDeprecated.set(true)
+        // hide the `internal` package, which, on JS, has public members generated by Dukat that would get mentioned
+        perPackageOption {
+            matchingRegex.set(".*\\.internal\\..*")
+            suppress.set(true)
         }
     }
 }
