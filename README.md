@@ -140,7 +140,7 @@ by converting it to `LocalDateTime` and taking its `date` property.
 ```kotlin
 val now: Instant = Clock.System.now()
 val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
-// or more short
+// or shorter
 val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
 ```
 Note, that today's date really depends on the time zone in which you're observing the current moment.
