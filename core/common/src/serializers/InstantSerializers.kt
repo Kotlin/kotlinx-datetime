@@ -45,6 +45,7 @@ public object InstantComponentSerializer: KSerializer<Instant> {
             element<Long>("nanosecondsOfSecond", isOptional = true)
         }
 
+    @OptIn(ExperimentalSerializationApi::class)
     @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): Instant =
         decoder.decodeStructure(descriptor) {

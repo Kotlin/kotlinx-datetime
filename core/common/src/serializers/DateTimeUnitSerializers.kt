@@ -162,7 +162,7 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
 
     @InternalSerializationApi
     override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?):
-            DeserializationStrategy<out DateTimeUnit.DateBased>? =
+            DeserializationStrategy<DateTimeUnit.DateBased>? =
         impl.findPolymorphicSerializerOrNull(decoder, klassName)
 
     @InternalSerializationApi
@@ -195,7 +195,7 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
         arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
 
     @InternalSerializationApi
-    override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?): DeserializationStrategy<out DateTimeUnit>? =
+    override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?): DeserializationStrategy<DateTimeUnit>? =
         impl.findPolymorphicSerializerOrNull(decoder, klassName)
 
     @InternalSerializationApi
