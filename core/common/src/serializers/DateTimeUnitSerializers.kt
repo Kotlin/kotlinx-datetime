@@ -21,8 +21,10 @@ import kotlin.reflect.KClass
  */
 public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
-        element<Long>("nanoseconds")
+    override val descriptor: SerialDescriptor by lazy {
+        buildClassSerialDescriptor("TimeBased") {
+            element<Long>("nanoseconds")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.TimeBased) {
@@ -65,8 +67,10 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
  */
 public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
-        element<Int>("days")
+    override val descriptor: SerialDescriptor by lazy {
+        buildClassSerialDescriptor("DayBased") {
+            element<Int>("days")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.DayBased) {
@@ -109,8 +113,10 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
  */
 public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
-        element<Int>("months")
+    override val descriptor: SerialDescriptor by lazy {
+        buildClassSerialDescriptor("MonthBased") {
+            element<Int>("months")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.MonthBased) {
