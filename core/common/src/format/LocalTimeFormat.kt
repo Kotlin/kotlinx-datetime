@@ -131,7 +131,7 @@ public class LocalTimeFormat private constructor(private val actualFormat: Strin
         override fun appendFormatString(formatString: String) = super.appendFormatString(formatString)
     }
 
-    override fun toString(): String = actualFormat.toString()
+    override fun toString(): String = actualFormat.builderString()
 
 }
 
@@ -229,8 +229,8 @@ internal class IncompleteLocalTime(
 
     override fun toString(): String =
         "${hour ?: "??"}:${minute ?: "??"}:${second ?: "??"}.${
-            nanosecond?.let {
-                it.toString().let { it.padStart(9 - it.length, '0') }
+            nanosecond?.let { nanos ->
+                nanos.toString().let { it.padStart(9 - it.length, '0') }
             } ?: "???"
         }"
 }

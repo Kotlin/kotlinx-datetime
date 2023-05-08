@@ -58,7 +58,7 @@ public class LocalDateFormat private constructor(private val actualFormat: Strin
         override fun castToGeneric(actualSelf: Builder): DateFormatBuilder = this
     }
 
-    override fun toString(): String = actualFormat.toString()
+    override fun toString(): String = actualFormat.builderString()
 
 }
 

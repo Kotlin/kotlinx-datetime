@@ -60,7 +60,7 @@ public class UtcOffsetFormat internal constructor(private val actualFormat: Stri
             super.withSharedSign(outputPlus, block)
     }
 
-    override fun toString(): String = actualFormat.toString()
+    override fun toString(): String = actualFormat.builderString()
 
 }
 

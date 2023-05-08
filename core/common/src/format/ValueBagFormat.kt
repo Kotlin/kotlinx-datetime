@@ -372,7 +372,7 @@ public class ValueBagFormat private constructor(private val actualFormat: String
         override fun castToGeneric(actualSelf: Builder): ValueBagFormatBuilder = this
     }
 
-    override fun toString(): String = actualFormat.toString()
+    override fun toString(): String = actualFormat.builderString()
 
 }
 
