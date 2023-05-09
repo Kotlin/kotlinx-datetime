@@ -64,7 +64,7 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
 
     override fun hashCode(): Int = instant.hashCode()
 
-    override fun toString(): String = instant.toString()
+    override fun toString(): String = "InstantTimeMark($instant, $clock)"
 
     private fun Instant.isSaturated() = this == Instant.MAX || this == Instant.MIN
     private fun Instant.saturatingAdd(duration: Duration): Instant {
