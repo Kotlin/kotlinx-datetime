@@ -40,17 +40,50 @@ public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
  * Returns a [TimeSource] that uses this [Clock] to mark a time instant and to find the amount of time elapsed since that mark.
  */
 @ExperimentalTime
-public fun Clock.asTimeSource(): TimeSource = object : TimeSource {
-    override fun markNow(): TimeMark = InstantTimeMark(now(), this@asTimeSource)
+public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = object : TimeSource.WithComparableMarks {
+    override fun markNow(): ComparableTimeMark = InstantTimeMark(now(), this@asTimeSource)
 }
 
 @ExperimentalTime
-private class InstantTimeMark(private val instant: Instant, private val clock: Clock) : TimeMark {
-    override fun elapsedNow(): Duration = clock.now() - instant
+private class InstantTimeMark(private val instant: Instant, private val clock: Clock) : ComparableTimeMark {
+    override fun elapsedNow(): Duration = saturatingDiff(clock.now(), instant)
 
-    override fun plus(duration: Duration): TimeMark = InstantTimeMark(instant + duration, clock)
+    override fun plus(duration: Duration): ComparableTimeMark = InstantTimeMark(instant.saturatingAdd(duration), clock)
+    override fun minus(duration: Duration): ComparableTimeMark = InstantTimeMark(instant.saturatingAdd(-duration), clock)
 
-    override fun minus(duration: Duration): TimeMark = InstantTimeMark(instant - duration, clock)
+    override fun minus(other: ComparableTimeMark): Duration {
+        if (other !is InstantTimeMark || other.clock != this.clock) {
+            throw IllegalArgumentException("Subtracting or comparing time marks from different time sources is not possible: $this and $other")
+        }
+        return saturatingDiff(this.instant, other.instant)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is InstantTimeMark && this.clock == other.clock && this.instant == other.instant
+    }
+
+    override fun hashCode(): Int = instant.hashCode()
+
+    override fun toString(): String = "InstantTimeMark($instant, $clock)"
+
+    private fun Instant.isSaturated() = this == Instant.MAX || this == Instant.MIN
+    private fun Instant.saturatingAdd(duration: Duration): Instant {
+        if (isSaturated()) {
+            if (duration.isInfinite() && duration.isPositive() != this.isDistantFuture) {
+                throw IllegalArgumentException("Summing infinities of different signs")
+            }
+            return this
+        }
+        return this + duration
+    }
+    private fun saturatingDiff(instant1: Instant, instant2: Instant): Duration = when {
+        instant1 == instant2 ->
+            Duration.ZERO
+        instant1.isSaturated() || instant2.isSaturated() ->
+            (instant1 - instant2) * Double.POSITIVE_INFINITY
+        else ->
+            instant1 - instant2
+    }
 }
 
 @Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
