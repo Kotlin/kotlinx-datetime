@@ -248,7 +248,6 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 /**
  * Builder for [ValueBagFormat] values.
  */
-@DateTimeBuilder
 public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
     UtcOffsetFormatBuilderFields, FormatBuilder<ValueBagFormatBuilder> {
     /**

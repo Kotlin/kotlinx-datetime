@@ -5,7 +5,7 @@
 
 package kotlinx.datetime.internal
 
-internal actual class LruCache<K, V> actual constructor(private val size: Int, private val create: (K) -> V) {
+internal actual class LruCache<K: Any, V: Any> actual constructor(private val size: Int, private val create: (K) -> V) {
     private val cache = HashMap<K, V>()
     private val history = HashMap<K, Int>()
     private var counter = 0

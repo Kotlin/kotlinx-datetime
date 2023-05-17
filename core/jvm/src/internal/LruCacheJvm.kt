@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
 
-internal actual class LruCache<K, V> actual constructor(private val size: Int, private val create: (K) -> V) {
+internal actual class LruCache<K: Any, V: Any> actual constructor(private val size: Int, private val create: (K) -> V) {
     private val history = ConcurrentHashMap<K, Int>()
     private val cache = ConcurrentHashMap<K, V>()
     private val counter = AtomicInteger()

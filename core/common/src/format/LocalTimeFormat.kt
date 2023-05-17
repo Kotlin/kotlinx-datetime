@@ -9,7 +9,9 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
-
+/**
+ * Functions specific to the date-time format builders containing the local-time fields.
+ */
 public interface TimeFormatBuilderFields {
     /**
      * Appends the number of hours.
@@ -69,7 +71,9 @@ public interface TimeFormatBuilderFields {
     public fun appendSecondFraction(minLength: Int = 1, maxLength: Int? = null)
 }
 
-@DateTimeBuilder
+/**
+ * The builder for the local-time formats.
+ */
 public interface TimeFormatBuilder : TimeFormatBuilderFields, FormatBuilder<TimeFormatBuilder> {
     /**
      * Appends a format string to the builder.

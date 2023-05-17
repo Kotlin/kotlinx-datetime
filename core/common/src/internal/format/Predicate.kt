@@ -9,12 +9,6 @@ internal interface Predicate<in T> {
     fun test(value: T): Boolean
 }
 
-internal class BasicPredicate<in T>(
-    private val operation: T.() -> Boolean
-): Predicate<T> {
-    override fun test(value: T): Boolean = value.operation()
-}
-
 internal class ComparisonPredicate<in T, E>(
     private val expectedValue: E,
     private val getter: (T) -> E?

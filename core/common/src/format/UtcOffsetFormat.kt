@@ -23,7 +23,6 @@ public interface UtcOffsetFormatBuilderFields {
     public fun appendOffsetSecondsOfMinute(minDigits: Int = 1)
 }
 
-@DateTimeBuilder
 public interface UtcOffsetFormatBuilder : UtcOffsetFormatBuilderFields, FormatBuilder<UtcOffsetFormatBuilder> {
     public fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit)
 }

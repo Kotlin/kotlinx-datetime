@@ -16,6 +16,7 @@ public annotation class DateTimeBuilder
 /**
  * Common functions for all the date-time format builders.
  */
+@DateTimeBuilder
 public interface FormatBuilder<out Self> {
     /**
      * Appends a set of alternative blocks to the format.

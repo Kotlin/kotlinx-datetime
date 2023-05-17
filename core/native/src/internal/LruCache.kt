@@ -5,7 +5,7 @@
 
 package kotlinx.datetime.internal
 
-internal actual class LruCache<K, V> actual constructor(private val size: Int, private val create: (K) -> V) {
+internal actual class LruCache<K: Any, V: Any> actual constructor(private val size: Int, private val create: (K) -> V) {
     private val marker = Any()
     @Suppress("UNCHECKED_CAST")
     actual fun get(key: K): V {

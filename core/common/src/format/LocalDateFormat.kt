@@ -17,7 +17,6 @@ public interface DateFormatBuilderFields {
     public fun appendDayOfWeek(names: List<String>)
 }
 
-@DateTimeBuilder
 public interface DateFormatBuilder : DateFormatBuilderFields, FormatBuilder<DateFormatBuilder>
 
 public class LocalDateFormat private constructor(private val actualFormat: StringFormat<DateFieldContainer>)

@@ -9,7 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.LruCache
 import kotlinx.datetime.internal.format.*
 
-@DateTimeBuilder
 public interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
     FormatBuilder<DateTimeFormatBuilder>
 

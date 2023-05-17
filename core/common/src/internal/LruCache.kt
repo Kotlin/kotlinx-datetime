@@ -5,6 +5,6 @@
 
 package kotlinx.datetime.internal
 
-internal expect class LruCache<K, V>(size: Int, create: (K) -> V) {
+internal expect class LruCache<K: Any, V: Any>(size: Int, create: (K) -> V) {
     fun get(key: K): V
 }
