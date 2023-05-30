@@ -29,6 +29,7 @@ kotlin {
         target("watchosX86")
         target("watchosX64")
         target("watchosSimulatorArm64")
+        target("watchosDeviceArm64")
         target("tvosArm64")
         target("tvosX64")
         target("tvosSimulatorArm64")
