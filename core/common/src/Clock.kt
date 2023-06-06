@@ -31,6 +31,13 @@ public interface Clock {
 }
 
 /**
+ * 
+ */
+public fun Clock(instantProvider: () -> Instant): Clock = object : Clock {
+    override fun now(): Instant = instantProvider.invoke()
+}
+
+/**
  * Returns the current date at the given [time zone][timeZone], according to [this Clock][this].
  */
 public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
