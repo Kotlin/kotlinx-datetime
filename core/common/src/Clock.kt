@@ -31,7 +31,7 @@ public interface Clock {
 }
 
 /**
- * 
+ * Helper function to create a [Clock] instance with a custom [Instant] provider lambda.
  */
 public fun Clock(instantProvider: () -> Instant): Clock = object : Clock {
     override fun now(): Instant = instantProvider.invoke()
