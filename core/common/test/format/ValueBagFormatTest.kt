@@ -18,7 +18,7 @@ class ValueBagFormatTest {
             put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
             put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:30 -0300" to setOf()))
         }
-        test(ValueBagFormat.RFC_1123, bags)
+        test(bags, ValueBag.Format.RFC_1123)
     }
 
     private fun valueBag(
@@ -40,7 +40,7 @@ class ValueBagFormatTest {
         assertEquals(a.timeZoneId, b.timeZoneId, message)
     }
 
-    private fun test(format: ValueBagFormat, strings: Map<ValueBag, Pair<String, Set<String>>>) {
+    private fun test(strings: Map<ValueBag, Pair<String, Set<String>>>, format: Format<ValueBag>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue
             assertEquals(canonicalString, format.format(value), "formatting $value with $format")

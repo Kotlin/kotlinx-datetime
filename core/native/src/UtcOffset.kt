@@ -86,6 +86,8 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
             }
         }
     }
+
+    public actual object Format;
 }
 
 @ThreadLocal

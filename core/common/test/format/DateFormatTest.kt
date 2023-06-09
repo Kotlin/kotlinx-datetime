@@ -26,17 +26,17 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("123456${s}01${s}01" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("-123456${s}01${s}01" to setOf()))
             }
-            test(LocalDateFormat.build {
+            test(dates, LocalDate.Format.build {
                 appendYear(4)
                 appendUnicodeFormatString("${s}MM${s}dd")
-            }, dates)
-            test(LocalDateFormat.build {
+            })
+            test(dates, LocalDate.Format.build {
                 appendYear(4)
                 appendLiteral(s)
                 appendMonthNumber(2)
                 appendLiteral(s)
                 appendDayOfMonth(2)
-            }, dates)
+            })
         }
     }
 
@@ -55,17 +55,17 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("01${s}01${s}123456" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("01${s}01${s}-123456" to setOf()))
             }
-            test(LocalDateFormat.build {
+            test(dates, LocalDate.Format.build {
                 appendUnicodeFormatString("dd${s}MM${s}")
                 appendYear(4)
-            }, dates)
-            test(LocalDateFormat.build {
+            })
+            test(dates, LocalDate.Format.build {
                 appendDayOfMonth(2)
                 appendLiteral(s)
                 appendMonthNumber(2)
                 appendLiteral(s)
                 appendYear(4)
-            }, dates)
+            })
         }
     }
 
@@ -83,15 +83,15 @@ class DateFormatTest {
             put(LocalDate(123456, 1, 1), ("1234560101" to setOf()))
             put(LocalDate(-123456, 1, 1), ("-1234560101" to setOf()))
         }
-        test(LocalDateFormat.build {
+        test(dates, LocalDate.Format.build {
             appendYear(4)
             appendUnicodeFormatString("MMdd")
-        }, dates)
-        test(LocalDateFormat.build {
+        })
+        test(dates, LocalDate.Format.build {
             appendYear(4)
             appendMonthNumber(2)
             appendDayOfMonth(2)
-        }, dates)
+        })
     }
 
     @Test
@@ -115,7 +115,7 @@ class DateFormatTest {
             appendLiteral(' ')
             appendYear(4)
         }
-        test(format, dates)
+        test(dates, format)
     }
 
     @Test
@@ -139,10 +139,10 @@ class DateFormatTest {
             appendLiteral(' ')
             appendYear()
         }
-        test(format, dates)
+        test(dates, format)
     }
 
-    private fun test(format: LocalDateFormat, strings: Map<LocalDate, Pair<String, Set<String>>>) {
+    private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: Format<LocalDate>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(date), "formatting $date with $format")

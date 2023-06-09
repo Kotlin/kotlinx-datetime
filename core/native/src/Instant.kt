@@ -142,7 +142,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
         public actual fun parse(isoString: String): Instant = try {
-            ValueBag.parse(isoString, ValueBagFormat.ISO_INSTANT).toInstantUsingUtcOffset()
+            ValueBag.parse(isoString, ValueBag.Format.ISO_INSTANT).toInstantUsingUtcOffset()
         } catch (e: IllegalArgumentException) {
             throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
         }
@@ -248,4 +248,4 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     }
 
 internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    ValueBag().also { it.populateFrom(this, offset) }.format(ValueBagFormat.ISO_INSTANT)
+    ValueBag().also { it.populateFrom(this, offset) }.format(ValueBag.Format.ISO_INSTANT)

@@ -12,7 +12,7 @@ import kotlin.test.*
 class FormatTest {
     @Test
     fun testFindGreediness() {
-        val format = LocalTimeFormat.build {
+        val format = LocalTime.Format.build {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)
@@ -33,7 +33,7 @@ class FormatTest {
 
     @Test
     fun testFindAllNonIntersection() {
-        val format = LocalTimeFormat.build {
+        val format = LocalTime.Format.build {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)
@@ -64,7 +64,7 @@ class FormatTest {
 
     @Test
     fun testFindIncorrectValues() {
-        val format = LocalTimeFormat.build {
+        val format = LocalTime.Format.build {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)

@@ -28,6 +28,8 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: jtZo
             throw e
         }
     }
+
+    public actual object Format;
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

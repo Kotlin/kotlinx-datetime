@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -44,6 +45,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
         internal val MIN: LocalDateTime
         internal val MAX: LocalDateTime
     }
+
+    public object Format;
 
     /**
      * Constructs a [LocalDateTime] instance from the given date and time components.
@@ -131,6 +134,26 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public override fun toString(): String
 }
+
+public fun LocalDateTime.Format.build(block: DateTimeFormatBuilder.() -> Unit): Format<LocalDateTime> =
+    LocalDateTimeFormat.build(block)
+
+/**
+ * ISO-8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
+ *
+ * Examples of date/time in ISO-8601 format:
+ * - `2020-08-30T18:43`
+ * - `2020-08-30T18:43:00`
+ * - `2020-08-30T18:43:00.500`
+ * - `2020-08-30T18:43:00.123456789`
+ */
+public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() =
+    LocalDateTimeFormat.ISO
+
+public fun LocalDateTime.format(format: Format<LocalDateTime>): String = format.format(this)
+
+public fun LocalDateTime.Companion.parse(input: String, format: Format<LocalDateTime>): LocalDateTime =
+    format.parse(input)
 
 /**
  * Converts this string representing a date/time value in ISO-8601 format including date and time components

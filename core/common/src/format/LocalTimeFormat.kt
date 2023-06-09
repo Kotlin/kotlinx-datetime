@@ -71,46 +71,6 @@ public sealed interface TimeFormatBuilderFields: FormatBuilder {
     public fun appendSecondFraction(minLength: Int = 1, maxLength: Int? = null)
 }
 
-public class LocalTimeFormat private constructor(private val actualFormat: StringFormat<TimeFieldContainer>) :
-    Format<LocalTime> by LocalTimeFormatImpl(actualFormat) {
-    public companion object {
-        public fun build(block: TimeFormatBuilderFields.() -> Unit): LocalTimeFormat {
-            val builder = Builder(AppendableFormatStructure())
-            builder.block()
-            return LocalTimeFormat(builder.build())
-        }
-
-        /**
-         * ISO-8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
-         *
-         * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
-         */
-        public val ISO: LocalTimeFormat = build {
-            appendIsoTime()
-        }
-    }
-
-    internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
-        AbstractFormatBuilder<TimeFieldContainer, Builder>, TimeFormatBuilderFields {
-        override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
-        override fun appendAmPmHour(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
-
-        override fun appendAmPmMarker(amString: String, pmString: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
-
-        override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
-        override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
-        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
-            actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
-
-        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-    }
-
-    override fun toString(): String = actualFormat.builderString()
-
-}
-
 internal fun TimeFormatBuilderFields.appendIsoTime() {
     appendHour(2)
     appendLiteral(':')
@@ -124,10 +84,6 @@ internal fun TimeFormatBuilderFields.appendIsoTime() {
         }
     }
 }
-
-public fun LocalTime.format(format: LocalTimeFormat): String = format.format(this)
-
-public fun LocalTime.Companion.parse(input: String, format: LocalTimeFormat): LocalTime = format.parse(input)
 
 internal fun LocalTime.toIncompleteLocalTime(): IncompleteLocalTime =
     IncompleteLocalTime(hour, minute, second, nanosecond)
@@ -264,11 +220,43 @@ internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null)
     }
 }
 
-private class LocalTimeFormatImpl(actualFormat: StringFormat<TimeFieldContainer>) :
+internal class LocalTimeFormat(private val actualFormat: StringFormat<TimeFieldContainer>) :
     AbstractFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime = value.toIncompleteLocalTime()
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalTime): LocalTime = intermediate.toLocalTime()
 
     override fun newIntermediate(): IncompleteLocalTime = IncompleteLocalTime()
+
+    companion object {
+        fun build(block: TimeFormatBuilderFields.() -> Unit): LocalTimeFormat {
+            val builder = Builder(AppendableFormatStructure())
+            builder.block()
+            return LocalTimeFormat(builder.build())
+        }
+
+        val ISO: LocalTimeFormat = build {
+            appendIsoTime()
+        }
+    }
+
+    internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
+        AbstractFormatBuilder<TimeFieldContainer, Builder>, TimeFormatBuilderFields {
+        override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
+        override fun appendAmPmHour(minLength: Int) =
+            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+
+        override fun appendAmPmMarker(amString: String, pmString: String) =
+            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+
+        override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
+        override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
+        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
+            actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
+
+        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
+    }
+
+    override fun toString(): String = actualFormat.builderString()
+
 }

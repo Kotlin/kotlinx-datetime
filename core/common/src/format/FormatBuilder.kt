@@ -140,6 +140,11 @@ private fun<T> FormatStructure<T>.builderString(): String = when (this) {
         append("}")
     }
     is AlternativesFormatStructure -> buildString {
+        if (formats.size == 2 && formats.first().formats.isEmpty()) {
+            appendLine("appendOptional {")
+            appendLine(formats[1].builderString().prependIndent(CODE_INDENT))
+            append("}")
+        }
         append("appendAlternatives(")
         for (alternative in formats) {
             appendLine("{")

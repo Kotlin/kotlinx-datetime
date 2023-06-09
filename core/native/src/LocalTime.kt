@@ -76,6 +76,8 @@ public actual class LocalTime actual constructor(
         internal actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
     }
 
+    public actual object Format;
+
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalTime): Int {
         val h = hour.compareTo(other.hour)

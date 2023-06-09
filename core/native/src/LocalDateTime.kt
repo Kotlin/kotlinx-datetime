@@ -29,6 +29,8 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, month, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
 
+    public actual object Format;
+
     public actual val year: Int get() = date.year
     public actual val monthNumber: Int get() = date.monthNumber
     public actual val month: Month get() = date.month

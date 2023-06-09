@@ -71,4 +71,6 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         internal actual val MIN: LocalTime = LocalTime(jtLocalTime.MIN)
         internal actual val MAX: LocalTime = LocalTime(jtLocalTime.MAX)
     }
+
+    public actual object Format;
 }

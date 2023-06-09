@@ -66,5 +66,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
         internal actual val MAX: LocalDateTime = LocalDateTime(jtLocalDateTime.MAX)
     }
 
+    public actual object Format;
+
 }
 

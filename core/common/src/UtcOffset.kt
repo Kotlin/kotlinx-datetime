@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 
@@ -48,7 +49,16 @@ public expect class UtcOffset {
          */
         public fun parse(offsetString: String): UtcOffset
     }
+
+    public object Format;
 }
+
+public fun UtcOffset.Format.build(block: UtcOffsetFormatBuilderFields.() -> Unit): Format<UtcOffset> =
+    UtcOffsetFormat.build(block)
+
+public fun UtcOffset.format(format: Format<UtcOffset>): String = format.format(this)
+
+public fun UtcOffset.Companion.parse(input: String, format: Format<UtcOffset>): UtcOffset = format.parse(input)
 
 /**
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.

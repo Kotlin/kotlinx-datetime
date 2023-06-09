@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
-public sealed interface DateFormatBuilderFields: FormatBuilder {
+public sealed interface DateFormatBuilder: FormatBuilder {
     public fun appendYear(minDigits: Int = 1, outputPlusOnExceededPadding: Boolean = false)
     public fun appendMonthNumber(minLength: Int = 1)
     public fun appendMonthName(names: List<String>)
@@ -17,51 +17,13 @@ public sealed interface DateFormatBuilderFields: FormatBuilder {
     public fun appendDayOfWeek(names: List<String>)
 }
 
-public class LocalDateFormat private constructor(private val actualFormat: StringFormat<DateFieldContainer>)
-    : Format<LocalDate> by LocalDateFormatImpl(actualFormat) {
-    public companion object {
-        public fun build(block: DateFormatBuilderFields.() -> Unit): LocalDateFormat {
-            val builder = Builder(AppendableFormatStructure())
-            builder.block()
-            return LocalDateFormat(builder.build())
-        }
-
-        public val ISO: LocalDateFormat = build { appendIsoDate() }
-    }
-
-    internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
-        AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilderFields {
-        override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
-
-        override fun appendMonthNumber(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
-
-        override fun appendMonthName(names: List<String>) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
-
-        override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
-        override fun appendDayOfWeek(names: List<String>) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
-
-        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-    }
-
-    override fun toString(): String = actualFormat.builderString()
-
-}
-
-internal fun DateFormatBuilderFields.appendIsoDate() {
+internal fun DateFormatBuilder.appendIsoDate() {
     appendYear(4, outputPlusOnExceededPadding = true)
     appendLiteral('-')
     appendMonthNumber(2)
     appendLiteral('-')
     appendDayOfMonth(2)
 }
-
-public fun LocalDate.format(format: LocalDateFormat): String = format.format(this)
-
-public fun LocalDate.Companion.parse(input: String, format: LocalDateFormat): LocalDate = format.parse(input)
 
 internal fun LocalDate.toIncompleteLocalDate(): IncompleteLocalDate =
     IncompleteLocalDate(year, monthNumber, dayOfMonth, dayOfWeek.isoDayNumber)
@@ -134,33 +96,33 @@ internal class YearDirective(digits: Int, outputPlusOnExceededPadding: Boolean) 
         outputPlusOnExceededPadding = outputPlusOnExceededPadding,
     ) {
     override val builderRepresentation: String = when {
-        digits == 1 && !outputPlusOnExceededPadding -> "${DateFormatBuilderFields::appendYear.name}()"
-        !outputPlusOnExceededPadding -> "${DateFormatBuilderFields::appendYear.name}($digits)"
-        digits == 1 -> "${DateFormatBuilderFields::appendYear.name}(outputPlusOnExceededPadding = true)"
-        else -> "${DateFormatBuilderFields::appendYear.name}($digits, $outputPlusOnExceededPadding)"
+        digits == 1 && !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}()"
+        !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}($digits)"
+        digits == 1 -> "${DateFormatBuilder::appendYear.name}(outputPlusOnExceededPadding = true)"
+        else -> "${DateFormatBuilder::appendYear.name}($digits, $outputPlusOnExceededPadding)"
     }
 }
 
 internal class MonthDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, minDigits) {
     override val builderRepresentation: String = when (minDigits) {
-        1 -> "${DateFormatBuilderFields::appendMonthNumber.name}()"
-        else -> "${DateFormatBuilderFields::appendMonthNumber.name}($minDigits)"
+        1 -> "${DateFormatBuilder::appendMonthNumber.name}()"
+        else -> "${DateFormatBuilder::appendMonthNumber.name}($minDigits)"
     }
 }
 
 internal class MonthNameDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names) {
     override val builderRepresentation: String =
-        "${DateFormatBuilderFields::appendMonthName.name}(${names.repr(String::repr)})"
+        "${DateFormatBuilder::appendMonthName.name}(${names.repr(String::repr)})"
 }
 
 internal class DayDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits) {
 
     override val builderRepresentation: String = when (minDigits) {
-        1 -> "${DateFormatBuilderFields::appendDayOfMonth.name}()"
-        else -> "${DateFormatBuilderFields::appendDayOfMonth.name}($minDigits)"
+        1 -> "${DateFormatBuilder::appendDayOfMonth.name}()"
+        else -> "${DateFormatBuilder::appendDayOfMonth.name}($minDigits)"
     }
 }
 
@@ -168,10 +130,10 @@ internal class DayOfWeekDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names) {
 
     override val builderRepresentation: String =
-        "${DateFormatBuilderFields::appendDayOfWeek.name}(${names.repr(String::repr)})"
+        "${DateFormatBuilder::appendDayOfWeek.name}(${names.repr(String::repr)})"
 }
 
-private class LocalDateFormatImpl(actualFormat: StringFormat<IncompleteLocalDate>)
+internal class LocalDateFormat(private val actualFormat: StringFormat<IncompleteLocalDate>)
     : AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat)
 {
     override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
@@ -179,4 +141,34 @@ private class LocalDateFormatImpl(actualFormat: StringFormat<IncompleteLocalDate
     override fun valueFromIntermediate(intermediate: IncompleteLocalDate): LocalDate = intermediate.toLocalDate()
 
     override fun newIntermediate(): IncompleteLocalDate = IncompleteLocalDate()
+
+    companion object {
+        fun build(block: DateFormatBuilder.() -> Unit): Format<LocalDate> {
+            val builder = Builder(AppendableFormatStructure())
+            builder.block()
+            return LocalDateFormat(builder.build())
+        }
+
+        val ISO: Format<LocalDate> = build { appendIsoDate() }
+    }
+
+    internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
+        AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilder {
+        override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+
+        override fun appendMonthNumber(minLength: Int) =
+            actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
+
+        override fun appendMonthName(names: List<String>) =
+            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
+
+        override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfWeek(names: List<String>) =
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
+
+        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
+    }
+
+    override fun toString(): String = actualFormat.builderString()
 }

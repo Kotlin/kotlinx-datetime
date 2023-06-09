@@ -25,6 +25,73 @@ import kotlin.math.*
 public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
     public companion object;
 
+    public object Format {
+        /**
+         * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
+         */
+        public fun build(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.Format<ValueBag> {
+            val builder = ValueBagFormat.Builder(AppendableFormatStructure())
+            builder.block()
+            return ValueBagFormat(builder.build())
+        }
+
+        /**
+         * ISO-8601 extended format for dates and times with UTC offset.
+         *
+         * Examples of valid strings:
+         * * `2020-01-01T23:59:59+01:00`
+         * * `2020-01-01T23:59:59+01`
+         * * `2020-01-01T23:59:59Z`
+         *
+         * This format uses the local date, local time, and UTC offset fields of [ValueBag].
+         *
+         * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
+         */
+        public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = build {
+            appendIsoDate()
+            appendAlternatives({
+                appendLiteral('T')
+            }, {
+                appendLiteral('t')
+            })
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendLiteral(':')
+            appendSecond(2)
+            appendOptional {
+                appendLiteral('.')
+                appendSecondFraction()
+            }
+            appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
+        }
+
+        public val RFC_1123: kotlinx.datetime.format.Format<ValueBag> = build {
+            appendDayOfWeek(listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+            appendLiteral(", ")
+            appendDayOfMonth()
+            appendLiteral(' ')
+            appendMonthName(listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+            appendLiteral(' ')
+            appendYear(4)
+            appendLiteral(' ')
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendLiteral(':')
+            appendSecond(2)
+            appendLiteral(" ")
+            appendAlternatives({
+                appendLiteral("GMT")
+            }, {
+                withSharedSign(outputPlus = true) {
+                    appendOffsetTotalHours(2)
+                    appendOffsetMinutesOfHour(2)
+                }
+            })
+        }
+    }
+
     /**
      * Writes the contents of the specified [localTime] to this [ValueBag].
      * The [localTime] is written to the [hour], [minute], [second] and [nanosecond] fields.
@@ -248,87 +315,58 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 /**
  * Builder for [ValueBagFormat] values.
  */
-public interface ValueBagFormatBuilder : DateTimeFormatBuilder,
-    UtcOffsetFormatBuilderFields {
+public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatBuilderFields {
     /**
      * Appends the IANA time zone identifier.
      */
     public fun appendTimeZoneId()
 }
 
+public fun ValueBag.format(format: Format<ValueBag>): String = format.format(this)
+
 /**
- * A [StringFormat] for [ValueBag] values.
+ * Parses a [ValueBag] from [input] using the given format.
  */
-public class ValueBagFormat private constructor(private val actualFormat: StringFormat<ValueBagContents>) :
-    Format<ValueBag> by ValueBagFormatImpl(actualFormat) {
-    public companion object {
-        /**
-         * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
-         */
-        public fun build(block: ValueBagFormatBuilder.() -> Unit): ValueBagFormat {
-            val builder = Builder(AppendableFormatStructure())
-            builder.block()
-            return ValueBagFormat(builder.build())
-        }
+public fun ValueBag.Companion.parse(input: String, format: Format<ValueBag>): ValueBag = try {
+    format.parse(input)
+} catch (e: ParseException) {
+    throw DateTimeFormatException(e)
+}
 
-        /**
-         * ISO-8601 extended format for dates and times with UTC offset.
-         *
-         * Examples of valid strings:
-         * * `2020-01-01T23:59:59+01:00`
-         * * `2020-01-01T23:59:59+01`
-         * * `2020-01-01T23:59:59Z`
-         *
-         * This format uses the local date, local time, and UTC offset fields of [ValueBag].
-         *
-         * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
-         */
-        public val ISO_INSTANT: ValueBagFormat = build {
-            appendIsoDate()
-            appendAlternatives({
-                appendLiteral('T')
-            }, {
-                appendLiteral('t')
-            })
-            appendHour(2)
-            appendLiteral(':')
-            appendMinute(2)
-            appendLiteral(':')
-            appendSecond(2)
-            appendOptional {
-                appendLiteral('.')
-                appendSecondFraction()
-            }
-            appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
-        }
+internal class ValueBagContents internal constructor(
+    val date: IncompleteLocalDate = IncompleteLocalDate(),
+    val time: IncompleteLocalTime = IncompleteLocalTime(),
+    val offset: IncompleteUtcOffset = IncompleteUtcOffset(),
+    var timeZoneId: String? = null,
+) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
+    Copyable<ValueBagContents> {
+    override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
 
-        public val RFC_1123: ValueBagFormat = build {
-            appendDayOfWeek(listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
-            appendLiteral(", ")
-            appendDayOfMonth()
-            appendLiteral(' ')
-            appendMonthName(listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
-            appendLiteral(' ')
-            appendYear(4)
-            appendLiteral(' ')
-            appendHour(2)
-            appendLiteral(':')
-            appendMinute(2)
-            appendLiteral(':')
-            appendSecond(2)
-            appendLiteral(" ")
-            appendAlternatives({
-                appendLiteral("GMT")
-            }, {
-                withSharedSign(outputPlus = true) {
-                    appendOffsetTotalHours(2)
-                    appendOffsetMinutesOfHour(2)
-                }
-            })
-        }
-    }
+    override fun equals(other: Any?): Boolean =
+        other is ValueBagContents && other.date == date && other.time == time &&
+            other.offset == offset && other.timeZoneId == timeZoneId
 
-    private class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
+    override fun hashCode(): Int =
+        date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
+}
+
+internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
+
+internal class TimeZoneIdDirective(knownZones: Set<String>) :
+    StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
+
+    override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
+}
+
+private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
+    AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
+    override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
+
+    override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)
+
+    override fun newIntermediate(): ValueBagContents = ValueBagContents()
+
+    internal class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
         AbstractFormatBuilder<ValueBagContents, Builder>, ValueBagFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
@@ -371,50 +409,4 @@ public class ValueBagFormat private constructor(private val actualFormat: String
     }
 
     override fun toString(): String = actualFormat.builderString()
-
-}
-
-public fun ValueBag.format(format: ValueBagFormat): String = format.format(this)
-
-/**
- * Parses a [ValueBag] from [input] using the given format.
- */
-public fun ValueBag.Companion.parse(input: String, format: ValueBagFormat): ValueBag = try {
-    format.parse(input)
-} catch (e: ParseException) {
-    throw DateTimeFormatException(e)
-}
-
-internal class ValueBagContents internal constructor(
-    val date: IncompleteLocalDate = IncompleteLocalDate(),
-    val time: IncompleteLocalTime = IncompleteLocalTime(),
-    val offset: IncompleteUtcOffset = IncompleteUtcOffset(),
-    var timeZoneId: String? = null,
-) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
-    Copyable<ValueBagContents> {
-    override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
-
-    override fun equals(other: Any?): Boolean =
-        other is ValueBagContents && other.date == date && other.time == time &&
-            other.offset == offset && other.timeZoneId == timeZoneId
-
-    override fun hashCode(): Int =
-        date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
-}
-
-internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
-
-internal class TimeZoneIdDirective(knownZones: Set<String>) :
-    StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
-
-    override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
-}
-
-private class ValueBagFormatImpl(actualFormat: StringFormat<ValueBagContents>) :
-    AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
-    override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
-
-    override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)
-
-    override fun newIntermediate(): ValueBagContents = ValueBagContents()
 }

@@ -95,6 +95,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         internal const val MAX_EPOCH_DAY = 364522971
     }
 
+    public actual object Format;
+
     // org.threeten.bp.LocalDate#toEpochDay
     public actual fun toEpochDays(): Int = dateToEpochDays(year, monthNumber, dayOfMonth)
 

@@ -28,6 +28,8 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
             throw DateTimeFormatException(e)
         }
     }
+
+    public actual object Format;
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

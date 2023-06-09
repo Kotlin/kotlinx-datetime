@@ -25,11 +25,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44:00" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
-        test(LocalDateTimeFormat.build {
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendUnicodeFormatString("-MM-dd HH:mm:ss")
-        }, dateTimes)
-        test(LocalDateTimeFormat.build {
+        })
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendLiteral('-')
             appendMonthNumber(2)
@@ -41,7 +41,7 @@ class DateTimeFormatTest {
             appendMinute(2)
             appendLiteral(':')
             appendSecond(2)
-        }, dateTimes)
+        })
     }
 
     @Test
@@ -58,11 +58,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
-        test(LocalDateTimeFormat.build {
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendUnicodeFormatString("-MM-dd HH:mm")
-        }, dateTimes)
-        test(LocalDateTimeFormat.build {
+        })
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendLiteral('-')
             appendMonthNumber(2)
@@ -72,7 +72,7 @@ class DateTimeFormatTest {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)
-        }, dateTimes)
+        })
     }
 
     @Test
@@ -89,21 +89,21 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("1234560101134400" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-1234560101134400" to setOf()))
         }
-        test(LocalDateTimeFormat.build {
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendUnicodeFormatString("MMddHHmmss")
-        }, dateTimes)
-        test(LocalDateTimeFormat.build {
+        })
+        test(dateTimes, LocalDateTime.Format.build {
             appendYear(4)
             appendMonthNumber(2)
             appendDayOfMonth(2)
             appendHour(2)
             appendMinute(2)
             appendSecond(2)
-        }, dateTimes)
+        })
     }
 
-    private fun test(format: LocalDateTimeFormat, strings: Map<LocalDateTime, Pair<String, Set<String>>>) {
+    private fun test(strings: Map<LocalDateTime, Pair<String, Set<String>>>, format: Format<LocalDateTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(date), "formatting $date with $format")

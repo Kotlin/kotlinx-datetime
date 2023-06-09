@@ -42,10 +42,10 @@ class UtcOffsetFormatTest {
                 appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
             })
         }
-        test(lenientFormat, offsets)
+        test(offsets, lenientFormat)
     }
 
-    private fun test(format: UtcOffsetFormat, strings: Map<UtcOffset, Pair<String, Set<String>>>) {
+    private fun test(strings: Map<UtcOffset, Pair<String, Set<String>>>, format: Format<UtcOffset>) {
         for ((offset, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(offset), "formatting $offset with $format")

@@ -21,14 +21,14 @@ class TimeFormatTest {
             put(LocalTime(12, 30, 0, 0), ("12:30" to setOf()))
             put(LocalTime(23, 59, 0, 0), ("23:59" to setOf()))
         }
-        test(LocalTimeFormat.build {
+        test(times, LocalTime.Format.build {
             appendUnicodeFormatString("HH:mm")
-        }, times)
-        test(LocalTimeFormat.build {
+        })
+        test(times, LocalTime.Format.build {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)
-        }, times)
+        })
     }
 
     @Test
@@ -43,16 +43,16 @@ class TimeFormatTest {
             put(LocalTime(0, 0, 1, 0), ("00:00:01" to setOf()))
             put(LocalTime(0, 0, 59, 0), ("00:00:59" to setOf()))
         }
-        test(LocalTimeFormat.build {
+        test(times, LocalTime.Format.build {
             appendUnicodeFormatString("HH:mm:ss")
-        }, times)
-        test(LocalTimeFormat.build {
+        })
+        test(times, LocalTime.Format.build {
             appendHour(2)
             appendLiteral(':')
             appendMinute(2)
             appendLiteral(':')
             appendSecond(2)
-        }, times)
+        })
     }
 
     @Test
@@ -65,16 +65,16 @@ class TimeFormatTest {
             put(LocalTime(13, 0, 0, 0), ("01:00 PM" to setOf()))
             put(LocalTime(23, 0, 0, 0), ("11:00 PM" to setOf()))
         }
-        test(LocalTimeFormat.build {
+        test(times, LocalTime.Format.build {
             appendAmPmHour(2)
             appendLiteral(':')
             appendMinute(2)
             appendLiteral(' ')
             appendAmPmMarker("AM", "PM")
-        }, times)
+        })
     }
 
-    private fun test(format: LocalTimeFormat, strings: Map<LocalTime, Pair<String, Set<String>>>) {
+    private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: Format<LocalTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(date), "formatting $date with $format")

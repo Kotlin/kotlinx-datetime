@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -44,6 +45,8 @@ public expect class LocalDate : Comparable<LocalDate> {
         internal val MIN: LocalDate
         internal val MAX: LocalDate
     }
+
+    public object Format;
 
     /**
      * Constructs a [LocalDate] instance from the given date components.
@@ -112,6 +115,16 @@ public expect class LocalDate : Comparable<LocalDate> {
      */
     public override fun toString(): String
 }
+
+public fun LocalDate.Format.build(block: DateFormatBuilder.() -> Unit): Format<LocalDate> =
+    LocalDateFormat.build(block)
+
+public val LocalDate.Format.ISO: Format<LocalDate> get() =
+    LocalDateFormat.ISO
+
+public fun LocalDate.format(format: Format<LocalDate>): String = format.format(this)
+
+public fun LocalDate.Companion.parse(input: String, format: Format<LocalDate>): LocalDate = format.parse(input)
 
 /**
  * Converts this string representing a date in ISO-8601 format to a [LocalDate] value.

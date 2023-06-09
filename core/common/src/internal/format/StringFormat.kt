@@ -27,10 +27,10 @@ internal class SignedFormatStructure<in T>(
     val withPlusSign: Boolean,
 ) : NonConcatenatedFormatStructure<T> {
 
-    internal val fields = basicFormats(format).mapNotNull { it.field.sign }.toSet()
+    internal val fieldSigns = basicFormats(format).mapNotNull { it.field.sign }.toSet()
 
     init {
-        require(fields.isNotEmpty()) { "Signed format must contain at least one field with a sign" }
+        require(fieldSigns.isNotEmpty()) { "Signed format must contain at least one field with a sign" }
     }
 
     override fun toString(): String = "SignedFormatStructure($format)"
@@ -48,7 +48,6 @@ internal sealed interface NonConcatenatedFormatStructure<in T> : FormatStructure
 internal class ConcatenatedFormatStructure<in T>(
     val formats: List<NonConcatenatedFormatStructure<T>>
 ) : FormatStructure<T> {
-
     override fun toString(): String = "ConcatenatedFormatStructure(${formats.joinToString(", ")})"
 }
 
@@ -60,7 +59,7 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
             val (innerFormat, fieldSpecs) = format.rec()
             fun checkIfAllNegative(value: T): Boolean {
                 var seenNonZero = false
-                for (check in fields) {
+                for (check in fieldSigns) {
                     when {
                         check.isNegative.get(value) == true -> seenNonZero = true
                         check.isZero(value) -> continue
@@ -143,14 +142,14 @@ private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
         listOf(ParserStructure(
             operations = listOf(SignParser(
                 isNegativeSetter = { value, isNegative ->
-                    for (field in fields) {
+                    for (field in fieldSigns) {
                         val wasNegative = field.isNegative.get(value) == true
                         // TODO: replacing `!=` with `xor` fails on JS
                         field.isNegative.set(value, isNegative != wasNegative)
                     }
                 },
                 withPlusSign = withPlusSign,
-                whatThisExpects = "sign for ${this.fields}"
+                whatThisExpects = "sign for ${this.fieldSigns}"
             )),
             emptyList()
         ), format.parser()

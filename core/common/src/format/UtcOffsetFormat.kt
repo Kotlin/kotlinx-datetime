@@ -9,6 +9,12 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.math.*
 
+public sealed interface UtcOffsetFormatBuilderFields: FormatBuilder {
+    public fun appendOffsetTotalHours(minDigits: Int = 1)
+    public fun appendOffsetMinutesOfHour(minDigits: Int = 1)
+    public fun appendOffsetSecondsOfMinute(minDigits: Int = 1)
+}
+
 internal interface UtcOffsetFieldContainer {
     var isNegative: Boolean?
     var totalHoursAbs: Int?
@@ -16,16 +22,10 @@ internal interface UtcOffsetFieldContainer {
     var secondsOfMinute: Int?
 }
 
-public sealed interface UtcOffsetFormatBuilderFields: FormatBuilder {
-    public fun appendOffsetTotalHours(minDigits: Int = 1)
-    public fun appendOffsetMinutesOfHour(minDigits: Int = 1)
-    public fun appendOffsetSecondsOfMinute(minDigits: Int = 1)
-}
-
-public class UtcOffsetFormat internal constructor(private val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
+internal class UtcOffsetFormat(private val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     Format<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
-    public companion object {
-        public fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
+    companion object {
+        fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return UtcOffsetFormat(builder.build())
@@ -114,10 +114,6 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(zOnZero: Boolean, useS
         appendIsoOffsetWithoutZOnZero()
     }
 }
-
-public fun UtcOffset.format(format: UtcOffsetFormat): String = format.format(this)
-
-public fun UtcOffset.Companion.parse(input: String, format: UtcOffsetFormat): UtcOffset = format.parse(input)
 
 internal fun UtcOffset.toIncompleteUtcOffset(): IncompleteUtcOffset =
     IncompleteUtcOffset(
