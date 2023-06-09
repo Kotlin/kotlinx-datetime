@@ -7,6 +7,7 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class DateTimeFormatTest {
@@ -24,7 +25,10 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44:00" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
-        test(LocalDateTimeFormat.fromFormatString("ld<yyyy-mm-dd> lt<hh:mm:ss>"), dateTimes)
+        test(LocalDateTimeFormat.build {
+            appendYear(4)
+            appendUnicodeFormatString("-MM-dd HH:mm:ss")
+        }, dateTimes)
         test(LocalDateTimeFormat.build {
             appendYear(4)
             appendLiteral('-')
@@ -54,7 +58,10 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
-        test(LocalDateTimeFormat.fromFormatString("ld<yyyy-mm-dd> lt<hh:mm>"), dateTimes)
+        test(LocalDateTimeFormat.build {
+            appendYear(4)
+            appendUnicodeFormatString("-MM-dd HH:mm")
+        }, dateTimes)
         test(LocalDateTimeFormat.build {
             appendYear(4)
             appendLiteral('-')
@@ -82,7 +89,10 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("1234560101134400" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-1234560101134400" to setOf()))
         }
-        test(LocalDateTimeFormat.fromFormatString("ld<yyyymmdd>lt<hhmmss>"), dateTimes)
+        test(LocalDateTimeFormat.build {
+            appendYear(4)
+            appendUnicodeFormatString("MMddHHmmss")
+        }, dateTimes)
         test(LocalDateTimeFormat.build {
             appendYear(4)
             appendMonthNumber(2)

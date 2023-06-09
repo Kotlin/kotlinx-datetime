@@ -8,7 +8,6 @@ package kotlinx.datetime.internal.format
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.formatter.*
 import kotlinx.datetime.internal.format.parser.*
-import kotlin.math.*
 
 /**
  * A directive that specifies a way to parse and format the [field].
@@ -28,12 +27,6 @@ internal interface FieldFormatDirective<in Target> {
      * The parser structure that parses the field.
      */
     fun parser(): ParserStructure<Target>
-
-    /**
-     * The string representation of the format directive, if any.
-     * The first component is the name of the section, if any, and the second component is the name of the directive.
-     */
-    val formatStringRepresentation: Pair<String?, String>?
 
     /**
      * The string with the code that, when evaluated in the builder context, appends the directive.

@@ -12,7 +12,7 @@ import kotlinx.datetime.internal.format.parser.*
 /**
  * A format for parsing and formatting date-time-related values.
  */
-public interface Format<T> {
+public sealed interface Format<T> {
     /**
      * Formats the given [value] into a string, using this format.
      */

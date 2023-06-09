@@ -7,6 +7,7 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class TimeFormatTest {
@@ -20,7 +21,9 @@ class TimeFormatTest {
             put(LocalTime(12, 30, 0, 0), ("12:30" to setOf()))
             put(LocalTime(23, 59, 0, 0), ("23:59" to setOf()))
         }
-        test(LocalTimeFormat.fromFormatString("hh:mm"), times)
+        test(LocalTimeFormat.build {
+            appendUnicodeFormatString("HH:mm")
+        }, times)
         test(LocalTimeFormat.build {
             appendHour(2)
             appendLiteral(':')
@@ -40,7 +43,9 @@ class TimeFormatTest {
             put(LocalTime(0, 0, 1, 0), ("00:00:01" to setOf()))
             put(LocalTime(0, 0, 59, 0), ("00:00:59" to setOf()))
         }
-        test(LocalTimeFormat.fromFormatString("hh:mm:ss"), times)
+        test(LocalTimeFormat.build {
+            appendUnicodeFormatString("HH:mm:ss")
+        }, times)
         test(LocalTimeFormat.build {
             appendHour(2)
             appendLiteral(':')

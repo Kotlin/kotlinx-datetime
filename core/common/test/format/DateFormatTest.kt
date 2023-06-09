@@ -7,6 +7,7 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class DateFormatTest {
@@ -25,7 +26,10 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("123456${s}01${s}01" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("-123456${s}01${s}01" to setOf()))
             }
-            test(LocalDateFormat.fromFormatString("yyyy'$s'mm'$s'dd"), dates)
+            test(LocalDateFormat.build {
+                appendYear(4)
+                appendUnicodeFormatString("${s}MM${s}dd")
+            }, dates)
             test(LocalDateFormat.build {
                 appendYear(4)
                 appendLiteral(s)
@@ -51,7 +55,10 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("01${s}01${s}123456" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("01${s}01${s}-123456" to setOf()))
             }
-            test(LocalDateFormat.fromFormatString("dd'$s'mm'$s'yyyy"), dates)
+            test(LocalDateFormat.build {
+                appendUnicodeFormatString("dd${s}MM${s}")
+                appendYear(4)
+            }, dates)
             test(LocalDateFormat.build {
                 appendDayOfMonth(2)
                 appendLiteral(s)
@@ -76,7 +83,10 @@ class DateFormatTest {
             put(LocalDate(123456, 1, 1), ("1234560101" to setOf()))
             put(LocalDate(-123456, 1, 1), ("-1234560101" to setOf()))
         }
-        test(LocalDateFormat.fromFormatString("yyyymmdd"), dates)
+        test(LocalDateFormat.build {
+            appendYear(4)
+            appendUnicodeFormatString("MMdd")
+        }, dates)
         test(LocalDateFormat.build {
             appendYear(4)
             appendMonthNumber(2)

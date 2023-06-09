@@ -35,7 +35,13 @@ class UtcOffsetFormatTest {
             put(UtcOffset(17, 59, 58), ("+17:59:58" to setOf()))
             put(UtcOffset(18, 0, 0), ("+18:00" to setOf()))
         }
-        val lenientFormat = UtcOffsetFormat.fromFormatString("('Z'|'z')|+(HH':'mm(|':'ss))|+(H|HH(|mm(|ss)))")
+        val lenientFormat = UtcOffsetFormat.build {
+            appendAlternatives({
+                appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            }, {
+                appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
+            })
+        }
         test(lenientFormat, offsets)
     }
 

@@ -6,23 +6,18 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.internal.LruCache
 import kotlinx.datetime.internal.format.*
 
-public interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
-    FormatBuilder<DateTimeFormatBuilder>
+public sealed interface DateTimeFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields
 
 public class LocalDateTimeFormat private constructor(private val actualFormat: StringFormat<DateTimeFieldContainer>) :
     Format<LocalDateTime> by LocalDateTimeFormatImpl(actualFormat) {
     public companion object {
         public fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {
-            val builder = Builder(AppendableFormatStructure(DateTimeFormatBuilderSpec))
+            val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalDateTimeFormat(builder.build())
         }
-
-        public fun fromFormatString(formatString: String): LocalDateTimeFormat =
-            build { appendFormatString(formatString) }
 
         /**
          * ISO-8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
@@ -34,15 +29,12 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: S
          * - `2020-08-30T18:43:00.123456789`
          */
         public val ISO: LocalDateTimeFormat = build {
-            appendYear(4, outputPlusOnExceededPadding = true)
-            appendFormatString("ld<-mm-dd>('T'|'t')lt<hh:mm(|:ss(|.f))>")
+            appendIsoDateTime()
         }
-
-        internal val Cache = LruCache<String, LocalDateTimeFormat>(16) { fromFormatString(it) }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
-        AbstractFormatBuilder<DateTimeFieldContainer, DateTimeFormatBuilder, Builder>, DateTimeFormatBuilder {
+        AbstractFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
 
@@ -68,21 +60,24 @@ public class LocalDateTimeFormat private constructor(private val actualFormat: S
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
-        override fun castToGeneric(actualSelf: Builder): DateTimeFormatBuilder = this
+        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
 
     override fun toString(): String = actualFormat.builderString()
 
 }
 
-public fun LocalDateTime.format(formatString: String): String =
-    LocalDateTimeFormat.Cache.get(formatString).format(this)
+internal fun DateTimeFormatBuilder.appendIsoDateTime() {
+    appendIsoDate()
+    appendAlternatives({
+        appendLiteral('T')
+    }, {
+        appendLiteral('t')
+    })
+    appendIsoTime()
+}
 
 public fun LocalDateTime.format(format: LocalDateTimeFormat): String = format.format(this)
-
-public fun LocalDateTime.Companion.parse(input: String, formatString: String): LocalDateTime =
-    LocalDateTimeFormat.Cache.get(formatString).parse(input)
 
 public fun LocalDateTime.Companion.parse(input: String, format: LocalDateTimeFormat): LocalDateTime =
     format.parse(input)
@@ -101,16 +96,6 @@ internal class IncompleteLocalDateTime(
     override fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
 
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
-}
-
-internal object DateTimeFormatBuilderSpec : BuilderSpec<DateTimeFieldContainer>(
-    mapOf(
-        DateFormatBuilderSpec.name to DateFormatBuilderSpec,
-        TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
-    ),
-    emptyMap()
-) {
-    const val name = "ld"
 }
 
 private class LocalDateTimeFormatImpl(actualFormat: StringFormat<DateTimeFieldContainer>) :

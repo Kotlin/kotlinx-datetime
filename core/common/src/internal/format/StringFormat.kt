@@ -77,41 +77,55 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
         }
 
         is AlternativesFormatStructure -> {
-            val maxFieldSet = mutableSetOf<FieldSpec<T, *>>()
-            var lastFieldSet: Set<FieldSpec<T, *>>? = null
+            val fieldSets = mutableListOf<Set<FieldSpec<T, *>>>()
             val result = mutableListOf<Pair<T.() -> Boolean, FormatterStructure<T>>>()
             for (i in formats.indices.reversed()) {
                 val (formatter, fields) = formats[i].rec()
-                require(lastFieldSet?.containsAll(fields) != false) {
+                require(fieldSets.lastOrNull()?.containsAll(fields) != false) {
                     "The only formatters that include the OR operator are of the form (A|B) " +
-                        "where B contains all fields of A, but $fields is not included in $lastFieldSet. " +
+                        "where B contains all fields of A, but $fields is not included in ${fieldSets.lastOrNull()}. " +
                         "If your use case requires other usages of the OR operator for formatting, please contact us at " +
                         "https://github.com/Kotlin/kotlinx-datetime/issues"
                 }
-                val fieldsToCheck = lastFieldSet?.minus(fields) ?: emptySet()
-                val predicate = ConjunctionPredicate(fieldsToCheck.map {
-                    it.toComparisonPredicate() ?: throw IllegalArgumentException(
-                        "The only formatters that include the OR operator are of the form (A|B) " +
-                            "where B contains all fields of A and some other fields that have a default value. " +
-                            "However, the field ${it.name} does not have a default value. " +
-                            "If your use case requires other usages of the OR operator for formatting, please contact us at " +
-                            "https://github.com/Kotlin/kotlinx-datetime/issues"
-                    )
-                })
-                if (predicate.isConstTrue()) {
-                    result.clear()
+                while (true) {
+                    if (result.size == 0) {
+                        fieldSets.add(fields)
+                        result.add(ConjunctionPredicate<T>(listOf())::test to formatter)
+                        break
+                    } else {
+                        val fieldsToCheck = fieldSets.lastOrNull()?.minus(fields) ?: emptySet()
+                        if (fieldsToCheck.isEmpty()) {
+                            fieldSets.removeLast()
+                            result.removeLast()
+                        } else {
+                            val predicate = ConjunctionPredicate(fieldsToCheck.map {
+                                it.toComparisonPredicate() ?: throw IllegalArgumentException(
+                                    "The only formatters that include the OR operator are of the form (A|B) " +
+                                        "where B contains all fields of A and some other fields that have a default value. " +
+                                        "However, the field ${it.name} does not have a default value. " +
+                                        "If your use case requires other usages of the OR operator for formatting, please contact us at " +
+                                        "https://github.com/Kotlin/kotlinx-datetime/issues"
+                                )
+                            })
+                            fieldSets.add(fields)
+                            result.add(predicate::test to formatter)
+                            break
+                        }
+                    }
                 }
-                result.add(predicate::test to formatter)
-                maxFieldSet.addAll(fields)
-                lastFieldSet = fields
             }
-            result.reverse()
-            ConditionalFormatter(result) to maxFieldSet
+            if (result.size == 1) {
+                result.single().second
+            } else {
+                result.reverse()
+                ConditionalFormatter(result)
+            } to fieldSets.flatten().toSet()
         }
 
         is ConcatenatedFormatStructure -> {
             val (formatters, fields) = formats.map { it.rec() }.unzip()
-            ConcatenatedFormatter(formatters) to fields.flatten().toSet()
+            if (formatters.size == 1) { formatters.single() } else { ConcatenatedFormatter(formatters) } to
+                fields.flatten().toSet()
         }
     }
     return rec().first

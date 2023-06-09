@@ -20,5 +20,4 @@ internal class ConjunctionPredicate<in T>(
     private val predicates: List<Predicate<T>>
 ): Predicate<T> {
     override fun test(value: T): Boolean = predicates.all { it.test(value) }
-    fun isConstTrue(): Boolean = predicates.isEmpty()
 }

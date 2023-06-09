@@ -6,7 +6,6 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlin.math.*
 
@@ -17,35 +16,26 @@ internal interface UtcOffsetFieldContainer {
     var secondsOfMinute: Int?
 }
 
-public interface UtcOffsetFormatBuilderFields {
+public sealed interface UtcOffsetFormatBuilderFields: FormatBuilder {
     public fun appendOffsetTotalHours(minDigits: Int = 1)
     public fun appendOffsetMinutesOfHour(minDigits: Int = 1)
     public fun appendOffsetSecondsOfMinute(minDigits: Int = 1)
 }
 
-public interface UtcOffsetFormatBuilder : UtcOffsetFormatBuilderFields, FormatBuilder<UtcOffsetFormatBuilder> {
-    public fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit)
-}
-
 public class UtcOffsetFormat internal constructor(private val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     Format<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
     public companion object {
-        public fun build(block: UtcOffsetFormatBuilder.() -> Unit): UtcOffsetFormat {
-            val builder = Builder(AppendableFormatStructure(UtcOffsetFormatBuilderSpec))
+        public fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
+            val builder = Builder(AppendableFormatStructure())
             builder.block()
             return UtcOffsetFormat(builder.build())
         }
-
-        public fun fromFormatString(formatString: String): UtcOffsetFormat = build { appendFormatString(formatString) }
-
-        internal val Cache = LruCache<String, UtcOffsetFormat>(16) { fromFormatString(it) }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<UtcOffsetFieldContainer>) :
-        AbstractFormatBuilder<UtcOffsetFieldContainer, UtcOffsetFormatBuilder, Builder>, UtcOffsetFormatBuilder {
+        AbstractFormatBuilder<UtcOffsetFieldContainer, Builder>, UtcOffsetFormatBuilderFields {
 
-        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
-        override fun castToGeneric(actualSelf: Builder): UtcOffsetFormatBuilder = this
+        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
         override fun appendOffsetTotalHours(minDigits: Int) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
 
@@ -54,22 +44,78 @@ public class UtcOffsetFormat internal constructor(private val actualFormat: Stri
 
         override fun appendOffsetSecondsOfMinute(minDigits: Int) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(minDigits)))
-
-        override fun withSharedSign(outputPlus: Boolean, block: UtcOffsetFormatBuilder.() -> Unit) =
-            super.withSharedSign(outputPlus, block)
     }
 
     override fun toString(): String = actualFormat.builderString()
 
 }
 
-public fun UtcOffset.format(formatString: String): String =
-    UtcOffsetFormat.Cache.get(formatString).format(this)
+internal enum class WhenToOutput {
+    NEVER,
+    IF_NONZERO,
+    ALWAYS,
+}
+
+internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(zOnZero: Boolean, useSeparator: Boolean, outputMinute: WhenToOutput, outputSecond: WhenToOutput) {
+    require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
+    fun UtcOffsetFormatBuilderFields.appendIsoOffsetWithoutZOnZero() {
+        withSharedSign(outputPlus = true) {
+            appendOffsetTotalHours(2)
+            when (outputMinute) {
+                WhenToOutput.NEVER -> {}
+                WhenToOutput.IF_NONZERO -> {
+                    appendOptional {
+                        if (useSeparator) { appendLiteral(':') }
+                        appendOffsetMinutesOfHour(2)
+                        when (outputSecond) {
+                            WhenToOutput.NEVER -> {}
+                            WhenToOutput.IF_NONZERO -> {
+                                appendOptional {
+                                    if (useSeparator) { appendLiteral(':') }
+                                    appendOffsetSecondsOfMinute(2)
+                                }
+                            }
+                            WhenToOutput.ALWAYS -> {
+                                if (useSeparator) { appendLiteral(':') }
+                                appendOffsetSecondsOfMinute(2)
+                            }
+                        }
+                    }
+                }
+                WhenToOutput.ALWAYS -> {
+                    if (useSeparator) { appendLiteral(':') }
+                    appendOffsetMinutesOfHour(2)
+                    when (outputSecond) {
+                        WhenToOutput.NEVER -> {}
+                        WhenToOutput.IF_NONZERO -> {
+                            appendOptional {
+                                if (useSeparator) { appendLiteral(':') }
+                                appendOffsetSecondsOfMinute(2)
+                            }
+                        }
+                        WhenToOutput.ALWAYS -> {
+                            if (useSeparator) { appendLiteral(':') }
+                            appendOffsetSecondsOfMinute(2)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (zOnZero) {
+        appendAlternatives({
+            appendLiteral('Z')
+        }, {
+            appendLiteral('z')
+        }, {
+            appendIsoOffsetWithoutZOnZero()
+        })
+    } else {
+        appendIsoOffsetWithoutZOnZero()
+    }
+}
 
 public fun UtcOffset.format(format: UtcOffsetFormat): String = format.format(this)
-
-public fun UtcOffset.Companion.parse(input: String, formatString: String): UtcOffset =
-    UtcOffsetFormat.Cache.get(formatString).parse(input)
 
 public fun UtcOffset.Companion.parse(input: String, format: UtcOffsetFormat): UtcOffset = format.parse(input)
 
@@ -140,42 +186,23 @@ internal class IncompleteUtcOffset(
 
 internal class UtcOffsetWholeHoursDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHoursAbs, minDigits) {
-    override val formatStringRepresentation: Pair<String?, String> =
-        UtcOffsetFormatBuilderSpec.name to "H".repeat(minDigits)
 
     override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilder::appendOffsetTotalHours.name}($minDigits)"
+        "${UtcOffsetFormatBuilderFields::appendOffsetTotalHours.name}($minDigits)"
 }
 
 internal class UtcOffsetMinuteOfHourDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits) {
-    override val formatStringRepresentation: Pair<String?, String> =
-        UtcOffsetFormatBuilderSpec.name to "m".repeat(minDigits)
 
     override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilder::appendOffsetMinutesOfHour.name}($minDigits)"
+        "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}($minDigits)"
 }
 
 internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits) {
-    override val formatStringRepresentation: Pair<String?, String> =
-        UtcOffsetFormatBuilderSpec.name to "s".repeat(minDigits)
 
     override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilder::appendOffsetSecondsOfMinute.name}($minDigits)"
-}
-
-internal object UtcOffsetFormatBuilderSpec : BuilderSpec<UtcOffsetFieldContainer>(
-    mapOf(
-        "uo" to UtcOffsetFormatBuilderSpec
-    ),
-    mapOf(
-        'H' to { length -> BasicFormatStructure(UtcOffsetWholeHoursDirective(length)) },
-        'm' to { length -> BasicFormatStructure(UtcOffsetMinuteOfHourDirective(length)) },
-        's' to { length -> BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(length)) },
-    )
-) {
-    const val name = "uo"
+        "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}($minDigits)"
 }
 
 private class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :

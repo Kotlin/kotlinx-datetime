@@ -12,7 +12,15 @@ import kotlin.test.*
 class FormatTest {
     @Test
     fun testFindGreediness() {
-        val format = LocalTimeFormat.fromFormatString("hh:mm(|:ss)")
+        val format = LocalTimeFormat.build {
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendOptional {
+                appendLiteral(':')
+                appendSecond(2)
+            }
+        }
         val text = """
             Today at 13:40, I am going to have dinner. Looking at my watch, I see that it is 13:39:30 already.
             I'm afraid there is a very little time left for me to finish this text. Whoops, it's 13:40:15 already!
@@ -25,7 +33,11 @@ class FormatTest {
 
     @Test
     fun testFindAllNonIntersection() {
-        val format = LocalTimeFormat.fromFormatString("hh:mm")
+        val format = LocalTimeFormat.build {
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+        }
         val text = """
             Then again, what kind of a person eats dinner at 13:40? I'm not a barbarian, I dine at 19:15:00.
             13:40 is a time for a snack, not a dinner.
@@ -36,7 +48,11 @@ class FormatTest {
 
     @Test
     fun testFindNotInMiddleOfNumbers() {
-        val format = LocalTimeFormat.fromFormatString("hh:m")
+        val format = LocalTimeFormat.build {
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute()
+        }
         val text = """
             hey can I order a dinner for 102:1: me, 2: my best friend, the other 100: for my other friends?
             at 02:2 please
@@ -48,7 +64,11 @@ class FormatTest {
 
     @Test
     fun testFindIncorrectValues() {
-        val format = LocalTimeFormat.fromFormatString("hh:mm")
+        val format = LocalTimeFormat.build {
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+        }
         val text = """
             I know that 25:12:34 is not a valid time, but I'm still going to try to order a dinner at that time.
         """.trimIndent()

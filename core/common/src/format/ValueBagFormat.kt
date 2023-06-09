@@ -248,28 +248,12 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 /**
  * Builder for [ValueBagFormat] values.
  */
-public interface ValueBagFormatBuilder : DateFormatBuilderFields, TimeFormatBuilderFields,
-    UtcOffsetFormatBuilderFields, FormatBuilder<ValueBagFormatBuilder> {
+public interface ValueBagFormatBuilder : DateTimeFormatBuilder,
+    UtcOffsetFormatBuilderFields {
     /**
      * Appends the IANA time zone identifier.
      */
     public fun appendTimeZoneId()
-
-    /**
-     * Appends a format string to the builder.
-     *
-     * For rules common for all format strings, see [FormatBuilder.appendFormatString].
-     *
-     * There are no special pattern letters for [ValueBagFormat], it can only embed nested formats using the
-     * following names:
-     * * `ld` for [LocalDate] format,
-     * * `lt` for [LocalTime] format,
-     * * `uo` for [UtcOffset] format.
-     *
-     * Example: `ld<mm-dd>, lt<hh:mm> '('uo<+(hhmm)>')'` can format a string like `12-25 03:04 (+0506)`.
-     */
-    // overriding the documentation.
-    public override fun appendFormatString(formatString: String)
 }
 
 /**
@@ -282,20 +266,10 @@ public class ValueBagFormat private constructor(private val actualFormat: String
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
          */
         public fun build(block: ValueBagFormatBuilder.() -> Unit): ValueBagFormat {
-            val builder = Builder(AppendableFormatStructure(ValueBagFormatBuilderSpec))
+            val builder = Builder(AppendableFormatStructure())
             builder.block()
             return ValueBagFormat(builder.build())
         }
-
-        /**
-         * Creates a [ValueBagFormat] from a format string.
-         *
-         * Building a format is a relatively expensive operation, so it is recommended to store the result and avoid
-         * rebuilding the format on every use.
-         *
-         * @see ValueBagFormatBuilder.appendFormatString for the format string syntax.
-         */
-        public fun fromFormatString(formatString: String): ValueBagFormat = build { appendFormatString(formatString) }
 
         /**
          * ISO-8601 extended format for dates and times with UTC offset.
@@ -310,8 +284,22 @@ public class ValueBagFormat private constructor(private val actualFormat: String
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
         public val ISO_INSTANT: ValueBagFormat = build {
-            appendYear(minDigits = 4, outputPlusOnExceededPadding = true)
-            appendFormatString("ld<-mm-dd>('T'|'t')lt<hh:mm:ss(|.f)>uo<('Z'|'z')|+(HH(|:mm(|:ss)))>")
+            appendIsoDate()
+            appendAlternatives({
+                appendLiteral('T')
+            }, {
+                appendLiteral('t')
+            })
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendLiteral(':')
+            appendSecond(2)
+            appendOptional {
+                appendLiteral('.')
+                appendSecondFraction()
+            }
+            appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
         }
 
         public val RFC_1123: ValueBagFormat = build {
@@ -320,14 +308,28 @@ public class ValueBagFormat private constructor(private val actualFormat: String
             appendDayOfMonth()
             appendLiteral(' ')
             appendMonthName(listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
-            appendFormatString(" ld<yyyy> lt<hh:mm:ss> uo<'GMT'|+(HHmm)>")
+            appendLiteral(' ')
+            appendYear(4)
+            appendLiteral(' ')
+            appendHour(2)
+            appendLiteral(':')
+            appendMinute(2)
+            appendLiteral(':')
+            appendSecond(2)
+            appendLiteral(" ")
+            appendAlternatives({
+                appendLiteral("GMT")
+            }, {
+                withSharedSign(outputPlus = true) {
+                    appendOffsetTotalHours(2)
+                    appendOffsetMinutesOfHour(2)
+                }
+            })
         }
-
-        internal val Cache = LruCache<String, ValueBagFormat>(16) { fromFormatString(it) }
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
-        AbstractFormatBuilder<ValueBagContents, ValueBagFormatBuilder, Builder>, ValueBagFormatBuilder {
+        AbstractFormatBuilder<ValueBagContents, Builder>, ValueBagFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
 
@@ -365,45 +367,14 @@ public class ValueBagFormat private constructor(private val actualFormat: String
         override fun appendTimeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
 
-        override fun appendFormatString(formatString: String) = super.appendFormatString(formatString)
-
-        override fun createEmpty(): Builder = Builder(actualBuilder.createSibling())
-        override fun castToGeneric(actualSelf: Builder): ValueBagFormatBuilder = this
+        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
 
     override fun toString(): String = actualFormat.builderString()
 
 }
 
-/**
- * Formats a [ValueBag] using the given format string.
- *
- * This method caches the format for the given string in a least-recently-used cache, so typically, only the first
- * invocation of this method for a given format string will require building the format.
- * However, if the program uses many format strings, this format may be evicted from the cache and require rebuilding.
- * In case more predictable performance is required, it is recommended to use the overload that accepts
- * a pre-built format. See [ValueBagFormat.fromFormatString] for more information.
- *
- * @see ValueBagFormatBuilder.appendFormatString for description of the format used.
- */
-public fun ValueBag.format(formatString: String): String =
-    ValueBagFormat.Cache.get(formatString).format(this)
-
 public fun ValueBag.format(format: ValueBagFormat): String = format.format(this)
-
-/**
- * Parses a [ValueBag] from [input] using the given format string.
- *
- * This method caches the format for the given string in a least-recently-used cache, so typically, only the first
- * invocation of this method for a given format string will require building the format.
- * However, if the program uses many format strings, this format may be evicted from the cache and require rebuilding.
- * In case more predictable performance is required, it is recommended to use the overload that accepts
- * a pre-built format. See [ValueBagFormat.fromFormatString] for more information.
- *
- * @see ValueBagFormatBuilder.appendFormatString for description of the format used.
- */
-public fun ValueBag.Companion.parse(input: String, formatString: String): ValueBag =
-    ValueBagFormat.Cache.get(formatString).parse(input)
 
 /**
  * Parses a [ValueBag] from [input] using the given format.
@@ -436,20 +407,8 @@ internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
     StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
 
-    override val formatStringRepresentation: Pair<String?, String>? = null
-
     override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
 }
-
-
-internal object ValueBagFormatBuilderSpec : BuilderSpec<ValueBagContents>(
-    mapOf(
-        DateFormatBuilderSpec.name to DateFormatBuilderSpec,
-        TimeFormatBuilderSpec.name to TimeFormatBuilderSpec,
-        UtcOffsetFormatBuilderSpec.name to UtcOffsetFormatBuilderSpec,
-    ),
-    emptyMap()
-)
 
 private class ValueBagFormatImpl(actualFormat: StringFormat<ValueBagContents>) :
     AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
