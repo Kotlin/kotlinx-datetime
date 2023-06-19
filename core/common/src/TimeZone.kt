@@ -174,5 +174,10 @@ public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
  *
  * Note that it's not equivalent to `atTime(0, 0).toInstant(timeZone)`
  * because a day does not always start at the fixed time 0:00:00.
+ * For example, if due do daylight saving time, clocks were shifted from 23:30
+ * of one day directly to 00:30 of the next day, skipping the midnight, then
+ * `atStartOfDayIn` would return the `Instant` corresponding to 00:30, whereas
+ * `atTime(0, 0).toInstant(timeZone)` would return the `Instant` corresponding
+ * to 01:00.
  */
 public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant
