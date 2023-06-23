@@ -35,8 +35,9 @@ class TimeZoneTest {
     @Test
     fun available() {
         val allTzIds = TimeZone.availableZoneIds
-        println("Available TZs:")
-        allTzIds.forEach(::println)
+        assertContains(allTzIds, "Europe/Berlin")
+        assertContains(allTzIds, "Europe/Moscow")
+        assertContains(allTzIds, "America/New_York")
 
         assertNotEquals(0, allTzIds.size)
         assertTrue(TimeZone.currentSystemDefault().id in allTzIds)
@@ -46,7 +47,13 @@ class TimeZoneTest {
     @Test
     fun availableZonesAreAvailable() {
         for (zoneName in TimeZone.availableZoneIds) {
-            TimeZone.of(zoneName)
+            val timezone = try {
+                TimeZone.of(zoneName)
+            } catch (e: Exception) {
+                throw Exception("Zone $zoneName is not available", e)
+            }
+            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone)
+            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone)
         }
     }
 
@@ -198,6 +205,103 @@ class TimeZoneTest {
         check("-5", LocalDateTime(2008, 11, 2, 2, 0, 0, 0))
     }
 
+    @Test
+    fun checkKnownTimezoneDatabaseRecords() {
+        with(TimeZone.of("America/New_York")) {
+            checkRegular(this, LocalDateTime(2019, 3, 8, 23, 0), UtcOffset(hours = -5))
+            checkGap(this, LocalDateTime(2019, 3, 10, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 6, 2, 23, 0), UtcOffset(hours = -4))
+            checkOverlap(this, LocalDateTime(2019, 11, 3, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = -5))
+        }
+        with(TimeZone.of("Europe/Berlin")) {
+            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
+            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
+            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
+            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
+        }
+        with(TimeZone.of("Europe/Moscow")) {
+            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 3))
+            checkRegular(this, LocalDateTime(2011, 1, 31, 1, 0), UtcOffset(hours = 3))
+            checkGap(this, LocalDateTime(2011, 3, 27, 2, 0))
+            checkRegular(this, LocalDateTime(2011, 5, 3, 1, 0), UtcOffset(hours = 4))
+        }
+        with(TimeZone.of("Australia/Sydney")) {
+            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 11))
+            checkOverlap(this, LocalDateTime(2019, 4, 7, 3, 0))
+            checkRegular(this, LocalDateTime(2019, 10, 6, 1, 0), UtcOffset(hours = 10))
+            checkGap(this, LocalDateTime(2019, 10, 6, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 11))
+        }
+    }
+
     private fun LocalDateTime(year: Int, monthNumber: Int, dayOfMonth: Int) = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0)
 
 }
+
+/**
+ * [gapStart] is the first non-existent moment.
+ */
+private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
+    val instant = gapStart.toInstant(timeZone)
+    /** the first [LocalDateTime] after the gap */
+    val adjusted = instant.toLocalDateTime(timeZone)
+    try {
+        // there is at least a one-second gap
+        assertNotEquals(gapStart, adjusted)
+        // the offsets before the gap are equal
+        assertEquals(
+            instant.offsetIn(timeZone),
+            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone))
+        // the offsets after the gap are equal
+        assertEquals(
+            instant.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
+            instant.minus(2, DateTimeUnit.SECOND).offsetIn(timeZone)
+        )
+    } catch (e: Throwable) {
+        throw Exception("Didn't find a gap at $gapStart for $timeZone", e)
+    }
+}
+
+/**
+ * [overlapStart] is the first non-ambiguous date-time.
+ */
+private fun checkOverlap(timeZone: TimeZone, overlapStart: LocalDateTime) {
+    // the earlier occurrence of the overlap
+    val instantStart = overlapStart.plusNominalSeconds(-1).toInstant(timeZone).plus(1, DateTimeUnit.SECOND)
+    // the later occurrence of the overlap
+    val instantEnd = overlapStart.plusNominalSeconds(1).toInstant(timeZone).minus(1, DateTimeUnit.SECOND)
+    try {
+        // there is at least a one-second overlap
+        assertNotEquals(instantStart, instantEnd)
+        // the offsets before the overlap are equal
+        assertEquals(
+            instantStart.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
+            instantStart.minus(2, DateTimeUnit.SECOND).offsetIn(timeZone)
+        )
+        // the offsets after the overlap are equal
+        assertEquals(
+            instantStart.offsetIn(timeZone),
+            instantEnd.offsetIn(timeZone)
+        )
+    } catch (e: Throwable) {
+        throw Exception("Didn't find an overlap at $overlapStart for $timeZone", e)
+    }
+}
+
+private fun checkRegular(timeZone: TimeZone, dateTime: LocalDateTime, offset: UtcOffset) {
+    val instant = dateTime.toInstant(timeZone)
+    assertEquals(offset, instant.offsetIn(timeZone))
+    try {
+        // not a gap:
+        assertEquals(dateTime, instant.toLocalDateTime(timeZone))
+        // not an overlap, or an overlap longer than one hour:
+        assertTrue(dateTime.plusNominalSeconds(3600) <= instant.plus(1, DateTimeUnit.HOUR).toLocalDateTime(timeZone))
+    } catch (e: Throwable) {
+        throw Exception("The date-time at $dateTime for $timeZone was in a gap or overlap", e)
+    }
+}
+
+private fun LocalDateTime.plusNominalSeconds(seconds: Int): LocalDateTime =
+    toInstant(UtcOffset.ZERO).plus(seconds, DateTimeUnit.SECOND).toLocalDateTime(UtcOffset.ZERO)

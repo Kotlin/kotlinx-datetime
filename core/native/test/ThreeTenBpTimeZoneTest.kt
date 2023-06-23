@@ -9,7 +9,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlin.math.*
 import kotlin.test.*
 
 
