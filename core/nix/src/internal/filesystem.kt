@@ -21,8 +21,8 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
 
     fun readLink(): Path? = memScoped {
         val buffer = allocArray<ByteVar>(PATH_MAX)
-        val err = readlink(this@Path.toString(), buffer, PATH_MAX.toULong())
-        if (err == -1L) return null
+        val err = readlink(this@Path.toString(), buffer, PATH_MAX.convert<size_t>())
+        if (err == (-1).convert<ssize_t>()) return null
         buffer[err] = 0
         fromString(buffer.toKString())
     }
@@ -89,7 +89,7 @@ internal fun Path.readBytes(): ByteArray {
         val size = ftell(handler)
         fseek(handler, 0, SEEK_SET)
         val buffer = ByteArray(size.toInt())
-        fread(buffer.refTo(0), size.toULong(), 1, handler)
+        fread(buffer.refTo(0), size.convert<size_t>(), 1, handler)
         return buffer
     } finally {
         fclose(handler)
