@@ -31,7 +31,6 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
         this === other || other is ZonedDateTime &&
             dateTime == other.dateTime && offset == other.offset && zone == other.zone
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun hashCode(): Int {
         return dateTime.hashCode() xor offset.hashCode() xor zone.hashCode().rotateLeft(3)
     }
