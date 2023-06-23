@@ -3,6 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 #pragma once
+#include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 
 /* Check the given pointer to see if it's null. If so, fail, printing to
