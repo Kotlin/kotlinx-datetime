@@ -37,42 +37,45 @@ kotlin {
     explicitApi()
 
     infra {
-        // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
-        // Tier 1
-        target("linuxX64")
-        // Tier 2
-        target("linuxArm64")
+        common("nix") {
+            // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+            common("linux") {
+                // Tier 1
+                target("linuxX64")
+                // Tier 2
+                target("linuxArm64")
+            }
+            // the following targets are not supported by kotlinx.serialization:
+            /*
+            target("androidNativeArm32")
+            target("androidNativeArm64")
+            target("androidNativeX86")
+            target("androidNativeX64")
+             */
+            common("darwin") {
+                // Tier 1
+                target("macosX64")
+                target("macosArm64")
+                target("iosSimulatorArm64")
+                target("iosX64")
+                // Tier 2
+                target("watchosSimulatorArm64")
+                target("watchosX64")
+                target("watchosArm32")
+                target("watchosArm64")
+                target("tvosSimulatorArm64")
+                target("tvosX64")
+                target("tvosArm64")
+                target("iosArm64")
+                // Tier 3
+                // target("watchosDeviceArm64") // not supported by kotlinx.serialization
+                // Deprecated for removal
+                target("iosArm32")
+                target("watchosX86")
+            }
+        }
         // Tier 3
         target("mingwX64")
-        // the following targets are not supported by kotlinx.serialization:
-        /*
-        target("androidNativeArm32")
-        target("androidNativeArm64")
-        target("androidNativeX86")
-        target("androidNativeX64")
-         */
-        // Darwin targets are listed separately
-        common("darwin") {
-            // Tier 1
-            target("macosX64")
-            target("macosArm64")
-            target("iosSimulatorArm64")
-            target("iosX64")
-            // Tier 2
-            target("watchosSimulatorArm64")
-            target("watchosX64")
-            target("watchosArm32")
-            target("watchosArm64")
-            target("tvosSimulatorArm64")
-            target("tvosX64")
-            target("tvosArm64")
-            target("iosArm64")
-            // Tier 3
-            // target("watchosDeviceArm64") // not supported by kotlinx.serialization
-            // Deprecated for removal
-            target("iosArm32")
-            target("watchosX86")
-        }
     }
 
     jvm {
@@ -123,31 +126,16 @@ kotlin {
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
         }
-        if (konanTarget.family.isAppleFamily) {
-            return@withType
-        }
-        compilations["main"].cinterops {
-            create("date") {
-                val cinteropDir = "$projectDir/native/cinterop"
-                val dateLibDir = "${project(":").projectDir}/thirdparty/date"
-                headers("$cinteropDir/public/cdate.h")
-                defFile("native/cinterop/date.def")
-                extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
-                extraOpts("-Xsource-compiler-option", "-DONLY_C_LOCALE=1")
-                when {
-                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
-                        // needed for the date library so that it does not try to download the timezone database
-                        extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
-                        /* using a more modern C++ version causes the date library to use features that are not
-                    * present in the currently outdated GCC root shipped with Kotlin/Native for Linux. */
-                        extraOpts("-Xsource-compiler-option", "-std=c++11")
-                        // the date library and its headers
-                        extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
-                        extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
-                        // the main source for the platform bindings.
-                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
-                    }
-                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
+        when {
+            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
+                compilations["main"].cinterops {
+                    create("date") {
+                        val cinteropDir = "$projectDir/native/cinterop"
+                        val dateLibDir = "${project(":").projectDir}/thirdparty/date"
+                        headers("$cinteropDir/public/cdate.h")
+                        defFile("native/cinterop/date.def")
+                        extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
+                        extraOpts("-Xsource-compiler-option", "-DONLY_C_LOCALE=1")
                         // needed to be able to use std::shared_mutex to implement caching.
                         extraOpts("-Xsource-compiler-option", "-std=c++17")
                         // the date library headers, needed for some pure calculations.
@@ -155,14 +143,20 @@ kotlin {
                         // the main source for the platform bindings.
                         extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
                     }
-                    else -> {
-                        throw IllegalArgumentException("Unknown native target ${this@withType}")
-                    }
+                }
+                compilations["main"].defaultSourceSet {
+                    kotlin.srcDir("native/cinterop_actuals")
                 }
             }
-        }
-        compilations["main"].defaultSourceSet {
-            kotlin.srcDir("native/cinterop_actuals")
+            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
+                // do nothing special
+            }
+            konanTarget.family.isAppleFamily -> {
+                // do nothing special
+            }
+            else -> {
+                throw IllegalArgumentException("Unknown native target ${this@withType}")
+            }
         }
     }
 

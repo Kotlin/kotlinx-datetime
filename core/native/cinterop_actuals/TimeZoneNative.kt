@@ -6,7 +6,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import kotlinx.cinterop.*
-import kotlinx.datetime.internal.*
 import platform.posix.free
 
 internal actual class RegionTimeZone(private val tzid: TZID, actual override val id: String): TimeZone() {

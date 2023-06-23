@@ -35,8 +35,9 @@ class TimeZoneTest {
     @Test
     fun available() {
         val allTzIds = TimeZone.availableZoneIds
-        println("Available TZs:")
-        allTzIds.forEach(::println)
+        assertContains(allTzIds, "Europe/Berlin")
+        assertContains(allTzIds, "Europe/Moscow")
+        assertContains(allTzIds, "America/New_York")
 
         assertNotEquals(0, allTzIds.size)
         assertTrue(TimeZone.currentSystemDefault().id in allTzIds)
@@ -46,7 +47,13 @@ class TimeZoneTest {
     @Test
     fun availableZonesAreAvailable() {
         for (zoneName in TimeZone.availableZoneIds) {
-            TimeZone.of(zoneName)
+            val timezone = try {
+                TimeZone.of(zoneName)
+            } catch (e: Exception) {
+                throw Exception("Zone $zoneName is not available", e)
+            }
+            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone)
+            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone)
         }
     }
 
