@@ -112,6 +112,7 @@ kotlin {
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
         languageSettings {
+            languageVersion = "2.0"
             //            progressiveMode = true
         }
     }

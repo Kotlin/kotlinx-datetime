@@ -47,7 +47,7 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalTime =
         decoder.decodeStructure(descriptor) {
             var hour: Short? = null

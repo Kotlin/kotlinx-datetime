@@ -32,7 +32,7 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.TimeBased {
         var seen = false
         var nanoseconds = 0L
@@ -76,7 +76,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.DayBased {
         var seen = false
         var days = 0
@@ -120,7 +120,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.MonthBased {
         var seen = false
         var months = 0
@@ -151,7 +151,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
  *
  * JSON example: `{"type":"DayBased","days":15}`
  */
-@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @OptIn(InternalSerializationApi::class)
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
@@ -185,7 +185,7 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
  *
  * JSON example: `{"type":"MonthBased","days":15}`
  */
-@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @OptIn(InternalSerializationApi::class)
 public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 

@@ -16,7 +16,7 @@ import kotlinx.serialization.internal.*
  *
  * JSON example: `"JANUARY"`
  */
-@Suppress("INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public object MonthSerializer: KSerializer<Month> {
     private val impl = EnumSerializer("Month", Month.values())
 

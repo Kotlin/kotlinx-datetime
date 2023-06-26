@@ -46,7 +46,7 @@ public object InstantComponentSerializer: KSerializer<Instant> {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): Instant =
         decoder.decodeStructure(descriptor) {
             var epochSeconds: Long? = null

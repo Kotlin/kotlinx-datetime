@@ -51,7 +51,7 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDateTime =
         decoder.decodeStructure(descriptor) {
             var year: Int? = null
