@@ -85,13 +85,20 @@ internal fun Path.traverseDirectory(exclude: Set<String> = emptySet(), stripLead
 internal fun Path.readBytes(): ByteArray {
     val handler = fopen(this.toString(), "rb") ?: throw RuntimeException("Cannot open file $this")
     try {
-        fseek(handler, 0, SEEK_END)
+        var err = fseek(handler, 0, SEEK_END)
+        if (err == -1) throw RuntimeException("Cannot jump to the end of $this: $errnoString")
         val size = ftell(handler)
-        fseek(handler, 0, SEEK_SET)
+        if (size == -1L) throw RuntimeException("Cannot get file size for $this: $errnoString")
+        err = fseek(handler, 0, SEEK_SET)
+        if (err == -1) throw RuntimeException("Cannot jump to the start of $this: $errnoString")
         val buffer = ByteArray(size.toInt())
-        fread(buffer.refTo(0), size.convert<size_t>(), 1, handler)
+        val readAmount = fread(buffer.refTo(0), size.convert<size_t>(), 1u, handler)
+        check(readAmount == 1uL) { "Cannot read file $this: $errnoString" }
         return buffer
     } finally {
         fclose(handler)
     }
 }
+
+private val errnoString
+    get() = strerror(errno)?.toKString() ?: "Unknown error"
