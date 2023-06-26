@@ -33,6 +33,7 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
     addTrainRepositories(project)
+    maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
 }
 
 dependencies {

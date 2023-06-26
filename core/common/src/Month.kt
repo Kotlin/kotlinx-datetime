@@ -55,7 +55,6 @@ public expect enum class Month {
  */
 public val Month.number: Int get() = ordinal + 1
 
-@SharedImmutable
 private val allMonths = Month.values().asList()
 
 /**

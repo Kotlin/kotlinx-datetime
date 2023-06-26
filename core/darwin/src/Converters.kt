@@ -42,6 +42,7 @@ public fun NSDate.toKotlinInstant(): Instant {
  * [DateTimeException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
  * nearest minute.
  */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone) {
     require (offset.totalSeconds % 60 == 0) {
         "NSTimeZone cannot represent fixed-offset time zones with offsets not expressed in whole minutes: $this"
@@ -61,6 +62,7 @@ public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date are set.
  */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 public fun LocalDate.toNSDateComponents(): NSDateComponents {
     val components = NSDateComponents()
     components.year = year.convert()
@@ -74,6 +76,7 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
  */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
     val components = date.toNSDateComponents()
     components.hour = hour.convert()

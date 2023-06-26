@@ -32,7 +32,6 @@ internal fun <T, S> Parser<T>.chainIgnoring(other: Parser<S>): Parser<T> =
 internal fun <T, S> Parser<T>.chainSkipping(other: Parser<S>): Parser<S> =
     chain(other).map { (_, s) -> s }
 
-@SharedImmutable
 internal val eofParser: Parser<Unit> = { str, pos ->
     if (str.length > pos) {
         throw parseException("extraneous input", pos)

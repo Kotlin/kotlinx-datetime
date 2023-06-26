@@ -25,7 +25,6 @@ public expect enum class DayOfWeek {
  */
 public val DayOfWeek.isoDayNumber: Int get() = ordinal + 1
 
-@SharedImmutable
 private val allDaysOfWeek = DayOfWeek.values().asList()
 
 /**

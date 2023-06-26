@@ -9,6 +9,7 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.internal.*
 import platform.posix.free
 
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 internal actual class RegionTimeZone(private val tzid: TZID, actual override val id: String): TimeZone() {
     actual companion object {
         actual fun of(zoneId: String): RegionTimeZone {
@@ -84,6 +85,7 @@ internal actual class RegionTimeZone(private val tzid: TZID, actual override val
 
 }
 
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 internal actual fun currentTime(): Instant = memScoped {
     val seconds = alloc<LongVar>()
     val nanoseconds = alloc<IntVar>()

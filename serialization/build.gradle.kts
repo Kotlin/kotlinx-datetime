@@ -20,11 +20,9 @@ kotlin {
         target("macosArm64")
         target("iosX64")
         target("iosArm64")
-        target("iosArm32")
         target("iosSimulatorArm64")
         target("watchosArm32")
         target("watchosArm64")
-        target("watchosX86")
         target("watchosX64")
         target("watchosSimulatorArm64")
         target("tvosArm64")
@@ -38,7 +36,7 @@ kotlin {
         }
     }
 
-    js {
+    js(IR) {
         nodejs {
         }
         compilations.all {

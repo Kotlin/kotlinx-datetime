@@ -94,6 +94,7 @@ class ConvertersTest {
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
+    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
         val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()

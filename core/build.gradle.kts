@@ -69,9 +69,6 @@ kotlin {
             target("iosArm64")
             // Tier 3
             // target("watchosDeviceArm64") // not supported by kotlinx.serialization
-            // Deprecated for removal
-            target("iosArm32")
-            target("watchosX86")
         }
     }
 
@@ -85,7 +82,7 @@ kotlin {
 
     }
 
-    js {
+    js(IR) {
         nodejs {
             testTask {
                 useMocha {
