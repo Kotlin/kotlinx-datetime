@@ -79,6 +79,7 @@ class ConvertersTest {
         components.timeZone = utc
         val nsDate = gregorian.dateFromComponents(components)!!
         val formatter = NSDateFormatter()
+        formatter.timeZone = utc
         formatter.dateFormat = "yyyy-MM-dd"
         assertEquals("2019-02-04", formatter.stringFromDate(nsDate))
     }
