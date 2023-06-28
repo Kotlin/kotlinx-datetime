@@ -114,7 +114,7 @@ internal class MonthDayOfYear(val month: Month, val day: TransitionDay) : DateOf
              * The [n]th given [dayOfWeek] in the month.
              */
             fun Nth(dayOfWeek: DayOfWeek, n: Int): TransitionDay =
-                First(dayOfWeek, n * 7 + 1)
+                First(dayOfWeek, (n-1) * 7 + 1)
         }
 
         /**
@@ -234,6 +234,15 @@ internal class TimeZoneRules(
             "offsets.size must be one more than transitionEpochSeconds.size"
         }
     }
+
+    /**
+     * Constructs a [TimeZoneRules] without any historic data.
+     */
+    constructor(initialOffset: UtcOffset, rules: RecurringZoneRules) : this(
+        transitionEpochSeconds = emptyList(),
+        offsets = listOf(initialOffset),
+        recurringZoneRules = rules,
+    )
 
     /**
      * The list of [LocalDateTime] values related to the transitions.

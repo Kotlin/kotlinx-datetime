@@ -27,4 +27,18 @@ class TimeZoneRulesTest {
         val infoAtDstEnd = rules.infoAtDatetime(dstEndTime)
         assertTrue(infoAtDstEnd is Overlap, "Expected Overlap, got $infoAtDstEnd")
     }
+
+    @Test
+    fun ruleStringWithNonLastDayOfWeek() {
+        val ruleString = "AST4ADT,M3.2.0,M11.1.0\n" // Atlantic/Bermuda
+        val recurringRules =
+            PosixTzString.readIfPresent(BinaryDataReader(ruleString.encodeToByteArray()))!!.toRecurringZoneRules()!!
+        val rules = TimeZoneRules(UtcOffset(hours = -4), recurringRules)
+        val dstStartTime = LocalDateTime(2020, 3, 8, 2, 1)
+        val infoAtDstStart = rules.infoAtDatetime(dstStartTime)
+        assertTrue(infoAtDstStart is Gap, "Expected Gap, got $infoAtDstStart")
+        val dstEndTime = LocalDateTime(2020, 11, 1, 1, 1)
+        val infoAtDstEnd = rules.infoAtDatetime(dstEndTime)
+        assertTrue(infoAtDstEnd is Overlap, "Expected Overlap, got $infoAtDstEnd")
+    }
 }
