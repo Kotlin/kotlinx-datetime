@@ -213,12 +213,14 @@ kotlin {
         }
 
         val nativeTest by getting {
+            dependsOn(commonTest.get())
         }
 
         val darwinMain by getting {
         }
 
         val darwinTest by getting {
+            dependsOn(commonTest.get())
         }
     }
 }
