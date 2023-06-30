@@ -87,7 +87,7 @@ internal fun Path.readBytes(): ByteArray {
     try {
         var err = fseek(handler, 0, SEEK_END)
         if (err == -1) throw RuntimeException("Cannot jump to the end of $this: $errnoString")
-        val size = ftell(handler)
+        val size = ftell(handler).toLong()
         if (size == -1L) throw RuntimeException("Cannot get file size for $this: $errnoString")
         err = fseek(handler, 0, SEEK_SET)
         if (err == -1) throw RuntimeException("Cannot jump to the start of $this: $errnoString")
