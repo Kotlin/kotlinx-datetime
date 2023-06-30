@@ -106,12 +106,12 @@ internal class MonthDayOfYear(val month: Month, val day: TransitionDay) : DateOf
         /**
          * The first given [dayOfWeek] of the month that is not earlier than [atLeastDayOfMonth].
          */
-        class First(val dayOfWeek: DayOfWeek, val atLeastDayOfMonth: Int?) : TransitionDay {
+        class First(val dayOfWeek: DayOfWeek, val atLeastDayOfMonth: Int = 1) : TransitionDay {
             override fun resolve(year: Int, month: Month): LocalDate =
-                LocalDate(year, month, atLeastDayOfMonth ?: 1).nextOrSame(dayOfWeek)
+                LocalDate(year, month, atLeastDayOfMonth).nextOrSame(dayOfWeek)
 
             override fun toString(): String = "the first $dayOfWeek" +
-                (atLeastDayOfMonth?.let { " on or after $it" } ?: "")
+                (if (atLeastDayOfMonth > 1) " on or after $atLeastDayOfMonth" else "")
         }
 
         companion object {
