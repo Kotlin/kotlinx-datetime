@@ -350,7 +350,7 @@ internal class RecurringZoneRules(
         var offset = offsetAtYearStart
         for (rule in rulesForYear(approximateYear)) {
             if (instant < rule.transitionDateTime) {
-                return offset
+                return rule.offsetBefore
             }
             offset = rule.offsetAfter
         }
@@ -371,14 +371,14 @@ internal class RecurringZoneRules(
             val ldtBefore = rule.transitionDateTime.toLocalDateTime(rule.offsetBefore)
             val ldtAfter = rule.transitionDateTime.toLocalDateTime(rule.offsetAfter)
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
-                Regular(offset)
+                Regular(rule.offsetBefore)
             } else if (localDateTime > ldtBefore && localDateTime >= ldtAfter) {
                 offset = rule.offsetAfter
                 continue
             } else if (ldtAfter < ldtBefore) {
-                Overlap(rule.transitionDateTime, offset, rule.offsetAfter)
+                Overlap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
             } else {
-                Gap(rule.transitionDateTime, offset, rule.offsetAfter)
+                Gap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
             }
         }
         return Regular(offset)
