@@ -9,9 +9,11 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import platform.posix.*
+import kotlin.io.encoding.*
 import kotlin.test.*
 
 class TimeZoneRulesCompleteTest {
+    @OptIn(ExperimentalEncodingApi::class)
     @Test
     fun iterateOverAllTimezones() {
         val root = Path.fromString("/usr/share/zoneinfo")
@@ -49,6 +51,7 @@ class TimeZoneRulesCompleteTest {
                 } catch (e: Throwable) {
                     println(beforeTransition)
                     println(afterTransition)
+                    println(Base64.encode(file.readBytes()))
                     throw e
                 }
             }
