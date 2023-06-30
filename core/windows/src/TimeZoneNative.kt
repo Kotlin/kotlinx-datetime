@@ -19,8 +19,8 @@ internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual ove
         }
 
         actual fun currentSystemDefault(): RegionTimeZone {
-            val zoneId = tzdbInRegistry.currentSystemDefault().second
-            return of(zoneId.toString())
+            val (name, zoneRules) = tzdbInRegistry.currentSystemDefault()
+            return RegionTimeZone(zoneRules, name)
         }
 
         actual val availableZoneIds: Set<String>
