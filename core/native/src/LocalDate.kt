@@ -300,4 +300,4 @@ internal fun LocalDate.previousOrSame(dayOfWeek: DayOfWeek) =
     minus((this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
 
 internal fun LocalDate.nextOrSame(dayOfWeek: DayOfWeek) =
-    plus((this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
+    plus((dayOfWeek.isoDayNumber - this.dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)

@@ -16,9 +16,14 @@ internal sealed interface AbnormalOffsetInfo : OffsetInfo {
     val offsetAfter: UtcOffset
 }
 
-internal fun AbnormalOffsetInfo(start: Instant, offsetBefore: UtcOffset, offsetAfter: UtcOffset): AbnormalOffsetInfo =
-    if (offsetBefore.totalSeconds < offsetAfter.totalSeconds) Gap(start, offsetBefore, offsetAfter)
-    else Overlap(start, offsetBefore, offsetAfter)
+internal fun OffsetInfo(transitionInstant: Instant, offsetBefore: UtcOffset, offsetAfter: UtcOffset): OffsetInfo =
+    if (offsetBefore == offsetAfter) {
+        Regular(offsetBefore)
+    } else if (offsetBefore.totalSeconds < offsetAfter.totalSeconds) {
+        Gap(transitionInstant, offsetBefore, offsetAfter)
+    } else {
+        Overlap(transitionInstant, offsetBefore, offsetAfter)
+    }
 
 internal data class Gap(
     override val start: Instant,
@@ -313,7 +318,7 @@ internal class TimeZoneRules(
         val transitionInstant = Instant.fromEpochSeconds(transitionEpochSeconds[transitionIndex])
         val offsetBefore = offsets[transitionIndex]
         val offsetAfter = offsets[transitionIndex + 1]
-        return AbnormalOffsetInfo(transitionInstant, offsetBefore, offsetAfter)
+        return OffsetInfo(transitionInstant, offsetBefore, offsetAfter)
     }
 }
 
@@ -321,21 +326,30 @@ internal class RecurringZoneRules(
     /**
      * The list of transitions that occur every year, in the order of occurrence.
      */
-    val rules: List<Rule>
+    val rules: List<Rule<MonthDayTime>>
 ) {
-    class Rule(
-        val transitionDateTime: MonthDayTime,
+    class Rule<T>(
+        val transitionDateTime: T,
+        val offsetBefore: UtcOffset,
         val offsetAfter: UtcOffset,
     ) {
         override fun toString(): String = "transitioning to $offsetAfter on $transitionDateTime"
     }
 
+    // see `tzparse` in https://data.iana.org/time-zones/tzdb/localtime.c: looks like there's no guarantees about
+    // a way to pre-sort the transitions, so we have to do it for each query separately.
+    private fun rulesForYear(year: Int): List<Rule<Instant>> {
+        return rules.map { rule ->
+            val transitionInstant = rule.transitionDateTime.toInstant(year, rule.offsetBefore)
+            Rule(transitionInstant, rule.offsetBefore, rule.offsetAfter)
+        }.sortedBy { it.transitionDateTime }
+    }
+
     fun infoAtInstant(instant: Instant, offsetAtYearStart: UtcOffset): UtcOffset {
         val approximateYear = instant.toLocalDateTime(offsetAtYearStart).year
         var offset = offsetAtYearStart
-        for (rule in rules) {
-            val transitionInstant = rule.transitionDateTime.toInstant(approximateYear, offset)
-            if (instant < transitionInstant) {
+        for (rule in rulesForYear(approximateYear)) {
+            if (instant < rule.transitionDateTime) {
                 return offset
             }
             offset = rule.offsetAfter
@@ -353,19 +367,18 @@ internal class RecurringZoneRules(
     fun infoAtLocalDateTime(localDateTime: LocalDateTime, offsetAtYearStart: UtcOffset): OffsetInfo {
         val year = localDateTime.year
         var offset = offsetAtYearStart
-        for (rule in rules) {
-            val transitionInstant = rule.transitionDateTime.toInstant(year, offset)
-            val ldtBefore = transitionInstant.toLocalDateTime(offset)
-            val ldtAfter = transitionInstant.toLocalDateTime(rule.offsetAfter)
+        for (rule in rulesForYear(year)) {
+            val ldtBefore = rule.transitionDateTime.toLocalDateTime(rule.offsetBefore)
+            val ldtAfter = rule.transitionDateTime.toLocalDateTime(rule.offsetAfter)
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
                 Regular(offset)
             } else if (localDateTime > ldtBefore && localDateTime >= ldtAfter) {
                 offset = rule.offsetAfter
                 continue
             } else if (ldtAfter < ldtBefore) {
-                Overlap(transitionInstant, offset, rule.offsetAfter)
+                Overlap(rule.transitionDateTime, offset, rule.offsetAfter)
             } else {
-                Gap(transitionInstant, offset, rule.offsetAfter)
+                Gap(rule.transitionDateTime, offset, rule.offsetAfter)
             }
         }
         return Regular(offset)

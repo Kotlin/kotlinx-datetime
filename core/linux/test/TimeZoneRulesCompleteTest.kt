@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import platform.posix.*
 import kotlin.test.*
@@ -18,8 +19,38 @@ class TimeZoneRulesCompleteTest {
         for (id in tzdb.availableTimeZoneIds()) {
             val file = root.resolve(Path.fromString(id))
             val rules = tzdb.rulesForId(id)
-            runUnixCommand("zdump -v $file").windowed(size = 2, step = 2).forEach {
-                print(it)
+            runUnixCommand("env LOCALE=C zdump -V $file").windowed(size = 2, step = 2).forEach { (line1, line2) ->
+                val beforeTransition = parseZdumpLine(line1)
+                val afterTransition = parseZdumpLine(line2)
+                try {
+                    val infoAfter = rules.infoAtInstant(afterTransition.instant)
+                    val infoBefore = rules.infoAtInstant(beforeTransition.instant)
+                    assertEquals(beforeTransition.offset, infoBefore)
+                    assertEquals(afterTransition.offset, infoAfter)
+                    if (beforeTransition.localDateTime.plusSeconds(1) == afterTransition.localDateTime) {
+                        // Regular
+                        val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime)
+                        val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime)
+                        assertEquals(infoAt1, infoAt2)
+                        assertIs<Regular>(infoAt1)
+                    } else if (afterTransition.localDateTime < beforeTransition.localDateTime) {
+                        // Overlap
+                        val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(-1))
+                        val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(1))
+                        assertEquals(infoAt1, infoAt2)
+                        assertIs<Overlap>(infoAt1)
+                    } else if (afterTransition.localDateTime > beforeTransition.localDateTime) {
+                        // Gap
+                        val infoAt1 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(-1))
+                        val infoAt2 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(1))
+                        assertIs<Gap>(infoAt1)
+                        assertEquals(infoAt1, infoAt2)
+                    }
+                } catch (e: Throwable) {
+                    println(beforeTransition)
+                    println(afterTransition)
+                    throw e
+                }
             }
         }
     }
@@ -48,4 +79,66 @@ private inline fun runUnixCommand(command: String): Sequence<String> = sequence 
     } finally {
         pclose(pipe)
     }
+}
+
+private fun parseZdumpLine(line: String): ZdumpLine {
+    val parts = line.indexOf("  ")
+    val path = Path.fromString(line.substring(0, parts))
+    val equalSign = line.indexOf(" = ")
+    val firstDate = line.substring(parts + 2, equalSign)
+    val isDstStart = line.indexOf(" isdst=")
+    val secondDate = line.substring(equalSign + 3, isDstStart)
+    val isDstEnd = line.indexOf(" gmtoff=")
+    val isDst = line.substring(isDstStart + 7, isDstEnd).toInt() != 0
+    val offset = line.substring(isDstEnd + 8, line.length - 1).toInt()
+    val (firstLdt, firstAbbreviation) = parseRfc2822(firstDate)
+    check(firstAbbreviation == "UT")
+    val (secondLdt, secondAbbreviation) = parseRfc2822(secondDate)
+    return ZdumpLine(
+        path,
+        firstLdt.toInstant(UtcOffset.ZERO),
+        secondLdt,
+        secondAbbreviation,
+        isDst,
+        UtcOffset(seconds = offset),
+    )
+}
+
+// TODO: use the datetime formatting capabilities when they are available
+fun parseRfc2822(input: String): Pair<LocalDateTime, String> {
+    val abbreviation = input.substringAfterLast(" ")
+    val dateTime = input.substringBeforeLast(" ")
+    val components = dateTime.split(Regex(" +"))
+    val dayOfWeek = components[0]
+    val month = components[1]
+    val dayOfMonth = components[2].toInt()
+    val time = LocalTime.parse(components[3])
+    val year = components[4].toInt()
+    val monthNumber = when (month) {
+        "Jan" -> 1
+        "Feb" -> 2
+        "Mar" -> 3
+        "Apr" -> 4
+        "May" -> 5
+        "Jun" -> 6
+        "Jul" -> 7
+        "Aug" -> 8
+        "Sep" -> 9
+        "Oct" -> 10
+        "Nov" -> 11
+        "Dec" -> 12
+        else -> error("Unknown month: $month")
+    }
+    return LocalDateTime(LocalDate(year, monthNumber, dayOfMonth), time) to abbreviation
+}
+
+private class ZdumpLine(
+    val path: Path,
+    val instant: Instant,
+    val localDateTime: LocalDateTime,
+    val abbreviation: String,
+    val isDst: Boolean,
+    val offset: UtcOffset,
+) {
+    override fun toString(): String = "$path $instant = $localDateTime $abbreviation isDst=$isDst offset=$offset"
 }

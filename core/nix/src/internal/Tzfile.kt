@@ -194,8 +194,8 @@ internal class PosixTzString(
          */
         if (daylightTime == null || rules == null) return null
         val (start, end) = rules
-        val rule1 = RecurringZoneRules.Rule(start, daylightTime.second)
-        val rule2 = RecurringZoneRules.Rule(end, standardTime.second)
+        val rule1 = RecurringZoneRules.Rule(start, standardTime.second, daylightTime.second)
+        val rule2 = RecurringZoneRules.Rule(end, daylightTime.second, standardTime.second)
         return RecurringZoneRules(listOf(rule1, rule2))
     }
 }
