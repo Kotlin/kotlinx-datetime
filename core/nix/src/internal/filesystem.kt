@@ -93,7 +93,7 @@ internal fun Path.readBytes(): ByteArray {
         if (err == -1) throw RuntimeException("Cannot jump to the start of $this: $errnoString")
         val buffer = ByteArray(size.toInt())
         val readAmount = fread(buffer.refTo(0), size.convert<size_t>(), 1u, handler)
-        check(readAmount == 1uL) { "Cannot read file $this: $errnoString" }
+        check(readAmount.convert<ULong>() == 1uL) { "Cannot read file $this: $errnoString" }
         return buffer
     } finally {
         fclose(handler)
