@@ -463,6 +463,7 @@ internal val standardToWindows: Map<String, String> = mutableMapOf(
   "Pacific/Truk" to "West Pacific Standard Time",
   "Pacific/Wake" to "UTC+12",
   "Pacific/Wallis" to "UTC+12",
+  "UTC" to "UTC",
 )
 @SharedImmutable
 internal val windowsToStandard: Map<String, String> = mutableMapOf(
@@ -585,7 +586,7 @@ internal val windowsToStandard: Map<String, String> = mutableMapOf(
   "Turks And Caicos Standard Time" to "America/Grand_Turk",
   "US Eastern Standard Time" to "America/Indianapolis",
   "US Mountain Standard Time" to "America/Phoenix",
-  "UTC" to "Etc/UTC",
+  "UTC" to "UTC",
   "UTC+12" to "Etc/GMT-12",
   "UTC+13" to "Etc/GMT-13",
   "UTC-02" to "Etc/GMT+2",

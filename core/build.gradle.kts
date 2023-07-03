@@ -298,6 +298,7 @@ val downloadWindowsZonesMapping by tasks.registering {
         xmlDoc.documentElement.normalize()
         val mapZones = xmlDoc.getElementsByTagName("mapZone")
         val mapping = linkedMapOf<String, String>()
+        mapping["UTC"] = "UTC"
         for (i in 0 until mapZones.length) {
             val mapZone = mapZones.item(i)
             val windowsName = mapZone.attributes.getNamedItem("other").nodeValue
