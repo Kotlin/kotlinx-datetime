@@ -199,3 +199,17 @@ internal class PerYearZoneRulesData(
         ", the transitions: ${it.first}, ${it.second}"
     } ?: "")
 }
+
+private fun getLastWindowsError(): String = memScoped {
+    val buf = alloc<CArrayPointerVar<WCHARVar>>()
+    FormatMessage!!(
+            (FORMAT_MESSAGE_ALLOCATE_BUFFER or FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_IGNORE_INSERTS).toUInt(),
+            null,
+            GetLastError(),
+            0u,
+            buf.ptr.reinterpret(),
+            0u,
+            null,
+    )
+    buf.value!!.toKStringFromUtf16().also { LocalFree(buf.ptr) }
+}
