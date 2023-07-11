@@ -121,7 +121,7 @@ class DateFormatTest {
         val format = LocalDateFormat.build {
             appendDayOfMonth(2)
             appendLiteral(' ')
-            appendMonthName(listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+            appendMonthName(MonthNames.ENGLISH_FULL)
             appendLiteral(' ')
             appendYear(4)
         }
@@ -145,7 +145,7 @@ class DateFormatTest {
         val format = LocalDateFormat.build {
             appendDayOfMonth(2)
             appendLiteral(' ')
-            appendMonthName(listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
+            appendMonthName(MonthNames("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
             appendLiteral(' ')
             appendYear()
         }

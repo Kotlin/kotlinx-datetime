@@ -12,9 +12,86 @@ import kotlinx.datetime.internal.format.*
 public sealed interface DateFormatBuilder: FormatBuilder {
     public fun appendYear(minDigits: Int = 1, outputPlusOnExceededPadding: Boolean = false)
     public fun appendMonthNumber(minLength: Int = 1)
-    public fun appendMonthName(names: List<String>)
+    public fun appendMonthName(names: MonthNames)
     public fun appendDayOfMonth(minLength: Int = 1)
-    public fun appendDayOfWeek(names: List<String>)
+    public fun appendDayOfWeek(names: DayOfWeekNames)
+}
+
+/**
+ * A description of how month names are formatted.
+ */
+public class MonthNames(
+    /**
+     * A list of month names, in order from January to December.
+     */
+    public val names: List<String>
+) {
+    init {
+        require(names.size == 12) { "Month names must contain exactly 12 elements" }
+    }
+
+    public constructor(january: String, february: String, march: String, april: String, may: String, june: String,
+                       july: String, august: String, september: String, october: String, november: String, december: String) :
+        this(listOf(january, february, march, april, may, june, july, august, september, october, november, december))
+
+    public companion object {
+        /**
+         * English month names, 'January' to 'December'.
+         */
+        public val ENGLISH_FULL: MonthNames = MonthNames(
+            listOf(
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            )
+        )
+
+        /**
+         * Shortened English month names, 'Jan' to 'Dec'.
+         */
+        public val ENGLISH_ABBREVIATED: MonthNames = MonthNames(
+            listOf(
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            )
+        )
+    }
+}
+
+/**
+ * A description of how day of week names are formatted.
+ */
+public class DayOfWeekNames(
+    /**
+     * A list of day of week names, in order from Monday to Sunday.
+     */
+    public val names: List<String>
+) {
+    init {
+        require(names.size == 7) { "Day of week names must contain exactly 7 elements" }
+    }
+
+    public constructor(monday: String, tuesday: String, wednesday: String, thursday: String, friday: String, saturday: String, sunday: String) :
+        this(listOf(monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+
+    public companion object {
+        /**
+         * English day of week names, 'Monday' to 'Sunday'.
+         */
+        public val ENGLISH_FULL: DayOfWeekNames = DayOfWeekNames(
+            listOf(
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+            )
+        )
+
+        /**
+         * Shortened English day of week names, 'Mon' to 'Sun'.
+         */
+        public val ENGLISH_ABBREVIATED: DayOfWeekNames = DayOfWeekNames(
+            listOf(
+                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+            )
+        )
+    }
 }
 
 internal fun DateFormatBuilder.appendIsoDate() {
@@ -160,12 +237,12 @@ internal class LocalDateFormat(private val actualFormat: StringFormat<Incomplete
         override fun appendMonthNumber(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
 
-        override fun appendMonthName(names: List<String>) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
+        override fun appendMonthName(names: MonthNames) =
+            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
 
         override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
-        override fun appendDayOfWeek(names: List<String>) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
+        override fun appendDayOfWeek(names: DayOfWeekNames) =
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
