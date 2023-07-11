@@ -6,7 +6,7 @@
 package kotlinx.datetime.internal.format.formatter
 
 internal sealed interface FormatterStructure<in T> {
-    fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean = false)
+    fun format(obj: T, builder: Appendable, minusNotRequired: Boolean = false)
 }
 
 internal sealed interface NonConditionalFormatterStructure<in T>: FormatterStructure<T>
@@ -14,14 +14,14 @@ internal sealed interface NonConditionalFormatterStructure<in T>: FormatterStruc
 internal class BasicFormatter<in T>(
     private val operation: FormatterOperation<T>,
 ): NonConditionalFormatterStructure<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) =
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) =
         operation.format(obj, builder, minusNotRequired)
 }
 
 internal class ConditionalFormatter<in T>(
     private val formatters: List<Pair<T.() -> Boolean, FormatterStructure<T>>>
 ): FormatterStructure<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         for ((condition, formatter) in formatters) {
             if (obj.condition()) {
                 formatter.format(obj, builder, minusNotRequired)
@@ -36,7 +36,7 @@ internal class SignedFormatter<in T>(
     private val allSubFormatsNegative: T.() -> Boolean,
     private val alwaysOutputSign: Boolean,
 ): FormatterStructure<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val sign = if (!minusNotRequired && obj.allSubFormatsNegative()) {
             '-'
         } else if (alwaysOutputSign) {
@@ -52,7 +52,7 @@ internal class SignedFormatter<in T>(
 internal class ConcatenatedFormatter<in T>(
     private val formatters: List<FormatterStructure<T>>,
 ): NonConditionalFormatterStructure<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         for (formatter in formatters) {
             formatter.format(obj, builder, minusNotRequired)
         }

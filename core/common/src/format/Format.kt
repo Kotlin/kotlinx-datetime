@@ -18,10 +18,21 @@ public sealed interface Format<T> {
      */
     public fun format(value: T): String
 
+    public fun formatTo(appendable: Appendable, value: T)
+
     /**
      * Parses the given [input] string as [T], using this format.
+     *
+     * @throws DateTimeFormatException if the input string is not in the expected format or the value is invalid.
      */
     public fun parse(input: CharSequence): T
+
+    /**
+     * Parses the given [input] string as [T], using this format.
+     *
+     * @return the parsed value, or `null` if the input string is not in the expected format or the value is invalid.
+     */
+    public fun parseOrNull(input: CharSequence): T?
 }
 
 internal abstract class AbstractFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): Format<T> {
@@ -32,13 +43,23 @@ internal abstract class AbstractFormat<T, U : Copyable<U>>(private val actualFor
 
     abstract fun newIntermediate(): U
 
+    open fun valueFromIntermediateOrNull(intermediate: U): T? = try {
+        valueFromIntermediate(intermediate)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+
     override fun format(value: T): String = StringBuilder().also {
         actualFormat.formatter.format(intermediateFromValue(value), it)
     }.toString()
 
+    override fun formatTo(appendable: Appendable, value: T) {
+        actualFormat.formatter.format(intermediateFromValue(value), appendable)
+    }
+
     private fun copyIntermediate(intermediate: U): U = intermediate.copy()
 
-    val parser: Parser<U> by lazy { Parser(::newIntermediate, ::copyIntermediate, actualFormat.parser) }
+    private val parser: Parser<U> by lazy { Parser(::newIntermediate, ::copyIntermediate, actualFormat.parser) }
 
     override fun parse(input: CharSequence): T {
         val matched = try {
@@ -49,8 +70,14 @@ internal abstract class AbstractFormat<T, U : Copyable<U>>(private val actualFor
         try {
             return valueFromIntermediate(matched)
         } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Invalid value '$input'", e)
+            throw DateTimeFormatException(e.message!!)
         }
     }
+
+    override fun parseOrNull(input: CharSequence): T? = try {
+        parser.match(input)
+    } catch (e: ParseException) {
+        null
+    }?.let { valueFromIntermediateOrNull(it) }
 
 }

@@ -10,13 +10,13 @@ import kotlinx.datetime.internal.POWERS_OF_TEN
 import kotlin.math.*
 
 internal interface FormatterOperation<in T> {
-    fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean)
+    fun format(obj: T, builder: Appendable, minusNotRequired: Boolean)
 }
 
 internal class ConstantStringFormatterOperation<in T>(
     private val string: String,
 ): FormatterOperation<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         builder.append(string)
     }
 }
@@ -31,7 +31,7 @@ internal class UnsignedIntFormatterOperation<in T>(
         require(zeroPadding <= 9)
     }
 
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val numberStr = number(obj).toString()
         val zeroPaddingStr = '0'.toString().repeat(maxOf(0, zeroPadding - numberStr.length))
         builder.append(zeroPaddingStr, numberStr)
@@ -49,7 +49,7 @@ internal class SignedIntFormatterOperation<in T>(
         require(zeroPadding <= 9)
     }
 
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val innerBuilder = StringBuilder()
         val number = number(obj).let { if (minusNotRequired && it < 0) -it else it }
         if (number.absoluteValue < POWERS_OF_TEN[zeroPadding - 1]) {
@@ -79,7 +79,7 @@ internal class DecimalFractionFormatterOperation<in T>(
         require(minDigits == null || maxDigits == null || minDigits <= maxDigits)
     }
 
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val minDigits = minDigits ?: 1
         val number = number(obj)
         val nanoValue = number.fractionalPartWithNDigits(maxDigits ?: 9)
@@ -96,7 +96,7 @@ internal class DecimalFractionFormatterOperation<in T>(
 internal class StringFormatterOperation<in T>(
     private val string: (T) -> String,
 ): FormatterOperation<T> {
-    override fun format(obj: T, builder: StringBuilder, minusNotRequired: Boolean) {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         builder.append(string(obj))
     }
 }
