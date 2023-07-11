@@ -183,40 +183,6 @@ internal class Parser<Output>(
         }
     }
 
-    private fun <T> findLongestAtIndex(input: CharSequence, index: Int, transform: (Output) -> T?): Pair<T?, Int?> {
-        var result: T? = null
-        var maxParsed: Int? = null
-        parse(input, index, allowDanglingInput = true, {}) { newIndex, out ->
-            if (newIndex > (maxParsed ?: -1)) {
-                maxParsed = newIndex
-                transform(out)?.let {
-                    result = it
-                }
-            }
-        }
-        return Pair(result, maxParsed)
-    }
-
-    fun<T> find(input: CharSequence, startIndex: Int = 0, transform: (Output) -> T?): T? {
-        iterateOverIndices(input, startIndex) { index ->
-            val (value, newIndex) = findLongestAtIndex(input, index, transform)
-            if (value != null) {
-                return value
-            }
-            newIndex
-        }
-        return null
-    }
-
-    fun<T> findAll(input: CharSequence, startIndex: Int = 0, transform: (Output) -> T?): List<T> =
-        mutableListOf<T>().apply {
-            iterateOverIndices(input, startIndex) { index ->
-                val (value, newIndex) = findLongestAtIndex(input, index, transform)
-                value?.let { add(it) }
-                newIndex
-            }
-        }
-
     private inner class ParserState<Output>(
         val output: Output,
         val commandPosition: StructureIndex<Output>,
@@ -228,26 +194,3 @@ internal class Parser<Output>(
         val parserStructure: ParserStructure<Output>
     )
 }
-
-/**
- * Iterates over the indices in [input] that are not in the middle of a number.
- *
- * The purpose is to avoid parsing "2020-01-01" in "202020-01-01".
- *
- * [startIndex] is the first index to consider.
- * [block] is invoked for each index that is not in the middle of a number. It may return the next index to consider.
- */
-private inline fun iterateOverIndices(input: CharSequence, startIndex: Int, block: (Int) -> Int?) {
-    // `Regex.find` allows lookbehinds to see the string before the `startIndex`, so we do that as well
-    var i = if (startIndex > 0 && input[startIndex - 1].isLetterOrDigit()) startIndex
-    else block(startIndex) ?: (startIndex + 1)
-    while (i < input.length) {
-        i = block(i) ?: (i + 1)
-        if (input[i - 1].isDigit()) {
-            while (i < input.length && input[i].isDigit()) {
-                i++
-            }
-        }
-    }
-}
-
