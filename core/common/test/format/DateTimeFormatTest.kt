@@ -11,6 +11,16 @@ import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class DateTimeFormatTest {
+
+    @Test
+    fun testErrorHandling() {
+        val format = LocalDateTime.Format.ISO
+        assertEquals(LocalDateTime(2023, 2, 28, 15, 36), format.parse("2023-02-28T15:36"))
+        val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40T15:36") }
+        assertContains(error.message!!, "40")
+        assertFailsWith<DateTimeFormatException> { format.parse("2023-02-XXT15:36") }
+    }
+
     @Test
     fun testPythonDateTime() {
         val dateTimes = buildMap<LocalDateTime, Pair<String, Set<String>>> {

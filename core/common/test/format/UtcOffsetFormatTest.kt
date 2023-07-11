@@ -12,6 +12,17 @@ import kotlin.test.*
 class UtcOffsetFormatTest {
 
     @Test
+    fun testErrorHandling() {
+        val format = UtcOffset.Format.build {
+            appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+        }
+        assertEquals(UtcOffset(hours = -4, minutes = -30), format.parse("-04:30"))
+        val error = assertFailsWith<DateTimeFormatException> { format.parse("-04:60") }
+        assertContains(error.message!!, "60")
+        assertFailsWith<DateTimeFormatException> { format.parse("-04:XX") }
+    }
+
+    @Test
     fun testLenientIso8601() {
         val offsets = buildMap<UtcOffset, Pair<String, Set<String>>> {
             put(UtcOffset(-18, 0, 0), ("-18:00" to setOf("-18", "-1800", "-180000", "-18:00:00")))

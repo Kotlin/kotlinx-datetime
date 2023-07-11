@@ -10,6 +10,25 @@ import kotlinx.datetime.format.*
 import kotlin.test.*
 
 class ValueBagFormatTest {
+
+    @Test
+    fun testErrorHandling() {
+        val format = ValueBag.Format.RFC_1123
+        assertValueBagsEqual(
+            valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO),
+            format.parse("Tue, 3 Jun 2008 11:05:30 GMT"))
+        assertValueBagsEqual(
+            ValueBag().apply {
+                year = 2008
+                monthNumber = 6
+                dayOfMonth = 40
+                populateFrom(LocalTime(11, 5, 30))
+                populateFrom(UtcOffset.ZERO)
+            },
+            format.parse("Tue, 40 Jun 2008 11:05:30 GMT"))
+        assertFailsWith<DateTimeFormatException> { format.parse("Bue, 3 Jun 2008 11:05:30 GMT") }
+    }
+
     @Test
     fun testRfc1123() {
         val bags = buildMap<ValueBag, Pair<String, Set<String>>> {
@@ -34,8 +53,15 @@ class ValueBagFormatTest {
     }
 
     private fun assertValueBagsEqual(a: ValueBag, b: ValueBag, message: String? = null) {
-        assertEquals(a.toLocaldate(), b.toLocaldate(), message)
-        assertEquals(a.toLocalTime(), b.toLocalTime(), message)
+        assertEquals(a.year, b.year, message)
+        assertEquals(a.monthNumber, b.monthNumber, message)
+        assertEquals(a.dayOfMonth, b.dayOfMonth, message)
+        if (a.dayOfWeek != null && b.dayOfWeek != null)
+            assertEquals(a.dayOfWeek, b.dayOfWeek, message)
+        assertEquals(a.hour, b.hour, message)
+        assertEquals(a.minute, b.minute, message)
+        assertEquals(a.second ?: 0, b.second ?: 0, message)
+        assertEquals(a.nanosecond ?: 0, b.nanosecond ?: 0, message)
         assertEquals(a.toUtcOffset(), b.toUtcOffset(), message)
         assertEquals(a.timeZoneId, b.timeZoneId, message)
     }

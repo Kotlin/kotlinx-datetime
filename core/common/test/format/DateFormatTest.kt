@@ -11,6 +11,16 @@ import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class DateFormatTest {
+
+    @Test
+    fun testErrorHandling() {
+        val format = LocalDate.Format.ISO
+        assertEquals(LocalDate(2023, 2, 28), format.parse("2023-02-28"))
+        val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40") }
+        assertContains(error.message!!, "40")
+        assertFailsWith<DateTimeFormatException> { format.parse("2023-02-XX") }
+    }
+
     @Test
     fun testBigEndianDates() {
         for (s in listOf('/', '-')) {
