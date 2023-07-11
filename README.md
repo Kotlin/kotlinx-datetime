@@ -21,11 +21,11 @@ all-encompassing and lacks some domain-specific utilities that special-purpose a
 We chose convenience over generality, so the API surface this library provides is as minimal as possible
 to meet the use-cases.
 
-The library puts a clear boundary between physical time of an instant and a local, time-zone dependent civil time, 
-consisting of components such as year, month, etc that people use when talking about time. 
+The library puts a clear boundary between the physical time of an instant and the local, time-zone dependent 
+civil time, consisting of components such as year, month, etc that people use when talking about time. 
 We intentionally avoid entities in the library that mix both together and could be misused.
 However, there are convenience operations that take, for example, a physical instant and perform a calendar-based 
-adjustment (such as adding a month); all such operation
+adjustment (such as adding a month); all such operations
 explicitly take a time-zone information as parameter to clearly state that their result depends on the civil time-zone
 rules which are subject to change at any time.
 
@@ -34,7 +34,7 @@ its scope. Internationalization (such as locale-specific month and day names) is
 
 ## Types
 
-The library provides the basic set of types for working with date and time:
+The library provides a basic set of types for working with date and time:
 
 - `Instant` to represent a moment on the UTC-SLS time scale;
 - `Clock` to obtain the current instant;
@@ -65,9 +65,9 @@ Here is some basic advice on how to choose which of the date-carrying types to u
   
   Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
   
-- Use `LocalDate` to represent a date of the event that does not have a specific time associated with it (like a birth date).
+- Use `LocalDate` to represent the date of an event that does not have a specific time associated with it (like a birth date).
 
-- Use `LocalTime` to represent a time of the event that does not have a specific date associated with it.
+- Use `LocalTime` to represent the time of an event that does not have a specific date associated with it.
  
 ## Operations
 
@@ -95,9 +95,9 @@ val currentMoment = Clock.System.now()
 
 ### Converting an instant to local date and time components
 
-`Instant` is just a counter of high resolution time intervals since the beginning of time scale.
-To get human readable components from an `Instant` value you need to convert it to `LocalDateTime` type
-that represents date and time components without a reference to the particular time zone.
+An `Instant` is just a counter of high resolution time intervals since the beginning of time scale.
+To get human readable components from an `Instant` value, you need to convert it to the `LocalDateTime`
+type that represents date and time components without a reference to the particular time zone.
 
 The `TimeZone` type provides the rules to convert instants from and to date/time components.
 
@@ -107,7 +107,7 @@ val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
 val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 ```
 
-`LocalDateTime` instance exposes familiar components of the Gregorian calendar: 
+A `LocalDateTime` instance exposes familiar components of the Gregorian calendar: 
 `year`, `month`, `dayOfMonth`, `hour`, and so on up to `nanosecond`.
 The property `dayOfWeek` shows what weekday that date is,
 and `dayOfYear` shows the day number since the beginning of a year.
@@ -119,7 +119,7 @@ val tzBerlin = TimeZone.of("Europe/Berlin")
 val datetimeInBerlin = currentMoment.toLocalDateTime(tzBerlin)
 ```
 
-`LocalDateTime` instance can be constructed from individual components:
+A `LocalDateTime` instance can be constructed from individual components:
 
 ```kotlin
 val kotlinReleaseDateTime = LocalDateTime(2016, 2, 15, 16, 57, 0, 0)
@@ -134,7 +134,7 @@ val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(TimeZone.of("UTC+3"))
 
 ### Getting local date components
 
-`LocalDate` type represents local date without time. You can obtain it from `Instant`
+A `LocalDate` represents a local date without time. You can obtain one from an `Instant`
 by converting it to `LocalDateTime` and taking its `date` property.
 
 ```kotlin
@@ -152,7 +152,7 @@ val knownDate = LocalDate(2020, 2, 21)
 
 ### Getting local time components
 
-`LocalTime` type represents local time without date. You can obtain it from `Instant`
+A `LocalTime` represents local time without date. You can obtain one from an `Instant`
 by converting it to `LocalDateTime` and taking its `time` property.
 
 ```kotlin
@@ -160,7 +160,7 @@ val now: Instant = Clock.System.now()
 val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
 ```
 
-`LocalTime` can be constructed from four components, hour, minute, second and nanosecond:
+A `LocalTime` can be constructed from four components, hour, minute, second and nanosecond:
 ```kotlin
 val knownTime = LocalTime(hour = 23, minute = 59, second = 12)
 val timeWithNanos = LocalTime(hour = 23, minute = 59, second = 12, nanosecond = 999)
@@ -170,7 +170,7 @@ val hourMinute = LocalTime(hour = 12, minute = 13)
 ### Converting instant to and from unix time
 
 An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
-To convert back, use `Instant.fromEpochMilliseconds(Long)` companion object function.
+To convert back, use the companion object function `Instant.fromEpochMilliseconds(Long)`.
 
 ### Converting instant and local date/time to and from string
 
@@ -185,14 +185,14 @@ instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
 val instantBefore = Instant.parse("2010-06-01T22:19:44.475Z")
 ```
 
-Alternatively, `String.to...()` extension functions can be used instead of `parse`, 
+Alternatively, the `String.to...()` extension functions can be used instead of `parse`, 
 where it feels more convenient:
 
-`LocalDateTime` uses the similar format, but without `Z` UTC time zone designator in the end.
+`LocalDateTime` uses a similar format, but without `Z` UTC time zone designator in the end.
 
-`LocalDate` uses format with just year, month, and date components, e.g. `2010-06-01`.
+`LocalDate` uses a format with just year, month, and date components, e.g. `2010-06-01`.
 
-`LocalTime` uses format with just hour, minute, second and (if non-zero) nanosecond components, e.g. `12:01:03`.
+`LocalTime` uses a format with just hour, minute, second and (if non-zero) nanosecond components, e.g. `12:01:03`.
 
 ```kotlin
 "2010-06-01T22:19:44.475Z".toInstant()
@@ -214,13 +214,13 @@ val equidistantInstantInTheFuture: Instant = now + durationSinceThen
 `Duration` is a type from the experimental `kotlin.time` package in the Kotlin standard library.
 This type holds the amount of time that can be represented in different time units: from nanoseconds to 24H days.
 
-To get the calendar difference between two instants you can use `Instant.periodUntil(Instant, TimeZone)` function.
+To get the calendar difference between two instants you can use the `Instant.periodUntil(Instant, TimeZone)` function.
 
 ```kotlin
 val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.UTC)
 ```
 
-`DateTimePeriod` represents a difference between two particular moments as a sum of calendar components, 
+A `DateTimePeriod` represents a difference between two particular moments as a sum of calendar components, 
 like "2 years, 3 months, 10 days, and 22 hours".
 
 The difference can be calculated as an integer amount of specified date or time units:
@@ -239,19 +239,19 @@ val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
 val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
 ```
 
-Note that `plus` and `...until` operations require `TimeZone` as a parameter because the calendar interval between 
+Note that `plus` and `...until` operations require a `TimeZone` as a parameter because the calendar interval between 
 two particular instants can be different, when calculated in different time zones.
 
 ### Date arithmetic
 
-The similar operations with date units are provided for `LocalDate` type:
+Similar operations with date units are provided for `LocalDate` type:
 
 - `LocalDate.plus(number, DateTimeUnit.DateBased)`
 - `LocalDate.plus(DatePeriod)`
 - `LocalDate.until(LocalDate, DateTimeUnit.DateBased)` and the shortcuts `yearsUntil`, `monthUntil`, `daysUntil`
 - `LocalDate.periodUntil(LocalDate): DatePeriod` and `LocalDate.minus(LocalDate): DatePeriod`
 
-Notice that instead of general `DateTimeUnit` and `DateTimePeriod` we're using their subtypes
+Notice that, instead of the general `DateTimeUnit` and `DateTimePeriod` types, we're using their subtypes
 `DateTimeUnit.DateBased` and `DatePeriod` respectively. This allows preventing the situations when
 time components are being added to a date at compile time.
 
@@ -288,7 +288,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 
 - in JVM: [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API;
 - in JS: [`js-joda`](https://js-joda.github.io/js-joda/) library;
-- in Native: based on [ThreeTen backport project](https://www.threeten.org/threetenbp/)
+- in Native: based on the [ThreeTen backport project](https://www.threeten.org/threetenbp/)
   - time zone support is provided by [date](https://github.com/HowardHinnant/date/) C++ library;
 
 ## Known/open issues, work TBD
