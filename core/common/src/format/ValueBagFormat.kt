@@ -12,6 +12,7 @@ import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.math.*
+import kotlin.reflect.*
 
 /**
  * A collection of date-time fields.
@@ -169,7 +170,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public var year: Int? by contents.date::year
 
     /** Returns the number-of-month (1..12) component of the date. */
-    public var monthNumber: Int? by contents.date::monthNumber
+    public var monthNumber: Int? by TwoDigitNumber(contents.date::monthNumber)
 
     /** Returns the month ([Month]) component of the date. */
     public var month: Month?
@@ -179,7 +180,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         }
 
     /** Returns the day-of-month component of the date. */
-    public var dayOfMonth: Int? by contents.date::dayOfMonth
+    public var dayOfMonth: Int? by TwoDigitNumber(contents.date::dayOfMonth)
 
     /** Returns the day-of-week component of the date. */
     public var dayOfWeek: DayOfWeek?
@@ -189,29 +190,37 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         }
     // /** Returns the day-of-year component of the date. */
     // public var dayOfYear: Int
+
     /** Returns the hour-of-day time component of this date/time value. */
-    public var hour: Int? by contents.time::hour
+    public var hour: Int? by TwoDigitNumber(contents.time::hour)
 
     /** Returns the minute-of-hour time component of this date/time value. */
-    public var minute: Int? by contents.time::minute
+    public var minute: Int? by TwoDigitNumber(contents.time::minute)
 
     /** Returns the second-of-minute time component of this date/time value. */
-    public var second: Int? by contents.time::second
+    public var second: Int? by TwoDigitNumber(contents.time::second)
 
     /** Returns the nanosecond-of-second time component of this date/time value. */
-    public var nanosecond: Int? by contents.time::nanosecond
+    public var nanosecond: Int?
+        get() = contents.time.nanosecond
+        set(value) {
+            require(value == null || value in 0..999_999_999) {
+                "Nanosecond must be in the range [0, 999,999,999]."
+            }
+            contents.time.nanosecond = value
+        }
 
     /** True if the offset is negative. */
     public var offsetIsNegative: Boolean? by contents.offset::isNegative
 
     /** The total amount of full hours in the UTC offset, in the range [0; 18]. */
-    public var offsetTotalHours: Int? by contents.offset::totalHoursAbs
+    public var offsetTotalHours: Int? by TwoDigitNumber(contents.offset::totalHoursAbs)
 
     /** The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59]. */
-    public var offsetMinutesOfHour: Int? by contents.offset::minutesOfHour
+    public var offsetMinutesOfHour: Int? by TwoDigitNumber(contents.offset::minutesOfHour)
 
     /** The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59]. */
-    public var offsetSecondsOfMinute: Int? by contents.offset::secondsOfMinute
+    public var offsetSecondsOfMinute: Int? by TwoDigitNumber(contents.offset::secondsOfMinute)
 
     public var timeZoneId: String? by contents::timeZoneId
 
@@ -409,4 +418,13 @@ private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
     }
 
     override fun toString(): String = actualFormat.builderString()
+}
+
+private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {
+    operator fun getValue(thisRef: Any?, property: KProperty<*>) = reference.getValue(thisRef, property)
+
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int?) {
+        require(value === null || value in 0..99) { "${property.name} must be a two-digit number, got '$value'" }
+        reference.setValue(thisRef, property, value)
+    }
 }
