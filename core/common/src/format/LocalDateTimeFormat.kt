@@ -63,6 +63,9 @@ internal class LocalDateTimeFormat(private val actualFormat: StringFormat<DateTi
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
 
+        override fun appendYearTwoDigits(base: Int) =
+            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
+
         override fun appendMonthNumber(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
 

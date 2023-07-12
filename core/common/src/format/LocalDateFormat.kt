@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.format.*
 
 public sealed interface DateFormatBuilder: FormatBuilder {
     public fun appendYear(minDigits: Int = 1, outputPlusOnExceededPadding: Boolean = false)
+    public fun appendYearTwoDigits(base: Int)
     public fun appendMonthNumber(minLength: Int = 1)
     public fun appendMonthName(names: MonthNames)
     public fun appendDayOfMonth(minLength: Int = 1)
@@ -180,6 +181,16 @@ internal class YearDirective(digits: Int, outputPlusOnExceededPadding: Boolean) 
     }
 }
 
+internal class ReducedYearDirective(val base: Int) :
+    ReducedIntFieldDirective<DateFieldContainer>(
+        DateFields.year,
+        digits = 2,
+        base = base,
+    )
+{
+    override val builderRepresentation: String = "${DateFormatBuilder::appendYearTwoDigits.name}($base)"
+}
+
 internal class MonthDirective(minDigits: Int) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, minDigits) {
     override val builderRepresentation: String = when (minDigits) {
@@ -233,6 +244,9 @@ internal class LocalDateFormat(private val actualFormat: StringFormat<Incomplete
         AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilder {
         override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
             actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+
+        override fun appendYearTwoDigits(base: Int) =
+            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
 
         override fun appendMonthNumber(minLength: Int) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))

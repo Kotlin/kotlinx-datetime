@@ -200,3 +200,25 @@ internal abstract class DecimalFractionFieldFormatDirective<in Target>(
         emptyList()
     )
 }
+
+internal abstract class ReducedIntFieldDirective<in Target>(
+    final override val field: SignedFieldSpec<Target>,
+    private val digits: Int,
+    private val base: Int,
+) : FieldFormatDirective<Target> {
+
+    override fun formatter(): FormatterOperation<Target> =
+        ReducedIntFormatterOperation(
+            number = field::getNotNull,
+            digits = digits,
+            base = base,
+        )
+
+    override fun parser(): ParserStructure<Target> =
+        ReducedIntParser(
+            digits = digits,
+            base = base,
+            field::setWithoutReassigning,
+            field.name,
+        )
+}

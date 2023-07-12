@@ -274,3 +274,63 @@ internal fun <Output> SignedIntParser(
         parsers.map { ParserStructure(it, emptyList()) },
     )
 }
+
+internal fun <Output> ReducedIntParser(
+    digits: Int,
+    base: Int,
+    setter: (Output, Int) -> Unit,
+    name: String,
+): ParserStructure<Output> = ParserStructure(
+    emptyList(),
+    listOf(
+        ParserStructure(
+            listOf(
+                NumberSpanParserOperation(
+                    listOf(
+                        ReducedIntConsumer(
+                            digits,
+                            setter,
+                            name,
+                            base = base
+                        )
+                    )
+                )
+            ),
+            emptyList()
+        ),
+        ParserStructure(
+            listOf(
+                PlainStringParserOperation("+"),
+                NumberSpanParserOperation(
+                    listOf(
+                        UnsignedIntConsumer(
+                            null,
+                            null,
+                            setter,
+                            name,
+                            multiplyByMinus1 = false
+                        )
+                    )
+                )
+            ),
+            emptyList()
+        ),
+        ParserStructure(
+            listOf(
+                PlainStringParserOperation("-"),
+                NumberSpanParserOperation(
+                    listOf(
+                        UnsignedIntConsumer(
+                            null,
+                            null,
+                            setter,
+                            name,
+                            multiplyByMinus1 = true
+                        )
+                    )
+                )
+            ),
+            emptyList()
+        ),
+    )
+)

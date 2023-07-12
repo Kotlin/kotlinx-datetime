@@ -8,6 +8,8 @@ package kotlinx.datetime.test.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlinx.datetime.format.migration.*
+import kotlinx.datetime.internal.*
+import kotlinx.datetime.internal.POWERS_OF_TEN
 import kotlin.test.*
 
 class DateFormatTest {
@@ -148,6 +150,28 @@ class DateFormatTest {
             appendMonthName(MonthNames("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
             appendLiteral(' ')
             appendYear()
+        }
+        test(dates, format)
+    }
+
+    @Test
+    fun testReducedYear() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(1960, 2, 3), ("600203" to setOf()))
+            put(LocalDate(1961, 2, 3), ("610203" to setOf()))
+            put(LocalDate(1959, 2, 3), ("+19590203" to setOf()))
+            put(LocalDate(2059, 2, 3), ("590203" to setOf()))
+            put(LocalDate(2060, 2, 3), ("+20600203" to setOf()))
+            put(LocalDate(1, 2, 3), ("+10203" to setOf()))
+            put(LocalDate(-1, 2, 3), ("-10203" to setOf()))
+            put(LocalDate(-2003, 2, 3), ("-20030203" to setOf()))
+            put(LocalDate(-12003, 2, 3), ("-120030203" to setOf()))
+            put(LocalDate(12003, 2, 3), ("+120030203" to setOf()))
+        }
+        val format = LocalDateFormat.build {
+            appendYearTwoDigits(base = 1960)
+            appendMonthNumber(2)
+            appendDayOfMonth(2)
         }
         test(dates, format)
     }

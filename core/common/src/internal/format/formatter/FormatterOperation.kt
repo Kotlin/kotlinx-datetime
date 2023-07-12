@@ -100,3 +100,23 @@ internal class StringFormatterOperation<in T>(
         builder.append(string(obj))
     }
 }
+
+internal class ReducedIntFormatterOperation<in T>(
+    private val number: (T) -> Int,
+    private val digits: Int,
+    private val base: Int,
+): FormatterOperation<T> {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
+        val number = number(obj)
+        if (number - base in 0 until POWERS_OF_TEN[digits]) {
+            // the number fits
+            val numberStr = (number % POWERS_OF_TEN[digits]).toString()
+            val zeroPaddingStr = '0'.toString().repeat(maxOf(0, digits - numberStr.length))
+            builder.append(zeroPaddingStr, numberStr)
+        } else {
+            if (number >= 0)
+                builder.append("+")
+            builder.append(number.toString())
+        }
+    }
+}

@@ -13,7 +13,7 @@ import kotlinx.datetime.internal.*
  */
 internal sealed class NumberConsumer<in Receiver>(
     /** The number of digits to consume. `null` means that the length is variable. */
-    val length: Int?,
+    open val length: Int?,
     /** The human-readable name of the entity being parsed here. */
     val whatThisExpects: String
 ) {
@@ -53,6 +53,31 @@ internal class UnsignedIntConsumer<in Receiver>(
         when (val result = input.toIntOrNull()) {
             null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
             else -> setter(this, if (multiplyByMinus1) -result else result)
+        }
+    }
+}
+
+internal class ReducedIntConsumer<in Receiver>(
+    override val length: Int,
+    private val setter: (Receiver, Int) -> (Unit),
+    name: String,
+    val base: Int,
+): NumberConsumer<Receiver>(length, name) {
+
+    private val modulo = POWERS_OF_TEN[length]
+    private val baseMod = base % modulo
+    private val baseFloor = base - baseMod
+
+    override fun Receiver.consume(input: String) {
+        when (val result = input.toIntOrNull()) {
+            null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
+            else -> {
+                setter(this, if (result >= baseMod) {
+                    baseFloor + result
+                } else {
+                    baseFloor + modulo + result
+                })
+            }
         }
     }
 }
