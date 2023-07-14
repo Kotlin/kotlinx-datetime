@@ -30,9 +30,9 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
          */
-        public fun build(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.Format<ValueBag> {
+        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.Format<ValueBag> {
             val builder = ValueBagFormat.Builder(AppendableFormatStructure())
-            builder.block()
+            block(builder)
             return ValueBagFormat(builder.build())
         }
 
@@ -48,7 +48,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
-        public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = build {
+        public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = Format {
             appendIsoDate()
             appendAlternatives({
                 appendLiteral('T')
@@ -72,7 +72,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             )
         }
 
-        public val RFC_1123: kotlinx.datetime.format.Format<ValueBag> = build {
+        public val RFC_1123: kotlinx.datetime.format.Format<ValueBag> = Format {
             appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             appendLiteral(", ")
             appendDayOfMonth(Padding.NONE)

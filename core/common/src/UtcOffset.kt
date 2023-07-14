@@ -53,7 +53,7 @@ public expect class UtcOffset {
     public object Format;
 }
 
-public fun UtcOffset.Format.build(block: UtcOffsetFormatBuilderFields.() -> Unit): Format<UtcOffset> =
+public operator fun UtcOffset.Format.invoke(block: UtcOffsetFormatBuilderFields.() -> Unit): Format<UtcOffset> =
     UtcOffsetFormat.build(block)
 
 public fun UtcOffset.format(format: Format<UtcOffset>): String = format.format(this)

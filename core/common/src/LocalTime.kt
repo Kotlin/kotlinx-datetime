@@ -138,8 +138,8 @@ public expect class LocalTime : Comparable<LocalTime> {
     public override fun toString(): String
 }
 
-public fun LocalTime.Format.build(block: TimeFormatBuilderFields.() -> Unit): Format<LocalTime> =
-    LocalTimeFormat.build(block)
+public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() -> Unit): Format<LocalTime> =
+    LocalTimeFormat.build(builder)
 
 /**
  * ISO-8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].

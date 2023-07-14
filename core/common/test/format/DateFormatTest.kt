@@ -8,8 +8,6 @@ package kotlinx.datetime.test.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlinx.datetime.format.migration.*
-import kotlinx.datetime.internal.*
-import kotlinx.datetime.internal.POWERS_OF_TEN
 import kotlin.test.*
 
 class DateFormatTest {
@@ -38,11 +36,11 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("123456${s}01${s}01" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("-123456${s}01${s}01" to setOf()))
             }
-            test(dates, LocalDate.Format.build {
+            test(dates, LocalDate.Format {
                 appendYear()
                 appendUnicodeFormatString("${s}MM${s}dd")
             })
-            test(dates, LocalDate.Format.build {
+            test(dates, LocalDate.Format {
                 appendYear()
                 appendLiteral(s)
                 appendMonthNumber()
@@ -67,11 +65,11 @@ class DateFormatTest {
                 put(LocalDate(123456, 1, 1), ("01${s}01${s}123456" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("01${s}01${s}-123456" to setOf()))
             }
-            test(dates, LocalDate.Format.build {
+            test(dates, LocalDate.Format {
                 appendUnicodeFormatString("dd${s}MM${s}")
                 appendYear()
             })
-            test(dates, LocalDate.Format.build {
+            test(dates, LocalDate.Format {
                 appendDayOfMonth()
                 appendLiteral(s)
                 appendMonthNumber()
@@ -95,11 +93,11 @@ class DateFormatTest {
             put(LocalDate(123456, 1, 1), ("1234560101" to setOf()))
             put(LocalDate(-123456, 1, 1), ("-1234560101" to setOf()))
         }
-        test(dates, LocalDate.Format.build {
+        test(dates, LocalDate.Format {
             appendYear()
             appendUnicodeFormatString("MMdd")
         })
-        test(dates, LocalDate.Format.build {
+        test(dates, LocalDate.Format {
             appendYear()
             appendMonthNumber()
             appendDayOfMonth()
@@ -120,7 +118,7 @@ class DateFormatTest {
             put(LocalDate(123456, 6, 1), ("01 June 123456" to setOf()))
             put(LocalDate(-123456, 5, 1), ("01 May -123456" to setOf()))
         }
-        val format = LocalDateFormat.build {
+        val format = LocalDate.Format {
             appendDayOfMonth()
             appendLiteral(' ')
             appendMonthName(MonthNames.ENGLISH_FULL)
@@ -144,7 +142,7 @@ class DateFormatTest {
             put(LocalDate(123456, 6, 1), ("01 VI 123456" to setOf()))
             put(LocalDate(-123456, 5, 1), ("01 V -123456" to setOf()))
         }
-        val format = LocalDateFormat.build {
+        val format = LocalDate.Format {
             appendDayOfMonth()
             appendLiteral(' ')
             appendMonthName(MonthNames("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
@@ -168,7 +166,7 @@ class DateFormatTest {
             put(LocalDate(-12003, 2, 3), ("-120030203" to setOf()))
             put(LocalDate(12003, 2, 3), ("+120030203" to setOf()))
         }
-        val format = LocalDateFormat.build {
+        val format = LocalDate.Format {
             appendYearTwoDigits(base = 1960)
             appendMonthNumber()
             appendDayOfMonth()

@@ -35,11 +35,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44:00" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendUnicodeFormatString("-MM-dd HH:mm:ss")
         })
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendLiteral('-')
             appendMonthNumber()
@@ -68,11 +68,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendUnicodeFormatString("-MM-dd HH:mm")
         })
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendLiteral('-')
             appendMonthNumber()
@@ -99,11 +99,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("1234560101134400" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-1234560101134400" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendUnicodeFormatString("MMddHHmmss")
         })
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear()
             appendMonthNumber()
             appendDayOfMonth()
@@ -127,11 +127,11 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-1-1 13:44:0" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-1-1 13:44:0" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear(Padding.NONE)
             appendUnicodeFormatString("-M-d H:m:s")
         })
-        test(dateTimes, LocalDateTime.Format.build {
+        test(dateTimes, LocalDateTime.Format {
             appendYear(Padding.NONE)
             appendLiteral('-')
             appendMonthNumber(Padding.NONE)
@@ -162,7 +162,7 @@ class DateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456- 1- 1 13:44: 0" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456- 1- 1 13:44: 0" to setOf()))
         }
-        val format = LocalDateTime.Format.build {
+        val format = LocalDateTime.Format {
             appendYear(Padding.SPACE)
             appendLiteral('-')
             appendMonthNumber(Padding.SPACE)

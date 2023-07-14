@@ -135,8 +135,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public override fun toString(): String
 }
 
-public fun LocalDateTime.Format.build(block: DateTimeFormatBuilder.() -> Unit): Format<LocalDateTime> =
-    LocalDateTimeFormat.build(block)
+public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.() -> Unit): Format<LocalDateTime> =
+    LocalDateTimeFormat.build(builder)
 
 /**
  * ISO-8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
