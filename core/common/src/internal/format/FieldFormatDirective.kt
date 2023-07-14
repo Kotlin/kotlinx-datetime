@@ -95,9 +95,11 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         StringFormatterStructure(::getStringValue)
 
     override fun parser(): ParserStructure<Target> =
-        ParserStructure(listOf(
-            StringSetParserOperation(values, ::setStringValue, "One of $values for ${field.name}")
-        ), emptyList())
+        ParserStructure(
+            listOf(
+                StringSetParserOperation(values, ::setStringValue, "One of $values for ${field.name}")
+            ), emptyList()
+        )
 }
 
 /**
@@ -116,17 +118,21 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
         )
 
     private fun setStringValue(target: Target, value: String) {
-        field.setWithoutReassigning(target, reverseMapping[value]
-            ?: throw IllegalStateException("The string value $value does not have a corresponding enum value"))
+        field.setWithoutReassigning(
+            target, reverseMapping[value]
+                ?: throw IllegalStateException("The string value $value does not have a corresponding enum value")
+        )
     }
 
     override fun formatter(): FormatterStructure<Target> =
         StringFormatterStructure(::getStringValue)
 
     override fun parser(): ParserStructure<Target> =
-        ParserStructure(listOf(
-            StringSetParserOperation(mapping.values, ::setStringValue, "One of ${mapping.values} for ${field.name}")
-        ), emptyList())
+        ParserStructure(
+            listOf(
+                StringSetParserOperation(mapping.values, ::setStringValue, "One of ${mapping.values} for ${field.name}")
+            ), emptyList()
+        )
 }
 
 internal abstract class StringFieldFormatDirective<in Target>(
@@ -153,7 +159,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
     private val minDigits: Int?,
     private val maxDigits: Int? = field.maxDigits,
     private val spacePadding: Int?,
-    private val outputPlusOnExceededPadding: Boolean = false,
+    private val outputPlusOnExceededWidth: Int?,
 ) : FieldFormatDirective<Target> {
 
     init {
@@ -165,7 +171,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
         val formatter = SignedIntFormatterStructure(
             number = field::getNotNull,
             zeroPadding = minDigits ?: 0,
-            outputPlusOnExceedsPad = outputPlusOnExceededPadding,
+            outputPlusOnExceededWidth = outputPlusOnExceededWidth,
         )
         return if (spacePadding != null) SpacePaddedFormatter(formatter, spacePadding) else formatter
     }
@@ -177,7 +183,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
             spacePadding = spacePadding,
             field::setWithoutReassigning,
             field.name,
-            plusOnExceedsPad = outputPlusOnExceededPadding,
+            plusOnExceedsWidth = outputPlusOnExceededWidth,
         )
 }
 

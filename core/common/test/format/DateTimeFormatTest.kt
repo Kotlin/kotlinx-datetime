@@ -30,9 +30,9 @@ class DateTimeFormatTest {
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-0001-01-02 00:01:00" to setOf()))
             put(LocalDateTime(9999, 12, 31, 12, 30, 0, 0), ("9999-12-31 12:30:00" to setOf()))
             put(LocalDateTime(-9999, 12, 31, 23, 59, 0, 0), ("-9999-12-31 23:59:00" to setOf()))
-            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("10000-01-01 00:00:01" to setOf()))
+            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("+10000-01-01 00:00:01" to setOf()))
             put(LocalDateTime(-10000, 1, 1, 0, 0, 59, 0), ("-10000-01-01 00:00:59" to setOf()))
-            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44:00" to setOf()))
+            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+123456-01-01 13:44:00" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
@@ -63,9 +63,9 @@ class DateTimeFormatTest {
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-0001-01-02 00:01" to setOf()))
             put(LocalDateTime(9999, 12, 31, 12, 30, 0, 0), ("9999-12-31 12:30" to setOf()))
             put(LocalDateTime(-9999, 12, 31, 23, 59, 0, 0), ("-9999-12-31 23:59" to setOf()))
-            put(LocalDateTime(10000, 1, 1, 0, 0, 0, 0), ("10000-01-01 00:00" to setOf()))
+            put(LocalDateTime(10000, 1, 1, 0, 0, 0, 0), ("+10000-01-01 00:00" to setOf()))
             put(LocalDateTime(-10000, 1, 1, 0, 0, 0, 0), ("-10000-01-01 00:00" to setOf()))
-            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-01-01 13:44" to setOf()))
+            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+123456-01-01 13:44" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
@@ -94,9 +94,9 @@ class DateTimeFormatTest {
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-00010102000100" to setOf()))
             put(LocalDateTime(9999, 12, 31, 12, 30, 0, 0), ("99991231123000" to setOf()))
             put(LocalDateTime(-9999, 12, 31, 23, 59, 0, 0), ("-99991231235900" to setOf()))
-            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("100000101000001" to setOf()))
+            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("+100000101000001" to setOf()))
             put(LocalDateTime(-10000, 1, 1, 0, 0, 59, 0), ("-100000101000059" to setOf()))
-            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("1234560101134400" to setOf()))
+            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+1234560101134400" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-1234560101134400" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
@@ -122,9 +122,9 @@ class DateTimeFormatTest {
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-1-1-2 0:1:0" to setOf()))
             put(LocalDateTime(9999, 12, 31, 12, 30, 0, 0), ("9999-12-31 12:30:0" to setOf()))
             put(LocalDateTime(-9999, 12, 31, 23, 59, 0, 0), ("-9999-12-31 23:59:0" to setOf()))
-            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("10000-1-1 0:0:1" to setOf()))
+            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("+10000-1-1 0:0:1" to setOf()))
             put(LocalDateTime(-10000, 1, 1, 0, 0, 59, 0), ("-10000-1-1 0:0:59" to setOf()))
-            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456-1-1 13:44:0" to setOf()))
+            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+123456-1-1 13:44:0" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-1-1 13:44:0" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
@@ -157,9 +157,9 @@ class DateTimeFormatTest {
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("  -1- 1- 2  0: 1: 0" to setOf()))
             put(LocalDateTime(9999, 12, 31, 12, 30, 0, 0), ("9999-12-31 12:30: 0" to setOf()))
             put(LocalDateTime(-9999, 12, 31, 23, 59, 0, 0), ("-9999-12-31 23:59: 0" to setOf()))
-            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("10000- 1- 1  0: 0: 1" to setOf()))
+            put(LocalDateTime(10000, 1, 1, 0, 0, 1, 0), ("+10000- 1- 1  0: 0: 1" to setOf()))
             put(LocalDateTime(-10000, 1, 1, 0, 0, 59, 0), ("-10000- 1- 1  0: 0:59" to setOf()))
-            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("123456- 1- 1 13:44: 0" to setOf()))
+            put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+123456- 1- 1 13:44: 0" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456- 1- 1 13:44: 0" to setOf()))
         }
         val format = LocalDateTime.Format {

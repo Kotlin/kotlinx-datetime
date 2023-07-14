@@ -380,8 +380,8 @@ private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
 
     class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
         AbstractFormatBuilder<ValueBagContents, Builder>, ValueBagFormatBuilder {
-        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))

@@ -37,7 +37,7 @@ internal class UnsignedIntFormatterStructure<in T>(
 internal class SignedIntFormatterStructure<in T>(
     private val number: (T) -> Int,
     private val zeroPadding: Int,
-    private val outputPlusOnExceedsPad: Boolean,
+    private val outputPlusOnExceededWidth: Int?,
 ): FormatterStructure<T> {
 
     init {
@@ -48,6 +48,9 @@ internal class SignedIntFormatterStructure<in T>(
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val innerBuilder = StringBuilder()
         val number = number(obj).let { if (minusNotRequired && it < 0) -it else it }
+        if (outputPlusOnExceededWidth != null && number >= POWERS_OF_TEN[outputPlusOnExceededWidth]) {
+            innerBuilder.append('+')
+        }
         if (number.absoluteValue < POWERS_OF_TEN[zeroPadding - 1]) {
             // needs padding
             if (number >= 0) {
@@ -56,7 +59,6 @@ internal class SignedIntFormatterStructure<in T>(
                 innerBuilder.append((number - POWERS_OF_TEN[zeroPadding])).deleteAt(1)
             }
         } else {
-            if (outputPlusOnExceedsPad && number >= POWERS_OF_TEN[zeroPadding]) innerBuilder.append('+')
             innerBuilder.append(number)
         }
         builder.append(innerBuilder)

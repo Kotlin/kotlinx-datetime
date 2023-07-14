@@ -31,9 +31,9 @@ class DateFormatTest {
                 put(LocalDate(-1, 1, 2), ("-0001${s}01${s}02" to setOf()))
                 put(LocalDate(9999, 12, 31), ("9999${s}12${s}31" to setOf()))
                 put(LocalDate(-9999, 12, 31), ("-9999${s}12${s}31" to setOf()))
-                put(LocalDate(10000, 1, 1), ("10000${s}01${s}01" to setOf()))
+                put(LocalDate(10000, 1, 1), ("+10000${s}01${s}01" to setOf()))
                 put(LocalDate(-10000, 1, 1), ("-10000${s}01${s}01" to setOf()))
-                put(LocalDate(123456, 1, 1), ("123456${s}01${s}01" to setOf()))
+                put(LocalDate(123456, 1, 1), ("+123456${s}01${s}01" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("-123456${s}01${s}01" to setOf()))
             }
             test(dates, LocalDate.Format {
@@ -60,9 +60,9 @@ class DateFormatTest {
                 put(LocalDate(-1, 1, 2), ("02${s}01${s}-0001" to setOf()))
                 put(LocalDate(9999, 12, 31), ("31${s}12${s}9999" to setOf()))
                 put(LocalDate(-9999, 12, 31), ("31${s}12${s}-9999" to setOf()))
-                put(LocalDate(10000, 1, 1), ("01${s}01${s}10000" to setOf()))
+                put(LocalDate(10000, 1, 1), ("01${s}01${s}+10000" to setOf()))
                 put(LocalDate(-10000, 1, 1), ("01${s}01${s}-10000" to setOf()))
-                put(LocalDate(123456, 1, 1), ("01${s}01${s}123456" to setOf()))
+                put(LocalDate(123456, 1, 1), ("01${s}01${s}+123456" to setOf()))
                 put(LocalDate(-123456, 1, 1), ("01${s}01${s}-123456" to setOf()))
             }
             test(dates, LocalDate.Format {
@@ -88,9 +88,9 @@ class DateFormatTest {
             put(LocalDate(-1, 1, 2), ("-00010102" to setOf()))
             put(LocalDate(9999, 12, 31), ("99991231" to setOf()))
             put(LocalDate(-9999, 12, 31), ("-99991231" to setOf()))
-            put(LocalDate(10000, 1, 1), ("100000101" to setOf()))
+            put(LocalDate(10000, 1, 1), ("+100000101" to setOf()))
             put(LocalDate(-10000, 1, 1), ("-100000101" to setOf()))
-            put(LocalDate(123456, 1, 1), ("1234560101" to setOf()))
+            put(LocalDate(123456, 1, 1), ("+1234560101" to setOf()))
             put(LocalDate(-123456, 1, 1), ("-1234560101" to setOf()))
         }
         test(dates, LocalDate.Format {
@@ -113,9 +113,9 @@ class DateFormatTest {
             put(LocalDate(-1, 1, 2), ("02 January -0001" to setOf()))
             put(LocalDate(9999, 10, 31), ("31 October 9999" to setOf()))
             put(LocalDate(-9999, 9, 30), ("30 September -9999" to setOf()))
-            put(LocalDate(10000, 8, 1), ("01 August 10000" to setOf()))
+            put(LocalDate(10000, 8, 1), ("01 August +10000" to setOf()))
             put(LocalDate(-10000, 7, 1), ("01 July -10000" to setOf()))
-            put(LocalDate(123456, 6, 1), ("01 June 123456" to setOf()))
+            put(LocalDate(123456, 6, 1), ("01 June +123456" to setOf()))
             put(LocalDate(-123456, 5, 1), ("01 May -123456" to setOf()))
         }
         val format = LocalDate.Format {
@@ -137,9 +137,9 @@ class DateFormatTest {
             put(LocalDate(-1, 1, 2), ("02 I -1" to setOf()))
             put(LocalDate(9999, 10, 31), ("31 X 9999" to setOf()))
             put(LocalDate(-9999, 9, 30), ("30 IX -9999" to setOf()))
-            put(LocalDate(10000, 8, 1), ("01 VIII 10000" to setOf()))
+            put(LocalDate(10000, 8, 1), ("01 VIII +10000" to setOf()))
             put(LocalDate(-10000, 7, 1), ("01 VII -10000" to setOf()))
-            put(LocalDate(123456, 6, 1), ("01 VI 123456" to setOf()))
+            put(LocalDate(123456, 6, 1), ("01 VI +123456" to setOf()))
             put(LocalDate(-123456, 5, 1), ("01 V -123456" to setOf()))
         }
         val format = LocalDate.Format {

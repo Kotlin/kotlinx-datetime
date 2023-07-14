@@ -10,7 +10,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
 public sealed interface DateFormatBuilder: FormatBuilder {
-    public fun appendYear(padding: Padding = Padding.ZERO, outputPlusOnExceededPadding: Boolean = false)
+    public fun appendYear(padding: Padding = Padding.ZERO)
     public fun appendYearTwoDigits(base: Int)
     public fun appendMonthNumber(padding: Padding = Padding.ZERO)
     public fun appendMonthName(names: MonthNames)
@@ -106,7 +106,7 @@ public class DayOfWeekNames(
 }
 
 internal fun DateFormatBuilder.appendIsoDate() {
-    appendYear(outputPlusOnExceededPadding = true)
+    appendYear()
     appendLiteral('-')
     appendMonthNumber()
     appendLiteral('-')
@@ -176,13 +176,13 @@ internal class IncompleteLocalDate(
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }
 
-internal class YearDirective(padding: Padding, outputPlusOnExceededPadding: Boolean) :
+internal class YearDirective(padding: Padding) :
     SignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.year,
         minDigits = padding.minDigits(4),
         maxDigits = null,
         spacePadding = padding.spaces(4),
-        outputPlusOnExceededPadding = outputPlusOnExceededPadding,
+        outputPlusOnExceededWidth = 4,
     ) {
     override val builderRepresentation: String = when (padding) {
         Padding.ZERO -> "${DateFormatBuilder::appendYear.name}()"
@@ -256,8 +256,8 @@ internal class LocalDateFormat(private val actualFormat: StringFormat<Incomplete
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
         AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilder {
-        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))

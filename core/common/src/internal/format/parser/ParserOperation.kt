@@ -203,15 +203,14 @@ internal fun <Output> SignedIntParser(
     spacePadding: Int?,
     setter: (Output, Int) -> Unit,
     name: String,
-    plusOnExceedsPad: Boolean = false,
+    plusOnExceedsWidth: Int?,
 ): ParserStructure<Output> {
     val parsers = mutableListOf(
         spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, setter, name, withMinus = true)
     )
-    val padding = maxOf(spacePadding ?: 0, minDigits ?: 0)
-    if (plusOnExceedsPad && padding > 0) {
+    if (plusOnExceedsWidth != null) {
         parsers.add(
-            spaceAndZeroPaddedUnsignedInt(minDigits, padding, spacePadding, setter, name)
+            spaceAndZeroPaddedUnsignedInt(minDigits, plusOnExceedsWidth, spacePadding, setter, name)
         )
         parsers.add(
             ParserStructure(
@@ -220,7 +219,7 @@ internal fun <Output> SignedIntParser(
                     NumberSpanParserOperation(
                         listOf(
                             UnsignedIntConsumer(
-                                minDigits?.let { it + 1 },
+                                plusOnExceedsWidth + 1,
                                 maxDigits,
                                 setter,
                                 name,

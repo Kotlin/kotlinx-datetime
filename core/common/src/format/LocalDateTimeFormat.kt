@@ -60,8 +60,8 @@ internal class LocalDateTimeFormat(private val actualFormat: StringFormat<DateTi
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder {
-        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))

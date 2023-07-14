@@ -121,7 +121,7 @@ private class Year(length: Int) : AbstractUnicodeDirective(length), DateBasedUni
             1 -> builder.appendYear(padding = Padding.NONE)
             2 -> builder.appendYearTwoDigits(base = 2000)
             3 -> unsupportedPadding(formatLength)
-            4 -> builder.appendYear(padding = Padding.ZERO, outputPlusOnExceededPadding = true)
+            4 -> builder.appendYear(padding = Padding.ZERO)
             else -> unsupportedPadding(formatLength)
         }
     }
