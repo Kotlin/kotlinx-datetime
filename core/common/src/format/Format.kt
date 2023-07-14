@@ -35,6 +35,29 @@ public sealed interface Format<T> {
     public fun parseOrNull(input: CharSequence): T?
 }
 
+/**
+ * The style of padding to use when formatting a value.
+ */
+public enum class Padding {
+    /**
+     * No padding.
+     */
+    NONE,
+
+    /**
+     * Pad with zeros.
+     */
+    ZERO,
+
+    /**
+     * Pad with spaces.
+     */
+    SPACE
+}
+
+internal inline fun Padding.minDigits(width: Int) = if (this == Padding.ZERO) width else 1
+internal inline fun Padding.spaces(width: Int) = if (this == Padding.SPACE) width else null
+
 internal abstract class AbstractFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): Format<T> {
 
     abstract fun intermediateFromValue(value: T): U

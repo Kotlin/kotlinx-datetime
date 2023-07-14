@@ -55,39 +55,44 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             }, {
                 appendLiteral('t')
             })
-            appendHour(2)
+            appendHour()
             appendLiteral(':')
-            appendMinute(2)
+            appendMinute()
             appendLiteral(':')
-            appendSecond(2)
+            appendSecond()
             appendOptional {
                 appendLiteral('.')
                 appendSecondFraction()
             }
-            appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.IF_NONZERO)
+            appendIsoOffset(
+                zOnZero = true,
+                useSeparator = true,
+                outputMinute = WhenToOutput.IF_NONZERO,
+                outputSecond = WhenToOutput.IF_NONZERO
+            )
         }
 
         public val RFC_1123: kotlinx.datetime.format.Format<ValueBag> = build {
             appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             appendLiteral(", ")
-            appendDayOfMonth()
+            appendDayOfMonth(Padding.NONE)
             appendLiteral(' ')
             appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
             appendLiteral(' ')
-            appendYear(4)
+            appendYear()
             appendLiteral(' ')
-            appendHour(2)
+            appendHour()
             appendLiteral(':')
-            appendMinute(2)
+            appendMinute()
             appendLiteral(':')
-            appendSecond(2)
+            appendSecond()
             appendLiteral(" ")
             appendAlternatives({
                 appendLiteral("GMT")
             }, {
                 withSharedSign(outputPlus = true) {
-                    appendOffsetTotalHours(2)
-                    appendOffsetMinutesOfHour(2)
+                    appendOffsetTotalHours(Padding.ZERO)
+                    appendOffsetMinutesOfHour()
                 }
             })
         }
@@ -375,44 +380,44 @@ private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
 
     override fun newIntermediate(): ValueBagContents = ValueBagContents()
 
-    internal class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
+    class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
         AbstractFormatBuilder<ValueBagContents, Builder>, ValueBagFormatBuilder {
-        override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
 
-        override fun appendMonthNumber(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
+        override fun appendMonthNumber(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
         override fun appendMonthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
 
-        override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
         override fun appendDayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
 
-        override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
-        override fun appendAmPmHour(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun appendAmPmHour(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
         override fun appendAmPmMarker(amString: String, pmString: String) =
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
 
-        override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
-        override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
+        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun appendOffsetTotalHours(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
+        override fun appendOffsetTotalHours(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)))
 
-        override fun appendOffsetMinutesOfHour(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(minDigits)))
+        override fun appendOffsetMinutesOfHour(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
 
-        override fun appendOffsetSecondsOfMinute(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(minDigits)))
+        override fun appendOffsetSecondsOfMinute(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
         override fun appendTimeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))

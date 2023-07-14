@@ -60,31 +60,32 @@ internal class LocalDateTimeFormat(private val actualFormat: StringFormat<DateTi
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder {
-        override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
 
-        override fun appendMonthNumber(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
+        override fun appendMonthNumber(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
         override fun appendMonthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
 
-        override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
+
         override fun appendDayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
 
-        override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
-        override fun appendAmPmHour(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun appendAmPmHour(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
         override fun appendAmPmMarker(amString: String, pmString: String) =
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
 
-        override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
-        override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
+        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 

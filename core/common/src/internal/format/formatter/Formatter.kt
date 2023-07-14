@@ -5,17 +5,22 @@
 
 package kotlinx.datetime.internal.format.formatter
 
-internal sealed interface FormatterStructure<in T> {
+internal interface FormatterStructure<in T> {
     fun format(obj: T, builder: Appendable, minusNotRequired: Boolean = false)
 }
 
-internal sealed interface NonConditionalFormatterStructure<in T>: FormatterStructure<T>
-
-internal class BasicFormatter<in T>(
-    private val operation: FormatterOperation<T>,
-): NonConditionalFormatterStructure<T> {
-    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) =
-        operation.format(obj, builder, minusNotRequired)
+internal class SpacePaddedFormatter<in T>(
+    private val formatter: FormatterStructure<T>,
+    private val padding: Int,
+): FormatterStructure<T> {
+    override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
+        val string = StringBuilder().let {
+            formatter.format(obj, it, minusNotRequired)
+            it.toString()
+        }
+        repeat(padding - string.length) { builder.append(' ') }
+        builder.append(string)
+    }
 }
 
 internal class ConditionalFormatter<in T>(
@@ -51,7 +56,7 @@ internal class SignedFormatter<in T>(
 
 internal class ConcatenatedFormatter<in T>(
     private val formatters: List<FormatterStructure<T>>,
-): NonConditionalFormatterStructure<T> {
+): FormatterStructure<T> {
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         for (formatter in formatters) {
             formatter.format(obj, builder, minusNotRequired)

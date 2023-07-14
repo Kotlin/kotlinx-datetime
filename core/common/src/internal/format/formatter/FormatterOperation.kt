@@ -9,22 +9,18 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.POWERS_OF_TEN
 import kotlin.math.*
 
-internal interface FormatterOperation<in T> {
-    fun format(obj: T, builder: Appendable, minusNotRequired: Boolean)
-}
-
-internal class ConstantStringFormatterOperation<in T>(
+internal class ConstantStringFormatterStructure<in T>(
     private val string: String,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         builder.append(string)
     }
 }
 
-internal class UnsignedIntFormatterOperation<in T>(
+internal class UnsignedIntFormatterStructure<in T>(
     private val number: (T) -> Int,
     private val zeroPadding: Int,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
 
     init {
         require(zeroPadding >= 0)
@@ -38,11 +34,11 @@ internal class UnsignedIntFormatterOperation<in T>(
     }
 }
 
-internal class SignedIntFormatterOperation<in T>(
+internal class SignedIntFormatterStructure<in T>(
     private val number: (T) -> Int,
     private val zeroPadding: Int,
     private val outputPlusOnExceedsPad: Boolean,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
 
     init {
         require(zeroPadding >= 0)
@@ -67,11 +63,11 @@ internal class SignedIntFormatterOperation<in T>(
     }
 }
 
-internal class DecimalFractionFormatterOperation<in T>(
+internal class DecimalFractionFormatterStructure<in T>(
     private val number: (T) -> DecimalFraction,
     private val minDigits: Int?,
     private val maxDigits: Int?,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
 
     init {
         require(minDigits == null || minDigits in 1..9)
@@ -93,19 +89,19 @@ internal class DecimalFractionFormatterOperation<in T>(
     }
 }
 
-internal class StringFormatterOperation<in T>(
+internal class StringFormatterStructure<in T>(
     private val string: (T) -> String,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         builder.append(string(obj))
     }
 }
 
-internal class ReducedIntFormatterOperation<in T>(
+internal class ReducedIntFormatterStructure<in T>(
     private val number: (T) -> Int,
     private val digits: Int,
     private val base: Int,
-): FormatterOperation<T> {
+): FormatterStructure<T> {
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val number = number(obj)
         if (number - base in 0 until POWERS_OF_TEN[digits]) {

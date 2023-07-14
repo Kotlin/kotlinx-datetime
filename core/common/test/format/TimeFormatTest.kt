@@ -35,9 +35,9 @@ class TimeFormatTest {
             appendUnicodeFormatString("HH:mm")
         })
         test(times, LocalTime.Format.build {
-            appendHour(2)
+            appendHour()
             appendLiteral(':')
-            appendMinute(2)
+            appendMinute()
         })
     }
 
@@ -57,11 +57,11 @@ class TimeFormatTest {
             appendUnicodeFormatString("HH:mm:ss")
         })
         test(times, LocalTime.Format.build {
-            appendHour(2)
+            appendHour()
             appendLiteral(':')
-            appendMinute(2)
+            appendMinute()
             appendLiteral(':')
-            appendSecond(2)
+            appendSecond()
         })
     }
 
@@ -76,9 +76,9 @@ class TimeFormatTest {
             put(LocalTime(23, 0, 0, 0), ("11:00 PM" to setOf()))
         }
         test(times, LocalTime.Format.build {
-            appendAmPmHour(2)
+            appendAmPmHour()
             appendLiteral(':')
-            appendMinute(2)
+            appendMinute()
             appendLiteral(' ')
             appendAmPmMarker("AM", "PM")
         })

@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal.format.parser
 
+import kotlinx.datetime.internal.format.*
+
 internal interface ParserOperation<in Output> {
     fun Output.consume(input: CharSequence, startIndex: Int): ParseResult
 }
@@ -198,81 +200,123 @@ internal class StringSetParserOperation<Output>(
 internal fun <Output> SignedIntParser(
     minDigits: Int?,
     maxDigits: Int?,
+    spacePadding: Int?,
     setter: (Output, Int) -> Unit,
     name: String,
     plusOnExceedsPad: Boolean = false,
 ): ParserStructure<Output> {
-    val parsers = mutableListOf<List<ParserOperation<Output>>>(
+    val parsers = mutableListOf(
+        spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, setter, name, withMinus = true)
     )
-    parsers.add(
-        listOf(
-            PlainStringParserOperation("-"),
-            NumberSpanParserOperation(
-                listOf(
-                    UnsignedIntConsumer(
-                        minDigits,
-                        maxDigits,
-                        setter,
-                        name,
-                        multiplyByMinus1 = true
-                    )
-                )
-            )
-        ),
-    )
-    if (plusOnExceedsPad) {
+    val padding = maxOf(spacePadding ?: 0, minDigits ?: 0)
+    if (plusOnExceedsPad && padding > 0) {
         parsers.add(
-            listOf(
-                NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minDigits,
-                            minDigits,
-                            setter,
-                            name,
-                            multiplyByMinus1 = false
-                        )
-                    )
-                )
-            )
+            spaceAndZeroPaddedUnsignedInt(minDigits, padding, spacePadding, setter, name)
         )
         parsers.add(
-            listOf(
-                PlainStringParserOperation("+"),
-                NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minDigits?.let { it + 1 },
-                            maxDigits,
-                            setter,
-                            name,
-                            multiplyByMinus1 = false
+            ParserStructure(
+                listOf(
+                    PlainStringParserOperation("+"),
+                    NumberSpanParserOperation(
+                        listOf(
+                            UnsignedIntConsumer(
+                                minDigits?.let { it + 1 },
+                                maxDigits,
+                                setter,
+                                name,
+                                multiplyByMinus1 = false
+                            )
                         )
                     )
-                )
+                ),
+                emptyList()
             )
         )
     } else {
         parsers.add(
-            listOf(
-                NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minDigits,
-                            maxDigits,
-                            setter,
-                            name,
-                            multiplyByMinus1 = false
-                        )
-                    )
-                )
-            )
+            spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, setter, name)
         )
     }
     return ParserStructure(
         emptyList(),
-        parsers.map { ParserStructure(it, emptyList()) },
+        parsers,
     )
+}
+
+// With maxWidth = 4,
+// padWidth = 7: "   " + (four digits | " " (three digits | " " (two digits | " ", one digit)))
+// padWidth = 3: three to four digits | " " (two digits | " ", one digit)
+internal fun <Target> spaceAndZeroPaddedUnsignedInt(
+    minDigits: Int?,
+    maxDigits: Int?,
+    spacePadding: Int?,
+    setter: (Target, Int) -> Unit,
+    name: String,
+    withMinus: Boolean = false,
+): ParserStructure<Target> {
+    val minNumberLength = (minDigits ?: 1) + if (withMinus) 1 else 0
+    val maxNumberLength = maxDigits?.let { if (withMinus) it + 1 else it } ?: Int.MAX_VALUE
+    val spacePadding = spacePadding ?: 0
+    fun numberOfRequiredLengths(minNumberLength: Int, maxNumberLength: Int): ParserStructure<Target> {
+        check(maxNumberLength >= 1 + if (withMinus) 1 else 0)
+        return ParserStructure(
+            buildList {
+                if (withMinus) add(PlainStringParserOperation("-"))
+                add(NumberSpanParserOperation(
+                    listOf(
+                        UnsignedIntConsumer(
+                            minNumberLength - if (withMinus) 1 else 0,
+                            maxNumberLength - if (withMinus) 1 else 0,
+                            setter,
+                            name,
+                            multiplyByMinus1 = withMinus,
+                        )
+                    )
+                ))
+            },
+            emptyList()
+        )
+    }
+    val maxPaddedNumberLength = minOf(maxNumberLength, spacePadding)
+    if (minNumberLength >= maxPaddedNumberLength) return numberOfRequiredLengths(minNumberLength, maxNumberLength)
+    // invariant: the length of the string parsed by 'accumulated' is exactly 'accumulatedWidth'
+    var accumulated: ParserStructure<Target> = numberOfRequiredLengths(minNumberLength, minNumberLength)
+    for (accumulatedWidth in minNumberLength until maxPaddedNumberLength) {
+        accumulated = ParserStructure(
+            emptyList(),
+            listOf(
+                numberOfRequiredLengths(accumulatedWidth + 1, accumulatedWidth + 1),
+                listOf(
+                    ParserStructure(listOf(PlainStringParserOperation(" ")), emptyList()),
+                    accumulated
+                ).concat()
+            )
+        )
+    }
+    // accumulatedWidth == maxNumberLength || accumulatedWidth == spacePadding.
+    // In the first case, we're done, in the second case, we need to add the remaining numeric lengths.
+    return if (spacePadding > maxNumberLength) {
+        val prepadding = PlainStringParserOperation<Target>(" ".repeat(spacePadding - maxNumberLength))
+        listOf(
+            ParserStructure(
+                listOf(
+                    prepadding,
+                ),
+                emptyList()
+            ), accumulated
+        ).concat()
+    } else if (spacePadding == maxNumberLength) {
+        accumulated
+    } else {
+        val r = ParserStructure(
+            emptyList(),
+            listOf(
+                numberOfRequiredLengths(spacePadding + 1, maxNumberLength),
+                accumulated
+            )
+        )
+        r
+    }
 }
 
 internal fun <Output> ReducedIntParser(

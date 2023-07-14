@@ -118,9 +118,11 @@ private class Year(length: Int) : AbstractUnicodeDirective(length), DateBasedUni
     override val formatLetter = 'u'
     override fun addToFormat(builder: DateFormatBuilder) {
         when (formatLength) {
-            1, 3 -> builder.appendYear(minDigits = formatLength)
-            2 -> TODO() // builder.appendReducedYear(digits = 2, baseValue = 2000)
-            else -> builder.appendYear(minDigits = formatLength, outputPlusOnExceededPadding = true)
+            1 -> builder.appendYear(padding = Padding.NONE)
+            2 -> builder.appendYearTwoDigits(base = 2000)
+            3 -> unsupportedPadding(formatLength)
+            4 -> builder.appendYear(padding = Padding.ZERO, outputPlusOnExceededPadding = true)
+            else -> unsupportedPadding(formatLength)
         }
     }
 }
@@ -152,7 +154,8 @@ private class MonthOfYear(length: Int) : AbstractUnicodeDirective(length), DateB
     override val formatLetter = 'M'
     override fun addToFormat(builder: DateFormatBuilder) {
         when (formatLength) {
-            1, 2 -> builder.appendMonthNumber(minLength = formatLength)
+            1 -> builder.appendMonthNumber(Padding.NONE)
+            2 -> builder.appendMonthNumber(Padding.ZERO)
             3, 4, 5 -> localizedDirective()
             else -> unknownLength()
         }
@@ -163,7 +166,8 @@ private class StandaloneMonthOfYear(length: Int) : AbstractUnicodeDirective(leng
     override val formatLetter = 'L'
     override fun addToFormat(builder: DateFormatBuilder) {
         when (formatLength) {
-            1, 2 -> builder.appendMonthNumber(minLength = formatLength)
+            1 -> builder.appendMonthNumber(Padding.NONE)
+            2 -> builder.appendMonthNumber(Padding.ZERO)
             3, 4, 5 -> localizedDirective()
             else -> unknownLength()
         }
@@ -172,7 +176,11 @@ private class StandaloneMonthOfYear(length: Int) : AbstractUnicodeDirective(leng
 
 private class DayOfMonth(length: Int) : AbstractUnicodeDirective(length), DateBasedUnicodeDirective {
     override val formatLetter = 'd'
-    override fun addToFormat(builder: DateFormatBuilder) = builder.appendDayOfMonth(minLength = formatLength)
+    override fun addToFormat(builder: DateFormatBuilder) = when (formatLength) {
+        1 -> builder.appendDayOfMonth(Padding.NONE)
+        2 -> builder.appendDayOfMonth(Padding.ZERO)
+        else -> unknownLength()
+    }
 }
 
 private class ModifiedJulianDay(length: Int) : AbstractUnicodeDirective(length), DateBasedUnicodeDirective {
@@ -244,17 +252,29 @@ private class AmPmMarker(length: Int) : AbstractUnicodeDirective(length), TimeBa
 
 private class HourOfDay(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {
     override val formatLetter = 'H'
-    override fun addToFormat(builder: TimeFormatBuilderFields) = builder.appendHour(minLength = formatLength)
+    override fun addToFormat(builder: TimeFormatBuilderFields) = when (formatLength) {
+        1 -> builder.appendHour(Padding.NONE)
+        2 -> builder.appendHour(Padding.ZERO)
+        else -> unknownLength()
+    }
 }
 
 private class MinuteOfHour(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {
     override val formatLetter = 'm'
-    override fun addToFormat(builder: TimeFormatBuilderFields) = builder.appendMinute(minLength = formatLength)
+    override fun addToFormat(builder: TimeFormatBuilderFields) = when (formatLength) {
+        1 -> builder.appendMinute(Padding.NONE)
+        2 -> builder.appendMinute(Padding.ZERO)
+        else -> unknownLength()
+    }
 }
 
 private class SecondOfMinute(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {
     override val formatLetter = 's'
-    override fun addToFormat(builder: TimeFormatBuilderFields) = builder.appendSecond(minLength = formatLength)
+    override fun addToFormat(builder: TimeFormatBuilderFields) = when (formatLength) {
+        1 -> builder.appendSecond(Padding.NONE)
+        2 -> builder.appendSecond(Padding.ZERO)
+        else -> unknownLength()
+    }
 }
 
 private class FractionOfSecond(length: Int) : AbstractUnicodeDirective(length), TimeBasedUnicodeDirective {
@@ -474,3 +494,6 @@ private fun AbstractUnicodeDirective.unknownLength(): Nothing =
 private fun AbstractUnicodeDirective.localizedDirective(recommendation: String? = null): Nothing =
     throw IllegalArgumentException("The directive '$this' is locale-dependent, but locales are not supported in Kotlin"
         + if (recommendation != null) ". $recommendation" else "")
+
+private fun AbstractUnicodeDirective.unsupportedPadding(digits: Int): Nothing =
+    throw IllegalArgumentException("Padding do $digits digits is not supported for the $formatLetter directive")

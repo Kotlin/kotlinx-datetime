@@ -9,10 +9,10 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.math.*
 
-public sealed interface UtcOffsetFormatBuilderFields: FormatBuilder {
-    public fun appendOffsetTotalHours(minDigits: Int = 1)
-    public fun appendOffsetMinutesOfHour(minDigits: Int = 1)
-    public fun appendOffsetSecondsOfMinute(minDigits: Int = 1)
+public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
+    public fun appendOffsetTotalHours(padding: Padding)
+    public fun appendOffsetMinutesOfHour(padding: Padding = Padding.ZERO)
+    public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
 }
 
 internal interface UtcOffsetFieldContainer {
@@ -36,14 +36,14 @@ internal class UtcOffsetFormat(private val actualFormat: StringFormat<UtcOffsetF
         AbstractFormatBuilder<UtcOffsetFieldContainer, Builder>, UtcOffsetFormatBuilderFields {
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-        override fun appendOffsetTotalHours(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(minDigits)))
+        override fun appendOffsetTotalHours(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)))
 
-        override fun appendOffsetMinutesOfHour(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(minDigits)))
+        override fun appendOffsetMinutesOfHour(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
 
-        override fun appendOffsetSecondsOfMinute(minDigits: Int) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(minDigits)))
+        override fun appendOffsetSecondsOfMinute(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
     }
 
     override fun toString(): String = actualFormat.builderString()
@@ -56,46 +56,66 @@ internal enum class WhenToOutput {
     ALWAYS,
 }
 
-internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(zOnZero: Boolean, useSeparator: Boolean, outputMinute: WhenToOutput, outputSecond: WhenToOutput) {
+internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
+    zOnZero: Boolean,
+    useSeparator: Boolean,
+    outputMinute: WhenToOutput,
+    outputSecond: WhenToOutput
+) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun UtcOffsetFormatBuilderFields.appendIsoOffsetWithoutZOnZero() {
         withSharedSign(outputPlus = true) {
-            appendOffsetTotalHours(2)
+            appendOffsetTotalHours(Padding.ZERO)
             when (outputMinute) {
                 WhenToOutput.NEVER -> {}
                 WhenToOutput.IF_NONZERO -> {
                     appendOptional {
-                        if (useSeparator) { appendLiteral(':') }
-                        appendOffsetMinutesOfHour(2)
+                        if (useSeparator) {
+                            appendLiteral(':')
+                        }
+                        appendOffsetMinutesOfHour()
                         when (outputSecond) {
                             WhenToOutput.NEVER -> {}
                             WhenToOutput.IF_NONZERO -> {
                                 appendOptional {
-                                    if (useSeparator) { appendLiteral(':') }
-                                    appendOffsetSecondsOfMinute(2)
+                                    if (useSeparator) {
+                                        appendLiteral(':')
+                                    }
+                                    appendOffsetSecondsOfMinute()
                                 }
                             }
+
                             WhenToOutput.ALWAYS -> {
-                                if (useSeparator) { appendLiteral(':') }
-                                appendOffsetSecondsOfMinute(2)
+                                if (useSeparator) {
+                                    appendLiteral(':')
+                                }
+                                appendOffsetSecondsOfMinute()
                             }
                         }
                     }
                 }
+
                 WhenToOutput.ALWAYS -> {
-                    if (useSeparator) { appendLiteral(':') }
-                    appendOffsetMinutesOfHour(2)
+                    if (useSeparator) {
+                        appendLiteral(':')
+                    }
+                    appendOffsetMinutesOfHour()
                     when (outputSecond) {
                         WhenToOutput.NEVER -> {}
                         WhenToOutput.IF_NONZERO -> {
                             appendOptional {
-                                if (useSeparator) { appendLiteral(':') }
-                                appendOffsetSecondsOfMinute(2)
+                                if (useSeparator) {
+                                    appendLiteral(':')
+                                }
+                                appendOffsetSecondsOfMinute()
                             }
                         }
+
                         WhenToOutput.ALWAYS -> {
-                            if (useSeparator) { appendLiteral(':') }
-                            appendOffsetSecondsOfMinute(2)
+                            if (useSeparator) {
+                                appendLiteral(':')
+                            }
+                            appendOffsetSecondsOfMinute()
                         }
                     }
                 }
@@ -180,25 +200,39 @@ internal class IncompleteUtcOffset(
         "${isNegative?.let { if (it) "-" else "+" } ?: " "}${totalHoursAbs ?: "??"}:${minutesOfHour ?: "??"}:${secondsOfMinute ?: "??"}"
 }
 
-internal class UtcOffsetWholeHoursDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.totalHoursAbs, minDigits) {
+internal class UtcOffsetWholeHoursDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(
+        OffsetFields.totalHoursAbs,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2)
+    ) {
 
     override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilderFields::appendOffsetTotalHours.name}($minDigits)"
+        "${UtcOffsetFormatBuilderFields::appendOffsetTotalHours.name}($padding)"
 }
 
-internal class UtcOffsetMinuteOfHourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.minutesOfHour, minDigits) {
+internal class UtcOffsetMinuteOfHourDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(
+        OffsetFields.minutesOfHour,
+        minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
+    ) {
 
-    override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}($minDigits)"
+    override val builderRepresentation: String = when (padding) {
+        Padding.NONE -> "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}()"
+        else -> "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}($padding)"
+    }
 }
 
-internal class UtcOffsetSecondOfMinuteDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(OffsetFields.secondsOfMinute, minDigits) {
+internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(
+        OffsetFields.secondsOfMinute,
+        minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
+    ) {
 
-    override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}($minDigits)"
+    override val builderRepresentation: String = when (padding) {
+        Padding.NONE -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}()"
+        else -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}($padding)"
+    }
 }
 
 private class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :

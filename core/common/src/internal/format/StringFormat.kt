@@ -53,8 +53,8 @@ internal class ConcatenatedFormatStructure<in T>(
 
 internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
     fun FormatStructure<T>.rec(): Pair<FormatterStructure<T>, Set<FieldSpec<T, *>>> = when (this) {
-        is BasicFormatStructure -> BasicFormatter(directive.formatter()) to setOf(directive.field)
-        is ConstantFormatStructure -> BasicFormatter(ConstantStringFormatterOperation<T>(string)) to emptySet()
+        is BasicFormatStructure -> directive.formatter() to setOf(directive.field)
+        is ConstantFormatStructure -> ConstantStringFormatterStructure<T>(string) to emptySet()
         is SignedFormatStructure -> {
             val (innerFormat, fieldSpecs) = format.rec()
             fun checkIfAllNegative(value: T): Boolean {

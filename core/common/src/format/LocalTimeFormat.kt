@@ -12,26 +12,16 @@ import kotlinx.datetime.internal.format.*
 /**
  * Functions specific to the date-time format builders containing the local-time fields.
  */
-public sealed interface TimeFormatBuilderFields: FormatBuilder {
+public sealed interface TimeFormatBuilderFields : FormatBuilder {
     /**
      * Appends the number of hours.
-     *
-     * The number is padded with zeroes to the specified [minLength] when formatting.
-     * When parsing, the number is expected to be at least [minLength] digits long.
-     *
-     * @throws IllegalArgumentException if [minLength] is not in the range 1..2.
      */
-    public fun appendHour(minLength: Int = 1)
+    public fun appendHour(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the number of hours in the 12-hour clock.
-     *
-     * The number is padded with zeroes to the specified [minLength] when formatting.
-     * When parsing, the number is expected to be at least [minLength] digits long.
-     *
-     * @throws IllegalArgumentException if [minLength] is not in the range 1..2.
      */
-    public fun appendAmPmHour(minLength: Int = 1)
+    public fun appendAmPmHour(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the AM/PM marker, using the specified strings.
@@ -42,23 +32,13 @@ public sealed interface TimeFormatBuilderFields: FormatBuilder {
 
     /**
      * Appends the number of minutes.
-     *
-     * The number is padded with zeroes to the specified [minLength] when formatting.
-     * When parsing, the number is expected to be at least [minLength] digits long.
-     *
-     * @throws IllegalArgumentException if [minLength] is not in the range 1..2.
      */
-    public fun appendMinute(minLength: Int = 1)
+    public fun appendMinute(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the number of seconds.
-     *
-     * The number is padded with zeroes to the specified [minLength] when formatting.
-     * When parsing, the number is expected to be at least [minLength] digits long.
-     *
-     * @throws IllegalArgumentException if [minLength] is not in the range 1..2.
      */
-    public fun appendSecond(minLength: Int = 1)
+    public fun appendSecond(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the fractional part of the second without the leading dot.
@@ -72,12 +52,12 @@ public sealed interface TimeFormatBuilderFields: FormatBuilder {
 }
 
 internal fun TimeFormatBuilderFields.appendIsoTime() {
-    appendHour(2)
+    appendHour()
     appendLiteral(':')
-    appendMinute(2)
+    appendMinute()
     appendOptional {
         appendLiteral(':')
-        appendSecond(2)
+        appendSecond()
         appendOptional {
             appendLiteral('.')
             appendSecondFraction()
@@ -175,14 +155,27 @@ internal class IncompleteLocalTime(
         }"
 }
 
-internal class HourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hour, minDigits) {
-    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendHour.name}($minDigits)"
+internal class HourDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(
+        TimeFields.hour,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2)
+    ) {
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${TimeFormatBuilderFields::appendHour.name}()"
+        else -> "${TimeFormatBuilderFields::appendHour.name}($padding)"
+    }
 }
 
-internal class AmPmHourDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.hourOfAmPm, minDigits) {
-    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendAmPmHour.name}($minDigits)"
+internal class AmPmHourDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(
+        TimeFields.hourOfAmPm, minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2)
+    ) {
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${TimeFormatBuilderFields::appendAmPmHour.name}()"
+        else -> "${TimeFormatBuilderFields::appendAmPmHour.name}($padding)"
+    }
 }
 
 internal class AmPmMarkerDirective(amString: String, pmString: String) :
@@ -197,16 +190,30 @@ internal class AmPmMarkerDirective(amString: String, pmString: String) :
         "${TimeFormatBuilderFields::appendAmPmMarker.name}($amString, $pmString)"
 }
 
-internal class MinuteDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.minute, minDigits) {
+internal class MinuteDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(
+        TimeFields.minute,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2)
+    ) {
 
-    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendMinute.name}($minDigits)"
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${TimeFormatBuilderFields::appendMinute.name}()"
+        else -> "${TimeFormatBuilderFields::appendMinute.name}($padding)"
+    }
 }
 
-internal class SecondDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<TimeFieldContainer>(TimeFields.second, minDigits) {
+internal class SecondDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<TimeFieldContainer>(
+        TimeFields.second,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2)
+    ) {
 
-    override val builderRepresentation: String = "${TimeFormatBuilderFields::appendSecond.name}($minDigits)"
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${TimeFormatBuilderFields::appendSecond.name}()"
+        else -> "${TimeFormatBuilderFields::appendSecond.name}($padding)"
+    }
 }
 
 internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null) :
@@ -242,15 +249,15 @@ internal class LocalTimeFormat(private val actualFormat: StringFormat<TimeFieldC
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
         AbstractFormatBuilder<TimeFieldContainer, Builder>, TimeFormatBuilderFields {
-        override fun appendHour(minLength: Int) = actualBuilder.add(BasicFormatStructure(HourDirective(minLength)))
-        override fun appendAmPmHour(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(minLength)))
+        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun appendAmPmHour(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
         override fun appendAmPmMarker(amString: String, pmString: String) =
             actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
 
-        override fun appendMinute(minLength: Int) = actualBuilder.add(BasicFormatStructure(MinuteDirective(minLength)))
-        override fun appendSecond(minLength: Int) = actualBuilder.add(BasicFormatStructure(SecondDirective(minLength)))
+        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
         override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 

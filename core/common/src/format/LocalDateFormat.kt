@@ -10,11 +10,11 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
 public sealed interface DateFormatBuilder: FormatBuilder {
-    public fun appendYear(minDigits: Int = 1, outputPlusOnExceededPadding: Boolean = false)
+    public fun appendYear(padding: Padding = Padding.ZERO, outputPlusOnExceededPadding: Boolean = false)
     public fun appendYearTwoDigits(base: Int)
-    public fun appendMonthNumber(minLength: Int = 1)
+    public fun appendMonthNumber(padding: Padding = Padding.ZERO)
     public fun appendMonthName(names: MonthNames)
-    public fun appendDayOfMonth(minLength: Int = 1)
+    public fun appendDayOfMonth(padding: Padding = Padding.ZERO)
     public fun appendDayOfWeek(names: DayOfWeekNames)
 }
 
@@ -31,8 +31,10 @@ public class MonthNames(
         require(names.size == 12) { "Month names must contain exactly 12 elements" }
     }
 
-    public constructor(january: String, february: String, march: String, april: String, may: String, june: String,
-                       july: String, august: String, september: String, october: String, november: String, december: String) :
+    public constructor(
+        january: String, february: String, march: String, april: String, may: String, june: String,
+        july: String, august: String, september: String, october: String, november: String, december: String
+    ) :
         this(listOf(january, february, march, april, may, june, july, august, september, october, november, december))
 
     public companion object {
@@ -71,7 +73,15 @@ public class DayOfWeekNames(
         require(names.size == 7) { "Day of week names must contain exactly 7 elements" }
     }
 
-    public constructor(monday: String, tuesday: String, wednesday: String, thursday: String, friday: String, saturday: String, sunday: String) :
+    public constructor(
+        monday: String,
+        tuesday: String,
+        wednesday: String,
+        thursday: String,
+        friday: String,
+        saturday: String,
+        sunday: String
+    ) :
         this(listOf(monday, tuesday, wednesday, thursday, friday, saturday, sunday))
 
     public companion object {
@@ -96,11 +106,11 @@ public class DayOfWeekNames(
 }
 
 internal fun DateFormatBuilder.appendIsoDate() {
-    appendYear(4, outputPlusOnExceededPadding = true)
+    appendYear(outputPlusOnExceededPadding = true)
     appendLiteral('-')
-    appendMonthNumber(2)
+    appendMonthNumber()
     appendLiteral('-')
-    appendDayOfMonth(2)
+    appendDayOfMonth()
 }
 
 internal fun LocalDate.toIncompleteLocalDate(): IncompleteLocalDate =
@@ -166,18 +176,17 @@ internal class IncompleteLocalDate(
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }
 
-internal class YearDirective(digits: Int, outputPlusOnExceededPadding: Boolean) :
+internal class YearDirective(padding: Padding, outputPlusOnExceededPadding: Boolean) :
     SignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.year,
-        minDigits = digits,
+        minDigits = padding.minDigits(4),
         maxDigits = null,
+        spacePadding = padding.spaces(4),
         outputPlusOnExceededPadding = outputPlusOnExceededPadding,
     ) {
-    override val builderRepresentation: String = when {
-        digits == 1 && !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}()"
-        !outputPlusOnExceededPadding -> "${DateFormatBuilder::appendYear.name}($digits)"
-        digits == 1 -> "${DateFormatBuilder::appendYear.name}(outputPlusOnExceededPadding = true)"
-        else -> "${DateFormatBuilder::appendYear.name}($digits, $outputPlusOnExceededPadding)"
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${DateFormatBuilder::appendYear.name}()"
+        else -> "${DateFormatBuilder::appendYear.name}($padding)"
     }
 }
 
@@ -186,16 +195,19 @@ internal class ReducedYearDirective(val base: Int) :
         DateFields.year,
         digits = 2,
         base = base,
-    )
-{
+    ) {
     override val builderRepresentation: String = "${DateFormatBuilder::appendYearTwoDigits.name}($base)"
 }
 
-internal class MonthDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, minDigits) {
-    override val builderRepresentation: String = when (minDigits) {
-        1 -> "${DateFormatBuilder::appendMonthNumber.name}()"
-        else -> "${DateFormatBuilder::appendMonthNumber.name}($minDigits)"
+internal class MonthDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<DateFieldContainer>(
+        DateFields.month,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2),
+    ) {
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${DateFormatBuilder::appendMonthNumber.name}()"
+        else -> "${DateFormatBuilder::appendMonthNumber.name}($padding)"
     }
 }
 
@@ -205,12 +217,15 @@ internal class MonthNameDirective(names: List<String>) :
         "${DateFormatBuilder::appendMonthName.name}(${names.repr(String::repr)})"
 }
 
-internal class DayDirective(minDigits: Int) :
-    UnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfMonth, minDigits) {
-
-    override val builderRepresentation: String = when (minDigits) {
-        1 -> "${DateFormatBuilder::appendDayOfMonth.name}()"
-        else -> "${DateFormatBuilder::appendDayOfMonth.name}($minDigits)"
+internal class DayDirective(padding: Padding) :
+    UnsignedIntFieldFormatDirective<DateFieldContainer>(
+        DateFields.dayOfMonth,
+        minDigits = padding.minDigits(2),
+        spacePadding = padding.spaces(2),
+    ) {
+    override val builderRepresentation: String = when (padding) {
+        Padding.ZERO -> "${DateFormatBuilder::appendDayOfMonth.name}()"
+        else -> "${DateFormatBuilder::appendDayOfMonth.name}($padding)"
     }
 }
 
@@ -221,9 +236,8 @@ internal class DayOfWeekDirective(names: List<String>) :
         "${DateFormatBuilder::appendDayOfWeek.name}(${names.repr(String::repr)})"
 }
 
-internal class LocalDateFormat(private val actualFormat: StringFormat<IncompleteLocalDate>)
-    : AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat)
-{
+internal class LocalDateFormat(private val actualFormat: StringFormat<IncompleteLocalDate>) :
+    AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat) {
     override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalDate): LocalDate = intermediate.toLocalDate()
@@ -242,19 +256,19 @@ internal class LocalDateFormat(private val actualFormat: StringFormat<Incomplete
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
         AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilder {
-        override fun appendYear(minDigits: Int, outputPlusOnExceededPadding: Boolean) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(minDigits, outputPlusOnExceededPadding)))
+        override fun appendYear(padding: Padding, outputPlusOnExceededPadding: Boolean) =
+            actualBuilder.add(BasicFormatStructure(YearDirective(padding, outputPlusOnExceededPadding)))
 
         override fun appendYearTwoDigits(base: Int) =
             actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
 
-        override fun appendMonthNumber(minLength: Int) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(minLength)))
+        override fun appendMonthNumber(padding: Padding) =
+            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
         override fun appendMonthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
 
-        override fun appendDayOfMonth(minLength: Int) = actualBuilder.add(BasicFormatStructure(DayDirective(minLength)))
+        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
         override fun appendDayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
 

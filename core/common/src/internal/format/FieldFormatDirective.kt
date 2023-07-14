@@ -21,7 +21,7 @@ internal interface FieldFormatDirective<in Target> {
     /**
      * The formatter operation that formats the field.
      */
-    fun formatter(): FormatterOperation<Target>
+    fun formatter(): FormatterStructure<Target>
 
     /**
      * The parser structure that parses the field.
@@ -42,6 +42,7 @@ internal interface FieldFormatDirective<in Target> {
 internal abstract class UnsignedIntFieldFormatDirective<in Target>(
     final override val field: UnsignedFieldSpec<Target>,
     private val minDigits: Int,
+    private val spacePadding: Int?,
 ) : FieldFormatDirective<Target> {
 
     private val maxDigits: Int = field.maxDigits
@@ -51,30 +52,23 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
         require(maxDigits >= minDigits) {
             "The maximum number of digits ($maxDigits) is less than the minimum number of digits ($minDigits)"
         }
+        if (spacePadding != null) {
+            require(spacePadding > minDigits) {
+                "The space padding ($spacePadding) should be more than the minimum number of digits ($minDigits)"
+            }
+        }
     }
 
-    override fun formatter(): FormatterOperation<Target> =
-        UnsignedIntFormatterOperation(
+    override fun formatter(): FormatterStructure<Target> {
+        val formatter = UnsignedIntFormatterStructure(
             number = field::getNotNull,
             zeroPadding = minDigits,
         )
+        return if (spacePadding != null) SpacePaddedFormatter(formatter, spacePadding) else formatter
+    }
 
     override fun parser(): ParserStructure<Target> =
-        ParserStructure(
-            listOf(
-                NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minDigits,
-                            maxDigits,
-                            field::setWithoutReassigning,
-                            field.name,
-                        )
-                    )
-                )
-            ),
-            emptyList()
-        )
+        spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, field::setWithoutReassigning, field.name)
 }
 
 /**
@@ -97,8 +91,8 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         field.setWithoutReassigning(target, values.indexOf(value) + field.minValue)
     }
 
-    override fun formatter(): FormatterOperation<Target> =
-        StringFormatterOperation(::getStringValue)
+    override fun formatter(): FormatterStructure<Target> =
+        StringFormatterStructure(::getStringValue)
 
     override fun parser(): ParserStructure<Target> =
         ParserStructure(listOf(
@@ -126,8 +120,8 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
             ?: throw IllegalStateException("The string value $value does not have a corresponding enum value"))
     }
 
-    override fun formatter(): FormatterOperation<Target> =
-        StringFormatterOperation(::getStringValue)
+    override fun formatter(): FormatterStructure<Target> =
+        StringFormatterStructure(::getStringValue)
 
     override fun parser(): ParserStructure<Target> =
         ParserStructure(listOf(
@@ -144,8 +138,8 @@ internal abstract class StringFieldFormatDirective<in Target>(
         require(acceptedStrings.isNotEmpty())
     }
 
-    override fun formatter(): FormatterOperation<Target> =
-        StringFormatterOperation(field::getNotNull)
+    override fun formatter(): FormatterStructure<Target> =
+        StringFormatterStructure(field::getNotNull)
 
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
@@ -158,6 +152,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
     final override val field: SignedFieldSpec<Target>,
     private val minDigits: Int?,
     private val maxDigits: Int? = field.maxDigits,
+    private val spacePadding: Int?,
     private val outputPlusOnExceededPadding: Boolean = false,
 ) : FieldFormatDirective<Target> {
 
@@ -166,17 +161,20 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
         require(maxDigits == null || minDigits == null || maxDigits >= minDigits)
     }
 
-    override fun formatter(): FormatterOperation<Target> =
-        SignedIntFormatterOperation(
+    override fun formatter(): FormatterStructure<Target> {
+        val formatter = SignedIntFormatterStructure(
             number = field::getNotNull,
             zeroPadding = minDigits ?: 0,
             outputPlusOnExceedsPad = outputPlusOnExceededPadding,
         )
+        return if (spacePadding != null) SpacePaddedFormatter(formatter, spacePadding) else formatter
+    }
 
     override fun parser(): ParserStructure<Target> =
         SignedIntParser(
             minDigits = minDigits,
             maxDigits = maxDigits,
+            spacePadding = spacePadding,
             field::setWithoutReassigning,
             field.name,
             plusOnExceedsPad = outputPlusOnExceededPadding,
@@ -188,8 +186,8 @@ internal abstract class DecimalFractionFieldFormatDirective<in Target>(
     private val minDigits: Int?,
     private val maxDigits: Int?,
 ) : FieldFormatDirective<Target> {
-    override fun formatter(): FormatterOperation<Target> =
-        DecimalFractionFormatterOperation(field::getNotNull, minDigits, maxDigits)
+    override fun formatter(): FormatterStructure<Target> =
+        DecimalFractionFormatterStructure(field::getNotNull, minDigits, maxDigits)
 
     override fun parser(): ParserStructure<Target> = ParserStructure(
         listOf(
@@ -207,8 +205,8 @@ internal abstract class ReducedIntFieldDirective<in Target>(
     private val base: Int,
 ) : FieldFormatDirective<Target> {
 
-    override fun formatter(): FormatterOperation<Target> =
-        ReducedIntFormatterOperation(
+    override fun formatter(): FormatterStructure<Target> =
+        ReducedIntFormatterStructure(
             number = field::getNotNull,
             digits = digits,
             base = base,
