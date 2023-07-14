@@ -236,7 +236,7 @@ internal class DayOfWeekDirective(names: List<String>) :
         "${DateFormatBuilder::appendDayOfWeek.name}(${names.repr(String::repr)})"
 }
 
-internal class LocalDateFormat(private val actualFormat: StringFormat<IncompleteLocalDate>) :
+internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer>) :
     AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat) {
     override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
 

@@ -227,7 +227,7 @@ internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null)
     }
 }
 
-internal class LocalTimeFormat(private val actualFormat: StringFormat<TimeFieldContainer>) :
+internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer>) :
     AbstractFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime = value.toIncompleteLocalTime()
 

@@ -23,28 +23,26 @@ internal fun DateTimeFormatBuilder.appendIsoDateTime() {
 internal fun LocalDateTime.toIncompleteLocalDateTime(): IncompleteLocalDateTime =
     IncompleteLocalDateTime(date.toIncompleteLocalDate(), time.toIncompleteLocalTime())
 
-internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer, Copyable<DateTimeFieldContainer> {
-    fun toLocalDateTime(): LocalDateTime
-}
+internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
 
 internal class IncompleteLocalDateTime(
     val date: IncompleteLocalDate = IncompleteLocalDate(),
     val time: IncompleteLocalTime = IncompleteLocalTime(),
-) : DateTimeFieldContainer, DateFieldContainer by date, TimeFieldContainer by time, Copyable<DateTimeFieldContainer> {
-    override fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
+) : DateTimeFieldContainer, DateFieldContainer by date, TimeFieldContainer by time, Copyable<IncompleteLocalDateTime> {
+    fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
 
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
 }
 
-internal class LocalDateTimeFormat(private val actualFormat: StringFormat<DateTimeFieldContainer>) :
-    AbstractFormat<LocalDateTime, DateTimeFieldContainer>(actualFormat) {
-    override fun intermediateFromValue(value: LocalDateTime): DateTimeFieldContainer =
+internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldContainer>) :
+    AbstractFormat<LocalDateTime, IncompleteLocalDateTime>(actualFormat) {
+    override fun intermediateFromValue(value: LocalDateTime): IncompleteLocalDateTime =
         value.toIncompleteLocalDateTime()
 
-    override fun valueFromIntermediate(intermediate: DateTimeFieldContainer): LocalDateTime =
+    override fun valueFromIntermediate(intermediate: IncompleteLocalDateTime): LocalDateTime =
         intermediate.toLocalDateTime()
 
-    override fun newIntermediate(): DateTimeFieldContainer = IncompleteLocalDateTime()
+    override fun newIntermediate(): IncompleteLocalDateTime = IncompleteLocalDateTime()
 
     companion object {
         fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {

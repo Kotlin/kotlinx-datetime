@@ -351,7 +351,7 @@ internal class ValueBagContents internal constructor(
     val offset: IncompleteUtcOffset = IncompleteUtcOffset(),
     var timeZoneId: String? = null,
 ) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
-    Copyable<ValueBagContents> {
+    DateTimeFieldContainer, Copyable<ValueBagContents> {
     override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
 
     override fun equals(other: Any?): Boolean =
