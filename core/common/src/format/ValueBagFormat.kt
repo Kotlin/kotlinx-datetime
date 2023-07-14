@@ -90,10 +90,8 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             appendAlternatives({
                 appendLiteral("GMT")
             }, {
-                withSharedSign(outputPlus = true) {
-                    appendOffsetTotalHours(Padding.ZERO)
-                    appendOffsetMinutesOfHour()
-                }
+                appendOffsetTotalHours(Padding.ZERO)
+                appendOffsetMinutesOfHour()
             })
         }
     }
@@ -411,7 +409,10 @@ private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun appendOffsetTotalHours(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)))
+            actualBuilder.add(SignedFormatStructure(
+                BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
+                withPlusSign = true
+            ))
 
         override fun appendOffsetMinutesOfHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))

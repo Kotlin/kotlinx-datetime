@@ -37,7 +37,10 @@ internal class UtcOffsetFormat(private val actualFormat: StringFormat<UtcOffsetF
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
         override fun appendOffsetTotalHours(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)))
+            actualBuilder.add(SignedFormatStructure(
+                BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
+                withPlusSign = true
+            ))
 
         override fun appendOffsetMinutesOfHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
@@ -64,38 +67,11 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
 ) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun UtcOffsetFormatBuilderFields.appendIsoOffsetWithoutZOnZero() {
-        withSharedSign(outputPlus = true) {
-            appendOffsetTotalHours(Padding.ZERO)
-            when (outputMinute) {
-                WhenToOutput.NEVER -> {}
-                WhenToOutput.IF_NONZERO -> {
-                    appendOptional {
-                        if (useSeparator) {
-                            appendLiteral(':')
-                        }
-                        appendOffsetMinutesOfHour()
-                        when (outputSecond) {
-                            WhenToOutput.NEVER -> {}
-                            WhenToOutput.IF_NONZERO -> {
-                                appendOptional {
-                                    if (useSeparator) {
-                                        appendLiteral(':')
-                                    }
-                                    appendOffsetSecondsOfMinute()
-                                }
-                            }
-
-                            WhenToOutput.ALWAYS -> {
-                                if (useSeparator) {
-                                    appendLiteral(':')
-                                }
-                                appendOffsetSecondsOfMinute()
-                            }
-                        }
-                    }
-                }
-
-                WhenToOutput.ALWAYS -> {
+        appendOffsetTotalHours(Padding.ZERO)
+        when (outputMinute) {
+            WhenToOutput.NEVER -> {}
+            WhenToOutput.IF_NONZERO -> {
+                appendOptional {
                     if (useSeparator) {
                         appendLiteral(':')
                     }
@@ -117,6 +93,31 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
                             }
                             appendOffsetSecondsOfMinute()
                         }
+                    }
+                }
+            }
+
+            WhenToOutput.ALWAYS -> {
+                if (useSeparator) {
+                    appendLiteral(':')
+                }
+                appendOffsetMinutesOfHour()
+                when (outputSecond) {
+                    WhenToOutput.NEVER -> {}
+                    WhenToOutput.IF_NONZERO -> {
+                        appendOptional {
+                            if (useSeparator) {
+                                appendLiteral(':')
+                            }
+                            appendOffsetSecondsOfMinute()
+                        }
+                    }
+
+                    WhenToOutput.ALWAYS -> {
+                        if (useSeparator) {
+                            appendLiteral(':')
+                        }
+                        appendOffsetSecondsOfMinute()
                     }
                 }
             }

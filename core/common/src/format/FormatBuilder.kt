@@ -59,12 +59,6 @@ public fun <T: FormatBuilder> T.appendAlternatives(vararg blocks: T.() -> Unit):
     else -> TODO()
 }
 
-@Suppress("UNCHECKED_CAST")
-public fun <T: FormatBuilder> T.withSharedSign(outputPlus: Boolean, block: T.() -> Unit): Unit = when (this) {
-    is AbstractFormatBuilder<*, *> -> withSharedSignImpl(outputPlus, block as AbstractFormatBuilder<*, *>.() -> Unit)
-    else -> TODO()
-}
-
 /**
  * Appends an optional section to the format.
  *

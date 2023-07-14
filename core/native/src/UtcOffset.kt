@@ -118,9 +118,7 @@ private val lenientFormat = UtcOffsetFormat.build {
         )
     }, {
         appendAlternatives({
-            withSharedSign(outputPlus = true) {
-                appendOffsetTotalHours(Padding.NONE)
-            }
+            appendOffsetTotalHours(Padding.NONE)
         }, {
             appendIsoOffset(
                 zOnZero = false,
