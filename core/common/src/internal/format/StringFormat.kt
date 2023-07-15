@@ -36,11 +36,18 @@ internal class SignedFormatStructure<in T>(
     override fun toString(): String = "SignedFormatStructure($format)"
 }
 
-internal class AlternativesFormatStructure<in T>(
-    val formats: List<ConcatenatedFormatStructure<T>>
+internal class AlternativesParsingFormatStructure<in T>(
+    val mainFormat: FormatStructure<T>,
+    val formats: List<FormatStructure<T>>,
 ) : NonConcatenatedFormatStructure<T> {
+    override fun toString(): String = "AlternativesParsing($formats)"
+}
 
-    override fun toString(): String = "AlternativesFormatStructure(${formats.joinToString(", ")})"
+internal class OptionalFormatStructure<in T>(
+    val onZero: String,
+    val format: FormatStructure<T>,
+) : NonConcatenatedFormatStructure<T> {
+    override fun toString(): String = "Optional($onZero, $format)"
 }
 
 internal sealed interface NonConcatenatedFormatStructure<in T> : FormatStructure<T>
@@ -75,55 +82,30 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
             ) to fieldSpecs
         }
 
-        is AlternativesFormatStructure -> {
-            val fieldSets = mutableListOf<Set<FieldSpec<T, *>>>()
-            val result = mutableListOf<Pair<T.() -> Boolean, FormatterStructure<T>>>()
-            for (i in formats.indices.reversed()) {
-                val (formatter, fields) = formats[i].rec()
-                require(fieldSets.lastOrNull()?.containsAll(fields) != false) {
-                    "The only formatters that include the OR operator are of the form (A|B) " +
-                        "where B contains all fields of A, but $fields is not included in ${fieldSets.lastOrNull()}. " +
-                        "If your use case requires other usages of the OR operator for formatting, please contact us at " +
-                        "https://github.com/Kotlin/kotlinx-datetime/issues"
-                }
-                while (true) {
-                    if (result.size == 0) {
-                        fieldSets.add(fields)
-                        result.add(ConjunctionPredicate<T>(listOf())::test to formatter)
-                        break
-                    } else {
-                        val fieldsToCheck = fieldSets.lastOrNull()?.minus(fields) ?: emptySet()
-                        if (fieldsToCheck.isEmpty()) {
-                            fieldSets.removeLast()
-                            result.removeLast()
-                        } else {
-                            val predicate = ConjunctionPredicate(fieldsToCheck.map {
-                                it.toComparisonPredicate() ?: throw IllegalArgumentException(
-                                    "The only formatters that include the OR operator are of the form (A|B) " +
-                                        "where B contains all fields of A and some other fields that have a default value. " +
-                                        "However, the field ${it.name} does not have a default value. " +
-                                        "If your use case requires other usages of the OR operator for formatting, please contact us at " +
-                                        "https://github.com/Kotlin/kotlinx-datetime/issues"
-                                )
-                            })
-                            fieldSets.add(fields)
-                            result.add(predicate::test to formatter)
-                            break
-                        }
-                    }
-                }
-            }
-            if (result.size == 1) {
-                result.single().second
-            } else {
-                result.reverse()
-                ConditionalFormatter(result)
-            } to fieldSets.flatten().toSet()
+        is AlternativesParsingFormatStructure -> mainFormat.rec()
+        is OptionalFormatStructure -> {
+            val (formatter, fields) = format.rec()
+            val predicate = ConjunctionPredicate(fields.map {
+                it.toComparisonPredicate() ?: throw IllegalArgumentException(
+                    "The field '${it.name}' does not define a default value, and only fields that define a default value can" +
+                        "be used in an 'optional' format."
+                )
+            })
+            ConditionalFormatter(
+                listOf(
+                    predicate::test to ConstantStringFormatterStructure(onZero),
+                    ConjunctionPredicate<T>(emptyList())::test to formatter
+                )
+            ) to fields
         }
 
         is ConcatenatedFormatStructure -> {
             val (formatters, fields) = formats.map { it.rec() }.unzip()
-            if (formatters.size == 1) { formatters.single() } else { ConcatenatedFormatter(formatters) } to
+            if (formatters.size == 1) {
+                formatters.single()
+            } else {
+                ConcatenatedFormatter(formatters)
+            } to
                 fields.flatten().toSet()
         }
     }
@@ -138,27 +120,48 @@ internal fun <T, E> FieldSpec<T, E>.toComparisonPredicate(): ComparisonPredicate
 private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
     is ConstantFormatStructure ->
         ParserStructure(operations = listOf(PlainStringParserOperation(string)), followedBy = emptyList())
+
     is SignedFormatStructure -> {
-        listOf(ParserStructure(
-            operations = listOf(SignParser(
-                isNegativeSetter = { value, isNegative ->
-                    for (field in fieldSigns) {
-                        val wasNegative = field.isNegative.get(value) == true
-                        // TODO: replacing `!=` with `xor` fails on JS
-                        field.isNegative.set(value, isNegative != wasNegative)
-                    }
-                },
-                withPlusSign = withPlusSign,
-                whatThisExpects = "sign for ${this.fieldSigns}"
-            )),
-            emptyList()
-        ), format.parser()
+        listOf(
+            ParserStructure(
+                operations = listOf(
+                    SignParser(
+                        isNegativeSetter = { value, isNegative ->
+                            for (field in fieldSigns) {
+                                val wasNegative = field.isNegative.get(value) == true
+                                // TODO: replacing `!=` with `xor` fails on JS
+                                field.isNegative.set(value, isNegative != wasNegative)
+                            }
+                        },
+                        withPlusSign = withPlusSign,
+                        whatThisExpects = "sign for ${this.fieldSigns}"
+                    )
+                ),
+                emptyList()
+            ), format.parser()
         ).concat()
     }
+
     is BasicFormatStructure -> directive.parser()
-    is AlternativesFormatStructure ->
-        ParserStructure(operations = emptyList(), followedBy = formats.map { it.parser() })
+
     is ConcatenatedFormatStructure -> formats.map { it.parser() }.concat()
+    is AlternativesParsingFormatStructure -> {
+        ParserStructure(operations = emptyList(), followedBy = buildList {
+            add(mainFormat.parser())
+            for (format in formats) {
+                add(format.parser())
+            }
+        })
+    }
+
+    is OptionalFormatStructure -> ParserStructure(
+        operations = emptyList(),
+        followedBy = if (onZero.isNotEmpty()) {
+            listOf(format.parser(), ConstantFormatStructure<T>(onZero).parser())
+        } else {
+            listOf(format.parser(), ParserStructure(operations = emptyList(), followedBy = emptyList()))
+        }
+    )
 }
 
 internal class StringFormat<in T>(internal val directives: ConcatenatedFormatStructure<T>) {
@@ -172,10 +175,19 @@ internal class StringFormat<in T>(internal val directives: ConcatenatedFormatStr
     override fun toString(): String = directives.toString()
 }
 
-private fun <T> basicFormats(format: FormatStructure<T>): List<FieldFormatDirective<T>> = when (format) {
-    is BasicFormatStructure -> listOf(format.directive)
-    is ConcatenatedFormatStructure -> format.formats.flatMap { basicFormats(it) }
-    is AlternativesFormatStructure -> format.formats.flatMap { basicFormats(it) }
-    is ConstantFormatStructure -> emptyList()
-    is SignedFormatStructure -> basicFormats(format.format)
+private fun <T> basicFormats(format: FormatStructure<T>): List<FieldFormatDirective<T>> = buildList {
+    fun rec(format: FormatStructure<T>) {
+        when (format) {
+            is BasicFormatStructure -> add(format.directive)
+            is ConcatenatedFormatStructure -> format.formats.forEach { rec(it) }
+            is ConstantFormatStructure -> {}
+            is SignedFormatStructure -> rec(format.format)
+            is AlternativesParsingFormatStructure -> {
+                rec(format.mainFormat); format.formats.forEach { rec(it) }
+            }
+
+            is OptionalFormatStructure -> rec(format.format)
+        }
+    }
+    rec(format)
 }

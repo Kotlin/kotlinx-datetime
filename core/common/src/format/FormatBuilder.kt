@@ -7,8 +7,6 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.AlternativesFormatStructure
-import kotlin.native.concurrent.*
 
 @DslMarker
 public annotation class DateTimeBuilder
@@ -27,36 +25,22 @@ public sealed interface FormatBuilder {
 }
 
 /**
- * Appends a set of alternative blocks to the format.
+ * Appends a format along with other ways to parse the same portion of the value.
  *
- * When parsing, the blocks are tried in order until one of them succeeds.
+ * When parsing, the first, [mainFormat] is used to parse the value, and if parsing fails using that, the formats
+ * from [otherFormats] are tried in order.
  *
- * When formatting, there is a requirement that the later blocks contain all the fields that are present in the
- * earlier blocks. Moreover, the additional fields must have a *default value* defined for them.
- * Then, during formatting, the block that has the most information is chosen.
- *
- * Example:
- * ```
- * appendAlternatives({
- *   appendLiteral("Z")
- * }, {
- *   appendOffsetHours()
- *   appendOptional {
- *     appendLiteral(":")
- *     appendOffsetMinutes()
- *     appendOptional {
- *       appendLiteral(":")
- *       appendOffsetSeconds()
- *     }
- *   }
- * })
- * ```
- * Here, all values have the default value of zero, so the first block is chosen when formatting `UtcOffset.ZERO`.
+ * When formatting, the [mainFormat] is used to format the value.
  */
 @Suppress("UNCHECKED_CAST")
-public fun <T: FormatBuilder> T.appendAlternatives(vararg blocks: T.() -> Unit): Unit = when (this) {
-    is AbstractFormatBuilder<*, *> -> appendAlternativesImpl(*blocks as Array<out AbstractFormatBuilder<*, *>.() -> Unit>)
-    else -> TODO()
+public fun <T: FormatBuilder> T.alternativeParsing(
+    vararg otherFormats: T.() -> Unit,
+    mainFormat: T.() -> Unit
+): Unit = when (this) {
+    is AbstractFormatBuilder<*, *> ->
+        appendAlternativeParsingImpl(*otherFormats as Array<out AbstractFormatBuilder<*, *>.() -> Unit>,
+            mainFormat = mainFormat as (AbstractFormatBuilder<*, *>.() -> Unit))
+    else -> throw IllegalStateException("impossible")
 }
 
 /**
@@ -80,10 +64,13 @@ public fun <T: FormatBuilder> T.appendAlternatives(vararg blocks: T.() -> Unit):
  *
  * Here, because seconds have the default value of zero, they are formatted only if they are not equal to zero.
  *
- * This is a shorthand for `appendAlternatives({}, block)`.
+ * [onZero] defines the string that is used if values are the default ones.
  */
-public fun <T: FormatBuilder> T.appendOptional(block: T.() -> Unit): Unit =
-    appendAlternatives({}, block)
+@Suppress("UNCHECKED_CAST")
+public fun <T: FormatBuilder> T.appendOptional(onZero: String = "", block: T.() -> Unit): Unit = when (this) {
+    is AbstractFormatBuilder<*, *> -> appendOptionalImpl(onZero = onZero, block as (AbstractFormatBuilder<*, *>.() -> Unit))
+    else -> throw IllegalStateException("impossible")
+}
 
 /**
  * Appends a literal character to the format.
@@ -98,10 +85,22 @@ internal interface AbstractFormatBuilder<Target, ActualSelf> :
     val actualBuilder: AppendableFormatStructure<Target>
     fun createEmpty(): ActualSelf
 
-    fun appendAlternativesImpl(vararg blocks: ActualSelf.() -> Unit) {
-        actualBuilder.add(AlternativesFormatStructure(blocks.map { block ->
+    fun appendAlternativeParsingImpl(
+        vararg otherFormats: ActualSelf.() -> Unit,
+        mainFormat: ActualSelf.() -> Unit
+    ) {
+        val others = otherFormats.map { block ->
             createEmpty().also { block(it) }.actualBuilder.build()
-        }))
+        }
+        val main = createEmpty().also { mainFormat(it) }.actualBuilder.build()
+        actualBuilder.add(AlternativesParsingFormatStructure(main, others))
+    }
+
+    fun appendOptionalImpl(
+        onZero: String,
+        format: ActualSelf.() -> Unit
+    ) {
+        actualBuilder.add(OptionalFormatStructure(onZero, createEmpty().also { format(it) }.actualBuilder.build()))
     }
 
     override fun appendLiteral(string: String) = actualBuilder.add(ConstantFormatStructure(string))
@@ -133,12 +132,16 @@ private fun<T> FormatStructure<T>.builderString(): String = when (this) {
         appendLine(format.builderString().prependIndent(CODE_INDENT))
         append("}")
     }
-    is AlternativesFormatStructure -> buildString {
-        if (formats.size == 2 && formats.first().formats.isEmpty()) {
+    is OptionalFormatStructure -> buildString {
+        if (onZero == "") {
             appendLine("appendOptional {")
-            appendLine(formats[1].builderString().prependIndent(CODE_INDENT))
-            append("}")
+        } else {
+            appendLine("appendOptional(${onZero.repr()}) {")
         }
+        appendLine(format.builderString().prependIndent(CODE_INDENT))
+        append("}")
+    }
+    is AlternativesParsingFormatStructure -> buildString {
         append("appendAlternatives(")
         for (alternative in formats) {
             appendLine("{")
@@ -150,7 +153,9 @@ private fun<T> FormatStructure<T>.builderString(): String = when (this) {
                 deleteAt(length - 1)
             }
         }
-        append(")")
+        appendLine(") {")
+        appendLine(mainFormat.builderString().prependIndent(CODE_INDENT))
+        append("}")
     }
     is ConcatenatedFormatStructure -> buildString {
         for (format in formats) {

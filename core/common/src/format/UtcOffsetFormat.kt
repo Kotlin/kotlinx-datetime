@@ -124,13 +124,13 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
         }
     }
     if (zOnZero) {
-        appendAlternatives({
-            appendLiteral('Z')
-        }, {
-            appendLiteral('z')
-        }, {
-            appendIsoOffsetWithoutZOnZero()
-        })
+        appendOptional("Z") {
+            alternativeParsing({
+                appendLiteral('z')
+            }) {
+                appendIsoOffsetWithoutZOnZero()
+            }
+        }
     } else {
         appendIsoOffsetWithoutZOnZero()
     }

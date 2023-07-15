@@ -50,11 +50,11 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          */
         public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = Format {
             appendIsoDate()
-            appendAlternatives({
-                appendLiteral('T')
-            }, {
+            alternativeParsing({
                 appendLiteral('t')
-            })
+            }) {
+                appendLiteral('T')
+            }
             appendHour()
             appendLiteral(':')
             appendMinute()
@@ -87,12 +87,10 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             appendLiteral(':')
             appendSecond()
             appendLiteral(" ")
-            appendAlternatives({
-                appendLiteral("GMT")
-            }, {
+            appendOptional("GMT") {
                 appendOffsetTotalHours(Padding.ZERO)
                 appendOffsetMinutesOfHour()
-            })
+            }
         }
     }
 
@@ -409,10 +407,12 @@ private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun appendOffsetTotalHours(padding: Padding) =
-            actualBuilder.add(SignedFormatStructure(
-                BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
-                withPlusSign = true
-            ))
+            actualBuilder.add(
+                SignedFormatStructure(
+                    BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
+                    withPlusSign = true
+                )
+            )
 
         override fun appendOffsetMinutesOfHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))

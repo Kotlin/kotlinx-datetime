@@ -109,23 +109,24 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
 
 @SharedImmutable
 private val lenientFormat = UtcOffsetFormat.build {
-    appendAlternatives({
-        appendIsoOffset(
-            zOnZero = true,
-            useSeparator = true,
-            outputMinute = WhenToOutput.ALWAYS,
-            outputSecond = WhenToOutput.IF_NONZERO
-        )
-    }, {
-        appendAlternatives({
+    alternativeParsing(
+        {
             appendOffsetTotalHours(Padding.NONE)
-        }, {
+        },
+        {
             appendIsoOffset(
                 zOnZero = false,
                 useSeparator = false,
                 outputMinute = WhenToOutput.IF_NONZERO,
                 outputSecond = WhenToOutput.IF_NONZERO
             )
-        })
-    })
+        }
+    ) {
+        appendIsoOffset(
+            zOnZero = true,
+            useSeparator = true,
+            outputMinute = WhenToOutput.ALWAYS,
+            outputSecond = WhenToOutput.IF_NONZERO
+        )
+    }
 }

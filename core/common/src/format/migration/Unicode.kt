@@ -22,7 +22,7 @@ import kotlin.native.concurrent.*
  * * `[]` denote optional sections. For example, `hh:mm[:ss]` will allow parsing seconds optionally.
  *   This is similar to what is supported by the Java Time's `DateTimeFormatter` class, but with the difference that,
  *   for formatting, the optional sections have a different meaning: they are not included in the output if all the
- *   fields they contain have their default values. See [FormatBuilder.appendAlternatives] for more details.
+ *   fields they contain have their default values. See [FormatBuilder.appendOptional] for more details.
  * * One or more `p` characters before a field specifies that the field should be padded with zeroes to the length
  *   equal to the number of `p` characters. This is also supported by the Java Time's `DateTimeFormatter` class.
  *

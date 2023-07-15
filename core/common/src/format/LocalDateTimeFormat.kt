@@ -12,11 +12,11 @@ public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBui
 
 internal fun DateTimeFormatBuilder.appendIsoDateTime() {
     appendIsoDate()
-    appendAlternatives({
-        appendLiteral('T')
-    }, {
+    alternativeParsing({
         appendLiteral('t')
-    })
+    }) {
+        appendLiteral('T')
+    }
     appendIsoTime()
 }
 
