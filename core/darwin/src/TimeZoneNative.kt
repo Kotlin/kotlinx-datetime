@@ -110,6 +110,7 @@ internal actual class RegionTimeZone(private val value: NSTimeZone, actual overr
             }
     }
 
+    @OptIn(kotlinx.cinterop.UnsafeNumber::class)
     actual override fun atStartOfDay(date: LocalDate): Instant {
         val ldt = LocalDateTime(date, LocalTime.MIN)
         val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
@@ -132,6 +133,7 @@ internal actual class RegionTimeZone(private val value: NSTimeZone, actual overr
         return Instant(midnight.timeIntervalSince1970.toLong(), 0)
     }
 
+    @OptIn(kotlinx.cinterop.UnsafeNumber::class)
     actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
         val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
         var offset = preferred?.totalSeconds ?: Int.MAX_VALUE
@@ -158,6 +160,7 @@ internal actual class RegionTimeZone(private val value: NSTimeZone, actual overr
         return ZonedDateTime(correctedDateTime, this@RegionTimeZone, UtcOffset.ofSeconds(offset))
     }
 
+    @OptIn(kotlinx.cinterop.UnsafeNumber::class)
     actual override fun offsetAtImpl(instant: Instant): UtcOffset {
         val date = dateWithTimeIntervalSince1970Saturating(instant.epochSeconds)
         return UtcOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt())

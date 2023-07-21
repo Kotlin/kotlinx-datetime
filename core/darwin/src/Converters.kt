@@ -62,7 +62,7 @@ public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date are set.
  */
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.UnsafeNumber::class)
 public fun LocalDate.toNSDateComponents(): NSDateComponents {
     val components = NSDateComponents()
     components.year = year.convert()
@@ -76,7 +76,7 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
  */
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.UnsafeNumber::class)
 public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
     val components = date.toNSDateComponents()
     components.hour = hour.convert()
