@@ -236,7 +236,7 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
     }
 }
 
-private class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
+internal class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     AbstractFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
     override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset = value.toIncompleteUtcOffset()
 

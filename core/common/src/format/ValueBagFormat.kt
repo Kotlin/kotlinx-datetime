@@ -368,7 +368,7 @@ internal class TimeZoneIdDirective(knownZones: Set<String>) :
     override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
 }
 
-private class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
+internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
     AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
     override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
 
