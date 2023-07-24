@@ -58,6 +58,7 @@ public enum class Padding {
 internal inline fun Padding.minDigits(width: Int) = if (this == Padding.ZERO) width else 1
 internal inline fun Padding.spaces(width: Int) = if (this == Padding.SPACE) width else null
 
+/** [T] is the user-visible type, whereas [U] is its mutable representation for parsing and formatting. */
 internal sealed class AbstractFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): Format<T> {
 
     abstract fun intermediateFromValue(value: T): U

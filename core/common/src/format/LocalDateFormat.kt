@@ -214,7 +214,7 @@ internal class MonthDirective(padding: Padding) :
 internal class MonthNameDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names) {
     override val builderRepresentation: String =
-        "${DateFormatBuilder::appendMonthName.name}(${names.repr(String::repr)})"
+        "${DateFormatBuilder::appendMonthName.name}(${names.toKotlinCode(String::toKotlinCode)})"
 }
 
 internal class DayDirective(padding: Padding) :
@@ -233,7 +233,7 @@ internal class DayOfWeekDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names) {
 
     override val builderRepresentation: String =
-        "${DateFormatBuilder::appendDayOfWeek.name}(${names.repr(String::repr)})"
+        "${DateFormatBuilder::appendDayOfWeek.name}(${names.toKotlinCode(String::toKotlinCode)})"
 }
 
 internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer>) :

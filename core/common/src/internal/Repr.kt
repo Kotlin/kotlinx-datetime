@@ -5,9 +5,9 @@
 
 package kotlinx.datetime.internal
 
-internal fun String.repr(): String = buildString {
+internal fun String.toKotlinCode(): String = buildString {
     append('"')
-    for (c in this@repr) {
+    for (c in this@toKotlinCode) {
         when (c) {
             '"' -> append("\\\"")
             '\\' -> append("\\\\")
@@ -21,10 +21,10 @@ internal fun String.repr(): String = buildString {
     append('"')
 }
 
-internal fun Char.repr(): String = when (this) {
+internal fun Char.toKotlinCode(): String = when (this) {
     '\'' -> "'\\''"
     else -> "'$this'"
 }
 
-internal fun<T> List<T>.repr(elementRepr: T.() -> String): String =
+internal fun<T> List<T>.toKotlinCode(elementRepr: T.() -> String): String =
     joinToString(", ", "listOf(", ")") { it.elementRepr() }

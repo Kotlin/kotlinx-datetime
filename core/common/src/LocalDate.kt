@@ -116,9 +116,6 @@ public expect class LocalDate : Comparable<LocalDate> {
     public override fun toString(): String
 }
 
-public fun LocalDate.Format.build(block: DateFormatBuilder.() -> Unit): Format<LocalDate> =
-    LocalDateFormat.build(block)
-
 public operator fun LocalDate.Format.invoke(block: DateFormatBuilder.() -> Unit): Format<LocalDate> =
     LocalDateFormat.build(block)
 

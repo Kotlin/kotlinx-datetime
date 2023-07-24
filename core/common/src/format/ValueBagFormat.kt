@@ -24,7 +24,7 @@ import kotlin.reflect.*
  * Make sure to apply proper synchronization if you are using a single instance from multiple threads.
  */
 public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
-    public companion object;
+    public companion object {}
 
     public object Format {
         /**

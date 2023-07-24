@@ -125,7 +125,7 @@ internal inline fun<T> StringFormat<T>.builderString(): String = directives.buil
 
 private fun<T> FormatStructure<T>.builderString(): String = when (this) {
     is BasicFormatStructure -> directive.builderRepresentation
-    is ConstantFormatStructure -> "appendLiteral(${string.repr()})"
+    is ConstantFormatStructure -> "appendLiteral(${string.toKotlinCode()})"
     is SignedFormatStructure -> buildString {
         if (withPlusSign) appendLine("withSharedSign(outputPlus = true) {")
         else appendLine("withSharedSign {")
@@ -136,7 +136,7 @@ private fun<T> FormatStructure<T>.builderString(): String = when (this) {
         if (onZero == "") {
             appendLine("appendOptional {")
         } else {
-            appendLine("appendOptional(${onZero.repr()}) {")
+            appendLine("appendOptional(${onZero.toKotlinCode()}) {")
         }
         appendLine(format.builderString().prependIndent(CODE_INDENT))
         append("}")
