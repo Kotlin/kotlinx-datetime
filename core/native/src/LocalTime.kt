@@ -33,7 +33,7 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = parse(isoString, LocalTimeFormat.ISO)
+        public actual fun parse(isoString: String): LocalTime = parse(isoString, Format.ISO)
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
@@ -120,7 +120,7 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    actual override fun toString(): String = format(LocalTimeFormat.ISO)
+    actual override fun toString(): String = format(Format.ISO)
 
     override fun equals(other: Any?): Boolean =
         other is LocalTime && this.compareTo(other) == 0

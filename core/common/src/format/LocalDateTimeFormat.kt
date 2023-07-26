@@ -7,6 +7,7 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
+import kotlin.native.concurrent.*
 
 public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields
 
@@ -91,4 +92,29 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
     }
 
     override fun toString(): String = actualFormat.builderString()
+}
+
+// these are constants so that the formats are not recreated every time they are used
+@SharedImmutable
+internal val ISO_DATETIME by lazy {
+    LocalDateTimeFormat.build {
+        appendIsoDate()
+        alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
+        appendIsoTime()
+    }
+}
+@SharedImmutable
+internal val ISO_DATETIME_BASIC by lazy {
+    LocalDateTimeFormat.build {
+        appendYear(); appendMonthNumber(); appendDayOfMonth()
+        alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
+        appendHour(); appendMinute()
+        appendOptional {
+            appendSecond()
+            appendOptional {
+                appendLiteral('.')
+                appendSecondFraction()
+            }
+        }
+    }
 }

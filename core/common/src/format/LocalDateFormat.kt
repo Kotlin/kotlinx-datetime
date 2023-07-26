@@ -8,8 +8,9 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlin.native.concurrent.*
 
-public sealed interface DateFormatBuilder: FormatBuilder {
+public sealed interface DateFormatBuilder : FormatBuilder {
     public fun appendYear(padding: Padding = Padding.ZERO)
     public fun appendYearTwoDigits(base: Int)
     public fun appendMonthNumber(padding: Padding = Padding.ZERO)
@@ -250,8 +251,6 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
             builder.block()
             return LocalDateFormat(builder.build())
         }
-
-        val ISO: Format<LocalDate> = build { appendIsoDate() }
     }
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
@@ -276,4 +275,14 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
     }
 
     override fun toString(): String = actualFormat.builderString()
+}
+
+// these are constants so that the formats are not recreated every time they are used
+@SharedImmutable
+internal val ISO_DATE by lazy {
+    LocalDateFormat.build { appendYear(); appendLiteral('-'); appendMonthNumber(); appendLiteral('-'); appendDayOfMonth() }
+}
+@SharedImmutable
+internal val ISO_DATE_BASIC by lazy {
+    LocalDateFormat.build { appendYear(); appendMonthNumber(); appendDayOfMonth() }
 }

@@ -174,6 +174,40 @@ class DateFormatTest {
         test(dates, format)
     }
 
+    @Test
+    fun testIso() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(2008, 7, 5), ("2008-07-05" to setOf()))
+            put(LocalDate(2007, 12, 31), ("2007-12-31" to setOf()))
+            put(LocalDate(999, 11, 30), ("0999-11-30" to setOf()))
+            put(LocalDate(-1, 1, 2), ("-0001-01-02" to setOf()))
+            put(LocalDate(9999, 10, 31), ("9999-10-31" to setOf()))
+            put(LocalDate(-9999, 9, 30), ("-9999-09-30" to setOf()))
+            put(LocalDate(10000, 8, 1), ("+10000-08-01" to setOf()))
+            put(LocalDate(-10000, 7, 1), ("-10000-07-01" to setOf()))
+            put(LocalDate(123456, 6, 1), ("+123456-06-01" to setOf()))
+            put(LocalDate(-123456, 5, 1), ("-123456-05-01" to setOf()))
+        }
+        test(dates, LocalDate.Format.ISO)
+    }
+
+    @Test
+    fun testBasicIso() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(2008, 7, 5), ("20080705" to setOf()))
+            put(LocalDate(2007, 12, 31), ("20071231" to setOf()))
+            put(LocalDate(999, 11, 30), ("09991130" to setOf()))
+            put(LocalDate(-1, 1, 2), ("-00010102" to setOf()))
+            put(LocalDate(9999, 10, 31), ("99991031" to setOf()))
+            put(LocalDate(-9999, 9, 30), ("-99990930" to setOf()))
+            put(LocalDate(10000, 8, 1), ("+100000801" to setOf()))
+            put(LocalDate(-10000, 7, 1), ("-100000701" to setOf()))
+            put(LocalDate(123456, 6, 1), ("+1234560601" to setOf()))
+            put(LocalDate(-123456, 5, 1), ("-1234560501" to setOf()))
+        }
+        test(dates, LocalDate.Format.ISO_BASIC)
+    }
+
     private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: Format<LocalDate>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

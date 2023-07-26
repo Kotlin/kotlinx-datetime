@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.LocalTimeFormat.Companion.build
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -102,10 +103,13 @@ public expect class LocalTime : Comparable<LocalTime> {
 
     /** Returns the hour-of-day time component of this time value. */
     public val hour: Int
+
     /** Returns the minute-of-hour time component of this time value. */
     public val minute: Int
+
     /** Returns the second-of-minute time component of this time value. */
     public val second: Int
+
     /** Returns the nanosecond-of-second time component of this time value. */
     public val nanosecond: Int
 
@@ -142,12 +146,18 @@ public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() 
     LocalTimeFormat.build(builder)
 
 /**
- * ISO-8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
+ * ISO 8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
  *
  * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
  */
-public val LocalTime.Format.ISO: Format<LocalTime> get() =
-    LocalTimeFormat.ISO
+public val LocalTime.Format.ISO: Format<LocalTime> get() = ISO_TIME
+
+/**
+ * ISO 8601 basic format.
+ *
+ * Examples: `T1234`, `T123456`, `T123456.789`.
+ */
+public val LocalTime.Format.ISO_BASIC: Format<LocalTime> get() = ISO_TIME_BASIC
 
 public fun LocalTime.format(format: Format<LocalTime>): String = format.format(this)
 

@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.LocalDateFormat.Companion.build
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -80,14 +81,19 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     /** Returns the year component of the date. */
     public val year: Int
+
     /** Returns the number-of-month (1..12) component of the date. */
     public val monthNumber: Int
+
     /** Returns the month ([Month]) component of the date. */
     public val month: Month
+
     /** Returns the day-of-month component of the date. */
     public val dayOfMonth: Int
+
     /** Returns the day-of-week component of the date. */
     public val dayOfWeek: DayOfWeek
+
     /** Returns the day-of-year component of the date. */
     public val dayOfYear: Int
 
@@ -119,8 +125,27 @@ public expect class LocalDate : Comparable<LocalDate> {
 public operator fun LocalDate.Format.invoke(block: DateFormatBuilder.() -> Unit): Format<LocalDate> =
     LocalDateFormat.build(block)
 
-public val LocalDate.Format.ISO: Format<LocalDate> get() =
-    LocalDateFormat.ISO
+/**
+ * ISO 8601 extended format, which is the format used by [LocalDate.toString] and [LocalDate.parse].
+ *
+ * Examples of dates in ISO 8601 format:
+ * - `2020-08-30`
+ * - `+12020-08-30`
+ * - `0000-08-30`
+ * - `-0001-08-30`
+ */
+public val LocalDate.Format.ISO: Format<LocalDate> get() = ISO_DATE
+
+/**
+ * ISO 8601 basic format.
+ *
+ * Examples of dates in ISO 8601 basic format:
+ * - `20200830`
+ * - `+120200830`
+ * - `00000830`
+ * - `-00010830`
+ */
+public val LocalDate.Format.ISO_BASIC: Format<LocalDate> get() = ISO_DATE_BASIC
 
 public fun LocalDate.format(format: Format<LocalDate>): String = format.format(this)
 
@@ -175,9 +200,8 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
     if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
         plus(with(period) { DatePeriod(-years, -months, -days) })
     } else {
-        minus(period.years, DateTimeUnit.YEAR).
-        minus(period.months, DateTimeUnit.MONTH).
-        minus(period.days, DateTimeUnit.DAY)
+        minus(period.years, DateTimeUnit.YEAR).minus(period.months, DateTimeUnit.MONTH)
+            .minus(period.days, DateTimeUnit.DAY)
     }
 
 /**

@@ -189,6 +189,76 @@ class DateTimeFormatTest {
         }
     }
 
+    @Test
+    fun testIso() {
+        val dateTimes = buildMap<LocalDateTime, Pair<String, Set<String>>> {
+            put(LocalDateTime(2008, 7, 5, 0, 0, 0, 0), ("2008-07-05T00:00" to setOf("2008-07-05T00:00:00")))
+            put(LocalDateTime(2007, 12, 31, 1, 0, 0, 0), ("2007-12-31T01:00" to setOf("2007-12-31t01:00")))
+            put(LocalDateTime(999, 11, 30, 23, 0, 0, 0), ("0999-11-30T23:00" to setOf()))
+            put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-0001-01-02T00:01" to setOf()))
+            put(LocalDateTime(9999, 10, 31, 12, 30, 0, 0), ("9999-10-31T12:30" to setOf()))
+            put(LocalDateTime(-9999, 9, 30, 23, 59, 0, 0), ("-9999-09-30T23:59" to setOf()))
+            put(LocalDateTime(10000, 8, 1, 0, 0, 1, 0), ("+10000-08-01T00:00:01" to setOf()))
+            put(LocalDateTime(-10000, 7, 1, 0, 0, 59, 0), ("-10000-07-01T00:00:59" to setOf()))
+            put(LocalDateTime(123456, 6, 1, 13, 44, 0, 0), ("+123456-06-01T13:44" to setOf()))
+            put(LocalDateTime(-123456, 5, 1, 13, 44, 0, 0), ("-123456-05-01T13:44" to setOf()))
+            put(LocalDateTime(123456, 6, 1, 0, 0, 0, 100000000), ("+123456-06-01T00:00:00.100" to setOf("+123456-06-01T00:00:00.10", "+123456-06-01T00:00:00.1")))
+            put(LocalDateTime(-123456, 5, 1, 0, 0, 0, 10000000), ("-123456-05-01T00:00:00.010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1000000), ("2022-01-02T00:00:00.001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 100000), ("2022-01-02T00:00:00.000100" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 10000), ("2022-01-02T00:00:00.000010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1000), ("2022-01-02T00:00:00.000001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 100), ("2022-01-02T00:00:00.000000100" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 10), ("2022-01-02T00:00:00.000000010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1), ("2022-01-02T00:00:00.000000001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999999999), ("2022-01-02T00:00:00.999999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99999999), ("2022-01-02T00:00:00.099999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9999999), ("2022-01-02T00:00:00.009999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999999), ("2022-01-02T00:00:00.000999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99999), ("2022-01-02T00:00:00.000099999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9999), ("2022-01-02T00:00:00.000009999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999), ("2022-01-02T00:00:00.000000999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99), ("2022-01-02T00:00:00.000000099" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9), ("2022-01-02T00:00:00.000000009" to setOf()))
+        }
+        test(dateTimes, LocalDateTime.Format.ISO)
+    }
+
+    @Test
+    fun testBasicIso() {
+        val dateTimes = buildMap<LocalDateTime, Pair<String, Set<String>>> {
+            put(LocalDateTime(2008, 7, 5, 0, 0, 0, 0), ("20080705T0000" to setOf("20080705T000000")))
+            put(LocalDateTime(2007, 12, 31, 1, 0, 0, 0), ("20071231T0100" to setOf("20071231t0100")))
+            put(LocalDateTime(999, 11, 30, 23, 0, 0, 0), ("09991130T2300" to setOf()))
+            put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-00010102T0001" to setOf()))
+            put(LocalDateTime(9999, 10, 31, 12, 30, 0, 0), ("99991031T1230" to setOf()))
+            put(LocalDateTime(-9999, 9, 30, 23, 59, 0, 0), ("-99990930T2359" to setOf()))
+            put(LocalDateTime(10000, 8, 1, 0, 0, 1, 0), ("+100000801T000001" to setOf()))
+            put(LocalDateTime(-10000, 7, 1, 0, 0, 59, 0), ("-100000701T000059" to setOf()))
+            put(LocalDateTime(123456, 6, 1, 13, 44, 0, 0), ("+1234560601T1344" to setOf()))
+            put(LocalDateTime(-123456, 5, 1, 13, 44, 0, 0), ("-1234560501T1344" to setOf()))
+            put(LocalDateTime(123456, 6, 1, 0, 0, 0, 100000000), ("+1234560601T000000.100" to setOf("+1234560601T000000.10", "+1234560601T000000.1")))
+            put(LocalDateTime(-123456, 5, 1, 0, 0, 0, 10000000), ("-1234560501T000000.010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1000000), ("20220102T000000.001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 100000), ("20220102T000000.000100" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 10000), ("20220102T000000.000010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1000), ("20220102T000000.000001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 100), ("20220102T000000.000000100" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 10), ("20220102T000000.000000010" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 1), ("20220102T000000.000000001" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999999999), ("20220102T000000.999999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99999999), ("20220102T000000.099999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9999999), ("20220102T000000.009999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999999), ("20220102T000000.000999999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99999), ("20220102T000000.000099999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9999), ("20220102T000000.000009999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 999), ("20220102T000000.000000999" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99), ("20220102T000000.000000099" to setOf()))
+            put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9), ("20220102T000000.000000009" to setOf()))
+        }
+        test(dateTimes, LocalDateTime.Format.ISO_BASIC)
+    }
+
     private fun test(strings: Map<LocalDateTime, Pair<String, Set<String>>>, format: Format<LocalDateTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

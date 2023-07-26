@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.format.LocalDateTimeFormat.Companion.build
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -66,7 +67,15 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [monthNumber] and
      * [year].
      */
-    public constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
+    public constructor(
+        year: Int,
+        monthNumber: Int,
+        dayOfMonth: Int,
+        hour: Int,
+        minute: Int,
+        second: Int = 0,
+        nanosecond: Int = 0
+    )
 
     /**
      * Constructs a [LocalDateTime] instance from the given date and time components.
@@ -84,7 +93,15 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [month] and
      * [year].
      */
-    public constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
+    public constructor(
+        year: Int,
+        month: Month,
+        dayOfMonth: Int,
+        hour: Int,
+        minute: Int,
+        second: Int = 0,
+        nanosecond: Int = 0
+    )
 
     /**
      * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts.
@@ -93,22 +110,31 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 
     /** Returns the year component of the date. */
     public val year: Int
+
     /** Returns the number-of-month (1..12) component of the date. */
     public val monthNumber: Int
+
     /** Returns the month ([Month]) component of the date. */
     public val month: Month
+
     /** Returns the day-of-month component of the date. */
     public val dayOfMonth: Int
+
     /** Returns the day-of-week component of the date. */
     public val dayOfWeek: DayOfWeek
+
     /** Returns the day-of-year component of the date. */
     public val dayOfYear: Int
+
     /** Returns the hour-of-day time component of this date/time value. */
     public val hour: Int
+
     /** Returns the minute-of-hour time component of this date/time value. */
     public val minute: Int
+
     /** Returns the second-of-minute time component of this date/time value. */
     public val second: Int
+
     /** Returns the nanosecond-of-second time component of this date/time value. */
     public val nanosecond: Int
 
@@ -139,16 +165,26 @@ public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.(
     LocalDateTimeFormat.build(builder)
 
 /**
- * ISO-8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
+ * ISO 8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
  *
- * Examples of date/time in ISO-8601 format:
+ * Examples of date/time in ISO 8601 format:
  * - `2020-08-30T18:43`
- * - `2020-08-30T18:43:00`
- * - `2020-08-30T18:43:00.500`
- * - `2020-08-30T18:43:00.123456789`
+ * - `+12020-08-30T18:43:00`
+ * - `0000-08-30T18:43:00.500`
+ * - `-0001-08-30T18:43:00.123456789`
  */
-public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() =
-    LocalDateTimeFormat.ISO
+public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() = ISO_DATETIME
+
+/**
+ * ISO 8601 basic format.
+ *
+ * Examples of date/time in ISO 8601 basic format:
+ * - `20200830T1843`
+ * - `+120200830T184300`
+ * - `00000830T184300.500`
+ * - `-00010830T184300.123456789`
+ */
+public val LocalDateTime.Format.ISO_BASIC: Format<LocalDateTime> get() = ISO_DATETIME_BASIC
 
 public fun LocalDateTime.format(format: Format<LocalDateTime>): String = format.format(this)
 

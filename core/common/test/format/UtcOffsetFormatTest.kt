@@ -71,6 +71,87 @@ class UtcOffsetFormatTest {
         test(offsets, lenientFormat)
     }
 
+    @Test
+    fun testIso() {
+        val offsets = buildMap<UtcOffset, Pair<String, Set<String>>> {
+            put(UtcOffset(-18, -0, -0), ("-18:00" to setOf()))
+            put(UtcOffset(-17, -59, -58), ("-17:59:58" to setOf()))
+            put(UtcOffset(-4, -3, -2), ("-04:03:02" to setOf()))
+            put(UtcOffset(-0, -0, -1), ("-00:00:01" to setOf()))
+            put(UtcOffset(-0, -1, -0), ("-00:01" to setOf()))
+            put(UtcOffset(-0, -1, -1), ("-00:01:01" to setOf()))
+            put(UtcOffset(-1, -0, -0), ("-01:00" to setOf()))
+            put(UtcOffset(-1, -0, -1), ("-01:00:01" to setOf()))
+            put(UtcOffset(-1, -1, -0), ("-01:01" to setOf()))
+            put(UtcOffset(-1, -1, -1), ("-01:01:01" to setOf()))
+            put(UtcOffset(+0, 0, 0), ("Z" to setOf("z")))
+            put(UtcOffset(+0, 1, 0), ("+00:01" to setOf()))
+            put(UtcOffset(+0, 1, 1), ("+00:01:01" to setOf()))
+            put(UtcOffset(+1, 0, 0), ("+01:00" to setOf()))
+            put(UtcOffset(+1, 0, 1), ("+01:00:01" to setOf()))
+            put(UtcOffset(+1, 1, 0), ("+01:01" to setOf()))
+            put(UtcOffset(+1, 1, 1), ("+01:01:01" to setOf()))
+            put(UtcOffset(+4, 3, 2), ("+04:03:02" to setOf()))
+            put(UtcOffset(+17, 59, 58), ("+17:59:58" to setOf()))
+            put(UtcOffset(+18, 0, 0), ("+18:00" to setOf()))
+        }
+        test(offsets, UtcOffset.Format.ISO)
+    }
+
+    @Test
+    fun testBasicIso() {
+        val offsets = buildMap<UtcOffset, Pair<String, Set<String>>> {
+            put(UtcOffset(-18, -0, -0), ("-18" to setOf()))
+            put(UtcOffset(-17, -59, -58), ("-175958" to setOf()))
+            put(UtcOffset(-4, -3, -2), ("-040302" to setOf()))
+            put(UtcOffset(-0, -0, -1), ("-000001" to setOf()))
+            put(UtcOffset(-0, -1, -0), ("-0001" to setOf()))
+            put(UtcOffset(-0, -1, -1), ("-000101" to setOf()))
+            put(UtcOffset(-1, -0, -0), ("-01" to setOf()))
+            put(UtcOffset(-1, -0, -1), ("-010001" to setOf()))
+            put(UtcOffset(-1, -1, -0), ("-0101" to setOf()))
+            put(UtcOffset(-1, -1, -1), ("-010101" to setOf()))
+            put(UtcOffset(+0, 0, 0), ("Z" to setOf("z")))
+            put(UtcOffset(+0, 1, 0), ("+0001" to setOf()))
+            put(UtcOffset(+0, 1, 1), ("+000101" to setOf()))
+            put(UtcOffset(+1, 0, 0), ("+01" to setOf()))
+            put(UtcOffset(+1, 0, 1), ("+010001" to setOf()))
+            put(UtcOffset(+1, 1, 0), ("+0101" to setOf()))
+            put(UtcOffset(+1, 1, 1), ("+010101" to setOf()))
+            put(UtcOffset(+4, 3, 2), ("+040302" to setOf()))
+            put(UtcOffset(+17, 59, 58), ("+175958" to setOf()))
+            put(UtcOffset(+18, 0, 0), ("+18" to setOf()))
+        }
+        test(offsets, UtcOffset.Format.ISO_BASIC)
+    }
+
+    @Test
+    fun testCompact() {
+        val offsets = buildMap<UtcOffset, Pair<String, Set<String>>> {
+            put(UtcOffset(-18, 0, 0), ("-1800" to setOf()))
+            put(UtcOffset(-17, -59, -58), ("-175958" to setOf()))
+            put(UtcOffset(-4, -3, -2), ("-040302" to setOf()))
+            put(UtcOffset(-0, -0, -1), ("-000001" to setOf()))
+            put(UtcOffset(-0, -1, -0), ("-0001" to setOf()))
+            put(UtcOffset(-0, -1, -1), ("-000101" to setOf()))
+            put(UtcOffset(-1, -0, -0), ("-0100" to setOf()))
+            put(UtcOffset(-1, -0, -1), ("-010001" to setOf()))
+            put(UtcOffset(-1, -1, -0), ("-0101" to setOf()))
+            put(UtcOffset(-1, -1, -1), ("-010101" to setOf()))
+            put(UtcOffset(+0, 0, 0), ("+0000" to setOf()))
+            put(UtcOffset(+0, 1, 0), ("+0001" to setOf()))
+            put(UtcOffset(+0, 1, 1), ("+000101" to setOf()))
+            put(UtcOffset(+1, 0, 0), ("+0100" to setOf()))
+            put(UtcOffset(+1, 0, 1), ("+010001" to setOf()))
+            put(UtcOffset(+1, 1, 0), ("+0101" to setOf()))
+            put(UtcOffset(+1, 1, 1), ("+010101" to setOf()))
+            put(UtcOffset(+4, 3, 2), ("+040302" to setOf()))
+            put(UtcOffset(+17, 59, 58), ("+175958" to setOf()))
+            put(UtcOffset(+18, 0, 0), ("+1800" to setOf()))
+        }
+        test(offsets, UtcOffset.Format.COMPACT)
+    }
+
     private fun test(strings: Map<UtcOffset, Pair<String, Set<String>>>, format: Format<UtcOffset>) {
         for ((offset, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

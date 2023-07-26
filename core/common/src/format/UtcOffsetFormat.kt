@@ -8,6 +8,7 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.math.*
+import kotlin.native.concurrent.*
 
 public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
     public fun appendOffsetTotalHours(padding: Padding)
@@ -243,4 +244,48 @@ internal class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldCont
     override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
 
     override fun newIntermediate(): IncompleteUtcOffset = IncompleteUtcOffset()
+}
+
+// these are constants so that the formats are not recreated every time they are used
+@SharedImmutable
+internal val ISO_OFFSET by lazy {
+    UtcOffsetFormat.build {
+        alternativeParsing({ appendLiteral("z") }) {
+            appendOptional("Z") {
+                appendOffsetTotalHours(Padding.ZERO)
+                appendLiteral(':')
+                appendOffsetMinutesOfHour(Padding.ZERO)
+                appendOptional {
+                    appendLiteral(':')
+                    appendOffsetSecondsOfMinute(Padding.ZERO)
+                }
+            }
+        }
+    }
+}
+@SharedImmutable
+internal val ISO_OFFSET_BASIC by lazy {
+    UtcOffsetFormat.build {
+        alternativeParsing({ appendLiteral("z") }) {
+            appendOptional("Z") {
+                appendOffsetTotalHours(Padding.ZERO)
+                appendOptional {
+                    appendOffsetMinutesOfHour(Padding.ZERO)
+                    appendOptional {
+                        appendOffsetSecondsOfMinute(Padding.ZERO)
+                    }
+                }
+            }
+        }
+    }
+}
+@SharedImmutable
+internal val COMPACT_OFFSET by lazy {
+    UtcOffsetFormat.build {
+        appendOffsetTotalHours(Padding.ZERO)
+        appendOffsetMinutesOfHour(Padding.ZERO)
+        appendOptional {
+            appendOffsetSecondsOfMinute(Padding.ZERO)
+        }
+    }
 }

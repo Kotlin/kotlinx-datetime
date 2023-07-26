@@ -51,7 +51,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDate = parse(isoString, LocalDateFormat.ISO)
+        public actual fun parse(isoString: String): LocalDate = parse(isoString, Format.ISO)
 
         // org.threeten.bp.LocalDate#toEpochDay
         public actual fun fromEpochDays(epochDays: Int): LocalDate {
@@ -170,7 +170,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     }
 
     // org.threeten.bp.LocalDate#toString
-    actual override fun toString(): String = format(LocalDateFormat.ISO)
+    actual override fun toString(): String = format(Format.ISO)
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
