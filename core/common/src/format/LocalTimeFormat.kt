@@ -45,11 +45,13 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
      * Appends the fractional part of the second without the leading dot.
      *
      * When formatting, the decimal fraction will add trailing zeroes to the specified [minLength] and will round the
-     * number to fit in the specified [maxLength].
+     * number to fit in the specified [maxLength]. If [minLength] is `null`, the fraction will be formatted with
+     * enough trailing zeros to make the number of digits displayed a multiple of three (e.g. `123.450`) for
+     * readability. Explicitly set [minLength] to `1` to disable this behavior.
      *
      * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
      */
-    public fun appendSecondFraction(minLength: Int = 1, maxLength: Int? = null)
+    public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
 }
 
 internal fun TimeFormatBuilderFields.appendIsoTime() {
@@ -217,7 +219,7 @@ internal class SecondDirective(padding: Padding) :
     }
 }
 
-internal class FractionalSecondDirective(minDigits: Int, maxDigits: Int? = null) :
+internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
 
     override val builderRepresentation: String = when {
@@ -256,7 +258,7 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
 
         override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
         override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
+        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())

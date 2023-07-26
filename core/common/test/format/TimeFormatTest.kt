@@ -150,6 +150,62 @@ class TimeFormatTest {
         test(times, LocalTime.Format.ISO_BASIC)
     }
 
+    @Test
+    fun testFormattingSecondFractions() {
+        fun check(nanoseconds: Int, minLength: Int?, maxLength: Int?, string: String) {
+            val format = LocalTime.Format { appendSecondFraction(minLength, maxLength) }
+            val time = LocalTime(0, 0, 0, nanoseconds)
+            assertEquals(string, format.format(time))
+            val format2 = LocalTime.Format {
+                appendHour(); appendMinute(); appendSecond()
+                appendLiteral('.'); appendSecondFraction(minLength, maxLength)
+            }
+            val time2 = format2.parse("123456.$string")
+            assertEquals((string + "0".repeat(9 - string.length)).toInt(), time2.nanosecond)
+        }
+        check(1, null, null, "000000001")
+        check(1, null, 9, "000000001")
+        check(1, null, 8, "00000000")
+        check(1, null, 7, "0000000")
+        check(999_999_999, null, null, "999999999")
+        check(999_999_999, null, 9, "999999999")
+        check(999_999_999, null, 8, "99999999")
+        check(999_999_999, null, 7, "9999999")
+        check(100000000, null, null, "100")
+        check(100000000, null, 4, "100")
+        check(100000000, null, 3, "100")
+        check(100000000, null, 2, "10")
+        check(100000000, null, 1, "1")
+        check(100000000, 4, null, "1000")
+        check(100000000, 3, null, "100")
+        check(100000000, 2, null, "10")
+        check(100000000, 1, null, "1")
+        check(100000000, 4, 4, "1000")
+        check(100000000, 3, 4, "100")
+        check(100000000, 3, 3, "100")
+        check(100000000, 2, 3, "10")
+        check(100000000, 2, 2, "10")
+        check(987654321, null, null, "987654321")
+        check(987654320, null, null, "987654320")
+        check(987654300, null, null, "987654300")
+        check(987654000, null, null, "987654")
+        check(987650000, null, null, "987650")
+        check(987600000, null, null, "987600")
+        check(987000000, null, null, "987")
+        check(980000000, null, null, "980")
+        check(900000000, null, null, "900")
+        check(0, null, null, "000")
+        check(987654321, null, 9, "987654321")
+        check(987654321, null, 8, "98765432")
+        check(987654321, null, 7, "9876543")
+        check(987654321, null, 6, "987654")
+        check(987654321, null, 5, "98765")
+        check(987654321, null, 4, "9877")
+        check(987654321, null, 3, "988")
+        check(987654321, null, 2, "99")
+        check(987654321, null, 1, "9")
+    }
+
     private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: Format<LocalTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

@@ -78,15 +78,26 @@ internal class DecimalFractionFormatterStructure<in T>(
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
-        val minDigits = minDigits ?: 1
         val number = number(obj)
-        val nanoValue = number.fractionalPartWithNDigits(maxDigits ?: 9)
-        when {
-            nanoValue % 1000000 == 0 && minDigits <= 3 ->
-                builder.append((nanoValue / 1000000 + 1000).toString().substring(1))
-            nanoValue % 1000 == 0 && minDigits <= 6 ->
-                builder.append((nanoValue / 1000 + 1000000).toString().substring(1))
-            else -> builder.append((nanoValue + 1000000000).toString().substring(1))
+        val maxLength = maxDigits ?: 9
+        if (minDigits != null) {
+            val nDigitNumber = number.fractionalPartWithNDigits(maxLength)
+            val fullString = (nDigitNumber + POWERS_OF_TEN[maxLength]).toString().substring(1)
+            var zeroSpanStart = fullString.length
+            while (zeroSpanStart > minDigits && fullString[zeroSpanStart - 1] == '0') { zeroSpanStart-- }
+            val truncatedString = fullString.substring(0, zeroSpanStart)
+            builder.append(truncatedString)
+        } else {
+            val nanos = number.fractionalPartWithNDigits(9)
+            val digitsToOutput = minOf(maxLength, when {
+                nanos % 1000000 == 0 -> 3
+                nanos % 1000 == 0 -> 6
+                else -> 9
+            })
+            val numberToOutput = number.fractionalPartWithNDigits(digitsToOutput).let {
+                if (it >= POWERS_OF_TEN[digitsToOutput]) POWERS_OF_TEN[digitsToOutput] - 1 else it
+            }
+            builder.append((numberToOutput + POWERS_OF_TEN[digitsToOutput]).toString().substring(1))
         }
     }
 }

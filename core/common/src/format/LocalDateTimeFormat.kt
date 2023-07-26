@@ -85,7 +85,7 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
 
         override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
         override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun appendSecondFraction(minLength: Int, maxLength: Int?) =
+        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
