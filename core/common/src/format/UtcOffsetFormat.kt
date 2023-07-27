@@ -14,6 +14,7 @@ public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
     public fun appendOffsetTotalHours(padding: Padding)
     public fun appendOffsetMinutesOfHour(padding: Padding = Padding.ZERO)
     public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
+    public fun appendOffset(format: Format<UtcOffset>)
 }
 
 internal interface UtcOffsetFieldContainer {
@@ -23,7 +24,7 @@ internal interface UtcOffsetFieldContainer {
     var secondsOfMinute: Int?
 }
 
-internal class UtcOffsetFormat(private val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
+internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     Format<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
     companion object {
         fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
@@ -48,6 +49,11 @@ internal class UtcOffsetFormat(private val actualFormat: StringFormat<UtcOffsetF
 
         override fun appendOffsetSecondsOfMinute(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendOffset(format: Format<UtcOffset>) = when (format) {
+            is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
     }
 
     override fun toString(): String = actualFormat.builderString()

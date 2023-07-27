@@ -52,20 +52,8 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
      * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
      */
     public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
-}
 
-internal fun TimeFormatBuilderFields.appendIsoTime() {
-    appendHour()
-    appendLiteral(':')
-    appendMinute()
-    appendOptional {
-        appendLiteral(':')
-        appendSecond()
-        appendOptional {
-            appendLiteral('.')
-            appendSecondFraction()
-        }
-    }
+    public fun appendTime(format: Format<LocalTime>)
 }
 
 internal interface TimeFieldContainer {
@@ -255,6 +243,11 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendTime(format: Format<LocalTime>) = when (format) {
+            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
 
@@ -265,7 +258,19 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
 // these are constants so that the formats are not recreated every time they are used
 @SharedImmutable
 internal val ISO_TIME by lazy {
-    LocalTimeFormat.build { appendIsoTime() }
+    LocalTimeFormat.build {
+        appendHour()
+        appendLiteral(':')
+        appendMinute()
+        appendOptional {
+            appendLiteral(':')
+            appendSecond()
+            appendOptional {
+                appendLiteral('.')
+                appendSecondFraction()
+            }
+        }
+    }
 }
 @SharedImmutable
 internal val ISO_TIME_BASIC by lazy {

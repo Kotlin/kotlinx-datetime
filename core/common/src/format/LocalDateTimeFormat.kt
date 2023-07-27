@@ -9,16 +9,18 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
-public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields
+public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields {
+    public fun appendDateTime(format: Format<LocalDateTime>)
+}
 
 internal fun DateTimeFormatBuilder.appendIsoDateTime() {
-    appendIsoDate()
+    appendDate(ISO_DATE)
     alternativeParsing({
         appendLiteral('t')
     }) {
         appendLiteral('T')
     }
-    appendIsoTime()
+    appendTime(ISO_TIME)
 }
 
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
@@ -61,6 +63,7 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder {
+
         override fun appendYear(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
@@ -90,6 +93,21 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendTime(format: Format<LocalTime>) = when (format) {
+            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendDateTime(format: Format<LocalDateTime>) = when (format) {
+            is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
 
@@ -100,23 +118,16 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
 @SharedImmutable
 internal val ISO_DATETIME by lazy {
     LocalDateTimeFormat.build {
-        appendIsoDate()
+        appendDate(ISO_DATE)
         alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
-        appendIsoTime()
+        appendTime(ISO_TIME)
     }
 }
+
 @SharedImmutable
 internal val ISO_DATETIME_BASIC by lazy {
     LocalDateTimeFormat.build {
-        appendYear(); appendMonthNumber(); appendDayOfMonth()
-        alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
-        appendHour(); appendMinute()
-        appendOptional {
-            appendSecond()
-            appendOptional {
-                appendLiteral('.')
-                appendSecondFraction()
-            }
-        }
+        appendDate(ISO_DATE_BASIC)
+        appendTime(ISO_TIME_BASIC)
     }
 }

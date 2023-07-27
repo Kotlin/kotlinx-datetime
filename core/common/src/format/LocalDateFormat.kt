@@ -17,6 +17,7 @@ public sealed interface DateFormatBuilder : FormatBuilder {
     public fun appendMonthName(names: MonthNames)
     public fun appendDayOfMonth(padding: Padding = Padding.ZERO)
     public fun appendDayOfWeek(names: DayOfWeekNames)
+    public fun appendDate(dateFormat: Format<LocalDate>)
 }
 
 /**
@@ -104,14 +105,6 @@ public class DayOfWeekNames(
             )
         )
     }
-}
-
-internal fun DateFormatBuilder.appendIsoDate() {
-    appendYear()
-    appendLiteral('-')
-    appendMonthNumber()
-    appendLiteral('-')
-    appendDayOfMonth()
 }
 
 internal fun <T> getParsedField(field: T?, name: String): T {
@@ -275,6 +268,11 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
         override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
         override fun appendDayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }

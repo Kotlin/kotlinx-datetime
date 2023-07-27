@@ -11,7 +11,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 import kotlinx.datetime.internal.safeMultiply
-import kotlin.math.*
 import kotlin.reflect.*
 
 /**
@@ -49,7 +48,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
         public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = Format {
-            appendIsoDate()
+            appendDate(ISO_DATE)
             alternativeParsing({
                 appendLiteral('t')
             }) {
@@ -320,6 +319,8 @@ public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatB
      * Appends the IANA time zone identifier.
      */
     public fun appendTimeZoneId()
+
+    public fun appendValueBag(format: Format<ValueBag>)
 }
 
 public fun ValueBag.format(format: Format<ValueBag>): String = format.format(this)
@@ -412,6 +413,31 @@ internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) 
 
         override fun appendTimeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendTime(format: Format<LocalTime>) = when (format) {
+            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendOffset(format: Format<UtcOffset>) = when (format) {
+            is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendDateTime(format: Format<LocalDateTime>) = when (format) {
+            is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
+
+        @Suppress("NO_ELSE_IN_WHEN")
+        override fun appendValueBag(format: Format<ValueBag>) = when (format) {
+            is ValueBagFormat -> actualBuilder.add(format.actualFormat.directives)
+        }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
