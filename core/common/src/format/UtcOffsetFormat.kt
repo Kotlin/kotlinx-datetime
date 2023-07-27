@@ -137,14 +137,6 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
     }
 }
 
-internal fun UtcOffset.toIncompleteUtcOffset(): IncompleteUtcOffset =
-    IncompleteUtcOffset(
-        totalSeconds < 0,
-        totalSeconds.absoluteValue / 3600,
-        (totalSeconds.absoluteValue / 60) % 60,
-        totalSeconds.absoluteValue % 60
-    )
-
 internal object OffsetFields {
     private val sign = object : FieldSign<UtcOffsetFieldContainer> {
         override val isNegative = UtcOffsetFieldContainer::isNegative
@@ -186,6 +178,14 @@ internal class IncompleteUtcOffset(
         return UtcOffset(
             totalHoursAbs?.let { it * sign }, minutesOfHour?.let { it * sign }, secondsOfMinute?.let { it * sign }
         )
+    }
+
+    fun populateFrom(offset: UtcOffset) {
+        isNegative = offset.totalSeconds < 0
+        val totalSecondsAbs = offset.totalSeconds.absoluteValue
+        totalHoursAbs = totalSecondsAbs / 3600
+        minutesOfHour = (totalSecondsAbs / 60) % 60
+        secondsOfMinute = totalSecondsAbs % 60
     }
 
     override fun equals(other: Any?): Boolean =
@@ -239,7 +239,8 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
 
 internal class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     AbstractFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
-    override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset = value.toIncompleteUtcOffset()
+    override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset =
+        IncompleteUtcOffset().apply { populateFrom(value) }
 
     override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
 

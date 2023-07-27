@@ -114,9 +114,6 @@ internal fun DateFormatBuilder.appendIsoDate() {
     appendDayOfMonth()
 }
 
-internal fun LocalDate.toIncompleteLocalDate(): IncompleteLocalDate =
-    IncompleteLocalDate(year, monthNumber, dayOfMonth, dayOfWeek.isoDayNumber)
-
 internal fun <T> getParsedField(field: T?, name: String): T {
     if (field == null) {
         throw DateTimeFormatException("Can not create a $name from the given input: the field $name is missing")
@@ -162,6 +159,13 @@ internal class IncompleteLocalDate(
             }
         }
         return date
+    }
+
+    fun populateFrom(date: LocalDate) {
+        year = date.year
+        monthNumber = date.monthNumber
+        dayOfMonth = date.dayOfMonth
+        isoDayOfWeek = date.dayOfWeek.isoDayNumber
     }
 
     override fun copy(): IncompleteLocalDate = IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek)
@@ -239,7 +243,8 @@ internal class DayOfWeekDirective(names: List<String>) :
 
 internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer>) :
     AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat) {
-    override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate = value.toIncompleteLocalDate()
+    override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate =
+        IncompleteLocalDate().apply { populateFrom(value) }
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalDate): LocalDate = intermediate.toLocalDate()
 

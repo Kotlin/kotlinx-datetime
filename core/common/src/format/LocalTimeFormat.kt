@@ -68,9 +68,6 @@ internal fun TimeFormatBuilderFields.appendIsoTime() {
     }
 }
 
-internal fun LocalTime.toIncompleteLocalTime(): IncompleteLocalTime =
-    IncompleteLocalTime(hour, minute, second, nanosecond)
-
 internal interface TimeFieldContainer {
     var minute: Int?
     var second: Int?
@@ -96,59 +93,55 @@ internal object TimeFields {
 }
 
 internal class IncompleteLocalTime(
-    hour: Int? = null,
-    isPm: Boolean? = null,
+    override var hour: Int? = null,
+    override var hourOfAmPm: Int? = null,
+    override var isPm: Boolean? = null,
     override var minute: Int? = null,
     override var second: Int? = null,
     override var nanosecond: Int? = null
 ) : TimeFieldContainer, Copyable<IncompleteLocalTime> {
-    constructor(hour: Int?, minute: Int?, second: Int?, nanosecond: Int?) :
-        this(hour, hour?.let { it >= 12 }, minute, second, nanosecond)
-
-    // stores the hour in 24-hour format if `isPm` is not null, otherwise stores the hour in 12-hour format.
-    var hourField: Int? = hour
-
-    override var hourOfAmPm: Int?
-        get() = hourField?.let { (it + 11) % 12 + 1 }
-        set(value) {
-            hourField = value?.let { it + if (isPm == true) 12 else 0 }
-        }
-
-    override var isPm: Boolean? = isPm
-        set(value) {
-            if (value != null) {
-                hourField = hourField?.let { (it % 12) + if (value) 12 else 0 }
+    fun toLocalTime(): LocalTime {
+        val hour: Int = hour?.let { hour ->
+            hourOfAmPm?.let {
+                require((hour + 11) % 12 + 1 == it) { "Inconsistent hour and hour-of-am-pm: hour is $hour, but hour-of-am-pm is $it" }
             }
-            field = value
-        }
-
-    override var hour: Int?
-        get() = if (isPm != null) hourField else null
-        set(value) {
-            if (value != null) {
-                isPm = value.mod(24) >= 12
-                hourField = value
-            } else {
-                isPm = null
-                hourField = null
+            isPm?.let {
+                require(isPm != null && isPm != (hour >= 12)) {
+                    "Inconsistent hour and the AM/PM marker: hour is $hour, but the AM/PM marker is ${if (it) "PM" else "AM"}"
+                }
             }
-        }
+            hour
+        } ?: hourOfAmPm?.let { hourOfAmPm ->
+            isPm?.let { isPm ->
+                hourOfAmPm.let { if (it == 12) 0 else it } + if (isPm) 12 else 0
+            }
+        } ?: throw DateTimeFormatException("Incomplete time: missing hour")
+        return LocalTime(
+            hour,
+            getParsedField(minute, "minute"),
+            second ?: 0,
+            nanosecond ?: 0,
+        )
+    }
 
-    fun toLocalTime(): LocalTime = LocalTime(
-        getParsedField(hour, "hour"),
-        getParsedField(minute, "minute"),
-        second ?: 0,
-        nanosecond ?: 0,
-    )
+    fun populateFrom(localTime: LocalTime) {
+        hour = localTime.hour
+        hourOfAmPm = (localTime.hour + 11) % 12 + 1
+        isPm = localTime.hour >= 12
+        minute = localTime.minute
+        second = localTime.second
+        nanosecond = localTime.nanosecond
+    }
 
-    override fun copy(): IncompleteLocalTime = IncompleteLocalTime(hour, isPm, minute, second, nanosecond)
+    override fun copy(): IncompleteLocalTime = IncompleteLocalTime(hour, hourOfAmPm, isPm, minute, second, nanosecond)
 
     override fun equals(other: Any?): Boolean =
-        other is IncompleteLocalTime && hourField == other.hourField && minute == other.minute &&
-            second == other.second && nanosecond == other.nanosecond
+        other is IncompleteLocalTime && hour == other.hour && hourOfAmPm == other.hourOfAmPm && isPm == other.isPm &&
+            minute == other.minute && second == other.second && nanosecond == other.nanosecond
 
     override fun hashCode(): Int =
-        hourField.hashCode() * 31 + minute.hashCode() * 31 + second.hashCode() * 31 + nanosecond.hashCode()
+        (hour ?: 0) * 31 + (hourOfAmPm ?: 0) * 31 + (isPm?.hashCode() ?: 0) * 31 + (minute ?: 0) * 31 +
+            (second ?: 0) * 31 + (nanosecond ?: 0)
 
     override fun toString(): String =
         "${hour ?: "??"}:${minute ?: "??"}:${second ?: "??"}.${
@@ -232,7 +225,8 @@ internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int?
 
 internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer>) :
     AbstractFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
-    override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime = value.toIncompleteLocalTime()
+    override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime =
+        IncompleteLocalTime().apply { populateFrom(value) }
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalTime): LocalTime = intermediate.toLocalTime()
 

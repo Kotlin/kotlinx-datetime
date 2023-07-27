@@ -21,9 +21,6 @@ internal fun DateTimeFormatBuilder.appendIsoDateTime() {
     appendIsoTime()
 }
 
-internal fun LocalDateTime.toIncompleteLocalDateTime(): IncompleteLocalDateTime =
-    IncompleteLocalDateTime(date.toIncompleteLocalDate(), time.toIncompleteLocalTime())
-
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
 
 internal class IncompleteLocalDateTime(
@@ -32,13 +29,18 @@ internal class IncompleteLocalDateTime(
 ) : DateTimeFieldContainer, DateFieldContainer by date, TimeFieldContainer by time, Copyable<IncompleteLocalDateTime> {
     fun toLocalDateTime(): LocalDateTime = LocalDateTime(date.toLocalDate(), time.toLocalTime())
 
+    fun populateFrom(dateTime: LocalDateTime) {
+        date.populateFrom(dateTime.date)
+        time.populateFrom(dateTime.time)
+    }
+
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
 }
 
 internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldContainer>) :
     AbstractFormat<LocalDateTime, IncompleteLocalDateTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalDateTime): IncompleteLocalDateTime =
-        value.toIncompleteLocalDateTime()
+        IncompleteLocalDateTime().apply { populateFrom(value) }
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalDateTime): LocalDateTime =
         intermediate.toLocalDateTime()

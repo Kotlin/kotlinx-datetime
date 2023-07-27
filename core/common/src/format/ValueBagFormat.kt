@@ -100,12 +100,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(localTime: LocalTime) {
-        hour = localTime.hour
-        minute = localTime.minute
-        second = localTime.second
-        nanosecond = localTime.nanosecond
-    }
+    public fun populateFrom(localTime: LocalTime) { contents.time.populateFrom(localTime) }
 
     /**
      * Writes the contents of the specified [localDate] to this [ValueBag].
@@ -113,12 +108,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(localDate: LocalDate) {
-        year = localDate.year
-        monthNumber = localDate.monthNumber
-        dayOfMonth = localDate.dayOfMonth
-        dayOfWeek = localDate.dayOfWeek
-    }
+    public fun populateFrom(localDate: LocalDate) { contents.date.populateFrom(localDate) }
 
     /**
      * Writes the contents of the specified [localDateTime] to this [ValueBag].
@@ -128,8 +118,8 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      * If any of the fields are already set, they will be overwritten.
      */
     public fun populateFrom(localDateTime: LocalDateTime) {
-        populateFrom(localDateTime.date)
-        populateFrom(localDateTime.time)
+        contents.date.populateFrom(localDateTime.date)
+        contents.time.populateFrom(localDateTime.time)
     }
 
     /**
@@ -138,13 +128,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(utcOffset: UtcOffset) {
-        offsetIsNegative = utcOffset.totalSeconds < 0
-        val seconds = utcOffset.totalSeconds.absoluteValue
-        offsetTotalHours = seconds / 3600
-        offsetMinutesOfHour = (seconds % 3600) / 60
-        offsetSecondsOfMinute = seconds % 60
-    }
+    public fun populateFrom(utcOffset: UtcOffset) { contents.offset.populateFrom(utcOffset) }
 
     /**
      * Writes the contents of the specified [instant] to this [ValueBag].
@@ -194,6 +178,12 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 
     /** Returns the hour-of-day time component of this date/time value. */
     public var hour: Int? by TwoDigitNumber(contents.time::hour)
+
+    /** Returns the 12-hour time component of this date/time value. */
+    public var hourOfAmPm: Int? by TwoDigitNumber(contents.time::hourOfAmPm)
+
+    /** Returns the AM/PM state of the time component: `true` if PM, `false` if `AM`. */
+    public var isPm: Boolean? by contents.time::isPm
 
     /** Returns the minute-of-hour time component of this date/time value. */
     public var minute: Int? by TwoDigitNumber(contents.time::minute)
