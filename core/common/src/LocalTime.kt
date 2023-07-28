@@ -86,6 +86,19 @@ public expect class LocalTime : Comparable<LocalTime> {
         internal val MAX: LocalTime
     }
 
+    /**
+     * The entry point for parsing and formatting [LocalTime] values.
+     *
+     * [Invoke][LocalTime.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * parsing and formatting [LocalTime] values.
+     *
+     * See [LocalTime.Format.ISO] and [LocalTime.Format.ISO_BASIC] for popular predefined formats.
+     * [LocalTime.parse] and [LocalTime.toString] can be used as convenient shortcuts for the
+     * [LocalTime.Format.ISO] format.
+     *
+     * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+     * (for example, [second] is 60), consider using [ValueBag.Format] instead.
+     */
     public object Format;
 
     /**
@@ -142,6 +155,24 @@ public expect class LocalTime : Comparable<LocalTime> {
     public override fun toString(): String
 }
 
+/**
+ * Creates a new format for parsing and formatting [LocalTime] values.
+ *
+ * Example:
+ * ```
+ * LocalTime.Format {
+ *   appendHour()
+ *   appendLiteral(':')
+ *   appendMinute()
+ *   appendLiteral(':')
+ *   appendSecond()
+ *   appendOptional {
+ *     appendLiteral('.')
+ *     appendSecondFraction()
+ *   }
+ * }
+ * ```
+ */
 public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() -> Unit): Format<LocalTime> =
     LocalTimeFormat.build(builder)
 
@@ -159,8 +190,18 @@ public val LocalTime.Format.ISO: Format<LocalTime> get() = ISO_TIME
  */
 public val LocalTime.Format.ISO_BASIC: Format<LocalTime> get() = ISO_TIME_BASIC
 
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [Format.format] on [format] with `this`.
+ */
 public fun LocalTime.format(format: Format<LocalTime>): String = format.format(this)
 
+/**
+ * Parses a [LocalTime] value using the given [format].
+ * Equivalent to calling [Format.parse] on [format] with [input].
+ *
+ * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
+ */
 public fun LocalTime.Companion.parse(input: String, format: Format<LocalTime>): LocalTime = format.parse(input)
 
 /**

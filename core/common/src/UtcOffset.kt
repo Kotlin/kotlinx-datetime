@@ -50,14 +50,56 @@ public expect class UtcOffset {
         public fun parse(offsetString: String): UtcOffset
     }
 
+    /**
+     * The entry point for parsing and formatting [UtcOffset] values.
+     *
+     * [Invoke][UtcOffset.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * parsing and formatting [UtcOffset] values.
+     *
+     * See [UtcOffset.Format.ISO], [UtcOffset.Format.ISO_BASIC], and [UtcOffset.Format.COMPACT]
+     * for popular predefined formats.
+     *
+     * Since [UtcOffset] values are rarely formatted and parsed on their own,
+     * instances of [kotlinx.datetime.format.Format] obtained here will likely need to be passed to
+     * [UtcOffsetFormatBuilderFields.appendOffset] in a format builder for a larger data structure.
+     */
     public object Format;
 }
 
+/**
+ * Creates a new format for parsing and formatting [UtcOffset] values.
+ *
+ * Example:
+ * ```
+ * // `GMT` on zero, `+4:30:15`, using a custom format:
+ * UtcOffset.Format {
+ *   appendOptional("GMT") {
+ *     appendOffsetTotalHours(Padding.NONE)
+ *     appendLiteral(':')
+ *     appendOffsetMinutesOfHour()
+ *     appendOptional {
+ *       appendLiteral(':')
+ *       appendOffsetSecondsOfMinute()
+ *     }
+ *   }
+ * }
+ * ```
+ */
 public operator fun UtcOffset.Format.invoke(block: UtcOffsetFormatBuilderFields.() -> Unit): Format<UtcOffset> =
     UtcOffsetFormat.build(block)
 
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [Format.format] on [format] with `this`.
+ */
 public fun UtcOffset.format(format: Format<UtcOffset>): String = format.format(this)
 
+/**
+ * Parses a [UtcOffset] value using the given [format].
+ * Equivalent to calling [Format.parse] on [format] with [input].
+ *
+ * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
+ */
 public fun UtcOffset.Companion.parse(input: String, format: Format<UtcOffset>): UtcOffset = format.parse(input)
 
 /**

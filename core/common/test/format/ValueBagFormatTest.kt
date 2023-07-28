@@ -66,6 +66,44 @@ class ValueBagFormatTest {
         assertEquals(a.timeZoneId, b.timeZoneId, message)
     }
 
+    @Test
+    fun testDocFormatting() {
+        val str = ValueBag.Format.RFC_1123.format {
+           populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+           populateFrom(UtcOffset(hours = 3))
+        }
+        assertEquals("Mon, 16 Mar 2020 23:59:59 +0300", str)
+    }
+
+    @Test
+    fun testDocOutOfBoundsParsing() {
+        val input = "23:59:60"
+        val extraDay: Boolean
+        val time = ValueBag.Format {
+          appendTime(LocalTime.Format.ISO)
+        }.parse(input).apply {
+          if (hour == 23 && minute == 59 && second == 60) {
+            hour = 0; minute = 0; second = 0; extraDay = true
+          } else {
+            extraDay = false
+          }
+        }.toLocalTime()
+        assertEquals(LocalTime(0, 0, 0), time)
+        assertTrue(extraDay)
+    }
+
+    @Test
+    fun testDocCombinedParsing() {
+        val input = "2020-03-16T23:59:59.999999999+03:00"
+        val bag = ValueBag.Format.ISO_INSTANT.parse(input)
+        val localDateTime = bag.toLocalDateTime()
+        val instant = bag.toInstantUsingUtcOffset()
+        val offset = bag.toUtcOffset()
+        assertEquals(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999), localDateTime)
+        assertEquals(Instant.parse("2020-03-16T20:59:59.999999999Z"), instant)
+        assertEquals(UtcOffset(hours = 3), offset)
+    }
+
     private fun test(strings: Map<ValueBag, Pair<String, Set<String>>>, format: Format<ValueBag>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue

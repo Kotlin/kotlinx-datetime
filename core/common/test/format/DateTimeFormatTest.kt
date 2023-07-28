@@ -259,6 +259,20 @@ class DateTimeFormatTest {
         test(dateTimes, LocalDateTime.Format.ISO_BASIC)
     }
 
+    @Test
+    fun testDoc() {
+        val dateTime = LocalDateTime(2020, 8, 30, 18, 43, 13, 0)
+        val format1 = LocalDateTime.Format { appendDate(LocalDate.Format.ISO); appendLiteral(' ');  appendTime(LocalTime.Format.ISO) }
+        assertEquals("2020-08-30 18:43:13", dateTime.format(format1))
+        val format2 = LocalDateTime.Format {
+          appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()
+          appendLiteral(' ')
+          appendHour(); appendLiteral(':'); appendMinute()
+          appendOptional { appendLiteral(':'); appendSecond() }
+        }
+        assertEquals("08/30 18:43:13", dateTime.format(format2))
+    }
+
     private fun test(strings: Map<LocalDateTime, Pair<String, Set<String>>>, format: Format<LocalDateTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

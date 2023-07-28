@@ -16,11 +16,15 @@ import kotlin.native.concurrent.*
 public sealed interface TimeFormatBuilderFields : FormatBuilder {
     /**
      * Appends the number of hours.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
      */
     public fun appendHour(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the number of hours in the 12-hour clock.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
      */
     public fun appendAmPmHour(padding: Padding = Padding.ZERO)
 
@@ -33,11 +37,17 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
 
     /**
      * Appends the number of minutes.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
      */
     public fun appendMinute(padding: Padding = Padding.ZERO)
 
     /**
      * Appends the number of seconds.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
+     *
+     * This field has the default value of 0. If you want to omit it, use [appendOptional].
      */
     public fun appendSecond(padding: Padding = Padding.ZERO)
 
@@ -49,10 +59,20 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
      * enough trailing zeros to make the number of digits displayed a multiple of three (e.g. `123.450`) for
      * readability. Explicitly set [minLength] to `1` to disable this behavior.
      *
+     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     *
      * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
      */
     public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
 
+    /**
+     * Appends an existing [Format] for the time part.
+     *
+     * Example:
+     * ```
+     * appendTime(LocalTime.Format.ISO)
+     * ```
+     */
     public fun appendTime(format: Format<LocalTime>)
 }
 

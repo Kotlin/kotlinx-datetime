@@ -47,6 +47,16 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
         internal val MAX: LocalDateTime
     }
 
+    /**
+     * The entry point for parsing and formatting [LocalDateTime] values.
+     *
+     * [Invoke][LocalDateTime.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * parsing and formatting [LocalDateTime] values.
+     *
+     * See [LocalDateTime.Format.ISO] and [LocalDateTime.Format.ISO_BASIC] for popular predefined formats.
+     * [LocalDateTime.parse] and [LocalDateTime.toString] can be used as convenient shortcuts for the
+     * [LocalDateTime.Format.ISO] format.
+     */
     public object Format;
 
     /**
@@ -161,6 +171,23 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public override fun toString(): String
 }
 
+/**
+ * Creates a new format for parsing and formatting [LocalDateTime] values.
+ *
+ * Examples:
+ * ```
+ * // `2020-08-30 18:43:13`, using predefined date and time formats
+ * LocalDateTime.Format { appendDate(LocalDate.Format.ISO); appendLiteral(' ');  appendTime(LocalTime.Format.ISO) }
+ *
+ * // `08/30 18:43:13`, using a custom format:
+ * LocalDateTime.Format {
+ *   appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()
+ *   appendLiteral(' ')
+ *   appendHour(); appendLiteral(':'); appendMinute()
+ *   appendOptional { appendLiteral(':'); appendSecond() }
+ * }
+ * ```
+ */
 public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.() -> Unit): Format<LocalDateTime> =
     LocalDateTimeFormat.build(builder)
 
@@ -186,8 +213,18 @@ public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() = ISO_DATETIME
  */
 public val LocalDateTime.Format.ISO_BASIC: Format<LocalDateTime> get() = ISO_DATETIME_BASIC
 
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [Format.format] on [format] with `this`.
+ */
 public fun LocalDateTime.format(format: Format<LocalDateTime>): String = format.format(this)
 
+/**
+ * Parses a [LocalDateTime] value using the given [format].
+ * Equivalent to calling [Format.parse] on [format] with [input].
+ *
+ * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
+ */
 public fun LocalDateTime.Companion.parse(input: String, format: Format<LocalDateTime>): LocalDateTime =
     format.parse(input)
 

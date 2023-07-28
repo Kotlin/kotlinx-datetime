@@ -206,6 +206,23 @@ class TimeFormatTest {
         check(987654321, null, 1, "9")
     }
 
+    @Test
+    fun testDoc() {
+        val format = LocalTime.Format {
+          appendHour()
+          appendLiteral(':')
+          appendMinute()
+          appendLiteral(':')
+          appendSecond()
+          appendOptional {
+            appendLiteral('.')
+            appendSecondFraction()
+          }
+        }
+        assertEquals("12:34:56", format.format(LocalTime(12, 34, 56)))
+        assertEquals("12:34:56.123", format.format(LocalTime(12, 34, 56, 123000000)))
+    }
+
     private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: Format<LocalTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

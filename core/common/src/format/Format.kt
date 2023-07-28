@@ -18,6 +18,9 @@ public sealed interface Format<T> {
      */
     public fun format(value: T): String
 
+    /**
+     * Formats the given [value] into the given [appendable], using this format.
+     */
     public fun formatTo(appendable: Appendable, value: T)
 
     /**

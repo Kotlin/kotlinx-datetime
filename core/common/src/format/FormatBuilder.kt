@@ -12,7 +12,7 @@ import kotlinx.datetime.internal.format.*
 public annotation class DateTimeBuilder
 
 /**
- * Common functions for all the date-time format builders.
+ * Common functions for all format builders.
  */
 @DateTimeBuilder
 public sealed interface FormatBuilder {
@@ -54,10 +54,10 @@ public fun <T: FormatBuilder> T.alternativeParsing(
  * Example:
  * ```
  * appendHours()
- * appendLiteral(":")
+ * appendLiteral(':')
  * appendMinutes()
  * appendOptional {
- *   appendLiteral(":")
+ *   appendLiteral(':')
  *   appendSeconds()
  * }
  * ```

@@ -9,18 +9,19 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
+/**
+ * Functions specific to the date-time format builders containing the local-date and local-time fields.
+ */
 public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields {
+    /**
+     * Appends an existing [Format] for the date-time part.
+     *
+     * Example:
+     * ```
+     * appendDateTime(LocalDateTime.Format.ISO)
+     * ```
+     */
     public fun appendDateTime(format: Format<LocalDateTime>)
-}
-
-internal fun DateTimeFormatBuilder.appendIsoDateTime() {
-    appendDate(ISO_DATE)
-    alternativeParsing({
-        appendLiteral('t')
-    }) {
-        appendLiteral('T')
-    }
-    appendTime(ISO_TIME)
 }
 
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
@@ -54,10 +55,6 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalDateTimeFormat(builder.build())
-        }
-
-        val ISO: LocalDateTimeFormat = build {
-            appendIsoDateTime()
         }
     }
 

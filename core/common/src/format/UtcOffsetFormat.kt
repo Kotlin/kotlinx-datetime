@@ -10,10 +10,45 @@ import kotlinx.datetime.internal.format.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
+/**
+ * Functions specific to the date-time format builders containing the UTC-offset fields.
+ */
 public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
-    public fun appendOffsetTotalHours(padding: Padding)
+    /**
+     * Appends the total hours of the UTC offset, with a sign.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
+     *
+     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     */
+    public fun appendOffsetTotalHours(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends the minute-of-hour of the UTC offset.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
+     *
+     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     */
     public fun appendOffsetMinutesOfHour(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends the second-of-minute of the UTC offset.
+     *
+     * By default, it's zero-padded to two digits, but this can be changed with [padding].
+     *
+     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     */
     public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends an existing [Format] for the UTC offset part.
+     *
+     * Example:
+     * ```
+     * appendOffset(UtcOffset.Format.COMPACT)
+     * ```
+     */
     public fun appendOffset(format: Format<UtcOffset>)
 }
 
@@ -74,7 +109,7 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
 ) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun UtcOffsetFormatBuilderFields.appendIsoOffsetWithoutZOnZero() {
-        appendOffsetTotalHours(Padding.ZERO)
+        appendOffsetTotalHours()
         when (outputMinute) {
             WhenToOutput.NEVER -> {}
             WhenToOutput.IF_NONZERO -> {
@@ -259,12 +294,12 @@ internal val ISO_OFFSET by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ appendLiteral("z") }) {
             appendOptional("Z") {
-                appendOffsetTotalHours(Padding.ZERO)
+                appendOffsetTotalHours()
                 appendLiteral(':')
-                appendOffsetMinutesOfHour(Padding.ZERO)
+                appendOffsetMinutesOfHour()
                 appendOptional {
                     appendLiteral(':')
-                    appendOffsetSecondsOfMinute(Padding.ZERO)
+                    appendOffsetSecondsOfMinute()
                 }
             }
         }
@@ -275,11 +310,11 @@ internal val ISO_OFFSET_BASIC by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ appendLiteral("z") }) {
             appendOptional("Z") {
-                appendOffsetTotalHours(Padding.ZERO)
+                appendOffsetTotalHours()
                 appendOptional {
-                    appendOffsetMinutesOfHour(Padding.ZERO)
+                    appendOffsetMinutesOfHour()
                     appendOptional {
-                        appendOffsetSecondsOfMinute(Padding.ZERO)
+                        appendOffsetSecondsOfMinute()
                     }
                 }
             }
@@ -289,10 +324,10 @@ internal val ISO_OFFSET_BASIC by lazy {
 @SharedImmutable
 internal val COMPACT_OFFSET by lazy {
     UtcOffsetFormat.build {
-        appendOffsetTotalHours(Padding.ZERO)
-        appendOffsetMinutesOfHour(Padding.ZERO)
+        appendOffsetTotalHours()
+        appendOffsetMinutesOfHour()
         appendOptional {
-            appendOffsetSecondsOfMinute(Padding.ZERO)
+            appendOffsetSecondsOfMinute()
         }
     }
 }

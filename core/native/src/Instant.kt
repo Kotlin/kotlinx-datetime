@@ -248,4 +248,4 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     }
 
 internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    ValueBag().also { it.populateFrom(this, offset) }.format(ValueBag.Format.ISO_INSTANT)
+    ValueBag.Format.ISO_INSTANT.format { populateFrom(this@toStringWithOffset, offset) }

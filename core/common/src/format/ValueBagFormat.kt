@@ -14,10 +14,51 @@ import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
 /**
- * A collection of date-time fields.
+ * A collection of date-time fields, used specifically for parsing and formatting.
  *
  * Its main purpose is to provide support for complex date-time formats that don't correspond to any of the standard
- * entities in the library.
+ * entities in the library. For example, a format that includes only the month and the day of the month, but not the
+ * year, can not be represented and parsed as a [LocalDate], but it is valid for a [ValueBag].
+ *
+ * Example:
+ * ```
+ * val input = "2020-03-16T23:59:59.999999999+03:00"
+ * val bag = ValueBag.Format.ISO_INSTANT.parse(input)
+ * val localDateTime = bag.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
+ * val instant = bag.toInstantUsingUtcOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
+ * val offset = bag.toUtcOffset() // UtcOffset(hours = 3)
+ * ```
+ *
+ * Another purpose is to support parsing and formatting data with out-of-bounds values. For example, parsing
+ * `23:59:60` as a [LocalTime] is not possible, but it is possible to parse it as a [ValueBag], adjust the value by
+ * setting [second] to `59`, and then convert it to a [LocalTime] via [toLocalTime].
+ *
+ * Example:
+ * ```
+ * val input = "23:59:60"
+ * val extraDay: Boolean
+ * val time = ValueBag.Format {
+ *   appendTime(LocalTime.Format.ISO)
+ * }.parse(input).apply {
+ *   if (hour == 23 && minute == 59 && second == 60) {
+ *     hour = 0; minute = 0; second = 0; extraDay = true
+ *   } else {
+ *     extraDay = false
+ *   }
+ * }.toLocalTime()
+ * ```
+ *
+ * Because this class has limited applications, constructing it directly is not possible.
+ * For formatting, use the [format] overload that accepts a lambda with a [ValueBag] receiver.
+ *
+ * Example:
+ * ```
+ * // Mon, 16 Mar 2020 23:59:59 +0300
+ * ValueBag.Format.RFC_1123.format {
+ *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+ *    populateFrom(UtcOffset(hours = 3))
+ * }
+ * ```
  *
  * Accessing the fields of this class is not thread-safe.
  * Make sure to apply proper synchronization if you are using a single instance from multiple threads.
@@ -25,6 +66,12 @@ import kotlin.reflect.*
 public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
     public companion object {}
 
+    /**
+     * The entry point for parsing and formatting [ValueBag] values.
+     *
+     * [Invoke][ValueBag.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * parsing and formatting [ValueBag] values.
+     */
     public object Format {
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
@@ -36,7 +83,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         }
 
         /**
-         * ISO-8601 extended format for dates and times with UTC offset.
+         * ISO 8601 extended format for dates and times with UTC offset.
          *
          * Examples of valid strings:
          * * `2020-01-01T23:59:59+01:00`
@@ -212,6 +259,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     /** The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59]. */
     public var offsetSecondsOfMinute: Int? by TwoDigitNumber(contents.offset::secondsOfMinute)
 
+    /** The timezone identifier, for example, "Europe/Berlin". */
     public var timeZoneId: String? by contents::timeZoneId
 
     /**
@@ -305,10 +353,6 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant")
         return Instant.fromEpochSeconds(totalSeconds, nanosecond ?: 0)
     }
-
-    override fun equals(other: Any?): Boolean = other is ValueBag && contents == other.contents
-
-    override fun hashCode(): Int = contents.hashCode()
 }
 
 /**
@@ -316,17 +360,48 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
  */
 public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatBuilderFields {
     /**
-     * Appends the IANA time zone identifier.
+     * Appends the IANA time zone identifier, for example, "Europe/Berlin".
+     *
+     * When formatting, the timezone identifier is supplied as is, without any validation.
+     * On parsing, [TimeZone.availableZoneIds] is used to validate the identifier.
      */
     public fun appendTimeZoneId()
 
+    /**
+     * Appends an existing [Format].
+     *
+     * Example:
+     * ```
+     * appendValueBag(ValueBag.Format.RFC_1123)
+     * ```
+     */
     public fun appendValueBag(format: Format<ValueBag>)
 }
 
-public fun ValueBag.format(format: Format<ValueBag>): String = format.format(this)
+/**
+ * Uses this format to format an unstructured [ValueBag].
+ *
+ * [block] is called on an empty [ValueBag] before formatting.
+ *
+ * Example:
+ * ```
+ * // Mon, 16 Mar 2020 23:59:59 +0300
+ * ValueBag.Format.RFC_1123.format {
+ *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+ *    populateFrom(UtcOffset(hours = 3))
+ * }
+ * ```
+ */
+public fun Format<ValueBag>.format(block: ValueBag.() -> Unit): String = format(ValueBag().apply { block() })
 
 /**
  * Parses a [ValueBag] from [input] using the given format.
+ * Equivalent to calling [Format.parse] on [format] with [input].
+ *
+ * [ValueBag] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
+ * matches.
+ *
+ * @throws DateTimeFormatException if the text does not match the format.
  */
 public fun ValueBag.Companion.parse(input: String, format: Format<ValueBag>): ValueBag = try {
     format.parse(input)

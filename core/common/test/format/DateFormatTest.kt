@@ -208,6 +208,18 @@ class DateFormatTest {
         test(dates, LocalDate.Format.ISO_BASIC)
     }
 
+    @Test
+    fun testDoc() {
+        val format = LocalDate.Format {
+          appendYear()
+          appendLiteral(' ')
+          appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
+          appendLiteral(' ')
+          appendDayOfMonth()
+        }
+        assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
+    }
+
     private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: Format<LocalDate>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

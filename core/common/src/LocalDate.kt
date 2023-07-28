@@ -47,6 +47,19 @@ public expect class LocalDate : Comparable<LocalDate> {
         internal val MAX: LocalDate
     }
 
+    /**
+     * The entry point for parsing and formatting [LocalDate] values.
+     *
+     * [Invoke][LocalDate.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * parsing and formatting [LocalDate] values.
+     *
+     * See [LocalDate.Format.ISO] and [LocalDate.Format.ISO_BASIC] for popular predefined formats.
+     * [LocalDate.parse] and [LocalDate.toString] can be used as convenient shortcuts for the
+     * [LocalDate.Format.ISO] format.
+     *
+     * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+     * (for example, [dayOfMonth] is 31 for February), consider using [ValueBag.Format] instead.
+     */
     public object Format;
 
     /**
@@ -122,6 +135,21 @@ public expect class LocalDate : Comparable<LocalDate> {
     public override fun toString(): String
 }
 
+/**
+ * Creates a new format for parsing and formatting [LocalDate] values.
+ *
+ * Example:
+ * ```
+ * // 2020 Jan 05
+ * LocalDate.Format {
+ *   appendYear()
+ *   appendLiteral(' ')
+ *   appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
+ *   appendLiteral(' ')
+ *   appendDayOfMonth()
+ * }
+ * ```
+ */
 public operator fun LocalDate.Format.invoke(block: DateFormatBuilder.() -> Unit): Format<LocalDate> =
     LocalDateFormat.build(block)
 
@@ -147,8 +175,18 @@ public val LocalDate.Format.ISO: Format<LocalDate> get() = ISO_DATE
  */
 public val LocalDate.Format.ISO_BASIC: Format<LocalDate> get() = ISO_DATE_BASIC
 
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [Format.format] on [format] with `this`.
+ */
 public fun LocalDate.format(format: Format<LocalDate>): String = format.format(this)
 
+/**
+ * Parses a [LocalDate] value using the given [format].
+ * Equivalent to calling [Format.parse] on [format] with [input].
+ *
+ * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+ */
 public fun LocalDate.Companion.parse(input: String, format: Format<LocalDate>): LocalDate = format.parse(input)
 
 /**

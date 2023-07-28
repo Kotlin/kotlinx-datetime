@@ -152,6 +152,23 @@ class UtcOffsetFormatTest {
         test(offsets, UtcOffset.Format.COMPACT)
     }
 
+    @Test
+    fun testDoc() {
+        val format = UtcOffset.Format {
+          appendOptional("GMT") {
+            appendOffsetTotalHours(Padding.NONE)
+            appendLiteral(':')
+            appendOffsetMinutesOfHour()
+            appendOptional {
+              appendLiteral(':')
+              appendOffsetSecondsOfMinute()
+            }
+          }
+        }
+        assertEquals("GMT", UtcOffset.ZERO.format(format))
+        assertEquals("+4:30:15", UtcOffset(4, 30, 15).format(format))
+    }
+
     private fun test(strings: Map<UtcOffset, Pair<String, Set<String>>>, format: Format<UtcOffset>) {
         for ((offset, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

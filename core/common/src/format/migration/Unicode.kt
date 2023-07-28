@@ -496,4 +496,4 @@ private fun AbstractUnicodeDirective.localizedDirective(recommendation: String? 
         + if (recommendation != null) ". $recommendation" else "")
 
 private fun AbstractUnicodeDirective.unsupportedPadding(digits: Int): Nothing =
-    throw IllegalArgumentException("Padding do $digits digits is not supported for the $formatLetter directive")
+    throw UnsupportedOperationException("Padding do $digits digits is not supported for the $formatLetter directive")

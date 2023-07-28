@@ -10,13 +10,77 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
+/**
+ * Functions specific to the date-time format builders containing the local-date fields.
+ */
 public sealed interface DateFormatBuilder : FormatBuilder {
+    /**
+     * Appends a year number to the format.
+     *
+     * By default, for years [-9999..9999], it's formatted as a decimal number, zero-padded to four digits, though
+     * this padding can be disabled or changed to space padding by passing [padding].
+     * For years outside this range, it's formatted as a decimal number with a leading sign, so the year 12345
+     * is formatted as "+12345".
+     */
     public fun appendYear(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends the last two digits of the ISO year.
+     *
+     * [base] is the base year for the two-digit year.
+     * For example, if [base] is 1960, then this format correctly works with years [1960..2059].
+     *
+     * On formatting, when given a year in the valid range, it returns the last two digits of the year,
+     * so 1993 becomes "93". When given a year outside the valid range, it returns the full year number
+     * with a leading sign, so 1850 becomes "+1850", and -200 becomes "-200".
+     *
+     * On parsing, it accepts either a two-digit year or a full year number with a leading sign.
+     * When given a two-digit year, it returns a year in the valid range, so "93" becomes 1993,
+     * and when given a full year number with a leading sign, it returns the full year number,
+     * so "+1850" becomes 1850.
+     */
     public fun appendYearTwoDigits(base: Int)
+
+    /**
+     * Appends a month-of-year number to the format, from 1 to 12.
+     */
     public fun appendMonthNumber(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends a month name to the format (for example, "January").
+     *
+     * Example:
+     * ```
+     * appendMonthName(MonthNames.ENGLISH_FULL)
+     * ```
+     */
     public fun appendMonthName(names: MonthNames)
+
+    /**
+     * Appends a day-of-month number to the format, from 1 to 31.
+     *
+     * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
+     */
     public fun appendDayOfMonth(padding: Padding = Padding.ZERO)
+
+    /**
+     * Appends a day-of-week name to the format (for example, "Thursday").
+     *
+     * Example:
+     * ```
+     * appendDayOfWeek(DayOfWeekNames.ENGLISH_FULL)
+     * ```
+     */
     public fun appendDayOfWeek(names: DayOfWeekNames)
+
+    /**
+     * Appends an existing [Format] for the date part.
+     *
+     * Example:
+     * ```
+     * appendDate(LocalDate.Format.ISO)
+     * ```
+     */
     public fun appendDate(dateFormat: Format<LocalDate>)
 }
 
@@ -33,6 +97,9 @@ public class MonthNames(
         require(names.size == 12) { "Month names must contain exactly 12 elements" }
     }
 
+    /**
+     * Create a [MonthNames], accepting the month names in order from January to December.
+     */
     public constructor(
         january: String, february: String, march: String, april: String, may: String, june: String,
         july: String, august: String, september: String, october: String, november: String, december: String
@@ -75,6 +142,9 @@ public class DayOfWeekNames(
         require(names.size == 7) { "Day of week names must contain exactly 7 elements" }
     }
 
+    /**
+     * A constructor that takes a list of day of week names, in order from Monday to Sunday.
+     */
     public constructor(
         monday: String,
         tuesday: String,

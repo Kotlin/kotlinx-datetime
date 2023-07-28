@@ -17,7 +17,7 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, LocalDateTimeFormat.ISO)
+        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, Format.ISO)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
@@ -60,7 +60,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = format(LocalDateTimeFormat.ISO)
+    actual override fun toString(): String = format(Format.ISO)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
