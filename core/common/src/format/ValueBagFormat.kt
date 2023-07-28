@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
 import kotlinx.datetime.internal.safeMultiply
+import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -426,6 +427,7 @@ internal class ValueBagContents internal constructor(
         date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
 }
 
+@SharedImmutable
 internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
 
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
