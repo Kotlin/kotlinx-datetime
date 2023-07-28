@@ -126,11 +126,17 @@ internal inline fun<T> StringFormat<T>.builderString(): String = directives.buil
 private fun<T> FormatStructure<T>.builderString(): String = when (this) {
     is BasicFormatStructure -> directive.builderRepresentation
     is ConstantFormatStructure -> "appendLiteral(${string.toKotlinCode()})"
-    is SignedFormatStructure -> buildString {
-        if (withPlusSign) appendLine("withSharedSign(outputPlus = true) {")
-        else appendLine("withSharedSign {")
-        appendLine(format.builderString().prependIndent(CODE_INDENT))
-        append("}")
+    is SignedFormatStructure -> {
+        if (format is BasicFormatStructure && format.directive is UtcOffsetWholeHoursDirective) {
+            format.directive.builderRepresentation
+        } else {
+            buildString {
+                if (withPlusSign) appendLine("withSharedSign(outputPlus = true) {")
+                else appendLine("withSharedSign {")
+                appendLine(format.builderString().prependIndent(CODE_INDENT))
+                append("}")
+            }
+        }
     }
     is OptionalFormatStructure -> buildString {
         if (onZero == "") {
