@@ -41,7 +41,7 @@ kotlin {
         }
     }
 
-    js {
+    js(IR) {
         nodejs {
         }
         compilations.all {

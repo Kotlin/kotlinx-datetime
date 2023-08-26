@@ -88,7 +88,7 @@ kotlin {
 
     }
 
-    js {
+    js(IR) {
         nodejs {
             testTask {
                 useMocha {
