@@ -386,3 +386,9 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
         }
     }
 }
+
+// TODO: Move to kotlinx.team.infra
+val signingTasks = tasks.withType<Sign>()
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    mustRunAfter(signingTasks)
+}
