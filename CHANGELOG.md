@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.4.1
+
+- Update Kotlin dependency to 1.8.21, kotlinx.serialization to 1.5.1
+- Support more Kotlin/Native targets: `linuxArm64`, `linuxArm32Hfp`, `watchosDeviceArm64`
+- Implement [comparable time marks](https://kotlinlang.org/docs/time-measurement.html#measure-differences-in-time) in a time source returned by `Clock.asTimeSource()` ([#271](https://github.com/Kotlin/kotlinx-datetime/pull/271))
+- Deprecate `Instant` and `LocalDate` arithmetic operations (`plus` and `minus`) taking `DateTimeUnit` without a number of units ([#247](https://github.com/Kotlin/kotlinx-datetime/pull/247))
+- Fix adding small `Duration` to large `Instant` on JS and Native ([#264](https://github.com/Kotlin/kotlinx-datetime/pull/264))
+
 ## 0.4.0
 
 - Add the `LocalTime` class for representing time-of-day ([#57](https://github.com/Kotlin/kotlinx-datetime/pull/57)). Thank you, @bishiboosh!
