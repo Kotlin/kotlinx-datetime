@@ -71,7 +71,7 @@ kotlin {
             target("tvosArm64")
             target("iosArm64")
             // Tier 3
-            // target("watchosDeviceArm64") // not supported by kotlinx.serialization
+            target("watchosDeviceArm64")
             // Deprecated for removal
             target("iosArm32")
             target("watchosX86")
