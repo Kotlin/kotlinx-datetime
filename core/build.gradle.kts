@@ -51,6 +51,9 @@ kotlin {
         target("androidNativeX86")
         target("androidNativeX64")
          */
+        // Tier 4 (deprecated, but still in demand)
+        target("linuxArm32Hfp")
+
         // Darwin targets are listed separately
         common("darwin") {
             // Tier 1
