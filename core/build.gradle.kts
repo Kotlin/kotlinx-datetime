@@ -290,7 +290,7 @@ tasks {
         manifest {
             attributes("Multi-Release" to true)
         }
-        from(compileJavaModuleInfo) {
+        from(compileJavaModuleInfo.map { it.destinationDirectory }) {
             into("META-INF/versions/9/")
         }
     }
