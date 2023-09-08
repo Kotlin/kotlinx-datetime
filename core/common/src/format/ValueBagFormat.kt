@@ -287,7 +287,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      *
      * @throws IllegalArgumentException if any of the fields is missing or invalid.
      */
-    public fun toLocaldate(): LocalDate = contents.date.toLocalDate()
+    public fun toLocalDate(): LocalDate = contents.date.toLocalDate()
 
     /**
      * Builds a [LocalTime] from the fields in this [ValueBag].
@@ -319,10 +319,10 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      * @throws IllegalArgumentException if any of the required fields are not present,
      * or if any of the fields are invalid.
      *
-     * @see toLocaldate
+     * @see toLocalDate
      * @see toLocalTime
      */
-    public fun toLocalDateTime(): LocalDateTime = toLocaldate().atTime(toLocalTime())
+    public fun toLocalDateTime(): LocalDateTime = toLocalDate().atTime(toLocalTime())
 
     /**
      * Builds an [Instant] from the fields in this [ValueBag].
