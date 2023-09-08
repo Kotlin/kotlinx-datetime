@@ -17,10 +17,19 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, Format.ISO)
+        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, Formats.ISO)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime> =
+            LocalDateTimeFormat.build(builder)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalDateTime> = ISO_DATETIME_BASIC
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
@@ -28,8 +37,6 @@ public actual constructor(public actual val date: LocalDate, public actual val t
 
     public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
         this(LocalDate(year, month, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
-
-    public actual object Format;
 
     public actual val year: Int get() = date.year
     public actual val monthNumber: Int get() = date.monthNumber
@@ -60,7 +67,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = format(Format.ISO)
+    actual override fun toString(): String = format(Formats.ISO)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {

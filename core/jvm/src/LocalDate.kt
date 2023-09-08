@@ -5,6 +5,7 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
@@ -29,6 +30,16 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
         public actual fun fromEpochDays(epochDays: Int): LocalDate =
             LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate> =
+            LocalDateFormat.build(block)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDate> get() = ISO_DATE
+
+        public actual val ISO_BASIC: DateTimeFormat<LocalDate> = ISO_DATE_BASIC
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
@@ -39,8 +50,6 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
             })
 
     public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
-
-    public actual object Format;
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue

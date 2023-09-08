@@ -95,7 +95,7 @@ class UtcOffsetFormatTest {
             put(UtcOffset(+17, 59, 58), ("+17:59:58" to setOf()))
             put(UtcOffset(+18, 0, 0), ("+18:00" to setOf()))
         }
-        test(offsets, UtcOffset.Format.ISO)
+        test(offsets, UtcOffset.Formats.ISO)
     }
 
     @Test
@@ -122,7 +122,7 @@ class UtcOffsetFormatTest {
             put(UtcOffset(+17, 59, 58), ("+175958" to setOf()))
             put(UtcOffset(+18, 0, 0), ("+18" to setOf()))
         }
-        test(offsets, UtcOffset.Format.ISO_BASIC)
+        test(offsets, UtcOffset.Formats.ISO_BASIC)
     }
 
     @Test
@@ -149,7 +149,7 @@ class UtcOffsetFormatTest {
             put(UtcOffset(+17, 59, 58), ("+175958" to setOf()))
             put(UtcOffset(+18, 0, 0), ("+1800" to setOf()))
         }
-        test(offsets, UtcOffset.Format.COMPACT)
+        test(offsets, UtcOffset.Formats.COMPACT)
     }
 
     @Test

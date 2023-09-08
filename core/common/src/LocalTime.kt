@@ -81,24 +81,61 @@ public expect class LocalTime : Comparable<LocalTime> {
          */
         public fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime
 
+        /**
+         * Creates a new format for parsing and formatting [LocalTime] values.
+         *
+         * Example:
+         * ```
+         * LocalTime.Format {
+         *   appendHour()
+         *   appendLiteral(':')
+         *   appendMinute()
+         *   appendLiteral(':')
+         *   appendSecond()
+         *   appendOptional {
+         *     appendLiteral('.')
+         *     appendSecondFraction()
+         *   }
+         * }
+         * ```
+         *
+         * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+         * (for example, [second] is 60), consider using [ValueBag.Format] instead.
+         *
+         * There is a collection of predefined formats in [LocalTime.Formats].
+         */
+        @Suppress("FunctionName")
+        public fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime>
+
         internal val MIN: LocalTime
         internal val MAX: LocalTime
     }
 
     /**
-     * The entry point for parsing and formatting [LocalTime] values.
+     * A collection of predefined formats for parsing and formatting [LocalDateTime] values.
      *
-     * [Invoke][LocalTime.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
-     * parsing and formatting [LocalTime] values.
-     *
-     * See [LocalTime.Format.ISO] and [LocalTime.Format.ISO_BASIC] for popular predefined formats.
+     * See [LocalTime.Formats.ISO] and [LocalTime.Formats.ISO_BASIC] for popular predefined formats.
      * [LocalTime.parse] and [LocalTime.toString] can be used as convenient shortcuts for the
-     * [LocalTime.Format.ISO] format.
+     * [LocalTime.Formats.ISO] format.
      *
-     * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
-     * (for example, [second] is 60), consider using [ValueBag.Format] instead.
+     * If predefined formats are not sufficient, use [LocalTime.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [LocalTime] values.
      */
-    public object Format;
+    public object Formats {
+        /**
+         * ISO 8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
+         *
+         * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
+         */
+        public val ISO: DateTimeFormat<LocalTime>
+
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples: `T1234`, `T123456`, `T123456.789`.
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalTime>
+    }
 
     /**
      * Constructs a [LocalTime] instance from the given time components.
@@ -153,41 +190,6 @@ public expect class LocalTime : Comparable<LocalTime> {
      */
     public override fun toString(): String
 }
-
-/**
- * Creates a new format for parsing and formatting [LocalTime] values.
- *
- * Example:
- * ```
- * LocalTime.Format {
- *   appendHour()
- *   appendLiteral(':')
- *   appendMinute()
- *   appendLiteral(':')
- *   appendSecond()
- *   appendOptional {
- *     appendLiteral('.')
- *     appendSecondFraction()
- *   }
- * }
- * ```
- */
-public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
-    LocalTimeFormat.build(builder)
-
-/**
- * ISO 8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
- *
- * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
- */
-public val LocalTime.Format.ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
-
-/**
- * ISO 8601 basic format.
- *
- * Examples: `T1234`, `T123456`, `T123456.789`.
- */
-public val LocalTime.Format.ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
 
 /**
  * Formats this value using the given [format].

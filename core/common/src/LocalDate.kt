@@ -42,24 +42,66 @@ public expect class LocalDate : Comparable<LocalDate> {
          */
         public fun fromEpochDays(epochDays: Int): LocalDate
 
+        /**
+         * Creates a new format for parsing and formatting [LocalDate] values.
+         *
+         * Example:
+         * ```
+         * // 2020 Jan 05
+         * LocalDate.Format {
+         *   appendYear()
+         *   appendLiteral(' ')
+         *   appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
+         *   appendLiteral(' ')
+         *   appendDayOfMonth()
+         * }
+         * ```
+         *
+         * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+         * (for example, [dayOfMonth] is 31 for February), consider using [ValueBag.Format] instead.
+         *
+         * There is a collection of predefined formats in [LocalDate.Formats].
+         */
+        @Suppress("FunctionName")
+        public fun Format(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate>
+
         internal val MIN: LocalDate
         internal val MAX: LocalDate
     }
 
     /**
-     * The entry point for parsing and formatting [LocalDate] values.
+     * A collection of predefined formats for parsing and formatting [LocalDate] values.
      *
-     * [Invoke][LocalDate.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
-     * parsing and formatting [LocalDate] values.
-     *
-     * See [LocalDate.Format.ISO] and [LocalDate.Format.ISO_BASIC] for popular predefined formats.
+     * See [LocalDate.Formats.ISO] and [LocalDate.Formats.ISO_BASIC] for popular predefined formats.
      * [LocalDate.parse] and [LocalDate.toString] can be used as convenient shortcuts for the
-     * [LocalDate.Format.ISO] format.
+     * [LocalDate.Formats.ISO] format.
      *
-     * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
-     * (for example, [dayOfMonth] is 31 for February), consider using [ValueBag.Format] instead.
+     * If predefined formats are not sufficient, use [LocalDate.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [LocalDate] values.
      */
-    public object Format;
+    public object Formats {
+        /**
+         * ISO 8601 extended format, which is the format used by [LocalDate.toString] and [LocalDate.parse].
+         *
+         * Examples of dates in ISO 8601 format:
+         * - `2020-08-30`
+         * - `+12020-08-30`
+         * - `0000-08-30`
+         * - `-0001-08-30`
+         */
+        public val ISO: DateTimeFormat<LocalDate>
+
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples of dates in ISO 8601 basic format:
+         * - `20200830`
+         * - `+120200830`
+         * - `00000830`
+         * - `-00010830`
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalDate>
+    }
 
     /**
      * Constructs a [LocalDate] instance from the given date components.
@@ -133,46 +175,6 @@ public expect class LocalDate : Comparable<LocalDate> {
      */
     public override fun toString(): String
 }
-
-/**
- * Creates a new format for parsing and formatting [LocalDate] values.
- *
- * Example:
- * ```
- * // 2020 Jan 05
- * LocalDate.Format {
- *   appendYear()
- *   appendLiteral(' ')
- *   appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
- *   appendLiteral(' ')
- *   appendDayOfMonth()
- * }
- * ```
- */
-public operator fun LocalDate.Format.invoke(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate> =
-    LocalDateFormat.build(block)
-
-/**
- * ISO 8601 extended format, which is the format used by [LocalDate.toString] and [LocalDate.parse].
- *
- * Examples of dates in ISO 8601 format:
- * - `2020-08-30`
- * - `+12020-08-30`
- * - `0000-08-30`
- * - `-0001-08-30`
- */
-public val LocalDate.Format.ISO: DateTimeFormat<LocalDate> get() = ISO_DATE
-
-/**
- * ISO 8601 basic format.
- *
- * Examples of dates in ISO 8601 basic format:
- * - `20200830`
- * - `+120200830`
- * - `00000830`
- * - `-00010830`
- */
-public val LocalDate.Format.ISO_BASIC: DateTimeFormat<LocalDate> get() = ISO_DATE_BASIC
 
 /**
  * Formats this value using the given [format].

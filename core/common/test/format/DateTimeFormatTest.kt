@@ -14,7 +14,7 @@ class DateTimeFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalDateTime.Format.ISO
+        val format = LocalDateTime.Formats.ISO
         assertEquals(LocalDateTime(2023, 2, 28, 15, 36), format.parse("2023-02-28T15:36"))
         val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40T15:36") }
         assertContains(error.message!!, "40")
@@ -221,7 +221,7 @@ class DateTimeFormatTest {
             put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99), ("2022-01-02T00:00:00.000000099" to setOf()))
             put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9), ("2022-01-02T00:00:00.000000009" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.ISO)
+        test(dateTimes, LocalDateTime.Formats.ISO)
     }
 
     @Test
@@ -256,13 +256,13 @@ class DateTimeFormatTest {
             put(LocalDateTime(2022, 1, 2, 0, 0, 0, 99), ("20220102T000000.000000099" to setOf()))
             put(LocalDateTime(2022, 1, 2, 0, 0, 0, 9), ("20220102T000000.000000009" to setOf()))
         }
-        test(dateTimes, LocalDateTime.Format.ISO_BASIC)
+        test(dateTimes, LocalDateTime.Formats.ISO_BASIC)
     }
 
     @Test
     fun testDoc() {
         val dateTime = LocalDateTime(2020, 8, 30, 18, 43, 13, 0)
-        val format1 = LocalDateTime.Format { appendDate(LocalDate.Format.ISO); appendLiteral(' ');  appendTime(LocalTime.Format.ISO) }
+        val format1 = LocalDateTime.Format { appendDate(LocalDate.Formats.ISO); appendLiteral(' ');  appendTime(LocalTime.Formats.ISO) }
         assertEquals("2020-08-30 18:43:13", dateTime.format(format1))
         val format2 = LocalDateTime.Format {
           appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()

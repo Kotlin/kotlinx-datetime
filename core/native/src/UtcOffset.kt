@@ -85,9 +85,18 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
                 UtcOffset(totalSeconds = seconds)
             }
         }
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
+            UtcOffsetFormat.build(block)
     }
 
-    public actual object Format;
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
+        public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
+        public actual val COMPACT: DateTimeFormat<UtcOffset> get() = COMPACT_OFFSET
+    }
+
 }
 
 @ThreadLocal

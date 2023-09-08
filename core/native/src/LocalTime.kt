@@ -33,7 +33,7 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = parse(isoString, Format.ISO)
+        public actual fun parse(isoString: String): LocalTime = parse(isoString, Formats.ISO)
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
@@ -74,9 +74,16 @@ public actual class LocalTime actual constructor(
 
         internal actual val MIN: LocalTime = LocalTime(0, 0, 0, 0)
         internal actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
+            LocalTimeFormat.build(builder)
     }
 
-    public actual object Format;
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
+    }
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalTime): Int {
@@ -120,7 +127,7 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    actual override fun toString(): String = format(Format.ISO)
+    actual override fun toString(): String = format(Formats.ISO)
 
     override fun equals(other: Any?): Boolean =
         other is LocalTime && this.compareTo(other) == 0

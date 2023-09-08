@@ -14,7 +14,7 @@ class TimeFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalTime.Format.ISO
+        val format = LocalTime.Formats.ISO
         assertEquals(LocalTime(15, 36), format.parse("15:36"))
         val error = assertFailsWith<DateTimeFormatException> { format.parse("40:36") }
         assertContains(error.message!!, "40")
@@ -114,7 +114,7 @@ class TimeFormatTest {
             put(LocalTime(0, 0, 0, 99), ("00:00:00.000000099" to setOf()))
             put(LocalTime(0, 0, 0, 9), ("00:00:00.000000009" to setOf()))
         }
-        test(times, LocalTime.Format.ISO)
+        test(times, LocalTime.Formats.ISO)
     }
 
     @Test
@@ -147,7 +147,7 @@ class TimeFormatTest {
             put(LocalTime(0, 0, 0, 99), ("T000000.000000099" to setOf()))
             put(LocalTime(0, 0, 0, 9), ("T000000.000000009" to setOf()))
         }
-        test(times, LocalTime.Format.ISO_BASIC)
+        test(times, LocalTime.Formats.ISO_BASIC)
     }
 
     @Test

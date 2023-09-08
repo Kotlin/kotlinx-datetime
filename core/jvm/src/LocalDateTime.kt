@@ -5,6 +5,7 @@
 @file:JvmName("LocalDateTimeJvmKt")
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -64,9 +65,16 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
         internal actual val MIN: LocalDateTime = LocalDateTime(jtLocalDateTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(jtLocalDateTime.MAX)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime> =
+            LocalDateTimeFormat.build(builder)
     }
 
-    public actual object Format;
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalDateTime> = ISO_DATETIME_BASIC
+    }
 
 }
 

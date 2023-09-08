@@ -43,8 +43,8 @@ class ValueBagFormatTest {
     @Test
     fun testZonedDateTime() {
         val format = ValueBag.Format {
-            appendDateTime(LocalDateTime.Format.ISO)
-            appendOffset(UtcOffset.Format.ISO)
+            appendDateTime(LocalDateTime.Formats.ISO)
+            appendOffset(UtcOffset.Formats.ISO)
             appendLiteral('[')
             appendTimeZoneId()
             appendLiteral(']')
@@ -112,7 +112,7 @@ class ValueBagFormatTest {
         val input = "23:59:60"
         val extraDay: Boolean
         val time = ValueBag.Format {
-          appendTime(LocalTime.Format.ISO)
+          appendTime(LocalTime.Formats.ISO)
         }.parse(input).apply {
           if (hour == 23 && minute == 59 && second == 60) {
             hour = 0; minute = 0; second = 0; extraDay = true

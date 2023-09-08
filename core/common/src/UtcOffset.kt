@@ -48,45 +48,85 @@ public expect class UtcOffset {
          * - `+01:23:45`, an hour, 23 minutes, and 45 seconds.
          */
         public fun parse(offsetString: String): UtcOffset
+
+        /**
+         * Creates a new format for parsing and formatting [UtcOffset] values.
+         *
+         * Example:
+         * ```
+         * // `GMT` on zero, `+4:30:15`, using a custom format:
+         * UtcOffset.Format {
+         *   appendOptional("GMT") {
+         *     appendOffsetTotalHours(Padding.NONE)
+         *     appendLiteral(':')
+         *     appendOffsetMinutesOfHour()
+         *     appendOptional {
+         *       appendLiteral(':')
+         *       appendOffsetSecondsOfMinute()
+         *     }
+         *   }
+         * }
+         * ```
+         *
+         * Since [UtcOffset] values are rarely formatted and parsed on their own,
+         * instances of [DateTimeFormat] obtained here will likely need to be passed to
+         * [UtcOffsetFormatBuilderFields.appendOffset] in a format builder for a larger data structure.
+         *
+         * There is a collection of predefined formats in [UtcOffset.Formats].
+         */
+        @Suppress("FunctionName")
+        public fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset>
     }
 
     /**
-     * The entry point for parsing and formatting [UtcOffset] values.
+     * A collection of predefined formats for parsing and formatting [UtcOffset] values.
      *
-     * [Invoke][UtcOffset.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
-     * parsing and formatting [UtcOffset] values.
-     *
-     * See [UtcOffset.Format.ISO], [UtcOffset.Format.ISO_BASIC], and [UtcOffset.Format.COMPACT]
+     * See [UtcOffset.Formats.ISO], [UtcOffset.Formats.ISO_BASIC], and [UtcOffset.Formats.COMPACT]
      * for popular predefined formats.
      *
-     * Since [UtcOffset] values are rarely formatted and parsed on their own,
-     * instances of [kotlinx.datetime.format.DateTimeFormat] obtained here will likely need to be passed to
-     * [UtcOffsetFormatBuilderFields.appendOffset] in a format builder for a larger data structure.
+     * If predefined formats are not sufficient, use [UtcOffset.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [UtcOffset] values.
      */
-    public object Format;
-}
+    public object Formats {
+        /**
+         * ISO 8601 extended format, which is the format used by [UtcOffset.toString].
+         *
+         * Examples of UTC offsets in ISO 8601 format:
+         * - `Z`
+         * - `+05:00`
+         * - `-17:16`
+         * - `+10:36:30`
+         */
+        public val ISO: DateTimeFormat<UtcOffset>
 
-/**
- * Creates a new format for parsing and formatting [UtcOffset] values.
- *
- * Example:
- * ```
- * // `GMT` on zero, `+4:30:15`, using a custom format:
- * UtcOffset.Format {
- *   appendOptional("GMT") {
- *     appendOffsetTotalHours(Padding.NONE)
- *     appendLiteral(':')
- *     appendOffsetMinutesOfHour()
- *     appendOptional {
- *       appendLiteral(':')
- *       appendOffsetSecondsOfMinute()
- *     }
- *   }
- * }
- * ```
- */
-public operator fun UtcOffset.Format.invoke(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
-    UtcOffsetFormat.build(block)
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples of UTC offsets in ISO 8601 basic format:
+         * - `Z`
+         * - `+05`
+         * - `-1716`
+         * - `+103630`
+         *
+         * @see UtcOffset.Formats.COMPACT
+         */
+        public val ISO_BASIC: DateTimeFormat<UtcOffset>
+
+        /**
+         * A format similar to ISO 8601 basic format, but outputting `+0000` instead of `Z` for the zero offset and always
+         * requiring the minute component to be present.
+         *
+         * Examples of UTC offsets in this format:
+         * - `+0000`
+         * - `+0500`
+         * - `-1716`
+         * - `+103630`
+         *
+         * @see UtcOffset.Formats.ISO_BASIC
+         */
+        public val COMPACT: DateTimeFormat<UtcOffset>
+    }
+}
 
 /**
  * Formats this value using the given [format].
@@ -101,44 +141,6 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
  */
 public fun UtcOffset.Companion.parse(input: String, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
-
-/**
- * ISO 8601 extended format, which is the format used by [UtcOffset.toString].
- *
- * Examples of UTC offsets in ISO 8601 format:
- * - `Z`
- * - `+05:00`
- * - `-17:16`
- * - `+10:36:30`
- */
-public val UtcOffset.Format.ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
-
-/**
- * ISO 8601 basic format.
- *
- * Examples of UTC offsets in ISO 8601 basic format:
- * - `Z`
- * - `+05`
- * - `-1716`
- * - `+103630`
- *
- * @see UtcOffset.Format.COMPACT
- */
-public val UtcOffset.Format.ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
-
-/**
- * A format similar to ISO 8601 basic format, but outputting `+0000` instead of `Z` for the zero offset and always
- * requiring the minute component to be present.
- *
- * Examples of UTC offsets in this format:
- * - `+0000`
- * - `+0500`
- * - `-1716`
- * - `+103630`
- *
- * @see UtcOffset.Format.ISO_BASIC
- */
-public val UtcOffset.Format.COMPACT: DateTimeFormat<UtcOffset> get() = COMPACT_OFFSET
 
 /**
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.

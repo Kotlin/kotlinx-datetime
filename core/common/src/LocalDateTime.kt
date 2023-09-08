@@ -42,21 +42,68 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          */
         public fun parse(isoString: String): LocalDateTime
 
+        /**
+         * Creates a new format for parsing and formatting [LocalDateTime] values.
+         *
+         * Examples:
+         * ```
+         * // `2020-08-30 18:43:13`, using predefined date and time formats
+         * LocalDateTime.Format { appendDate(LocalDate.Format.ISO); appendLiteral(' ');  appendTime(LocalTime.Format.ISO) }
+         *
+         * // `08/30 18:43:13`, using a custom format:
+         * LocalDateTime.Format {
+         *   appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()
+         *   appendLiteral(' ')
+         *   appendHour(); appendLiteral(':'); appendMinute()
+         *   appendOptional { appendLiteral(':'); appendSecond() }
+         * }
+         * ```
+         *
+         * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+         * (for example, [dayOfMonth] is 31 for February), consider using [ValueBag.Format] instead.
+         *
+         * There is a collection of predefined formats in [LocalDateTime.Formats].
+         */
+        @Suppress("FunctionName")
+        public fun Format(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime>
+
         internal val MIN: LocalDateTime
         internal val MAX: LocalDateTime
     }
 
     /**
-     * The entry point for parsing and formatting [LocalDateTime] values.
+     * A collection of predefined formats for parsing and formatting [LocalDateTime] values.
      *
-     * [Invoke][LocalDateTime.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
-     * parsing and formatting [LocalDateTime] values.
-     *
-     * See [LocalDateTime.Format.ISO] and [LocalDateTime.Format.ISO_BASIC] for popular predefined formats.
+     * See [LocalDateTime.Formats.ISO] and [LocalDateTime.Formats.ISO_BASIC] for popular predefined formats.
      * [LocalDateTime.parse] and [LocalDateTime.toString] can be used as convenient shortcuts for the
-     * [LocalDateTime.Format.ISO] format.
+     * [LocalDateTime.Formats.ISO] format.
+     *
+     * If predefined formats are not sufficient, use [LocalDateTime.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [LocalDateTime] values.
      */
-    public object Format;
+    public object Formats {
+        /**
+         * ISO 8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
+         *
+         * Examples of date/time in ISO 8601 format:
+         * - `2020-08-30T18:43`
+         * - `+12020-08-30T18:43:00`
+         * - `0000-08-30T18:43:00.500`
+         * - `-0001-08-30T18:43:00.123456789`
+         */
+        public val ISO: DateTimeFormat<LocalDateTime>
+
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples of date/time in ISO 8601 basic format:
+         * - `20200830T1843`
+         * - `+120200830T184300`
+         * - `00000830T184300.500`
+         * - `-00010830T184300.123456789`
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalDateTime>
+    }
 
     /**
      * Constructs a [LocalDateTime] instance from the given date and time components.
@@ -169,48 +216,6 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public override fun toString(): String
 }
-
-/**
- * Creates a new format for parsing and formatting [LocalDateTime] values.
- *
- * Examples:
- * ```
- * // `2020-08-30 18:43:13`, using predefined date and time formats
- * LocalDateTime.Format { appendDate(LocalDate.Format.ISO); appendLiteral(' ');  appendTime(LocalTime.Format.ISO) }
- *
- * // `08/30 18:43:13`, using a custom format:
- * LocalDateTime.Format {
- *   appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()
- *   appendLiteral(' ')
- *   appendHour(); appendLiteral(':'); appendMinute()
- *   appendOptional { appendLiteral(':'); appendSecond() }
- * }
- * ```
- */
-public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime> =
-    LocalDateTimeFormat.build(builder)
-
-/**
- * ISO 8601 extended format, which is the format used by [LocalDateTime.toString] and [LocalDateTime.parse].
- *
- * Examples of date/time in ISO 8601 format:
- * - `2020-08-30T18:43`
- * - `+12020-08-30T18:43:00`
- * - `0000-08-30T18:43:00.500`
- * - `-0001-08-30T18:43:00.123456789`
- */
-public val LocalDateTime.Format.ISO: DateTimeFormat<LocalDateTime> get() = ISO_DATETIME
-
-/**
- * ISO 8601 basic format.
- *
- * Examples of date/time in ISO 8601 basic format:
- * - `20200830T1843`
- * - `+120200830T184300`
- * - `00000830T184300.500`
- * - `-00010830T184300.123456789`
- */
-public val LocalDateTime.Format.ISO_BASIC: DateTimeFormat<LocalDateTime> get() = ISO_DATETIME_BASIC
 
 /**
  * Formats this value using the given [format].

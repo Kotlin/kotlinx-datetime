@@ -14,7 +14,7 @@ class DateFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalDate.Format.ISO
+        val format = LocalDate.Formats.ISO
         assertEquals(LocalDate(2023, 2, 28), format.parse("2023-02-28"))
         val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40") }
         assertContains(error.message!!, "40")
@@ -188,7 +188,7 @@ class DateFormatTest {
             put(LocalDate(123456, 6, 1), ("+123456-06-01" to setOf()))
             put(LocalDate(-123456, 5, 1), ("-123456-05-01" to setOf()))
         }
-        test(dates, LocalDate.Format.ISO)
+        test(dates, LocalDate.Formats.ISO)
     }
 
     @Test
@@ -205,7 +205,7 @@ class DateFormatTest {
             put(LocalDate(123456, 6, 1), ("+1234560601" to setOf()))
             put(LocalDate(-123456, 5, 1), ("-1234560501" to setOf()))
         }
-        test(dates, LocalDate.Format.ISO_BASIC)
+        test(dates, LocalDate.Formats.ISO_BASIC)
     }
 
     @Test

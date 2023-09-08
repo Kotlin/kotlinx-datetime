@@ -6,6 +6,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
@@ -70,7 +71,15 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
         internal actual val MIN: LocalTime = LocalTime(jtLocalTime.MIN)
         internal actual val MAX: LocalTime = LocalTime(jtLocalTime.MAX)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
+            LocalTimeFormat.build(builder)
     }
 
-    public actual object Format;
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
+
+    }
 }

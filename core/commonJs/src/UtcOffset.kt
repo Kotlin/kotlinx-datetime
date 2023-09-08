@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 
@@ -27,9 +28,17 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: jtZo
             if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
             throw e
         }
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
+            UtcOffsetFormat.build(block)
     }
 
-    public actual object Format;
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
+        public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
+        public actual val COMPACT: DateTimeFormat<UtcOffset> get() = COMPACT_OFFSET
+    }
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
