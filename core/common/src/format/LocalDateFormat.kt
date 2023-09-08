@@ -74,14 +74,14 @@ public sealed interface DateFormatBuilder : FormatBuilder {
     public fun appendDayOfWeek(names: DayOfWeekNames)
 
     /**
-     * Appends an existing [Format] for the date part.
+     * Appends an existing [DateTimeFormat] for the date part.
      *
      * Example:
      * ```
      * appendDate(LocalDate.Format.ISO)
      * ```
      */
-    public fun appendDate(dateFormat: Format<LocalDate>)
+    public fun appendDate(dateFormat: DateTimeFormat<LocalDate>)
 }
 
 /**
@@ -305,7 +305,7 @@ internal class DayOfWeekDirective(names: List<String>) :
 }
 
 internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer>) :
-    AbstractFormat<LocalDate, IncompleteLocalDate>(actualFormat) {
+    AbstractDateTimeFormat<LocalDate, IncompleteLocalDate>(actualFormat) {
     override fun intermediateFromValue(value: LocalDate): IncompleteLocalDate =
         IncompleteLocalDate().apply { populateFrom(value) }
 
@@ -314,7 +314,7 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
     override fun newIntermediate(): IncompleteLocalDate = IncompleteLocalDate()
 
     companion object {
-        fun build(block: DateFormatBuilder.() -> Unit): Format<LocalDate> {
+        fun build(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate> {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalDateFormat(builder.build())
@@ -340,7 +340,7 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
             is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
         }
 

@@ -14,14 +14,14 @@ import kotlin.native.concurrent.*
  */
 public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields {
     /**
-     * Appends an existing [Format] for the date-time part.
+     * Appends an existing [DateTimeFormat] for the date-time part.
      *
      * Example:
      * ```
      * appendDateTime(LocalDateTime.Format.ISO)
      * ```
      */
-    public fun appendDateTime(format: Format<LocalDateTime>)
+    public fun appendDateTime(format: DateTimeFormat<LocalDateTime>)
 }
 
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
@@ -41,7 +41,7 @@ internal class IncompleteLocalDateTime(
 }
 
 internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldContainer>) :
-    AbstractFormat<LocalDateTime, IncompleteLocalDateTime>(actualFormat) {
+    AbstractDateTimeFormat<LocalDateTime, IncompleteLocalDateTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalDateTime): IncompleteLocalDateTime =
         IncompleteLocalDateTime().apply { populateFrom(value) }
 
@@ -91,17 +91,17 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
             is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: Format<LocalTime>) = when (format) {
+        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDateTime(format: Format<LocalDateTime>) = when (format) {
+        override fun appendDateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
             is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 

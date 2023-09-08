@@ -169,7 +169,7 @@ class UtcOffsetFormatTest {
         assertEquals("+4:30:15", UtcOffset(4, 30, 15).format(format))
     }
 
-    private fun test(strings: Map<UtcOffset, Pair<String, Set<String>>>, format: Format<UtcOffset>) {
+    private fun test(strings: Map<UtcOffset, Pair<String, Set<String>>>, format: DateTimeFormat<UtcOffset>) {
         for ((offset, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(offset), "formatting $offset with $format")

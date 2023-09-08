@@ -223,7 +223,7 @@ class TimeFormatTest {
         assertEquals("12:34:56.123", format.format(LocalTime(12, 34, 56, 123000000)))
     }
 
-    private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: Format<LocalTime>) {
+    private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: DateTimeFormat<LocalTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(date), "formatting $date with $format")

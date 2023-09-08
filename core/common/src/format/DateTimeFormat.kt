@@ -12,7 +12,7 @@ import kotlinx.datetime.internal.format.parser.*
 /**
  * A format for parsing and formatting date-time-related values.
  */
-public sealed interface Format<T> {
+public sealed interface DateTimeFormat<T> {
     /**
      * Formats the given [value] into a string, using this format.
      */
@@ -21,7 +21,7 @@ public sealed interface Format<T> {
     /**
      * Formats the given [value] into the given [appendable], using this format.
      */
-    public fun formatTo(appendable: Appendable, value: T)
+    public fun <A: Appendable> formatTo(appendable: A, value: T): A
 
     /**
      * Parses the given [input] string as [T], using this format.
@@ -62,7 +62,7 @@ internal inline fun Padding.minDigits(width: Int) = if (this == Padding.ZERO) wi
 internal inline fun Padding.spaces(width: Int) = if (this == Padding.SPACE) width else null
 
 /** [T] is the user-visible type, whereas [U] is its mutable representation for parsing and formatting. */
-internal sealed class AbstractFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): Format<T> {
+internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): DateTimeFormat<T> {
 
     abstract fun intermediateFromValue(value: T): U
 
@@ -80,8 +80,8 @@ internal sealed class AbstractFormat<T, U : Copyable<U>>(private val actualForma
         actualFormat.formatter.format(intermediateFromValue(value), it)
     }.toString()
 
-    override fun formatTo(appendable: Appendable, value: T) {
-        actualFormat.formatter.format(intermediateFromValue(value), appendable)
+    override fun <A: Appendable> formatTo(appendable: A, value: T): A = appendable.apply {
+        actualFormat.formatter.format(intermediateFromValue(value), this)
     }
 
     private fun copyIntermediate(intermediate: U): U = intermediate.copy()

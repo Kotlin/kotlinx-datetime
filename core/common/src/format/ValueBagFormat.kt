@@ -70,14 +70,14 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     /**
      * The entry point for parsing and formatting [ValueBag] values.
      *
-     * [Invoke][ValueBag.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * [Invoke][ValueBag.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
      * parsing and formatting [ValueBag] values.
      */
     public object Format {
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
          */
-        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.Format<ValueBag> {
+        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.DateTimeFormat<ValueBag> {
             val builder = ValueBagFormat.Builder(AppendableFormatStructure())
             block(builder)
             return ValueBagFormat(builder.build())
@@ -95,7 +95,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
-        public val ISO_INSTANT: kotlinx.datetime.format.Format<ValueBag> = Format {
+        public val ISO_INSTANT: kotlinx.datetime.format.DateTimeFormat<ValueBag> = Format {
             appendDate(ISO_DATE)
             alternativeParsing({
                 appendLiteral('t')
@@ -119,7 +119,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             )
         }
 
-        public val RFC_1123: kotlinx.datetime.format.Format<ValueBag> = Format {
+        public val RFC_1123: kotlinx.datetime.format.DateTimeFormat<ValueBag> = Format {
             appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             appendLiteral(", ")
             appendDayOfMonth(Padding.NONE)
@@ -369,14 +369,14 @@ public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatB
     public fun appendTimeZoneId()
 
     /**
-     * Appends an existing [Format].
+     * Appends an existing [DateTimeFormat].
      *
      * Example:
      * ```
      * appendValueBag(ValueBag.Format.RFC_1123)
      * ```
      */
-    public fun appendValueBag(format: Format<ValueBag>)
+    public fun appendValueBag(format: DateTimeFormat<ValueBag>)
 }
 
 /**
@@ -393,18 +393,18 @@ public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatB
  * }
  * ```
  */
-public fun Format<ValueBag>.format(block: ValueBag.() -> Unit): String = format(ValueBag().apply { block() })
+public fun DateTimeFormat<ValueBag>.format(block: ValueBag.() -> Unit): String = format(ValueBag().apply { block() })
 
 /**
  * Parses a [ValueBag] from [input] using the given format.
- * Equivalent to calling [Format.parse] on [format] with [input].
+ * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
  * [ValueBag] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
  * matches.
  *
  * @throws DateTimeFormatException if the text does not match the format.
  */
-public fun ValueBag.Companion.parse(input: String, format: Format<ValueBag>): ValueBag = try {
+public fun ValueBag.Companion.parse(input: String, format: DateTimeFormat<ValueBag>): ValueBag = try {
     format.parse(input)
 } catch (e: ParseException) {
     throw DateTimeFormatException(e)
@@ -437,7 +437,7 @@ internal class TimeZoneIdDirective(knownZones: Set<String>) :
 }
 
 internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
-    AbstractFormat<ValueBag, ValueBagContents>(actualFormat) {
+    AbstractDateTimeFormat<ValueBag, ValueBagContents>(actualFormat) {
     override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
 
     override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)
@@ -492,27 +492,27 @@ internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) 
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: Format<LocalDate>) = when (dateFormat) {
+        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
             is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: Format<LocalTime>) = when (format) {
+        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendOffset(format: Format<UtcOffset>) = when (format) {
+        override fun appendOffset(format: DateTimeFormat<UtcOffset>) = when (format) {
             is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDateTime(format: Format<LocalDateTime>) = when (format) {
+        override fun appendDateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
             is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendValueBag(format: Format<ValueBag>) = when (format) {
+        override fun appendValueBag(format: DateTimeFormat<ValueBag>) = when (format) {
             is ValueBagFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 

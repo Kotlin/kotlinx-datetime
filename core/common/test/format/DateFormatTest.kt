@@ -220,7 +220,7 @@ class DateFormatTest {
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
     }
 
-    private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: Format<LocalDate>) {
+    private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: DateTimeFormat<LocalDate>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
             assertEquals(canonicalString, format.format(date), "formatting $date with $format")

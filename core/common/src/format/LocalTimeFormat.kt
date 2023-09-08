@@ -66,14 +66,14 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
     public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
 
     /**
-     * Appends an existing [Format] for the time part.
+     * Appends an existing [DateTimeFormat] for the time part.
      *
      * Example:
      * ```
      * appendTime(LocalTime.Format.ISO)
      * ```
      */
-    public fun appendTime(format: Format<LocalTime>)
+    public fun appendTime(format: DateTimeFormat<LocalTime>)
 }
 
 internal interface TimeFieldContainer {
@@ -232,7 +232,7 @@ internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int?
 }
 
 internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer>) :
-    AbstractFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
+    AbstractDateTimeFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
     override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime =
         IncompleteLocalTime().apply { populateFrom(value) }
 
@@ -264,7 +264,7 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: Format<LocalTime>) = when (format) {
+        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 

@@ -6,7 +6,6 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.format.LocalTimeFormat.Companion.build
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -89,7 +88,7 @@ public expect class LocalTime : Comparable<LocalTime> {
     /**
      * The entry point for parsing and formatting [LocalTime] values.
      *
-     * [Invoke][LocalTime.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * [Invoke][LocalTime.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
      * parsing and formatting [LocalTime] values.
      *
      * See [LocalTime.Format.ISO] and [LocalTime.Format.ISO_BASIC] for popular predefined formats.
@@ -173,7 +172,7 @@ public expect class LocalTime : Comparable<LocalTime> {
  * }
  * ```
  */
-public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() -> Unit): Format<LocalTime> =
+public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
     LocalTimeFormat.build(builder)
 
 /**
@@ -181,28 +180,28 @@ public operator fun LocalTime.Format.invoke(builder: TimeFormatBuilderFields.() 
  *
  * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
  */
-public val LocalTime.Format.ISO: Format<LocalTime> get() = ISO_TIME
+public val LocalTime.Format.ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
 
 /**
  * ISO 8601 basic format.
  *
  * Examples: `T1234`, `T123456`, `T123456.789`.
  */
-public val LocalTime.Format.ISO_BASIC: Format<LocalTime> get() = ISO_TIME_BASIC
+public val LocalTime.Format.ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
 
 /**
  * Formats this value using the given [format].
- * Equivalent to calling [Format.format] on [format] with `this`.
+ * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
-public fun LocalTime.format(format: Format<LocalTime>): String = format.format(this)
+public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.format(this)
 
 /**
  * Parses a [LocalTime] value using the given [format].
- * Equivalent to calling [Format.parse] on [format] with [input].
+ * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
  */
-public fun LocalTime.Companion.parse(input: String, format: Format<LocalTime>): LocalTime = format.parse(input)
+public fun LocalTime.Companion.parse(input: String, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
 /**
  * Converts this string representing a time value in ISO-8601 format to a [LocalTime] value.

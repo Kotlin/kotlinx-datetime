@@ -136,7 +136,7 @@ class ValueBagFormatTest {
         assertEquals(UtcOffset(hours = 3), offset)
     }
 
-    private fun test(strings: Map<ValueBag, Pair<String, Set<String>>>, format: Format<ValueBag>) {
+    private fun test(strings: Map<ValueBag, Pair<String, Set<String>>>, format: DateTimeFormat<ValueBag>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue
             assertEquals(canonicalString, format.format(value), "formatting $value with $format")

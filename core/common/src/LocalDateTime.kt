@@ -6,7 +6,6 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.format.LocalDateTimeFormat.Companion.build
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -50,7 +49,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /**
      * The entry point for parsing and formatting [LocalDateTime] values.
      *
-     * [Invoke][LocalDateTime.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * [Invoke][LocalDateTime.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
      * parsing and formatting [LocalDateTime] values.
      *
      * See [LocalDateTime.Format.ISO] and [LocalDateTime.Format.ISO_BASIC] for popular predefined formats.
@@ -188,7 +187,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  * }
  * ```
  */
-public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.() -> Unit): Format<LocalDateTime> =
+public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime> =
     LocalDateTimeFormat.build(builder)
 
 /**
@@ -200,7 +199,7 @@ public operator fun LocalDateTime.Format.invoke(builder: DateTimeFormatBuilder.(
  * - `0000-08-30T18:43:00.500`
  * - `-0001-08-30T18:43:00.123456789`
  */
-public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() = ISO_DATETIME
+public val LocalDateTime.Format.ISO: DateTimeFormat<LocalDateTime> get() = ISO_DATETIME
 
 /**
  * ISO 8601 basic format.
@@ -211,21 +210,21 @@ public val LocalDateTime.Format.ISO: Format<LocalDateTime> get() = ISO_DATETIME
  * - `00000830T184300.500`
  * - `-00010830T184300.123456789`
  */
-public val LocalDateTime.Format.ISO_BASIC: Format<LocalDateTime> get() = ISO_DATETIME_BASIC
+public val LocalDateTime.Format.ISO_BASIC: DateTimeFormat<LocalDateTime> get() = ISO_DATETIME_BASIC
 
 /**
  * Formats this value using the given [format].
- * Equivalent to calling [Format.format] on [format] with `this`.
+ * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
-public fun LocalDateTime.format(format: Format<LocalDateTime>): String = format.format(this)
+public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String = format.format(this)
 
 /**
  * Parses a [LocalDateTime] value using the given [format].
- * Equivalent to calling [Format.parse] on [format] with [input].
+ * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
  */
-public fun LocalDateTime.Companion.parse(input: String, format: Format<LocalDateTime>): LocalDateTime =
+public fun LocalDateTime.Companion.parse(input: String, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
     format.parse(input)
 
 /**

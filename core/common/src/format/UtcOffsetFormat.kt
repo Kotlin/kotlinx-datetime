@@ -42,14 +42,14 @@ public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
     public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
 
     /**
-     * Appends an existing [Format] for the UTC offset part.
+     * Appends an existing [DateTimeFormat] for the UTC offset part.
      *
      * Example:
      * ```
      * appendOffset(UtcOffset.Format.COMPACT)
      * ```
      */
-    public fun appendOffset(format: Format<UtcOffset>)
+    public fun appendOffset(format: DateTimeFormat<UtcOffset>)
 }
 
 internal interface UtcOffsetFieldContainer {
@@ -60,7 +60,7 @@ internal interface UtcOffsetFieldContainer {
 }
 
 internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
-    Format<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
+    DateTimeFormat<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
     companion object {
         fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure())
@@ -86,7 +86,7 @@ internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldCont
             actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendOffset(format: Format<UtcOffset>) = when (format) {
+        override fun appendOffset(format: DateTimeFormat<UtcOffset>) = when (format) {
             is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
         }
     }
@@ -279,7 +279,7 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
 }
 
 internal class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
-    AbstractFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
+    AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
     override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset =
         IncompleteUtcOffset().apply { populateFrom(value) }
 

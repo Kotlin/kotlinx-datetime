@@ -53,14 +53,14 @@ public expect class UtcOffset {
     /**
      * The entry point for parsing and formatting [UtcOffset] values.
      *
-     * [Invoke][UtcOffset.Format.invoke] this object to create a [kotlinx.datetime.format.Format] used for
+     * [Invoke][UtcOffset.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
      * parsing and formatting [UtcOffset] values.
      *
      * See [UtcOffset.Format.ISO], [UtcOffset.Format.ISO_BASIC], and [UtcOffset.Format.COMPACT]
      * for popular predefined formats.
      *
      * Since [UtcOffset] values are rarely formatted and parsed on their own,
-     * instances of [kotlinx.datetime.format.Format] obtained here will likely need to be passed to
+     * instances of [kotlinx.datetime.format.DateTimeFormat] obtained here will likely need to be passed to
      * [UtcOffsetFormatBuilderFields.appendOffset] in a format builder for a larger data structure.
      */
     public object Format;
@@ -85,22 +85,22 @@ public expect class UtcOffset {
  * }
  * ```
  */
-public operator fun UtcOffset.Format.invoke(block: UtcOffsetFormatBuilderFields.() -> Unit): Format<UtcOffset> =
+public operator fun UtcOffset.Format.invoke(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
     UtcOffsetFormat.build(block)
 
 /**
  * Formats this value using the given [format].
- * Equivalent to calling [Format.format] on [format] with `this`.
+ * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
-public fun UtcOffset.format(format: Format<UtcOffset>): String = format.format(this)
+public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.format(this)
 
 /**
  * Parses a [UtcOffset] value using the given [format].
- * Equivalent to calling [Format.parse] on [format] with [input].
+ * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
  * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
  */
-public fun UtcOffset.Companion.parse(input: String, format: Format<UtcOffset>): UtcOffset = format.parse(input)
+public fun UtcOffset.Companion.parse(input: String, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
 
 /**
  * ISO 8601 extended format, which is the format used by [UtcOffset.toString].
@@ -111,7 +111,7 @@ public fun UtcOffset.Companion.parse(input: String, format: Format<UtcOffset>): 
  * - `-17:16`
  * - `+10:36:30`
  */
-public val UtcOffset.Format.ISO: Format<UtcOffset> get() = ISO_OFFSET
+public val UtcOffset.Format.ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
 
 /**
  * ISO 8601 basic format.
@@ -124,7 +124,7 @@ public val UtcOffset.Format.ISO: Format<UtcOffset> get() = ISO_OFFSET
  *
  * @see UtcOffset.Format.COMPACT
  */
-public val UtcOffset.Format.ISO_BASIC: Format<UtcOffset> get() = ISO_OFFSET_BASIC
+public val UtcOffset.Format.ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
 
 /**
  * A format similar to ISO 8601 basic format, but outputting `+0000` instead of `Z` for the zero offset and always
@@ -138,7 +138,7 @@ public val UtcOffset.Format.ISO_BASIC: Format<UtcOffset> get() = ISO_OFFSET_BASI
  *
  * @see UtcOffset.Format.ISO_BASIC
  */
-public val UtcOffset.Format.COMPACT: Format<UtcOffset> get() = COMPACT_OFFSET
+public val UtcOffset.Format.COMPACT: DateTimeFormat<UtcOffset> get() = COMPACT_OFFSET
 
 /**
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.
