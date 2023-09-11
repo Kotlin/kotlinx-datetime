@@ -60,7 +60,7 @@ internal interface UtcOffsetFieldContainer {
 }
 
 internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
-    DateTimeFormat<UtcOffset> by UtcOffsetFormatImpl(actualFormat) {
+    AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
     companion object {
         fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure())
@@ -90,6 +90,13 @@ internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldCont
             is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
         }
     }
+
+    override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset =
+        IncompleteUtcOffset().apply { populateFrom(value) }
+
+    override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
+
+    override fun newIntermediate(): IncompleteUtcOffset = IncompleteUtcOffset()
 
     override fun toString(): String = actualFormat.builderString()
 
@@ -276,16 +283,6 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
         Padding.NONE -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}()"
         else -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}($padding)"
     }
-}
-
-internal class UtcOffsetFormatImpl(actualFormat: StringFormat<UtcOffsetFieldContainer>) :
-    AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
-    override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset =
-        IncompleteUtcOffset().apply { populateFrom(value) }
-
-    override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
-
-    override fun newIntermediate(): IncompleteUtcOffset = IncompleteUtcOffset()
 }
 
 // these are constants so that the formats are not recreated every time they are used
