@@ -1,16 +1,17 @@
 plugins {
-    id("kotlinx.team.infra") version "0.3.0-dev-64"
+    id("kotlinx.team.infra") version "0.4.0-dev-80"
     kotlin("multiplatform") apply false
 }
 
 infra {
     teamcity {
-        libraryStagingRepoDescription = project.name
     }
     publishing {
         include(":kotlinx-datetime")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
-        sonatype { }
+        sonatype {
+            libraryStagingRepoDescription = project.name
+        }
     }
 }
 

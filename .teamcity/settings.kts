@@ -1,6 +1,6 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.*
+import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -24,7 +24,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2020.1"
+version = "2023.05"
 
 project {
     // Disable editing of project and build settings from the UI to avoid issues with TeamCity
@@ -142,8 +142,6 @@ fun Project.deployVersion() = BuildType {
     params {
         // enable editing of this configuration to set up things
         param("teamcity.ui.settings.readOnly", "false")
-        param("bintray-user", bintrayUserName)
-        password("bintray-key", bintrayToken)
         param(versionSuffixParameter, "dev-%build.counter%")
         param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
@@ -158,7 +156,7 @@ fun Project.deployVersion() = BuildType {
         gradle {
             name = "Verify Gradle Configuration"
             tasks = "clean publishPrepareVersion"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
             buildFile = ""
             jdkHome = "%env.$jdk%"
         }
@@ -188,8 +186,6 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
         param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
-        param("bintray-user", bintrayUserName)
-        password("bintray-key", bintrayToken)
         param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
@@ -202,7 +198,7 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
             name = "Deploy ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
             tasks = "clean publish"
             buildFile = ""
             gradleWrapperPath = ""
