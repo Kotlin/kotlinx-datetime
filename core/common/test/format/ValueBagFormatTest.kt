@@ -127,7 +127,7 @@ class ValueBagFormatTest {
     @Test
     fun testDocCombinedParsing() {
         val input = "2020-03-16T23:59:59.999999999+03:00"
-        val bag = ValueBag.Format.ISO_INSTANT.parse(input)
+        val bag = ValueBag.Format.ISO_DATE_TIME_OFFSET.parse(input)
         val localDateTime = bag.toLocalDateTime()
         val instant = bag.toInstantUsingUtcOffset()
         val offset = bag.toUtcOffset()

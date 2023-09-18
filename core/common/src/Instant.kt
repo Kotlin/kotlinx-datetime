@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
@@ -511,6 +512,25 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     other.until(this, unit)
+
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ */
+public fun Instant.format(format: DateTimeFormat<ValueBag>, offset: UtcOffset = UtcOffset.ZERO): String {
+    val instant = this
+    return format.format { populateFrom(instant, offset) }
+}
+
+/**
+ * Parses an [Instant] value using the given [format].
+ * Equivalent to calling [DateTimeFormat.parse] on [format] with [input] and obtaining the resulting [Instant] using
+ * [ValueBag.toInstantUsingUtcOffset].
+ *
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
+ */
+public fun Instant.Companion.parse(input: CharSequence, format: DateTimeFormat<ValueBag>): Instant =
+    format.parse(input).toInstantUsingUtcOffset()
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800

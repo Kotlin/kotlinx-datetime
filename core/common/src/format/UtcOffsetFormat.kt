@@ -319,12 +319,9 @@ internal val ISO_OFFSET_BASIC by lazy {
     }
 }
 @SharedImmutable
-internal val COMPACT_OFFSET by lazy {
+internal val FOUR_DIGIT_OFFSET by lazy {
     UtcOffsetFormat.build {
         appendOffsetTotalHours()
         appendOffsetMinutesOfHour()
-        appendOptional {
-            appendOffsetSecondsOfMinute()
-        }
     }
 }

@@ -77,7 +77,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         /**
          * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
          */
-        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): kotlinx.datetime.format.DateTimeFormat<ValueBag> {
+        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): DateTimeFormat<ValueBag> {
             val builder = ValueBagFormat.Builder(AppendableFormatStructure())
             block(builder)
             return ValueBagFormat(builder.build())
@@ -95,7 +95,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
-        public val ISO_INSTANT: kotlinx.datetime.format.DateTimeFormat<ValueBag> = Format {
+        public val ISO_DATE_TIME_OFFSET: DateTimeFormat<ValueBag> = Format {
             appendDate(ISO_DATE)
             alternativeParsing({
                 appendLiteral('t')
@@ -119,7 +119,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             )
         }
 
-        public val RFC_1123: kotlinx.datetime.format.DateTimeFormat<ValueBag> = Format {
+        public val RFC_1123: DateTimeFormat<ValueBag> = Format {
             appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             appendLiteral(", ")
             appendDayOfMonth(Padding.NONE)
@@ -331,6 +331,8 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
      *
      * Almost always equivalent to `toLocalDateTime().toInstant(toUtcOffset())`, but also accounts for cases when
      * the year is outside the range representable by [LocalDate] but not outside the range representable by [Instant].
+     *
+     * @throws IllegalArgumentException if any of the required fields are not present.
      */
     public fun toInstantUsingUtcOffset(): Instant {
         val offset = toUtcOffset()
@@ -359,7 +361,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 /**
  * Builder for [ValueBagFormat] values.
  */
-public interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatBuilderFields {
+public sealed interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatBuilderFields {
     /**
      * Appends the IANA time zone identifier, for example, "Europe/Berlin".
      *
@@ -402,13 +404,10 @@ public fun DateTimeFormat<ValueBag>.format(block: ValueBag.() -> Unit): String =
  * [ValueBag] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
  * matches.
  *
- * @throws DateTimeFormatException if the text does not match the format.
+ * @throws IllegalArgumentException if the text does not match the format.
  */
-public fun ValueBag.Companion.parse(input: String, format: DateTimeFormat<ValueBag>): ValueBag = try {
+public fun ValueBag.Companion.parse(input: CharSequence, format: DateTimeFormat<ValueBag>): ValueBag =
     format.parse(input)
-} catch (e: ParseException) {
-    throw DateTimeFormatException(e)
-}
 
 internal class ValueBagContents internal constructor(
     val date: IncompleteLocalDate = IncompleteLocalDate(),

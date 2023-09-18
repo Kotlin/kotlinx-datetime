@@ -201,9 +201,10 @@ public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.
  * Parses a [LocalTime] value using the given [format].
  * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
  */
-public fun LocalTime.Companion.parse(input: String, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
+public fun LocalTime.Companion.parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
+    format.parse(input)
 
 /**
  * Converts this string representing a time value in ISO-8601 format to a [LocalTime] value.

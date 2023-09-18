@@ -81,7 +81,7 @@ public expect class UtcOffset {
     /**
      * A collection of predefined formats for parsing and formatting [UtcOffset] values.
      *
-     * See [UtcOffset.Formats.ISO], [UtcOffset.Formats.ISO_BASIC], and [UtcOffset.Formats.COMPACT]
+     * See [UtcOffset.Formats.ISO], [UtcOffset.Formats.ISO_BASIC], and [UtcOffset.Formats.FOUR_DIGITS]
      * for popular predefined formats.
      *
      * If predefined formats are not sufficient, use [UtcOffset.Format] to create a custom
@@ -108,23 +108,24 @@ public expect class UtcOffset {
          * - `-1716`
          * - `+103630`
          *
-         * @see UtcOffset.Formats.COMPACT
+         * @see UtcOffset.Formats.FOUR_DIGITS
          */
         public val ISO_BASIC: DateTimeFormat<UtcOffset>
 
         /**
-         * A format similar to ISO 8601 basic format, but outputting `+0000` instead of `Z` for the zero offset and always
-         * requiring the minute component to be present.
+         * A subset of the ISO 8601 basic format that always outputs and parses exactly a numeric sign and four digits:
+         * two digits for the hour and two digits for the minute. If the offset has a non-zero number of seconds,
+         * they are truncated.
          *
          * Examples of UTC offsets in this format:
          * - `+0000`
          * - `+0500`
          * - `-1716`
-         * - `+103630`
+         * - `+1036`
          *
          * @see UtcOffset.Formats.ISO_BASIC
          */
-        public val COMPACT: DateTimeFormat<UtcOffset>
+        public val FOUR_DIGITS: DateTimeFormat<UtcOffset>
     }
 }
 
@@ -138,9 +139,10 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * Parses a [UtcOffset] value using the given [format].
  * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
  */
-public fun UtcOffset.Companion.parse(input: String, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
+public fun UtcOffset.Companion.parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset =
+    format.parse(input)
 
 /**
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.

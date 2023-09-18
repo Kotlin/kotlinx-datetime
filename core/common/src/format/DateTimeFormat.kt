@@ -26,7 +26,7 @@ public sealed interface DateTimeFormat<T> {
     /**
      * Parses the given [input] string as [T], using this format.
      *
-     * @throws DateTimeFormatException if the input string is not in the expected format or the value is invalid.
+     * @throws IllegalArgumentException if the input string is not in the expected format or the value is invalid.
      */
     public fun parse(input: CharSequence): T
 

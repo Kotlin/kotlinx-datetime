@@ -186,9 +186,10 @@ public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.
  * Parses a [LocalDate] value using the given [format].
  * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
- * @throws DateTimeFormatException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
  */
-public fun LocalDate.Companion.parse(input: String, format: DateTimeFormat<LocalDate>): LocalDate = format.parse(input)
+public fun LocalDate.Companion.parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
+    format.parse(input)
 
 /**
  * Converts this string representing a date in ISO-8601 format to a [LocalDate] value.

@@ -10,10 +10,8 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlin.math.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -142,7 +140,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
         public actual fun parse(isoString: String): Instant = try {
-            ValueBag.parse(isoString, ValueBag.Format.ISO_INSTANT).toInstantUsingUtcOffset()
+            ValueBag.parse(isoString, ValueBag.Format.ISO_DATE_TIME_OFFSET).toInstantUsingUtcOffset()
         } catch (e: IllegalArgumentException) {
             throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
         }
@@ -248,4 +246,4 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
     }
 
 internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    ValueBag.Format.ISO_INSTANT.format { populateFrom(this@toStringWithOffset, offset) }
+    ValueBag.Format.ISO_DATE_TIME_OFFSET.format { populateFrom(this@toStringWithOffset, offset) }

@@ -128,28 +128,38 @@ class UtcOffsetFormatTest {
     @Test
     fun testCompact() {
         val offsets = buildMap<UtcOffset, Pair<String, Set<String>>> {
-            put(UtcOffset(-18, 0, 0), ("-1800" to setOf()))
-            put(UtcOffset(-17, -59, -58), ("-175958" to setOf()))
-            put(UtcOffset(-4, -3, -2), ("-040302" to setOf()))
-            put(UtcOffset(-0, -0, -1), ("-000001" to setOf()))
-            put(UtcOffset(-0, -1, -0), ("-0001" to setOf()))
-            put(UtcOffset(-0, -1, -1), ("-000101" to setOf()))
-            put(UtcOffset(-1, -0, -0), ("-0100" to setOf()))
-            put(UtcOffset(-1, -0, -1), ("-010001" to setOf()))
-            put(UtcOffset(-1, -1, -0), ("-0101" to setOf()))
-            put(UtcOffset(-1, -1, -1), ("-010101" to setOf()))
-            put(UtcOffset(+0, 0, 0), ("+0000" to setOf()))
-            put(UtcOffset(+0, 1, 0), ("+0001" to setOf()))
-            put(UtcOffset(+0, 1, 1), ("+000101" to setOf()))
-            put(UtcOffset(+1, 0, 0), ("+0100" to setOf()))
-            put(UtcOffset(+1, 0, 1), ("+010001" to setOf()))
-            put(UtcOffset(+1, 1, 0), ("+0101" to setOf()))
-            put(UtcOffset(+1, 1, 1), ("+010101" to setOf()))
-            put(UtcOffset(+4, 3, 2), ("+040302" to setOf()))
-            put(UtcOffset(+17, 59, 58), ("+175958" to setOf()))
-            put(UtcOffset(+18, 0, 0), ("+1800" to setOf()))
+            put(UtcOffset(-18, 0), ("-1800" to setOf()))
+            put(UtcOffset(-17, -59), ("-1759" to setOf()))
+            put(UtcOffset(-4, -3), ("-0403" to setOf()))
+            put(UtcOffset(-0, -0), ("-0000" to setOf()))
+            put(UtcOffset(-0, -1), ("-0001" to setOf()))
+            put(UtcOffset(-1, -0), ("-0100" to setOf()))
+            put(UtcOffset(-1, -1), ("-0101" to setOf()))
+            put(UtcOffset(+0, 0), ("+0000" to setOf()))
+            put(UtcOffset(+0, 1), ("+0001" to setOf()))
+            put(UtcOffset(+1, 0), ("+0100" to setOf()))
+            put(UtcOffset(+1, 1), ("+0101" to setOf()))
+            put(UtcOffset(+4, 3), ("+0403" to setOf()))
+            put(UtcOffset(+17, 59), ("+1759" to setOf()))
+            put(UtcOffset(+18, 0), ("+1800" to setOf()))
         }
-        test(offsets, UtcOffset.Formats.COMPACT)
+        test(offsets, UtcOffset.Formats.FOUR_DIGITS)
+        // formatting that loses precision and can't be parsed back:
+        for ((offset, string) in listOf(
+            UtcOffset(-17, -59, -58) to "-1759",
+            UtcOffset(-4, -3, -2) to "-0403",
+            UtcOffset(-0, -0, -1) to "-0000",
+            UtcOffset(-0, -1, -1) to "-0001",
+            UtcOffset(-1, -0, -1) to "-0100",
+            UtcOffset(-1, -1, -1) to "-0101",
+            UtcOffset(+0, 1, 1) to "+0001",
+            UtcOffset(+1, 0, 1) to "+0100",
+            UtcOffset(+1, 1, 1) to "+0101",
+            UtcOffset(+4, 3, 2) to "+0403",
+            UtcOffset(+17, 59, 58) to "+1759",
+        )) {
+            assertEquals(string, UtcOffset.Formats.FOUR_DIGITS.format(offset))
+        }
     }
 
     @Test
