@@ -514,8 +514,9 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     other.until(this, unit)
 
 /**
- * Formats this value using the given [format].
- * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ * Formats this value using the given [format] using the given [offset].
+ *
+ * [ValueBag.Format.ISO_DATE_TIME_OFFSET] is the format used by [toString] and [Instant.Companion.parse].
  */
 public fun Instant.format(format: DateTimeFormat<ValueBag>, offset: UtcOffset = UtcOffset.ZERO): String {
     val instant = this
@@ -540,4 +541,5 @@ internal const val DISTANT_FUTURE_SECONDS = 3093527980800
  *
  * Be careful: this function may throw for some values of the [Instant].
  */
-internal expect fun Instant.toStringWithOffset(offset: UtcOffset): String
+internal fun Instant.toStringWithOffset(offset: UtcOffset): String =
+    format(ValueBag.Formats.ISO_DATE_TIME_OFFSET, offset)

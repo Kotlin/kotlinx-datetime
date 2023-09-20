@@ -219,6 +219,3 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
 }
-
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    jtOffsetDateTime.ofInstant(this.value, offset.zoneOffset).toString()

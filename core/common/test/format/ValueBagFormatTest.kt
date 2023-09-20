@@ -13,7 +13,7 @@ class ValueBagFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = ValueBag.Format.RFC_1123
+        val format = ValueBag.Formats.RFC_1123
         assertValueBagsEqual(
             valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO),
             format.parse("Tue, 3 Jun 2008 11:05:30 GMT"))
@@ -32,12 +32,13 @@ class ValueBagFormatTest {
     @Test
     fun testRfc1123() {
         val bags = buildMap<ValueBag, Pair<String, Set<String>>> {
-            put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Tue, 3 Jun 2008 11:05:30 GMT" to setOf()))
+            put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Tue, 3 Jun 2008 11:05:30 GMT" to setOf("3 Jun 2008 11:05:30 UT", "3 Jun 2008 11:05:30 Z")))
             put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Mon, 30 Jun 2008 11:05:30 GMT" to setOf()))
             put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
             put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:30 -0300" to setOf()))
+            put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 0), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05 -0300" to setOf("Mon, 30 Jun 2008 11:05:00 -0300")))
         }
-        test(bags, ValueBag.Format.RFC_1123)
+        test(bags, ValueBag.Formats.RFC_1123)
     }
 
     @Test
@@ -100,7 +101,7 @@ class ValueBagFormatTest {
 
     @Test
     fun testDocFormatting() {
-        val str = ValueBag.Format.RFC_1123.format {
+        val str = ValueBag.Formats.RFC_1123.format {
            populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
            populateFrom(UtcOffset(hours = 3))
         }
@@ -127,7 +128,7 @@ class ValueBagFormatTest {
     @Test
     fun testDocCombinedParsing() {
         val input = "2020-03-16T23:59:59.999999999+03:00"
-        val bag = ValueBag.Format.ISO_DATE_TIME_OFFSET.parse(input)
+        val bag = ValueBag.Formats.ISO_DATE_TIME_OFFSET.parse(input)
         val localDateTime = bag.toLocalDateTime()
         val instant = bag.toInstantUsingUtcOffset()
         val offset = bag.toUtcOffset()

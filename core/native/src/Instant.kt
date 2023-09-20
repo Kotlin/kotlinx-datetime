@@ -98,7 +98,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
-    actual override fun toString(): String = toStringWithOffset(UtcOffset.ZERO)
+    actual override fun toString(): String = format(ValueBag.Formats.ISO_DATE_TIME_OFFSET)
 
     public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
@@ -140,7 +140,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
         public actual fun parse(isoString: String): Instant = try {
-            ValueBag.parse(isoString, ValueBag.Format.ISO_DATE_TIME_OFFSET).toInstantUsingUtcOffset()
+            ValueBag.parse(isoString, ValueBag.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingUtcOffset()
         } catch (e: IllegalArgumentException) {
             throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
         }
@@ -244,6 +244,3 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
             until(other, unit)
         }
     }
-
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    ValueBag.Format.ISO_DATE_TIME_OFFSET.format { populateFrom(this@toStringWithOffset, offset) }

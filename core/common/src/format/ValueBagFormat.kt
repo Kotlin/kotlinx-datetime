@@ -65,23 +65,27 @@ import kotlin.reflect.*
  * Make sure to apply proper synchronization if you are using a single instance from multiple threads.
  */
 public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
-    public companion object {}
-
-    /**
-     * The entry point for parsing and formatting [ValueBag] values.
-     *
-     * [Invoke][ValueBag.Format.invoke] this object to create a [kotlinx.datetime.format.DateTimeFormat] used for
-     * parsing and formatting [ValueBag] values.
-     */
-    public object Format {
+    public companion object {
         /**
-         * Creates a [ValueBagFormat] using [ValueBagFormatBuilder].
+         * Creates a [DateTimeFormat] for [ValueBag] values using [ValueBagFormatBuilder].
+         *
+         * There is a collection of predefined formats in [ValueBag.Formats].
          */
-        public operator fun invoke(block: ValueBagFormatBuilder.() -> Unit): DateTimeFormat<ValueBag> {
+        @Suppress("FunctionName")
+        public fun Format(block: ValueBagFormatBuilder.() -> Unit): DateTimeFormat<ValueBag> {
             val builder = ValueBagFormat.Builder(AppendableFormatStructure())
             block(builder)
             return ValueBagFormat(builder.build())
         }
+    }
+
+    /**
+     * The entry point for parsing and formatting [ValueBag] values.
+     *
+     * If predefined formats are not sufficient, use [ValueBag.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [ValueBag] values.
+     */
+    public object Formats {
 
         /**
          * ISO 8601 extended format for dates and times with UTC offset.
@@ -119,9 +123,23 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             )
         }
 
+        /**
+         * RFC 1123 format for dates and times with UTC offset.
+         *
+         * Examples of valid strings:
+         * * `Mon, 30 Jun 2008 11:05:30 GMT`
+         * * `Mon, 30 Jun 2008 11:05:30 -0300`
+         * * `30 Jun 2008 11:05:30 UT`
+         *
+         * North American and military time zone abbreviations are not supported.
+         */
         public val RFC_1123: DateTimeFormat<ValueBag> = Format {
-            appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
-            appendLiteral(", ")
+            alternativeParsing({
+                // the day of week may be missing
+            }) {
+                appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+                appendLiteral(", ")
+            }
             appendDayOfMonth(Padding.NONE)
             appendLiteral(' ')
             appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
@@ -131,12 +149,19 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             appendHour()
             appendLiteral(':')
             appendMinute()
-            appendLiteral(':')
-            appendSecond()
+            appendOptional {
+                appendLiteral(':')
+                appendSecond()
+            }
             appendLiteral(" ")
-            appendOptional("GMT") {
-                appendOffsetTotalHours(Padding.ZERO)
-                appendOffsetMinutesOfHour()
+            alternativeParsing({
+                appendLiteral("UT")
+            }, {
+                appendLiteral("Z")
+            }) {
+                appendOptional("GMT") {
+                    appendOffset(UtcOffset.Formats.FOUR_DIGITS)
+                }
             }
         }
     }
