@@ -1,6 +1,7 @@
 plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-80"
     kotlin("multiplatform") apply false
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
 }
 
 infra {
