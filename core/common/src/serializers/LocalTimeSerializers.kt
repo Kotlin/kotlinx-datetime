@@ -47,7 +47,6 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalTime =
         decoder.decodeStructure(descriptor) {
             var hour: Short? = null
@@ -64,8 +63,8 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
                     else -> throw SerializationException("Unexpected index: $index")
                 }
             }
-            if (hour == null) throw MissingFieldException("hour")
-            if (minute == null) throw MissingFieldException("minute")
+            if (hour == null) throw MissingFieldException(missingField = "hour", serialName = descriptor.serialName)
+            if (minute == null) throw MissingFieldException(missingField = "minute", serialName = descriptor.serialName)
             LocalTime(hour.toInt(), minute.toInt(), second.toInt(), nanosecond)
         }
 
