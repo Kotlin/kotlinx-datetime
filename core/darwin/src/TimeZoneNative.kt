@@ -1,10 +1,11 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-
+@file:OptIn(UnsafeNumber::class)
 package kotlinx.datetime
 
+import kotlinx.cinterop.*
 import platform.Foundation.*
 
 private fun dateWithTimeIntervalSince1970Saturating(epochSeconds: Long): NSDate {
