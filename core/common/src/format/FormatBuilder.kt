@@ -8,13 +8,9 @@ package kotlinx.datetime.format
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
-@DslMarker
-public annotation class DateTimeBuilder
-
 /**
  * Common functions for all format builders.
  */
-@DateTimeBuilder
 public sealed interface FormatBuilder {
     /**
      * Appends a literal string to the format.
