@@ -235,7 +235,9 @@ internal val ISO_TIME by lazy {
         appendHour()
         char(':')
         appendMinute()
-        optional {
+        alternativeParsing({
+            // intentionally empty
+        }) {
             char(':')
             appendSecond()
             optional {
@@ -245,12 +247,15 @@ internal val ISO_TIME by lazy {
         }
     }
 }
+
 @SharedImmutable
-internal val ISO_TIME_BASIC by lazy {
+internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
     LocalTimeFormat.build {
-        alternativeParsing({ char('t') }) { char('T') }
-        appendHour(); appendMinute()
+        appendHour()
+        char(':')
+        appendMinute()
         optional {
+            char(':')
             appendSecond()
             optional {
                 char('.')

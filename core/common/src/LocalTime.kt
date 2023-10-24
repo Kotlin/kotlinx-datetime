@@ -114,27 +114,21 @@ public expect class LocalTime : Comparable<LocalTime> {
     /**
      * A collection of predefined formats for parsing and formatting [LocalDateTime] values.
      *
-     * See [LocalTime.Formats.ISO] and [LocalTime.Formats.ISO_BASIC] for popular predefined formats.
-     * [LocalTime.parse] and [LocalTime.toString] can be used as convenient shortcuts for the
-     * [LocalTime.Formats.ISO] format.
+     * [LocalTime.Formats.ISO] is a popular predefined format.
      *
      * If predefined formats are not sufficient, use [LocalTime.Format] to create a custom
      * [kotlinx.datetime.format.DateTimeFormat] for [LocalTime] values.
      */
     public object Formats {
         /**
-         * ISO 8601 extended format, used by [LocalTime.toString] and [LocalTime.parse].
+         * ISO 8601 extended format.
          *
          * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
+         *
+         * When formatting, seconds are always included, even if they are zero.
+         * Fractional parts of the second are included if non-zero.
          */
         public val ISO: DateTimeFormat<LocalTime>
-
-        /**
-         * ISO 8601 basic format.
-         *
-         * Examples: `T1234`, `T123456`, `T123456.789`.
-         */
-        public val ISO_BASIC: DateTimeFormat<LocalTime>
     }
 
     /**

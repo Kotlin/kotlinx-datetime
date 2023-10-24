@@ -89,12 +89,12 @@ class LocalTimeFormatTest {
     @Test
     fun testIso() {
         val times = buildMap<LocalTime, Pair<String, Set<String>>> {
-            put(LocalTime(0, 0, 0, 0), ("00:00" to setOf("00:00:00")))
-            put(LocalTime(1, 0, 0, 0), ("01:00" to setOf()))
-            put(LocalTime(23, 0, 0, 0), ("23:00" to setOf()))
-            put(LocalTime(0, 1, 0, 0), ("00:01" to setOf()))
-            put(LocalTime(12, 30, 0, 0), ("12:30" to setOf()))
-            put(LocalTime(23, 59, 0, 0), ("23:59" to setOf()))
+            put(LocalTime(0, 0, 0, 0), ("00:00:00" to setOf("00:00")))
+            put(LocalTime(1, 0, 0, 0), ("01:00:00" to setOf("01:00")))
+            put(LocalTime(23, 0, 0, 0), ("23:00:00" to setOf("23:00")))
+            put(LocalTime(0, 1, 0, 0), ("00:01:00" to setOf("00:01")))
+            put(LocalTime(12, 30, 0, 0), ("12:30:00" to setOf("12:30")))
+            put(LocalTime(23, 59, 0, 0), ("23:59:00" to setOf("23:59")))
             put(LocalTime(0, 0, 1, 0), ("00:00:01" to setOf()))
             put(LocalTime(0, 0, 59, 0), ("00:00:59" to setOf()))
             put(LocalTime(0, 0, 0, 100000000), ("00:00:00.100" to setOf("00:00:00.1")))
@@ -117,39 +117,6 @@ class LocalTimeFormatTest {
             put(LocalTime(0, 0, 0, 9), ("00:00:00.000000009" to setOf()))
         }
         test(times, LocalTime.Formats.ISO)
-    }
-
-    @Test
-    fun testBasicIso() {
-        val times = buildMap<LocalTime, Pair<String, Set<String>>> {
-            put(LocalTime(0, 0, 0, 0), ("T0000" to setOf("T000000", "T0000", "t0000")))
-            put(LocalTime(1, 0, 0, 0), ("T0100" to setOf()))
-            put(LocalTime(23, 0, 0, 0), ("T2300" to setOf()))
-            put(LocalTime(0, 1, 0, 0), ("T0001" to setOf()))
-            put(LocalTime(12, 30, 0, 0), ("T1230" to setOf()))
-            put(LocalTime(23, 59, 0, 0), ("T2359" to setOf()))
-            put(LocalTime(0, 0, 1, 0), ("T000001" to setOf()))
-            put(LocalTime(0, 0, 59, 0), ("T000059" to setOf()))
-            put(LocalTime(0, 0, 0, 100000000), ("T000000.100" to setOf("T000000.1")))
-            put(LocalTime(0, 0, 0, 10000000), ("T000000.010" to setOf("T000000.01")))
-            put(LocalTime(0, 0, 0, 1000000), ("T000000.001" to setOf()))
-            put(LocalTime(0, 0, 0, 100000), ("T000000.000100" to setOf("T000000.0001")))
-            put(LocalTime(0, 0, 0, 10000), ("T000000.000010" to setOf()))
-            put(LocalTime(0, 0, 0, 1000), ("T000000.000001" to setOf()))
-            put(LocalTime(0, 0, 0, 100), ("T000000.000000100" to setOf()))
-            put(LocalTime(0, 0, 0, 10), ("T000000.000000010" to setOf()))
-            put(LocalTime(0, 0, 0, 1), ("T000000.000000001" to setOf()))
-            put(LocalTime(0, 0, 0, 999999999), ("T000000.999999999" to setOf()))
-            put(LocalTime(0, 0, 0, 99999999), ("T000000.099999999" to setOf()))
-            put(LocalTime(0, 0, 0, 9999999), ("T000000.009999999" to setOf()))
-            put(LocalTime(0, 0, 0, 999999), ("T000000.000999999" to setOf()))
-            put(LocalTime(0, 0, 0, 99999), ("T000000.000099999" to setOf()))
-            put(LocalTime(0, 0, 0, 9999), ("T000000.000009999" to setOf()))
-            put(LocalTime(0, 0, 0, 999), ("T000000.000000999" to setOf()))
-            put(LocalTime(0, 0, 0, 99), ("T000000.000000099" to setOf()))
-            put(LocalTime(0, 0, 0, 9), ("T000000.000000009" to setOf()))
-        }
-        test(times, LocalTime.Formats.ISO_BASIC)
     }
 
     @Test

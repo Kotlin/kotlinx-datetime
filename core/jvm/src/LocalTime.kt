@@ -79,7 +79,6 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
-        public actual val ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
 
     }
 }

@@ -105,9 +105,10 @@ internal val ISO_DATETIME by lazy {
 }
 
 @SharedImmutable
-internal val ISO_DATETIME_BASIC by lazy {
+internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
     LocalDateTimeFormat.build {
-        appendDate(ISO_DATE_BASIC)
-        appendTime(ISO_TIME_BASIC)
+        appendDate(ISO_DATE)
+        alternativeParsing({ char('t') }) { char('T') }
+        appendTime(ISO_TIME_OPTIONAL_SECONDS)
     }
 }

@@ -6,7 +6,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.format.ISO_TIME
-import kotlinx.datetime.format.ISO_TIME_BASIC
 import kotlinx.datetime.format.LocalTimeFormat
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
@@ -81,6 +80,5 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
-        public actual val ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
     }
 }
