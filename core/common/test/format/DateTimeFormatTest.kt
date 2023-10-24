@@ -3,6 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:OptIn(FormatStringsInDatetimeFormats::class)
+
 package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*

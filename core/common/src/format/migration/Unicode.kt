@@ -9,6 +9,26 @@ import kotlinx.datetime.format.*
 import kotlin.native.concurrent.*
 
 /**
+ * Marks declarations in the datetime library that use format strings to define datetime formats.
+ * Format strings are discouraged, because they require gaining proficiency in another tiny language.
+ * When possible, please use the builder-style Kotlin API instead.
+ * If the format string is a constant, the corresponding builder-style Kotlin code can be obtained by calling
+ * [DateTimeFormat.formatAsKotlinBuilderDsl] on the resulting format. For example:
+ * ```
+ * DateTimeFormat.formatAsKotlinBuilderDsl(LocalTime.Format { appendUnicodeFormatString("HH:mm") })
+ * ```
+ */
+@MustBeDocumented
+@Retention(value = AnnotationRetention.BINARY)
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "Using format strings is discouraged." +
+        " If the format string is a constant, the corresponding builder-style Kotlin code can be obtained by calling" +
+        " `DateTimeFormat.formatAsKotlinBuilderDsl` on the resulting format."
+)
+public annotation class FormatStringsInDatetimeFormats
+
+/**
  * Appends a Unicode date/time format string to the [FormatBuilder].
  *
  * This is the format string syntax used by the Java Time's `DateTimeFormatter` class, Swift's and Objective-C's
@@ -30,6 +50,7 @@ import kotlin.native.concurrent.*
  * @throws IllegalArgumentException if the builder is incompatible with the specified directives.
  * @throws UnsupportedOperationException if the kotlinx-datetime library does not support the specified directives.
  */
+@FormatStringsInDatetimeFormats
 public fun FormatBuilder.appendUnicodeFormatString(pattern: String) {
     val builder = this
     val directives = parseUnicodeFormat(pattern)
