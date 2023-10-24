@@ -186,7 +186,7 @@ public sealed interface DateTimeFormatBuilder {
          *
          * This field has the default value of 0. If you want to omit it, use [optional].
          */
-        public fun appendOffsetTotalHours(padding: Padding = Padding.ZERO)
+        public fun appendOffsetHours(padding: Padding = Padding.ZERO)
 
         /**
          * Appends the minute-of-hour of the UTC offset.

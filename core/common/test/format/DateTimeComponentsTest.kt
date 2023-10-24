@@ -12,7 +12,7 @@ import kotlin.test.*
 class DateTimeComponentsTest {
     @Test
     fun testAssigningIllegalValues() {
-        val dateTimeComponents = DateTimeComponents().apply { populateFrom(instant, timeZone.offsetAt(instant)) }
+        val dateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
         for (field in twoDigitFields) {
             for (invalidValue in listOf(-1, 100, Int.MIN_VALUE, Int.MAX_VALUE, 1000, 253)) {
                 assertFailsWith<IllegalArgumentException> { field.set(dateTimeComponents, invalidValue) }
@@ -31,7 +31,7 @@ class DateTimeComponentsTest {
 
     @Test
     fun testAssigningLegalValues() {
-        val dateTimeComponents = DateTimeComponents().apply { populateFrom(instant, timeZone.offsetAt(instant)) }
+        val dateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
         for (field in twoDigitFields) {
             for (validValue in listOf(null, 0, 5, 10, 43, 99)) {
                 field.set(dateTimeComponents, validValue)
@@ -46,11 +46,11 @@ class DateTimeComponentsTest {
         DateTimeComponents::hour,
         DateTimeComponents::minute,
         DateTimeComponents::second,
-        DateTimeComponents::offsetTotalHours,
+        DateTimeComponents::offsetHours,
         DateTimeComponents::offsetMinutesOfHour,
         DateTimeComponents::offsetSecondsOfMinute,
     )
     val instant = Clock.System.now()
     val timeZone = TimeZone.currentSystemDefault()
-    val currentTimeDateTimeComponents = DateTimeComponents().apply { populateFrom(instant, timeZone.offsetAt(instant)) }
+    val currentTimeDateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
 }

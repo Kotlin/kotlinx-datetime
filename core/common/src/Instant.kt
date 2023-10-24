@@ -520,18 +520,18 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  */
 public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: UtcOffset = UtcOffset.ZERO): String {
     val instant = this
-    return format.format { populateFrom(instant, offset) }
+    return format.format { setDateTimeOffset(instant, offset) }
 }
 
 /**
  * Parses an [Instant] value using the given [format].
  * Equivalent to calling [DateTimeFormat.parse] on [format] with [input] and obtaining the resulting [Instant] using
- * [DateTimeComponents.toInstantUsingUtcOffset].
+ * [DateTimeComponents.toInstantUsingOffset].
  *
  * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
  */
 public fun Instant.Companion.parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
-    format.parse(input).toInstantUsingUtcOffset()
+    format.parse(input).toInstantUsingOffset()
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800

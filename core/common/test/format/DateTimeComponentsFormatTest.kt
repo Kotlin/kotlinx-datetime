@@ -22,8 +22,8 @@ class DateTimeComponentsFormatTest {
                 year = 2008
                 monthNumber = 6
                 dayOfMonth = 40
-                populateFrom(LocalTime(11, 5, 30))
-                populateFrom(UtcOffset.ZERO)
+                setTime(LocalTime(11, 5, 30))
+                setOffset(UtcOffset.ZERO)
             },
             format.parse("Tue, 40 Jun 2008 11:05:30 GMT"))
         assertFailsWith<DateTimeFormatException> { format.parse("Bue, 3 Jun 2008 11:05:30 GMT") }
@@ -54,7 +54,7 @@ class DateTimeComponentsFormatTest {
         val dateTime = LocalDateTime(2008, 6, 3, 11, 5, 30, 123_456_789)
         val offset = UtcOffset(hours = 1)
         val formatted = "2008-06-03T11:05:30.123456789+01:00[Europe/Berlin]"
-        assertEquals(formatted, format.format { populateFrom(dateTime); populateFrom(offset); timeZoneId = berlin })
+        assertEquals(formatted, format.format { setDateTime(dateTime); setOffset(offset); timeZoneId = berlin })
         val bag = format.parse("2008-06-03T11:05:30.123456789+01:00[Europe/Berlin]")
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
@@ -79,9 +79,9 @@ class DateTimeComponentsFormatTest {
         offset: UtcOffset? = null,
         zone: TimeZone? = null
     ) = DateTimeComponents().apply {
-        date?.let { populateFrom(it) }
-        time?.let { populateFrom(it) }
-        offset?.let { populateFrom(it) }
+        date?.let { setDate(it) }
+        time?.let { setTime(it) }
+        offset?.let { setOffset(it) }
         timeZoneId = zone?.id
     }
 
@@ -102,8 +102,8 @@ class DateTimeComponentsFormatTest {
     @Test
     fun testDocFormatting() {
         val str = DateTimeComponents.Formats.RFC_1123.format {
-           populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
-           populateFrom(UtcOffset(hours = 3))
+           setDateTime(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+           setOffset(UtcOffset(hours = 3))
         }
         assertEquals("Mon, 16 Mar 2020 23:59:59 +0300", str)
     }
@@ -130,7 +130,7 @@ class DateTimeComponentsFormatTest {
         val input = "2020-03-16T23:59:59.999999999+03:00"
         val bag = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
         val localDateTime = bag.toLocalDateTime()
-        val instant = bag.toInstantUsingUtcOffset()
+        val instant = bag.toInstantUsingOffset()
         val offset = bag.toUtcOffset()
         assertEquals(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999), localDateTime)
         assertEquals(Instant.parse("2020-03-16T20:59:59.999999999Z"), instant)

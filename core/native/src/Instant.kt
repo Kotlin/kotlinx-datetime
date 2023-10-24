@@ -140,7 +140,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
         public actual fun parse(isoString: String): Instant = try {
-            DateTimeComponents.parse(isoString, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingUtcOffset()
+            DateTimeComponents.parse(isoString, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingOffset()
         } catch (e: IllegalArgumentException) {
             throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
         }

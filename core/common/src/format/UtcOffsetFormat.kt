@@ -31,7 +31,7 @@ internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffset
         AbstractDateTimeFormatBuilder<UtcOffsetFieldContainer, Builder>, DateTimeFormatBuilder.WithUtcOffset {
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-        override fun appendOffsetTotalHours(padding: Padding) =
+        override fun appendOffsetHours(padding: Padding) =
             actualBuilder.add(SignedFormatStructure(
                 BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
                 withPlusSign = true
@@ -72,7 +72,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
 ) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffsetWithoutZOnZero() {
-        appendOffsetTotalHours()
+        appendOffsetHours()
         when (outputMinute) {
             WhenToOutput.NEVER -> {}
             WhenToOutput.IF_NONZERO -> {
@@ -214,7 +214,7 @@ internal class UtcOffsetWholeHoursDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetTotalHours.name}(${padding.toKotlinCode()})"
+        "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetHours.name}(${padding.toKotlinCode()})"
 
     override fun equals(other: Any?): Boolean = other is UtcOffsetWholeHoursDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
@@ -256,7 +256,7 @@ internal val ISO_OFFSET by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
             optional("Z") {
-                appendOffsetTotalHours()
+                appendOffsetHours()
                 char(':')
                 appendOffsetMinutesOfHour()
                 optional {
@@ -272,7 +272,7 @@ internal val ISO_OFFSET_BASIC by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
             optional("Z") {
-                appendOffsetTotalHours()
+                appendOffsetHours()
                 optional {
                     appendOffsetMinutesOfHour()
                     optional {
@@ -286,7 +286,7 @@ internal val ISO_OFFSET_BASIC by lazy {
 @SharedImmutable
 internal val FOUR_DIGIT_OFFSET by lazy {
     UtcOffsetFormat.build {
-        appendOffsetTotalHours()
+        appendOffsetHours()
         appendOffsetMinutesOfHour()
     }
 }

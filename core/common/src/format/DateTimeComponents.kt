@@ -25,7 +25,7 @@ import kotlin.reflect.*
  * val input = "2020-03-16T23:59:59.999999999+03:00"
  * val bag = DateTimeComponents.Format.ISO_INSTANT.parse(input)
  * val localDateTime = bag.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
- * val instant = bag.toInstantUsingUtcOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
+ * val instant = bag.toInstantUsingOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
  * val offset = bag.toUtcOffset() // UtcOffset(hours = 3)
  * ```
  *
@@ -55,8 +55,8 @@ import kotlin.reflect.*
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
  * DateTimeComponents.Format.RFC_1123.format {
- *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
- *    populateFrom(UtcOffset(hours = 3))
+ *    setDateTimeOffset(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+ *    setDateTimeOffset(UtcOffset(hours = 3))
  * }
  * ```
  *
@@ -171,7 +171,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(localTime: LocalTime) { contents.time.populateFrom(localTime) }
+    public fun setTime(localTime: LocalTime) { contents.time.populateFrom(localTime) }
 
     /**
      * Writes the contents of the specified [localDate] to this [DateTimeComponents].
@@ -179,7 +179,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(localDate: LocalDate) { contents.date.populateFrom(localDate) }
+    public fun setDate(localDate: LocalDate) { contents.date.populateFrom(localDate) }
 
     /**
      * Writes the contents of the specified [localDateTime] to this [DateTimeComponents].
@@ -188,38 +188,51 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(localDateTime: LocalDateTime) {
+    public fun setDateTime(localDateTime: LocalDateTime) {
         contents.date.populateFrom(localDateTime.date)
         contents.time.populateFrom(localDateTime.time)
     }
 
     /**
      * Writes the contents of the specified [utcOffset] to this [DateTimeComponents].
-     * The [utcOffset] is written to the [offsetTotalHours], [offsetMinutesOfHour] and [offsetSecondsOfMinute] fields.
+     * The [utcOffset] is written to the [offsetHours], [offsetMinutesOfHour] and [offsetSecondsOfMinute] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(utcOffset: UtcOffset) { contents.offset.populateFrom(utcOffset) }
+    public fun setOffset(utcOffset: UtcOffset) { contents.offset.populateFrom(utcOffset) }
 
     /**
      * Writes the contents of the specified [instant] to this [DateTimeComponents].
      *
      * This method is almost always equivalent to the following code:
      * ```
-     * populateFrom(instant.toLocalDateTime(offset))
-     * populateFrom(offset)
+     * setDateTime(instant.toLocalDateTime(offset))
+     * setOffset(utcOffset)
      * ```
      * However, this also works for instants that are too large to be represented as a [LocalDateTime].
      *
      * If any of the fields are already set, they will be overwritten.
      */
-    public fun populateFrom(instant: Instant, offset: UtcOffset) {
+    public fun setDateTimeOffset(instant: Instant, utcOffset: UtcOffset) {
         val smallerInstant = Instant.fromEpochSeconds(
             instant.epochSeconds % SECONDS_PER_10000_YEARS, instant.nanosecondsOfSecond
         )
-        populateFrom(smallerInstant.toLocalDateTime(offset))
-        populateFrom(offset)
+        setDateTime(smallerInstant.toLocalDateTime(utcOffset))
+        setOffset(utcOffset)
         year = year!! + ((instant.epochSeconds / SECONDS_PER_10000_YEARS) * 10000).toInt()
+    }
+
+    /**
+     * Writes the contents of the specified [localDateTime] and [utcOffset] to this [DateTimeComponents].
+     *
+     * A shortcut for calling [setDateTime] and [setOffset] separately.
+     *
+     * If [localDateTime] is obtained from an [Instant] using [LocalDateTime.toInstant], it is recommended to use
+     * [setDateTimeOffset] that accepts an [Instant] directly.
+     */
+    public fun setDateTimeOffset(localDateTime: LocalDateTime, utcOffset: UtcOffset) {
+        setDateTime(localDateTime)
+        setOffset(utcOffset)
     }
 
     /** Returns the year component of the date. */
@@ -276,7 +289,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     public var offsetIsNegative: Boolean? by contents.offset::isNegative
 
     /** The total amount of full hours in the UTC offset, in the range [0; 18]. */
-    public var offsetTotalHours: Int? by TwoDigitNumber(contents.offset::totalHoursAbs)
+    public var offsetHours: Int? by TwoDigitNumber(contents.offset::totalHoursAbs)
 
     /** The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59]. */
     public var offsetMinutesOfHour: Int? by TwoDigitNumber(contents.offset::minutesOfHour)
@@ -291,7 +304,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Builds a [UtcOffset] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
-     * * [offsetTotalHours] (default value is 0)
+     * * [offsetHours] (default value is 0)
      * * [offsetMinutesOfHour] (default value is 0)
      * * [offsetSecondsOfMinute] (default value is 0)
      *
@@ -358,7 +371,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * @throws IllegalArgumentException if any of the required fields are not present.
      */
-    public fun toInstantUsingUtcOffset(): Instant {
+    public fun toInstantUsingOffset(): Instant {
         val offset = toUtcOffset()
         val time = toLocalTime()
         val truncatedDate = contents.date.copy()
@@ -391,8 +404,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
  * DateTimeComponents.Format.RFC_1123.format {
- *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
- *    populateFrom(UtcOffset(hours = 3))
+ *    setDateTime(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
+ *    setOffset(UtcOffset(hours = 3))
  * }
  * ```
  */
@@ -478,7 +491,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
         override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun appendOffsetTotalHours(padding: Padding) =
+        override fun appendOffsetHours(padding: Padding) =
             actualBuilder.add(
                 SignedFormatStructure(
                     BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
