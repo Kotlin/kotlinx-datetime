@@ -8,6 +8,7 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
+import kotlin.native.concurrent.*
 
 /**
  * A format for parsing and formatting date-time-related values.
@@ -21,7 +22,7 @@ public sealed interface DateTimeFormat<T> {
     /**
      * Formats the given [value] into the given [appendable], using this format.
      */
-    public fun <A: Appendable> formatTo(appendable: A, value: T): A
+    public fun <A : Appendable> formatTo(appendable: A, value: T): A
 
     /**
      * Parses the given [input] string as [T], using this format.
@@ -36,6 +37,22 @@ public sealed interface DateTimeFormat<T> {
      * @return the parsed value, or `null` if the input string is not in the expected format or the value is invalid.
      */
     public fun parseOrNull(input: CharSequence): T?
+
+    public companion object {
+        /**
+         * Produces Kotlin code that, when pasted into a Kotlin source file, creates a [DateTimeFormat] instance that
+         * behaves identically to [format].
+         *
+         * The typical use case for this is to create a [DateTimeFormat] instance using a non-idiomatic approach and
+         * then convert it to a builder DSL.
+         */
+        public fun formatAsKotlinBuilderDsl(format: DateTimeFormat<*>): String {
+            when (format) {
+                is AbstractDateTimeFormat<*, *> -> return format.actualFormat.builderString(allFormatConstants)
+                else -> error("Unsupported format: $format")
+            }
+        }
+    }
 }
 
 /**
@@ -58,11 +75,19 @@ public enum class Padding {
     SPACE
 }
 
+internal fun Padding.toKotlinCode(): String = when (this) {
+    Padding.NONE -> "Padding.NONE"
+    Padding.ZERO -> "Padding.ZERO"
+    Padding.SPACE -> "Padding.SPACE"
+}
+
 internal inline fun Padding.minDigits(width: Int) = if (this == Padding.ZERO) width else 1
 internal inline fun Padding.spaces(width: Int) = if (this == Padding.SPACE) width else null
 
 /** [T] is the user-visible type, whereas [U] is its mutable representation for parsing and formatting. */
-internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>>(private val actualFormat: StringFormat<U>): DateTimeFormat<T> {
+internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeFormat<T> {
+
+    abstract val actualFormat: StringFormat<U>
 
     abstract fun intermediateFromValue(value: T): U
 
@@ -80,7 +105,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>>(private val act
         actualFormat.formatter.format(intermediateFromValue(value), it)
     }.toString()
 
-    override fun <A: Appendable> formatTo(appendable: A, value: T): A = appendable.apply {
+    override fun <A : Appendable> formatTo(appendable: A, value: T): A = appendable.apply {
         actualFormat.formatter.format(intermediateFromValue(value), this)
     }
 
@@ -107,4 +132,22 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>>(private val act
         null
     }?.let { valueFromIntermediateOrNull(it) }
 
+}
+
+@SharedImmutable
+private val allFormatConstants: List<Pair<String, StringFormat<*>>> = run {
+    fun unwrap(format: DateTimeFormat<*>): StringFormat<*> = (format as AbstractDateTimeFormat<*, *>).actualFormat
+    listOf(
+        "${DateTimeFormatBuilder.WithDate::appendDate.name}(LocalDate.Formats.ISO)" to unwrap(LocalDate.Formats.ISO),
+        "${DateTimeFormatBuilder.WithDate::appendDate.name}(LocalDate.Formats.ISO_BASIC)" to unwrap(LocalDate.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithTime::appendTime.name}(LocalTime.Formats.ISO)" to unwrap(LocalTime.Formats.ISO),
+        "${DateTimeFormatBuilder.WithTime::appendTime.name}(LocalTime.Formats.ISO_BASIC)" to unwrap(LocalTime.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.ISO)" to unwrap(UtcOffset.Formats.ISO),
+        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.ISO_BASIC)" to unwrap(UtcOffset.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.FOUR_DIGITS)" to unwrap(UtcOffset.Formats.FOUR_DIGITS),
+        "${DateTimeFormatBuilder.WithDateTimeComponents::appendDateTimeComponents.name}(DateTimeComponents.Formats.RFC_1123)" to
+            unwrap(DateTimeComponents.Formats.RFC_1123),
+        "${DateTimeFormatBuilder.WithDateTimeComponents::appendDateTimeComponents.name}(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)" to
+            unwrap(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET),
+    )
 }

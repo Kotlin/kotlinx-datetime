@@ -93,30 +93,36 @@ internal class IncompleteLocalTime(
         }"
 }
 
-internal class HourDirective(padding: Padding) :
+internal class HourDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.hour,
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
-    override val builderRepresentation: String = when (padding) {
+    override val builderRepresentation: String get() = when (padding) {
         Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendHour.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendHour.name}($padding)"
+        else -> "${DateTimeFormatBuilder.WithTime::appendHour.name}(${padding.toKotlinCode()})"
     }
+
+    override fun equals(other: Any?): Boolean = other is HourDirective && padding == other.padding
+    override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class AmPmHourDirective(padding: Padding) :
+internal class AmPmHourDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.hourOfAmPm, minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
-    override val builderRepresentation: String = when (padding) {
+    override val builderRepresentation: String get() = when (padding) {
         Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}($padding)"
+        else -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}(${padding.toKotlinCode()})"
     }
+
+    override fun equals(other: Any?): Boolean = other is AmPmHourDirective && padding == other.padding
+    override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class AmPmMarkerDirective(amString: String, pmString: String) :
+internal class AmPmMarkerDirective(private val amString: String, private val pmString: String) :
     NamedEnumIntFieldFormatDirective<TimeFieldContainer, Boolean>(
         TimeFields.isPm, mapOf(
             false to amString,
@@ -124,49 +130,64 @@ internal class AmPmMarkerDirective(amString: String, pmString: String) :
         )
     ) {
 
-    override val builderRepresentation: String =
+    override val builderRepresentation: String get() =
         "${DateTimeFormatBuilder.WithTime::appendAmPmMarker.name}($amString, $pmString)"
+
+    override fun equals(other: Any?): Boolean =
+        other is AmPmMarkerDirective && amString == other.amString && pmString == other.pmString
+    override fun hashCode(): Int = 31 * amString.hashCode() + pmString.hashCode()
 }
 
-internal class MinuteDirective(padding: Padding) :
+internal class MinuteDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.minute,
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
 
-    override val builderRepresentation: String = when (padding) {
+    override val builderRepresentation: String get() = when (padding) {
         Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}($padding)"
+        else -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}(${padding.toKotlinCode()})"
     }
+
+    override fun equals(other: Any?): Boolean = other is MinuteDirective && padding == other.padding
+    override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class SecondDirective(padding: Padding) :
+internal class SecondDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.second,
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
 
-    override val builderRepresentation: String = when (padding) {
+    override val builderRepresentation: String get() = when (padding) {
         Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}($padding)"
+        else -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}(${padding.toKotlinCode()})"
     }
+
+    override fun equals(other: Any?): Boolean = other is SecondDirective && padding == other.padding
+    override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int? = null) :
+internal class FractionalSecondDirective(private val minDigits: Int? = null, private val maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
 
-    override val builderRepresentation: String = when {
+    override val builderRepresentation: String get() = when {
         minDigits == 1 && maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}()"
         minDigits == 1 -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}(maxLength = $maxDigits)"
         maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits)"
         else -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits, $maxDigits)"
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is FractionalSecondDirective && minDigits == other.minDigits && maxDigits == other.maxDigits
+
+    override fun hashCode(): Int = 31 * (minDigits ?: 0) + (maxDigits ?: 0)
 }
 
-internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer>) :
-    AbstractDateTimeFormat<LocalTime, IncompleteLocalTime>(actualFormat) {
+internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeFieldContainer>) :
+    AbstractDateTimeFormat<LocalTime, IncompleteLocalTime>() {
     override fun intermediateFromValue(value: LocalTime): IncompleteLocalTime =
         IncompleteLocalTime().apply { populateFrom(value) }
 
@@ -204,8 +225,6 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
-
-    override fun toString(): String = actualFormat.builderString()
 
 }
 

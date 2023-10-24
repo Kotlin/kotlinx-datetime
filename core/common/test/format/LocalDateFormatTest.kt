@@ -12,7 +12,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
-class DateFormatTest {
+class LocalDateFormatTest {
 
     @Test
     fun testErrorHandling() {

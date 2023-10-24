@@ -25,8 +25,8 @@ internal class IncompleteLocalDateTime(
     override fun copy(): IncompleteLocalDateTime = IncompleteLocalDateTime(date.copy(), time.copy())
 }
 
-internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldContainer>) :
-    AbstractDateTimeFormat<LocalDateTime, IncompleteLocalDateTime>(actualFormat) {
+internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateTimeFieldContainer>) :
+    AbstractDateTimeFormat<LocalDateTime, IncompleteLocalDateTime>() {
     override fun intermediateFromValue(value: LocalDateTime): IncompleteLocalDateTime =
         IncompleteLocalDateTime().apply { populateFrom(value) }
 
@@ -56,12 +56,12 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
             actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
         override fun appendMonthName(names: MonthNames) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
+            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
         override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
 
         override fun appendDayOfWeek(names: DayOfWeekNames) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
         override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
         override fun appendAmPmHour(padding: Padding) =
@@ -92,8 +92,6 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
-
-    override fun toString(): String = actualFormat.builderString()
 }
 
 // these are constants so that the formats are not recreated every time they are used

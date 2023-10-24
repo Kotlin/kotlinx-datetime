@@ -430,14 +430,18 @@ internal class DateTimeComponentsContents internal constructor(
 @SharedImmutable
 internal val timeZoneField = GenericFieldSpec(DateTimeComponentsContents::timeZoneId)
 
-internal class TimeZoneIdDirective(knownZones: Set<String>) :
+internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
     StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
 
-    override val builderRepresentation: String = "${DateTimeFormatBuilder.WithDateTimeComponents::appendTimeZoneId.name}()"
+    override val builderRepresentation: String get() =
+        "${DateTimeFormatBuilder.WithDateTimeComponents::appendTimeZoneId.name}()"
+
+    override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
+    override fun hashCode(): Int = knownZones.hashCode()
 }
 
-internal class DateTimeComponentsFormat(val actualFormat: StringFormat<DateTimeComponentsContents>) :
-    AbstractDateTimeFormat<DateTimeComponents, DateTimeComponentsContents>(actualFormat) {
+internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<DateTimeComponentsContents>) :
+    AbstractDateTimeFormat<DateTimeComponents, DateTimeComponentsContents>() {
     override fun intermediateFromValue(value: DateTimeComponents): DateTimeComponentsContents = value.contents
 
     override fun valueFromIntermediate(intermediate: DateTimeComponentsContents): DateTimeComponents = DateTimeComponents(intermediate)
@@ -456,11 +460,11 @@ internal class DateTimeComponentsFormat(val actualFormat: StringFormat<DateTimeC
             actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
         override fun appendMonthName(names: MonthNames) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names.names)))
+            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
         override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
         override fun appendDayOfWeek(names: DayOfWeekNames) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names.names)))
+            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
         override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
         override fun appendAmPmHour(padding: Padding) =
@@ -518,8 +522,6 @@ internal class DateTimeComponentsFormat(val actualFormat: StringFormat<DateTimeC
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }
-
-    override fun toString(): String = actualFormat.builderString()
 }
 
 private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {

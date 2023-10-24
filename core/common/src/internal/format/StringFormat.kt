@@ -14,12 +14,18 @@ internal class BasicFormatStructure<in T>(
     val directive: FieldFormatDirective<T>
 ) : NonConcatenatedFormatStructure<T> {
     override fun toString(): String = "BasicFormatStructure($directive)"
+
+    override fun equals(other: Any?): Boolean = other is BasicFormatStructure<*> && directive == other.directive
+    override fun hashCode(): Int = directive.hashCode()
 }
 
 internal class ConstantFormatStructure<in T>(
     val string: String
 ) : NonConcatenatedFormatStructure<T> {
     override fun toString(): String = "ConstantFormatStructure($string)"
+
+    override fun equals(other: Any?): Boolean = other is ConstantFormatStructure<*> && string == other.string
+    override fun hashCode(): Int = string.hashCode()
 }
 
 internal class SignedFormatStructure<in T>(
@@ -34,6 +40,10 @@ internal class SignedFormatStructure<in T>(
     }
 
     override fun toString(): String = "SignedFormatStructure($format)"
+
+    override fun equals(other: Any?): Boolean =
+        other is SignedFormatStructure<*> && format == other.format && withPlusSign == other.withPlusSign
+    override fun hashCode(): Int = 31 * format.hashCode() + withPlusSign.hashCode()
 }
 
 internal class AlternativesParsingFormatStructure<in T>(
@@ -41,6 +51,10 @@ internal class AlternativesParsingFormatStructure<in T>(
     val formats: List<FormatStructure<T>>,
 ) : NonConcatenatedFormatStructure<T> {
     override fun toString(): String = "AlternativesParsing($formats)"
+
+    override fun equals(other: Any?): Boolean =
+        other is AlternativesParsingFormatStructure<*> && mainFormat == other.mainFormat && formats == other.formats
+    override fun hashCode(): Int = 31 * mainFormat.hashCode() + formats.hashCode()
 }
 
 internal class OptionalFormatStructure<in T>(
@@ -48,6 +62,11 @@ internal class OptionalFormatStructure<in T>(
     val format: FormatStructure<T>,
 ) : NonConcatenatedFormatStructure<T> {
     override fun toString(): String = "Optional($onZero, $format)"
+
+    override fun equals(other: Any?): Boolean =
+        other is OptionalFormatStructure<*> && onZero == other.onZero && format == other.format
+
+    override fun hashCode(): Int = 31 * onZero.hashCode() + format.hashCode()
 }
 
 internal sealed interface NonConcatenatedFormatStructure<in T> : FormatStructure<T>
@@ -56,6 +75,11 @@ internal class ConcatenatedFormatStructure<in T>(
     val formats: List<NonConcatenatedFormatStructure<T>>
 ) : FormatStructure<T> {
     override fun toString(): String = "ConcatenatedFormatStructure(${formats.joinToString(", ")})"
+
+    override fun equals(other: Any?): Boolean = other is ConcatenatedFormatStructure<*> && formats == other.formats
+    override fun hashCode(): Int {
+        return formats.hashCode()
+    }
 }
 
 internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
