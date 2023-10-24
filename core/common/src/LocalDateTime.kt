@@ -55,7 +55,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          *   appendMonthNumber(); char('/'); appendDayOfMonth()
          *   char(' ')
          *   appendHour(); char(':'); appendMinute()
-         *   appendOptional { char(':'); appendSecond() }
+         *   optional { char(':'); appendSecond() }
          * }
          * ```
          *

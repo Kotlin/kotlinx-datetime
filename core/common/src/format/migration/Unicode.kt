@@ -42,7 +42,7 @@ public annotation class FormatStringsInDatetimeFormats
  * * `[]` denote optional sections. For example, `hh:mm[:ss]` will allow parsing seconds optionally.
  *   This is similar to what is supported by the Java Time's `DateTimeFormatter` class, but with the difference that,
  *   for formatting, the optional sections have a different meaning: they are not included in the output if all the
- *   fields they contain have their default values. See [FormatBuilder.appendOptional] for more details.
+ *   fields they contain have their default values. See [FormatBuilder.optional] for more details.
  * * One or more `p` characters before a field specifies that the field should be padded with zeroes to the length
  *   equal to the number of `p` characters. This is also supported by the Java Time's `DateTimeFormatter` class.
  *
@@ -58,7 +58,7 @@ public fun FormatBuilder.appendUnicodeFormatString(pattern: String) {
         when (format) {
             is UnicodeStringLiteral -> builder.chars(format.literal)
             is UnicodeFormatSequence -> format.formats.forEach { rec(it) }
-            is UnicodeOptionalGroup -> builder.appendOptional { rec(format.format) }
+            is UnicodeOptionalGroup -> builder.optional { rec(format.format) }
             is UnicodeDirective -> {
                 when (format) {
                     is TimeBasedUnicodeDirective -> {

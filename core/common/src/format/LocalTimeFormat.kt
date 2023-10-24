@@ -47,7 +47,7 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
      *
      * By default, it's zero-padded to two digits, but this can be changed with [padding].
      *
-     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     * This field has the default value of 0. If you want to omit it, use [optional].
      */
     public fun appendSecond(padding: Padding = Padding.ZERO)
 
@@ -59,7 +59,7 @@ public sealed interface TimeFormatBuilderFields : FormatBuilder {
      * enough trailing zeros to make the number of digits displayed a multiple of three (e.g. `123.450`) for
      * readability. Explicitly set [minLength] to `1` to disable this behavior.
      *
-     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     * This field has the default value of 0. If you want to omit it, use [optional].
      *
      * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
      */
@@ -282,10 +282,10 @@ internal val ISO_TIME by lazy {
         appendHour()
         char(':')
         appendMinute()
-        appendOptional {
+        optional {
             char(':')
             appendSecond()
-            appendOptional {
+            optional {
                 char('.')
                 appendSecondFraction()
             }
@@ -297,9 +297,9 @@ internal val ISO_TIME_BASIC by lazy {
     LocalTimeFormat.build {
         alternativeParsing({ char('t') }) { char('T') }
         appendHour(); appendMinute()
-        appendOptional {
+        optional {
             appendSecond()
-            appendOptional {
+            optional {
                 char('.')
                 appendSecondFraction()
             }

@@ -19,7 +19,7 @@ public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
      *
      * By default, it's zero-padded to two digits, but this can be changed with [padding].
      *
-     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     * This field has the default value of 0. If you want to omit it, use [optional].
      */
     public fun appendOffsetTotalHours(padding: Padding = Padding.ZERO)
 
@@ -28,7 +28,7 @@ public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
      *
      * By default, it's zero-padded to two digits, but this can be changed with [padding].
      *
-     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     * This field has the default value of 0. If you want to omit it, use [optional].
      */
     public fun appendOffsetMinutesOfHour(padding: Padding = Padding.ZERO)
 
@@ -37,7 +37,7 @@ public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
      *
      * By default, it's zero-padded to two digits, but this can be changed with [padding].
      *
-     * This field has the default value of 0. If you want to omit it, use [appendOptional].
+     * This field has the default value of 0. If you want to omit it, use [optional].
      */
     public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
 
@@ -120,7 +120,7 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
         when (outputMinute) {
             WhenToOutput.NEVER -> {}
             WhenToOutput.IF_NONZERO -> {
-                appendOptional {
+                optional {
                     if (useSeparator) {
                         char(':')
                     }
@@ -128,7 +128,7 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
                     when (outputSecond) {
                         WhenToOutput.NEVER -> {}
                         WhenToOutput.IF_NONZERO -> {
-                            appendOptional {
+                            optional {
                                 if (useSeparator) {
                                     char(':')
                                 }
@@ -154,7 +154,7 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
                 when (outputSecond) {
                     WhenToOutput.NEVER -> {}
                     WhenToOutput.IF_NONZERO -> {
-                        appendOptional {
+                        optional {
                             if (useSeparator) {
                                 char(':')
                             }
@@ -173,7 +173,7 @@ internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
         }
     }
     if (zOnZero) {
-        appendOptional("Z") {
+        optional("Z") {
             alternativeParsing({
                 char('z')
             }) {
@@ -290,11 +290,11 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
 internal val ISO_OFFSET by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
-            appendOptional("Z") {
+            optional("Z") {
                 appendOffsetTotalHours()
                 char(':')
                 appendOffsetMinutesOfHour()
-                appendOptional {
+                optional {
                     char(':')
                     appendOffsetSecondsOfMinute()
                 }
@@ -306,11 +306,11 @@ internal val ISO_OFFSET by lazy {
 internal val ISO_OFFSET_BASIC by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
-            appendOptional("Z") {
+            optional("Z") {
                 appendOffsetTotalHours()
-                appendOptional {
+                optional {
                     appendOffsetMinutesOfHour()
-                    appendOptional {
+                    optional {
                         appendOffsetSecondsOfMinute()
                     }
                 }

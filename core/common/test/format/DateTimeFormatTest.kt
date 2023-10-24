@@ -270,7 +270,7 @@ class DateTimeFormatTest {
           appendMonthNumber(); char('/'); appendDayOfMonth()
           char(' ')
           appendHour(); char(':'); appendMinute()
-          appendOptional { char(':'); appendSecond() }
+          optional { char(':'); appendSecond() }
         }
         assertEquals("08/30 18:43:13", dateTime.format(format2))
     }

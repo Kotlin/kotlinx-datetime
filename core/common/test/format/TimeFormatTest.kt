@@ -216,7 +216,7 @@ class TimeFormatTest {
           appendMinute()
           char(':')
           appendSecond()
-          appendOptional {
+          optional {
             char('.')
             appendSecondFraction()
           }

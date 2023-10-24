@@ -45,14 +45,14 @@ public fun <T: FormatBuilder> T.alternativeParsing(
  * When parsing, the section is parsed if it is present in the input.
  *
  * When formatting, the section is formatted if the value of any field in the block is not equal to the default value.
- * Only [appendOptional] calls where all the fields have default values are permitted when formatting.
+ * Only [optional] calls where all the fields have default values are permitted when formatting.
  *
  * Example:
  * ```
  * appendHours()
  * char(':')
  * appendMinutes()
- * appendOptional {
+ * optional {
  *   char(':')
  *   appendSeconds()
  * }
@@ -60,11 +60,11 @@ public fun <T: FormatBuilder> T.alternativeParsing(
  *
  * Here, because seconds have the default value of zero, they are formatted only if they are not equal to zero.
  *
- * [onZero] defines the string that is used if values are the default ones.
+ * [ifZero] defines the string that is used if values are the default ones.
  */
 @Suppress("UNCHECKED_CAST")
-public fun <T: FormatBuilder> T.appendOptional(onZero: String = "", block: T.() -> Unit): Unit = when (this) {
-    is AbstractFormatBuilder<*, *> -> appendOptionalImpl(onZero = onZero, block as (AbstractFormatBuilder<*, *>.() -> Unit))
+public fun <T: FormatBuilder> T.optional(ifZero: String = "", format: T.() -> Unit): Unit = when (this) {
+    is AbstractFormatBuilder<*, *> -> appendOptionalImpl(onZero = ifZero, format as (AbstractFormatBuilder<*, *>.() -> Unit))
     else -> throw IllegalStateException("impossible")
 }
 
@@ -136,9 +136,9 @@ private fun<T> FormatStructure<T>.builderString(): String = when (this) {
     }
     is OptionalFormatStructure -> buildString {
         if (onZero == "") {
-            appendLine("appendOptional {")
+            appendLine("optional {")
         } else {
-            appendLine("appendOptional(${onZero.toKotlinCode()}) {")
+            appendLine("optional(${onZero.toKotlinCode()}) {")
         }
         appendLine(format.builderString().prependIndent(CODE_INDENT))
         append("}")

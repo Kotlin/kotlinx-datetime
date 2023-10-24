@@ -110,7 +110,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             appendMinute()
             char(':')
             appendSecond()
-            appendOptional {
+            optional {
                 char('.')
                 appendSecondFraction()
             }
@@ -148,7 +148,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             appendHour()
             char(':')
             appendMinute()
-            appendOptional {
+            optional {
                 char(':')
                 appendSecond()
             }
@@ -158,7 +158,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
             }, {
                 chars("Z")
             }) {
-                appendOptional("GMT") {
+                optional("GMT") {
                     appendOffset(UtcOffset.Formats.FOUR_DIGITS)
                 }
             }

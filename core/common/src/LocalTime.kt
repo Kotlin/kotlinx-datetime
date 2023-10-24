@@ -92,7 +92,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          *   appendMinute()
          *   char(':')
          *   appendSecond()
-         *   appendOptional {
+         *   optional {
          *     char('.')
          *     appendSecondFraction()
          *   }
