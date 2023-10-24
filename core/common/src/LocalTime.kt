@@ -100,7 +100,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * ```
          *
          * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
-         * (for example, [second] is 60), consider using [ValueBag.Format] instead.
+         * (for example, [second] is 60), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalTime.Formats].
          */

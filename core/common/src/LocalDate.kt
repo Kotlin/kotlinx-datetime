@@ -58,7 +58,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          * ```
          *
          * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
-         * (for example, [dayOfMonth] is 31 for February), consider using [ValueBag.Format] instead.
+         * (for example, [dayOfMonth] is 31 for February), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalDate.Formats].
          */

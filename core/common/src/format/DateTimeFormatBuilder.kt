@@ -234,10 +234,10 @@ public sealed interface DateTimeFormatBuilder {
          *
          * Example:
          * ```
-         * appendValueBag(ValueBag.Format.RFC_1123)
+         * appendDateTimeComponents(DateTimeComponents.Format.RFC_1123)
          * ```
          */
-        public fun appendValueBag(format: DateTimeFormat<ValueBag>)
+        public fun appendDateTimeComponents(format: DateTimeFormat<DateTimeComponents>)
     }
 }
 

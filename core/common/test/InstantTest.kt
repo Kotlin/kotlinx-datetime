@@ -131,7 +131,7 @@ class InstantTest {
 
         for (instant in instants) {
             for (offset in offsets) {
-                val str = instant.format(ValueBag.Formats.ISO_DATE_TIME_OFFSET, offset)
+                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offset)
                 assertEquals(instant, Instant.parse(str))
             }
         }

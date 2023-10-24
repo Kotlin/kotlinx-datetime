@@ -9,16 +9,16 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class ValueBagFormatTest {
+class DateTimeComponentsFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = ValueBag.Formats.RFC_1123
-        assertValueBagsEqual(
-            valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO),
+        val format = DateTimeComponents.Formats.RFC_1123
+        assertDateTimeComponentsEqual(
+            dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO),
             format.parse("Tue, 3 Jun 2008 11:05:30 GMT"))
-        assertValueBagsEqual(
-            ValueBag().apply {
+        assertDateTimeComponentsEqual(
+            DateTimeComponents().apply {
                 year = 2008
                 monthNumber = 6
                 dayOfMonth = 40
@@ -31,19 +31,19 @@ class ValueBagFormatTest {
 
     @Test
     fun testRfc1123() {
-        val bags = buildMap<ValueBag, Pair<String, Set<String>>> {
-            put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Tue, 3 Jun 2008 11:05:30 GMT" to setOf("3 Jun 2008 11:05:30 UT", "3 Jun 2008 11:05:30 Z")))
-            put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Mon, 30 Jun 2008 11:05:30 GMT" to setOf()))
-            put(valueBag(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
-            put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:30 -0300" to setOf()))
-            put(valueBag(LocalDate(2008, 6, 30), LocalTime(11, 5, 0), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05 -0300" to setOf("Mon, 30 Jun 2008 11:05:00 -0300")))
+        val bags = buildMap<DateTimeComponents, Pair<String, Set<String>>> {
+            put(dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Tue, 3 Jun 2008 11:05:30 GMT" to setOf("3 Jun 2008 11:05:30 UT", "3 Jun 2008 11:05:30 Z")))
+            put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Mon, 30 Jun 2008 11:05:30 GMT" to setOf()))
+            put(dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
+            put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:30 -0300" to setOf()))
+            put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 0), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05 -0300" to setOf("Mon, 30 Jun 2008 11:05:00 -0300")))
         }
-        test(bags, ValueBag.Formats.RFC_1123)
+        test(bags, DateTimeComponents.Formats.RFC_1123)
     }
 
     @Test
     fun testZonedDateTime() {
-        val format = ValueBag.Format {
+        val format = DateTimeComponents.Format {
             appendDateTime(LocalDateTime.Formats.ISO)
             appendOffset(UtcOffset.Formats.ISO)
             char('[')
@@ -67,25 +67,25 @@ class ValueBagFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = ValueBag.Format { appendTimeZoneId(); chars("X") }
+        val format = DateTimeComponents.Format { appendTimeZoneId(); chars("X") }
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("${zone}X").timeZoneId)
         }
     }
 
-    private fun valueBag(
+    private fun dateTimeComponents(
         date: LocalDate? = null,
         time: LocalTime? = null,
         offset: UtcOffset? = null,
         zone: TimeZone? = null
-    ) = ValueBag().apply {
+    ) = DateTimeComponents().apply {
         date?.let { populateFrom(it) }
         time?.let { populateFrom(it) }
         offset?.let { populateFrom(it) }
         timeZoneId = zone?.id
     }
 
-    private fun assertValueBagsEqual(a: ValueBag, b: ValueBag, message: String? = null) {
+    private fun assertDateTimeComponentsEqual(a: DateTimeComponents, b: DateTimeComponents, message: String? = null) {
         assertEquals(a.year, b.year, message)
         assertEquals(a.monthNumber, b.monthNumber, message)
         assertEquals(a.dayOfMonth, b.dayOfMonth, message)
@@ -101,7 +101,7 @@ class ValueBagFormatTest {
 
     @Test
     fun testDocFormatting() {
-        val str = ValueBag.Formats.RFC_1123.format {
+        val str = DateTimeComponents.Formats.RFC_1123.format {
            populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
            populateFrom(UtcOffset(hours = 3))
         }
@@ -112,7 +112,7 @@ class ValueBagFormatTest {
     fun testDocOutOfBoundsParsing() {
         val input = "23:59:60"
         val extraDay: Boolean
-        val time = ValueBag.Format {
+        val time = DateTimeComponents.Format {
           appendTime(LocalTime.Formats.ISO)
         }.parse(input).apply {
           if (hour == 23 && minute == 59 && second == 60) {
@@ -128,7 +128,7 @@ class ValueBagFormatTest {
     @Test
     fun testDocCombinedParsing() {
         val input = "2020-03-16T23:59:59.999999999+03:00"
-        val bag = ValueBag.Formats.ISO_DATE_TIME_OFFSET.parse(input)
+        val bag = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
         val localDateTime = bag.toLocalDateTime()
         val instant = bag.toInstantUsingUtcOffset()
         val offset = bag.toUtcOffset()
@@ -137,13 +137,13 @@ class ValueBagFormatTest {
         assertEquals(UtcOffset(hours = 3), offset)
     }
 
-    private fun test(strings: Map<ValueBag, Pair<String, Set<String>>>, format: DateTimeFormat<ValueBag>) {
+    private fun test(strings: Map<DateTimeComponents, Pair<String, Set<String>>>, format: DateTimeFormat<DateTimeComponents>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue
             assertEquals(canonicalString, format.format(value), "formatting $value with $format")
-            assertValueBagsEqual(value, format.parse(canonicalString), "parsing '$canonicalString' with $format")
+            assertDateTimeComponentsEqual(value, format.parse(canonicalString), "parsing '$canonicalString' with $format")
             for (otherString in otherStrings) {
-                assertValueBagsEqual(value, format.parse(otherString), "parsing '$otherString' with $format")
+                assertDateTimeComponentsEqual(value, format.parse(otherString), "parsing '$otherString' with $format")
             }
         }
     }

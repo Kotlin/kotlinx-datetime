@@ -18,26 +18,26 @@ import kotlin.reflect.*
  *
  * Its main purpose is to provide support for complex date-time formats that don't correspond to any of the standard
  * entities in the library. For example, a format that includes only the month and the day of the month, but not the
- * year, can not be represented and parsed as a [LocalDate], but it is valid for a [ValueBag].
+ * year, can not be represented and parsed as a [LocalDate], but it is valid for a [DateTimeComponents].
  *
  * Example:
  * ```
  * val input = "2020-03-16T23:59:59.999999999+03:00"
- * val bag = ValueBag.Format.ISO_INSTANT.parse(input)
+ * val bag = DateTimeComponents.Format.ISO_INSTANT.parse(input)
  * val localDateTime = bag.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
  * val instant = bag.toInstantUsingUtcOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
  * val offset = bag.toUtcOffset() // UtcOffset(hours = 3)
  * ```
  *
  * Another purpose is to support parsing and formatting data with out-of-bounds values. For example, parsing
- * `23:59:60` as a [LocalTime] is not possible, but it is possible to parse it as a [ValueBag], adjust the value by
+ * `23:59:60` as a [LocalTime] is not possible, but it is possible to parse it as a [DateTimeComponents], adjust the value by
  * setting [second] to `59`, and then convert it to a [LocalTime] via [toLocalTime].
  *
  * Example:
  * ```
  * val input = "23:59:60"
  * val extraDay: Boolean
- * val time = ValueBag.Format {
+ * val time = DateTimeComponents.Format {
  *   appendTime(LocalTime.Format.ISO)
  * }.parse(input).apply {
  *   if (hour == 23 && minute == 59 && second == 60) {
@@ -49,12 +49,12 @@ import kotlin.reflect.*
  * ```
  *
  * Because this class has limited applications, constructing it directly is not possible.
- * For formatting, use the [format] overload that accepts a lambda with a [ValueBag] receiver.
+ * For formatting, use the [format] overload that accepts a lambda with a [DateTimeComponents] receiver.
  *
  * Example:
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
- * ValueBag.Format.RFC_1123.format {
+ * DateTimeComponents.Format.RFC_1123.format {
  *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
  *    populateFrom(UtcOffset(hours = 3))
  * }
@@ -63,26 +63,26 @@ import kotlin.reflect.*
  * Accessing the fields of this class is not thread-safe.
  * Make sure to apply proper synchronization if you are using a single instance from multiple threads.
  */
-public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
+public class DateTimeComponents internal constructor(internal val contents: DateTimeComponentsContents = DateTimeComponentsContents()) {
     public companion object {
         /**
-         * Creates a [DateTimeFormat] for [ValueBag] values using [DateTimeFormatBuilder.WithDateTimeComponents].
+         * Creates a [DateTimeFormat] for [DateTimeComponents] values using [DateTimeFormatBuilder.WithDateTimeComponents].
          *
-         * There is a collection of predefined formats in [ValueBag.Formats].
+         * There is a collection of predefined formats in [DateTimeComponents.Formats].
          */
         @Suppress("FunctionName")
-        public fun Format(block: DateTimeFormatBuilder.WithDateTimeComponents.() -> Unit): DateTimeFormat<ValueBag> {
-            val builder = ValueBagFormat.Builder(AppendableFormatStructure())
+        public fun Format(block: DateTimeFormatBuilder.WithDateTimeComponents.() -> Unit): DateTimeFormat<DateTimeComponents> {
+            val builder = DateTimeComponentsFormat.Builder(AppendableFormatStructure())
             block(builder)
-            return ValueBagFormat(builder.build())
+            return DateTimeComponentsFormat(builder.build())
         }
     }
 
     /**
-     * The entry point for parsing and formatting [ValueBag] values.
+     * The entry point for parsing and formatting [DateTimeComponents] values.
      *
-     * If predefined formats are not sufficient, use [ValueBag.Format] to create a custom
-     * [kotlinx.datetime.format.DateTimeFormat] for [ValueBag] values.
+     * If predefined formats are not sufficient, use [DateTimeComponents.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [DateTimeComponents] values.
      */
     public object Formats {
 
@@ -94,11 +94,11 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          * * `2020-01-01T23:59:59+01`
          * * `2020-01-01T23:59:59Z`
          *
-         * This format uses the local date, local time, and UTC offset fields of [ValueBag].
+         * This format uses the local date, local time, and UTC offset fields of [DateTimeComponents].
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
-        public val ISO_DATE_TIME_OFFSET: DateTimeFormat<ValueBag> = Format {
+        public val ISO_DATE_TIME_OFFSET: DateTimeFormat<DateTimeComponents> = Format {
             appendDate(ISO_DATE)
             alternativeParsing({
                 char('t')
@@ -132,7 +132,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
          *
          * North American and military time zone abbreviations are not supported.
          */
-        public val RFC_1123: DateTimeFormat<ValueBag> = Format {
+        public val RFC_1123: DateTimeFormat<DateTimeComponents> = Format {
             alternativeParsing({
                 // the day of week may be missing
             }) {
@@ -166,7 +166,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     }
 
     /**
-     * Writes the contents of the specified [localTime] to this [ValueBag].
+     * Writes the contents of the specified [localTime] to this [DateTimeComponents].
      * The [localTime] is written to the [hour], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
@@ -174,7 +174,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun populateFrom(localTime: LocalTime) { contents.time.populateFrom(localTime) }
 
     /**
-     * Writes the contents of the specified [localDate] to this [ValueBag].
+     * Writes the contents of the specified [localDate] to this [DateTimeComponents].
      * The [localDate] is written to the [year], [monthNumber] and [dayOfMonth] fields.
      *
      * If any of the fields are already set, they will be overwritten.
@@ -182,7 +182,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun populateFrom(localDate: LocalDate) { contents.date.populateFrom(localDate) }
 
     /**
-     * Writes the contents of the specified [localDateTime] to this [ValueBag].
+     * Writes the contents of the specified [localDateTime] to this [DateTimeComponents].
      * The [localDateTime] is written to the
      * [year], [monthNumber], [dayOfMonth], [hour], [minute], [second] and [nanosecond] fields.
      *
@@ -194,7 +194,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     }
 
     /**
-     * Writes the contents of the specified [utcOffset] to this [ValueBag].
+     * Writes the contents of the specified [utcOffset] to this [DateTimeComponents].
      * The [utcOffset] is written to the [offsetTotalHours], [offsetMinutesOfHour] and [offsetSecondsOfMinute] fields.
      *
      * If any of the fields are already set, they will be overwritten.
@@ -202,7 +202,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun populateFrom(utcOffset: UtcOffset) { contents.offset.populateFrom(utcOffset) }
 
     /**
-     * Writes the contents of the specified [instant] to this [ValueBag].
+     * Writes the contents of the specified [instant] to this [DateTimeComponents].
      *
      * This method is almost always equivalent to the following code:
      * ```
@@ -288,7 +288,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public var timeZoneId: String? by contents::timeZoneId
 
     /**
-     * Builds a [UtcOffset] from the fields in this [ValueBag].
+     * Builds a [UtcOffset] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
      * * [offsetTotalHours] (default value is 0)
@@ -300,7 +300,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun toUtcOffset(): UtcOffset = contents.offset.toUtcOffset()
 
     /**
-     * Builds a [LocalDate] from the fields in this [ValueBag].
+     * Builds a [LocalDate] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
      * * [year]
@@ -314,7 +314,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun toLocalDate(): LocalDate = contents.date.toLocalDate()
 
     /**
-     * Builds a [LocalTime] from the fields in this [ValueBag].
+     * Builds a [LocalTime] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
      * * [hour]
@@ -327,7 +327,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun toLocalTime(): LocalTime = contents.time.toLocalTime()
 
     /**
-     * Builds a [LocalDateTime] from the fields in this [ValueBag].
+     * Builds a [LocalDateTime] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
      * * [year]
@@ -349,7 +349,7 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
     public fun toLocalDateTime(): LocalDateTime = toLocalDate().atTime(toLocalTime())
 
     /**
-     * Builds an [Instant] from the fields in this [ValueBag].
+     * Builds an [Instant] from the fields in this [DateTimeComponents].
      *
      * Uses the fields required for [toLocalDateTime] and [toUtcOffset].
      *
@@ -383,44 +383,44 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 }
 
 /**
- * Uses this format to format an unstructured [ValueBag].
+ * Uses this format to format an unstructured [DateTimeComponents].
  *
- * [block] is called on an empty [ValueBag] before formatting.
+ * [block] is called on an empty [DateTimeComponents] before formatting.
  *
  * Example:
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
- * ValueBag.Format.RFC_1123.format {
+ * DateTimeComponents.Format.RFC_1123.format {
  *    populateFrom(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
  *    populateFrom(UtcOffset(hours = 3))
  * }
  * ```
  */
-public fun DateTimeFormat<ValueBag>.format(block: ValueBag.() -> Unit): String = format(ValueBag().apply { block() })
+public fun DateTimeFormat<DateTimeComponents>.format(block: DateTimeComponents.() -> Unit): String = format(DateTimeComponents().apply { block() })
 
 /**
- * Parses a [ValueBag] from [input] using the given format.
+ * Parses a [DateTimeComponents] from [input] using the given format.
  * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
  *
- * [ValueBag] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
+ * [DateTimeComponents] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
  * matches.
  *
  * @throws IllegalArgumentException if the text does not match the format.
  */
-public fun ValueBag.Companion.parse(input: CharSequence, format: DateTimeFormat<ValueBag>): ValueBag =
+public fun DateTimeComponents.Companion.parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): DateTimeComponents =
     format.parse(input)
 
-internal class ValueBagContents internal constructor(
+internal class DateTimeComponentsContents internal constructor(
     val date: IncompleteLocalDate = IncompleteLocalDate(),
     val time: IncompleteLocalTime = IncompleteLocalTime(),
     val offset: IncompleteUtcOffset = IncompleteUtcOffset(),
     var timeZoneId: String? = null,
 ) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
-    DateTimeFieldContainer, Copyable<ValueBagContents> {
-    override fun copy(): ValueBagContents = ValueBagContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
+    DateTimeFieldContainer, Copyable<DateTimeComponentsContents> {
+    override fun copy(): DateTimeComponentsContents = DateTimeComponentsContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
 
     override fun equals(other: Any?): Boolean =
-        other is ValueBagContents && other.date == date && other.time == time &&
+        other is DateTimeComponentsContents && other.date == date && other.time == time &&
             other.offset == offset && other.timeZoneId == timeZoneId
 
     override fun hashCode(): Int =
@@ -428,24 +428,24 @@ internal class ValueBagContents internal constructor(
 }
 
 @SharedImmutable
-internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
+internal val timeZoneField = GenericFieldSpec(DateTimeComponentsContents::timeZoneId)
 
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
-    StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
+    StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
 
     override val builderRepresentation: String = "${DateTimeFormatBuilder.WithDateTimeComponents::appendTimeZoneId.name}()"
 }
 
-internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
-    AbstractDateTimeFormat<ValueBag, ValueBagContents>(actualFormat) {
-    override fun intermediateFromValue(value: ValueBag): ValueBagContents = value.contents
+internal class DateTimeComponentsFormat(val actualFormat: StringFormat<DateTimeComponentsContents>) :
+    AbstractDateTimeFormat<DateTimeComponents, DateTimeComponentsContents>(actualFormat) {
+    override fun intermediateFromValue(value: DateTimeComponents): DateTimeComponentsContents = value.contents
 
-    override fun valueFromIntermediate(intermediate: ValueBagContents): ValueBag = ValueBag(intermediate)
+    override fun valueFromIntermediate(intermediate: DateTimeComponentsContents): DateTimeComponents = DateTimeComponents(intermediate)
 
-    override fun newIntermediate(): ValueBagContents = ValueBagContents()
+    override fun newIntermediate(): DateTimeComponentsContents = DateTimeComponentsContents()
 
-    class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
-        AbstractDateTimeFormatBuilder<ValueBagContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
+    class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeComponentsContents>) :
+        AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
         override fun appendYear(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
@@ -512,8 +512,8 @@ internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) 
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendValueBag(format: DateTimeFormat<ValueBag>) = when (format) {
-            is ValueBagFormat -> actualBuilder.add(format.actualFormat.directives)
+        override fun appendDateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
+            is DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
