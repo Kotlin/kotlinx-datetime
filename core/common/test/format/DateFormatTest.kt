@@ -42,9 +42,9 @@ class DateFormatTest {
             })
             test(dates, LocalDate.Format {
                 appendYear()
-                appendLiteral(s)
+                char(s)
                 appendMonthNumber()
-                appendLiteral(s)
+                char(s)
                 appendDayOfMonth()
             })
         }
@@ -71,9 +71,9 @@ class DateFormatTest {
             })
             test(dates, LocalDate.Format {
                 appendDayOfMonth()
-                appendLiteral(s)
+                char(s)
                 appendMonthNumber()
-                appendLiteral(s)
+                char(s)
                 appendYear()
             })
         }
@@ -120,9 +120,9 @@ class DateFormatTest {
         }
         val format = LocalDate.Format {
             appendDayOfMonth()
-            appendLiteral(' ')
+            char(' ')
             appendMonthName(MonthNames.ENGLISH_FULL)
-            appendLiteral(' ')
+            char(' ')
             appendYear()
         }
         test(dates, format)
@@ -144,9 +144,9 @@ class DateFormatTest {
         }
         val format = LocalDate.Format {
             appendDayOfMonth()
-            appendLiteral(' ')
+            char(' ')
             appendMonthName(MonthNames("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
-            appendLiteral(' ')
+            char(' ')
             appendYear(Padding.NONE)
         }
         test(dates, format)
@@ -212,9 +212,9 @@ class DateFormatTest {
     fun testDoc() {
         val format = LocalDate.Format {
           appendYear()
-          appendLiteral(' ')
+          char(' ')
           appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
-          appendLiteral(' ')
+          char(' ')
           appendDayOfMonth()
         }
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))

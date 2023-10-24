@@ -35,7 +35,7 @@ public fun FormatBuilder.appendUnicodeFormatString(pattern: String) {
     val directives = parseUnicodeFormat(pattern)
     fun rec(format: UnicodeFormat) {
         when (format) {
-            is UnicodeStringLiteral -> builder.appendLiteral(format.literal)
+            is UnicodeStringLiteral -> builder.chars(format.literal)
             is UnicodeFormatSequence -> format.formats.forEach { rec(it) }
             is UnicodeOptionalGroup -> builder.appendOptional { rec(format.format) }
             is UnicodeDirective -> {

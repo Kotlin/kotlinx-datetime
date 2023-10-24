@@ -46,19 +46,19 @@ class ValueBagFormatTest {
         val format = ValueBag.Format {
             appendDateTime(LocalDateTime.Formats.ISO)
             appendOffset(UtcOffset.Formats.ISO)
-            appendLiteral('[')
+            char('[')
             appendTimeZoneId()
-            appendLiteral(']')
+            char(']')
         }
-        val zone = "Europe/Berlin"
+        val berlin = "Europe/Berlin"
         val dateTime = LocalDateTime(2008, 6, 3, 11, 5, 30, 123_456_789)
         val offset = UtcOffset(hours = 1)
         val formatted = "2008-06-03T11:05:30.123456789+01:00[Europe/Berlin]"
-        assertEquals(formatted, format.format { populateFrom(dateTime); populateFrom(offset); timeZoneId = zone })
+        assertEquals(formatted, format.format { populateFrom(dateTime); populateFrom(offset); timeZoneId = berlin })
         val bag = format.parse("2008-06-03T11:05:30.123456789+01:00[Europe/Berlin]")
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
-        assertEquals(zone, bag.timeZoneId)
+        assertEquals(berlin, bag.timeZoneId)
         assertFailsWith<DateTimeFormatException> { format.parse("2008-06-03T11:05:30.123456789+01:00[Mars/New_York]") }
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("2008-06-03T11:05:30.123456789+01:00[$zone]").timeZoneId)
@@ -67,7 +67,7 @@ class ValueBagFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = ValueBag.Format { appendTimeZoneId(); appendLiteral("X") }
+        val format = ValueBag.Format { appendTimeZoneId(); chars("X") }
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("${zone}X").timeZoneId)
         }

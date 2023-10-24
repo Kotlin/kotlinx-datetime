@@ -9,7 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.parser.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
@@ -102,17 +101,17 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
         public val ISO_DATE_TIME_OFFSET: DateTimeFormat<ValueBag> = Format {
             appendDate(ISO_DATE)
             alternativeParsing({
-                appendLiteral('t')
+                char('t')
             }) {
-                appendLiteral('T')
+                char('T')
             }
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
-            appendLiteral(':')
+            char(':')
             appendSecond()
             appendOptional {
-                appendLiteral('.')
+                char('.')
                 appendSecondFraction()
             }
             appendIsoOffset(
@@ -138,26 +137,26 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
                 // the day of week may be missing
             }) {
                 appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
-                appendLiteral(", ")
+                chars(", ")
             }
             appendDayOfMonth(Padding.NONE)
-            appendLiteral(' ')
+            char(' ')
             appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
-            appendLiteral(' ')
+            char(' ')
             appendYear()
-            appendLiteral(' ')
+            char(' ')
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
             appendOptional {
-                appendLiteral(':')
+                char(':')
                 appendSecond()
             }
-            appendLiteral(" ")
+            chars(" ")
             alternativeParsing({
-                appendLiteral("UT")
+                chars("UT")
             }, {
-                appendLiteral("Z")
+                chars("Z")
             }) {
                 appendOptional("GMT") {
                     appendOffset(UtcOffset.Formats.FOUR_DIGITS)

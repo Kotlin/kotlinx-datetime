@@ -280,13 +280,13 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
 internal val ISO_TIME by lazy {
     LocalTimeFormat.build {
         appendHour()
-        appendLiteral(':')
+        char(':')
         appendMinute()
         appendOptional {
-            appendLiteral(':')
+            char(':')
             appendSecond()
             appendOptional {
-                appendLiteral('.')
+                char('.')
                 appendSecondFraction()
             }
         }
@@ -295,12 +295,12 @@ internal val ISO_TIME by lazy {
 @SharedImmutable
 internal val ISO_TIME_BASIC by lazy {
     LocalTimeFormat.build {
-        alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
+        alternativeParsing({ char('t') }) { char('T') }
         appendHour(); appendMinute()
         appendOptional {
             appendSecond()
             appendOptional {
-                appendLiteral('.')
+                char('.')
                 appendSecondFraction()
             }
         }

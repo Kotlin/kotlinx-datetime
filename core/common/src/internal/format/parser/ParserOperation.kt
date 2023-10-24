@@ -5,8 +5,6 @@
 
 package kotlinx.datetime.internal.format.parser
 
-import kotlinx.datetime.internal.format.*
-
 internal interface ParserOperation<in Output> {
     fun Output.consume(input: CharSequence, startIndex: Int): ParseResult
 }

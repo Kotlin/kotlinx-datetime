@@ -353,7 +353,7 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
 // these are constants so that the formats are not recreated every time they are used
 @SharedImmutable
 internal val ISO_DATE by lazy {
-    LocalDateFormat.build { appendYear(); appendLiteral('-'); appendMonthNumber(); appendLiteral('-'); appendDayOfMonth() }
+    LocalDateFormat.build { appendYear(); char('-'); appendMonthNumber(); char('-'); appendDayOfMonth() }
 }
 @SharedImmutable
 internal val ISO_DATE_BASIC by lazy {

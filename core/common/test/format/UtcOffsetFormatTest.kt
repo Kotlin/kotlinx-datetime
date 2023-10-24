@@ -167,10 +167,10 @@ class UtcOffsetFormatTest {
         val format = UtcOffset.Format {
           appendOptional("GMT") {
             appendOffsetTotalHours(Padding.NONE)
-            appendLiteral(':')
+            char(':')
             appendOffsetMinutesOfHour()
             appendOptional {
-              appendLiteral(':')
+              char(':')
               appendOffsetSecondsOfMinute()
             }
           }

@@ -50,9 +50,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * // 2020 Jan 05
          * LocalDate.Format {
          *   appendYear()
-         *   appendLiteral(' ')
+         *   char(' ')
          *   appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
-         *   appendLiteral(' ')
+         *   char(' ')
          *   appendDayOfMonth()
          * }
          * ```

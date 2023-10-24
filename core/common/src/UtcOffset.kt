@@ -58,10 +58,10 @@ public expect class UtcOffset {
          * UtcOffset.Format {
          *   appendOptional("GMT") {
          *     appendOffsetTotalHours(Padding.NONE)
-         *     appendLiteral(':')
+         *     char(':')
          *     appendOffsetMinutesOfHour()
          *     appendOptional {
-         *       appendLiteral(':')
+         *       char(':')
          *       appendOffsetSecondsOfMinute()
          *     }
          *   }

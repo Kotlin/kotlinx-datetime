@@ -116,7 +116,7 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
 internal val ISO_DATETIME by lazy {
     LocalDateTimeFormat.build {
         appendDate(ISO_DATE)
-        alternativeParsing({ appendLiteral('t') }) { appendLiteral('T') }
+        alternativeParsing({ char('t') }) { char('T') }
         appendTime(ISO_TIME)
     }
 }

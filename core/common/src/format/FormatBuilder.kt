@@ -17,7 +17,7 @@ public sealed interface FormatBuilder {
      * When formatting, the string is appended to the result as is,
      * and when parsing, the string is expected to be present in the input.
      */
-    public fun appendLiteral(string: String)
+    public fun chars(value: String)
 }
 
 /**
@@ -50,10 +50,10 @@ public fun <T: FormatBuilder> T.alternativeParsing(
  * Example:
  * ```
  * appendHours()
- * appendLiteral(':')
+ * char(':')
  * appendMinutes()
  * appendOptional {
- *   appendLiteral(':')
+ *   char(':')
  *   appendSeconds()
  * }
  * ```
@@ -71,9 +71,9 @@ public fun <T: FormatBuilder> T.appendOptional(onZero: String = "", block: T.() 
 /**
  * Appends a literal character to the format.
  *
- * This is a shorthand for `appendLiteral(char.toString())`.
+ * This is a shorthand for `chars(value.toString())`.
  */
-public fun FormatBuilder.appendLiteral(char: Char): Unit = appendLiteral(char.toString())
+public fun FormatBuilder.char(value: Char): Unit = chars(value.toString())
 
 internal interface AbstractFormatBuilder<Target, ActualSelf> :
     FormatBuilder where ActualSelf : AbstractFormatBuilder<Target, ActualSelf> {
@@ -99,7 +99,7 @@ internal interface AbstractFormatBuilder<Target, ActualSelf> :
         actualBuilder.add(OptionalFormatStructure(onZero, createEmpty().also { format(it) }.actualBuilder.build()))
     }
 
-    override fun appendLiteral(string: String) = actualBuilder.add(ConstantFormatStructure(string))
+    override fun chars(value: String) = actualBuilder.add(ConstantFormatStructure(value))
 
     fun withSharedSignImpl(outputPlus: Boolean, block: ActualSelf.() -> Unit) {
         actualBuilder.add(
@@ -121,7 +121,7 @@ internal inline fun<T> StringFormat<T>.builderString(): String = directives.buil
 
 private fun<T> FormatStructure<T>.builderString(): String = when (this) {
     is BasicFormatStructure -> directive.builderRepresentation
-    is ConstantFormatStructure -> "appendLiteral(${string.toKotlinCode()})"
+    is ConstantFormatStructure -> "char(${string.toKotlinCode()})"
     is SignedFormatStructure -> {
         if (format is BasicFormatStructure && format.directive is UtcOffsetWholeHoursDirective) {
             format.directive.builderRepresentation

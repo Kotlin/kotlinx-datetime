@@ -41,15 +41,15 @@ class DateTimeFormatTest {
         })
         test(dateTimes, LocalDateTime.Format {
             appendYear()
-            appendLiteral('-')
+            char('-')
             appendMonthNumber()
-            appendLiteral('-')
+            char('-')
             appendDayOfMonth()
-            appendLiteral(' ')
+            char(' ')
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
-            appendLiteral(':')
+            char(':')
             appendSecond()
         })
     }
@@ -74,13 +74,13 @@ class DateTimeFormatTest {
         })
         test(dateTimes, LocalDateTime.Format {
             appendYear()
-            appendLiteral('-')
+            char('-')
             appendMonthNumber()
-            appendLiteral('-')
+            char('-')
             appendDayOfMonth()
-            appendLiteral(' ')
+            char(' ')
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
         })
     }
@@ -133,15 +133,15 @@ class DateTimeFormatTest {
         })
         test(dateTimes, LocalDateTime.Format {
             appendYear(Padding.NONE)
-            appendLiteral('-')
+            char('-')
             appendMonthNumber(Padding.NONE)
-            appendLiteral('-')
+            char('-')
             appendDayOfMonth(Padding.NONE)
-            appendLiteral(' ')
+            char(' ')
             appendHour(Padding.NONE)
-            appendLiteral(':')
+            char(':')
             appendMinute(Padding.NONE)
-            appendLiteral(':')
+            char(':')
             appendSecond(Padding.NONE)
         })
     }
@@ -164,15 +164,15 @@ class DateTimeFormatTest {
         }
         val format = LocalDateTime.Format {
             appendYear(Padding.SPACE)
-            appendLiteral('-')
+            char('-')
             appendMonthNumber(Padding.SPACE)
-            appendLiteral('-')
+            char('-')
             appendDayOfMonth(Padding.SPACE)
-            appendLiteral(' ')
+            char(' ')
             appendHour(Padding.SPACE)
-            appendLiteral(':')
+            char(':')
             appendMinute(Padding.SPACE)
-            appendLiteral(':')
+            char(':')
             appendSecond(Padding.SPACE)
         }
         test(dateTimes, format)
@@ -262,13 +262,13 @@ class DateTimeFormatTest {
     @Test
     fun testDoc() {
         val dateTime = LocalDateTime(2020, 8, 30, 18, 43, 13, 0)
-        val format1 = LocalDateTime.Format { appendDate(LocalDate.Formats.ISO); appendLiteral(' ');  appendTime(LocalTime.Formats.ISO) }
+        val format1 = LocalDateTime.Format { appendDate(LocalDate.Formats.ISO); char(' ');  appendTime(LocalTime.Formats.ISO) }
         assertEquals("2020-08-30 18:43:13", dateTime.format(format1))
         val format2 = LocalDateTime.Format {
-          appendMonthNumber(); appendLiteral('/'); appendDayOfMonth()
-          appendLiteral(' ')
-          appendHour(); appendLiteral(':'); appendMinute()
-          appendOptional { appendLiteral(':'); appendSecond() }
+          appendMonthNumber(); char('/'); appendDayOfMonth()
+          char(' ')
+          appendHour(); char(':'); appendMinute()
+          appendOptional { char(':'); appendSecond() }
         }
         assertEquals("08/30 18:43:13", dateTime.format(format2))
     }

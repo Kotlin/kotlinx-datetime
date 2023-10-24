@@ -36,7 +36,7 @@ class TimeFormatTest {
         })
         test(times, LocalTime.Format {
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
         })
     }
@@ -58,9 +58,9 @@ class TimeFormatTest {
         })
         test(times, LocalTime.Format {
             appendHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
-            appendLiteral(':')
+            char(':')
             appendSecond()
         })
     }
@@ -77,9 +77,9 @@ class TimeFormatTest {
         }
         test(times, LocalTime.Format {
             appendAmPmHour()
-            appendLiteral(':')
+            char(':')
             appendMinute()
-            appendLiteral(' ')
+            char(' ')
             appendAmPmMarker("AM", "PM")
         })
     }
@@ -158,7 +158,7 @@ class TimeFormatTest {
             assertEquals(string, format.format(time))
             val format2 = LocalTime.Format {
                 appendHour(); appendMinute(); appendSecond()
-                appendLiteral('.'); appendSecondFraction(minLength, maxLength)
+                char('.'); appendSecondFraction(minLength, maxLength)
             }
             val time2 = format2.parse("123456.$string")
             assertEquals((string + "0".repeat(9 - string.length)).toInt(), time2.nanosecond)
@@ -210,12 +210,12 @@ class TimeFormatTest {
     fun testDoc() {
         val format = LocalTime.Format {
           appendHour()
-          appendLiteral(':')
+          char(':')
           appendMinute()
-          appendLiteral(':')
+          char(':')
           appendSecond()
           appendOptional {
-            appendLiteral('.')
+            char('.')
             appendSecondFraction()
           }
         }
