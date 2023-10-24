@@ -87,7 +87,7 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
         }
 
         @Suppress("FunctionName")
-        public actual fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
+        public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
             UtcOffsetFormat.build(block)
     }
 

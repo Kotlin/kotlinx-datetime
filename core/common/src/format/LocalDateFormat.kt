@@ -11,80 +11,6 @@ import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
 /**
- * Functions specific to the date-time format builders containing the local-date fields.
- */
-public sealed interface DateFormatBuilder : FormatBuilder {
-    /**
-     * Appends a year number to the format.
-     *
-     * By default, for years [-9999..9999], it's formatted as a decimal number, zero-padded to four digits, though
-     * this padding can be disabled or changed to space padding by passing [padding].
-     * For years outside this range, it's formatted as a decimal number with a leading sign, so the year 12345
-     * is formatted as "+12345".
-     */
-    public fun appendYear(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the last two digits of the ISO year.
-     *
-     * [base] is the base year for the two-digit year.
-     * For example, if [base] is 1960, then this format correctly works with years [1960..2059].
-     *
-     * On formatting, when given a year in the valid range, it returns the last two digits of the year,
-     * so 1993 becomes "93". When given a year outside the valid range, it returns the full year number
-     * with a leading sign, so 1850 becomes "+1850", and -200 becomes "-200".
-     *
-     * On parsing, it accepts either a two-digit year or a full year number with a leading sign.
-     * When given a two-digit year, it returns a year in the valid range, so "93" becomes 1993,
-     * and when given a full year number with a leading sign, it returns the full year number,
-     * so "+1850" becomes 1850.
-     */
-    public fun appendYearTwoDigits(base: Int)
-
-    /**
-     * Appends a month-of-year number to the format, from 1 to 12.
-     */
-    public fun appendMonthNumber(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends a month name to the format (for example, "January").
-     *
-     * Example:
-     * ```
-     * appendMonthName(MonthNames.ENGLISH_FULL)
-     * ```
-     */
-    public fun appendMonthName(names: MonthNames)
-
-    /**
-     * Appends a day-of-month number to the format, from 1 to 31.
-     *
-     * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
-     */
-    public fun appendDayOfMonth(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends a day-of-week name to the format (for example, "Thursday").
-     *
-     * Example:
-     * ```
-     * appendDayOfWeek(DayOfWeekNames.ENGLISH_FULL)
-     * ```
-     */
-    public fun appendDayOfWeek(names: DayOfWeekNames)
-
-    /**
-     * Appends an existing [DateTimeFormat] for the date part.
-     *
-     * Example:
-     * ```
-     * appendDate(LocalDate.Format.ISO)
-     * ```
-     */
-    public fun appendDate(dateFormat: DateTimeFormat<LocalDate>)
-}
-
-/**
  * A description of how month names are formatted.
  */
 public class MonthNames(
@@ -253,8 +179,8 @@ internal class YearDirective(padding: Padding) :
         outputPlusOnExceededWidth = 4,
     ) {
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${DateFormatBuilder::appendYear.name}()"
-        else -> "${DateFormatBuilder::appendYear.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendYear.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::appendYear.name}($padding)"
     }
 }
 
@@ -264,7 +190,7 @@ internal class ReducedYearDirective(val base: Int) :
         digits = 2,
         base = base,
     ) {
-    override val builderRepresentation: String = "${DateFormatBuilder::appendYearTwoDigits.name}($base)"
+    override val builderRepresentation: String = "${DateTimeFormatBuilder.WithDate::appendYearTwoDigits.name}($base)"
 }
 
 internal class MonthDirective(padding: Padding) :
@@ -274,15 +200,15 @@ internal class MonthDirective(padding: Padding) :
         spacePadding = padding.spaces(2),
     ) {
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${DateFormatBuilder::appendMonthNumber.name}()"
-        else -> "${DateFormatBuilder::appendMonthNumber.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendMonthNumber.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::appendMonthNumber.name}($padding)"
     }
 }
 
 internal class MonthNameDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names) {
     override val builderRepresentation: String =
-        "${DateFormatBuilder::appendMonthName.name}(${names.toKotlinCode(String::toKotlinCode)})"
+        "${DateTimeFormatBuilder.WithDate::appendMonthName.name}(${names.toKotlinCode(String::toKotlinCode)})"
 }
 
 internal class DayDirective(padding: Padding) :
@@ -292,8 +218,8 @@ internal class DayDirective(padding: Padding) :
         spacePadding = padding.spaces(2),
     ) {
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${DateFormatBuilder::appendDayOfMonth.name}()"
-        else -> "${DateFormatBuilder::appendDayOfMonth.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendDayOfMonth.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::appendDayOfMonth.name}($padding)"
     }
 }
 
@@ -301,7 +227,7 @@ internal class DayOfWeekDirective(names: List<String>) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names) {
 
     override val builderRepresentation: String =
-        "${DateFormatBuilder::appendDayOfWeek.name}(${names.toKotlinCode(String::toKotlinCode)})"
+        "${DateTimeFormatBuilder.WithDate::appendDayOfWeek.name}(${names.toKotlinCode(String::toKotlinCode)})"
 }
 
 internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer>) :
@@ -314,7 +240,7 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
     override fun newIntermediate(): IncompleteLocalDate = IncompleteLocalDate()
 
     companion object {
-        fun build(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate> {
+        fun build(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalDateFormat(builder.build())
@@ -322,7 +248,7 @@ internal class LocalDateFormat(val actualFormat: StringFormat<DateFieldContainer
     }
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
-        AbstractFormatBuilder<DateFieldContainer, Builder>, DateFormatBuilder {
+        AbstractDateTimeFormatBuilder<DateFieldContainer, Builder>, DateTimeFormatBuilder.WithDate {
         override fun appendYear(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 

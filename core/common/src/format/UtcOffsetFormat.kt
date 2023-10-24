@@ -10,48 +10,6 @@ import kotlinx.datetime.internal.format.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
-/**
- * Functions specific to the date-time format builders containing the UTC-offset fields.
- */
-public sealed interface UtcOffsetFormatBuilderFields : FormatBuilder {
-    /**
-     * Appends the total hours of the UTC offset, with a sign.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     *
-     * This field has the default value of 0. If you want to omit it, use [optional].
-     */
-    public fun appendOffsetTotalHours(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the minute-of-hour of the UTC offset.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     *
-     * This field has the default value of 0. If you want to omit it, use [optional].
-     */
-    public fun appendOffsetMinutesOfHour(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the second-of-minute of the UTC offset.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     *
-     * This field has the default value of 0. If you want to omit it, use [optional].
-     */
-    public fun appendOffsetSecondsOfMinute(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends an existing [DateTimeFormat] for the UTC offset part.
-     *
-     * Example:
-     * ```
-     * appendOffset(UtcOffset.Format.COMPACT)
-     * ```
-     */
-    public fun appendOffset(format: DateTimeFormat<UtcOffset>)
-}
-
 internal interface UtcOffsetFieldContainer {
     var isNegative: Boolean?
     var totalHoursAbs: Int?
@@ -62,7 +20,7 @@ internal interface UtcOffsetFieldContainer {
 internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>(actualFormat) {
     companion object {
-        fun build(block: UtcOffsetFormatBuilderFields.() -> Unit): UtcOffsetFormat {
+        fun build(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return UtcOffsetFormat(builder.build())
@@ -70,7 +28,7 @@ internal class UtcOffsetFormat(val actualFormat: StringFormat<UtcOffsetFieldCont
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<UtcOffsetFieldContainer>) :
-        AbstractFormatBuilder<UtcOffsetFieldContainer, Builder>, UtcOffsetFormatBuilderFields {
+        AbstractDateTimeFormatBuilder<UtcOffsetFieldContainer, Builder>, DateTimeFormatBuilder.WithUtcOffset {
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
         override fun appendOffsetTotalHours(padding: Padding) =
@@ -108,14 +66,14 @@ internal enum class WhenToOutput {
     ALWAYS,
 }
 
-internal fun UtcOffsetFormatBuilderFields.appendIsoOffset(
+internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
     zOnZero: Boolean,
     useSeparator: Boolean,
     outputMinute: WhenToOutput,
     outputSecond: WhenToOutput
 ) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
-    fun UtcOffsetFormatBuilderFields.appendIsoOffsetWithoutZOnZero() {
+    fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffsetWithoutZOnZero() {
         appendOffsetTotalHours()
         when (outputMinute) {
             WhenToOutput.NEVER -> {}
@@ -258,7 +216,7 @@ internal class UtcOffsetWholeHoursDirective(padding: Padding) :
     ) {
 
     override val builderRepresentation: String =
-        "${UtcOffsetFormatBuilderFields::appendOffsetTotalHours.name}($padding)"
+        "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetTotalHours.name}($padding)"
 }
 
 internal class UtcOffsetMinuteOfHourDirective(padding: Padding) :
@@ -268,8 +226,8 @@ internal class UtcOffsetMinuteOfHourDirective(padding: Padding) :
     ) {
 
     override val builderRepresentation: String = when (padding) {
-        Padding.NONE -> "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}()"
-        else -> "${UtcOffsetFormatBuilderFields::appendOffsetMinutesOfHour.name}($padding)"
+        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetMinutesOfHour.name}()"
+        else -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetMinutesOfHour.name}($padding)"
     }
 }
 
@@ -280,8 +238,8 @@ internal class UtcOffsetSecondOfMinuteDirective(padding: Padding) :
     ) {
 
     override val builderRepresentation: String = when (padding) {
-        Padding.NONE -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}()"
-        else -> "${UtcOffsetFormatBuilderFields::appendOffsetSecondsOfMinute.name}($padding)"
+        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetSecondsOfMinute.name}()"
+        else -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetSecondsOfMinute.name}($padding)"
     }
 }
 

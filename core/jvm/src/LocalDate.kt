@@ -32,7 +32,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
             LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
 
         @Suppress("FunctionName")
-        public actual fun Format(block: DateFormatBuilder.() -> Unit): DateTimeFormat<LocalDate> =
+        public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
     }
 

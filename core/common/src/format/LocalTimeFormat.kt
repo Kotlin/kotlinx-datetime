@@ -10,72 +10,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
-/**
- * Functions specific to the date-time format builders containing the local-time fields.
- */
-public sealed interface TimeFormatBuilderFields : FormatBuilder {
-    /**
-     * Appends the number of hours.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     */
-    public fun appendHour(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the number of hours in the 12-hour clock.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     */
-    public fun appendAmPmHour(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the AM/PM marker, using the specified strings.
-     *
-     * [amString] is used for the AM marker (0-11 hours), [pmString] is used for the PM marker (12-23 hours).
-     */
-    public fun appendAmPmMarker(amString: String, pmString: String)
-
-    /**
-     * Appends the number of minutes.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     */
-    public fun appendMinute(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the number of seconds.
-     *
-     * By default, it's zero-padded to two digits, but this can be changed with [padding].
-     *
-     * This field has the default value of 0. If you want to omit it, use [optional].
-     */
-    public fun appendSecond(padding: Padding = Padding.ZERO)
-
-    /**
-     * Appends the fractional part of the second without the leading dot.
-     *
-     * When formatting, the decimal fraction will add trailing zeroes to the specified [minLength] and will round the
-     * number to fit in the specified [maxLength]. If [minLength] is `null`, the fraction will be formatted with
-     * enough trailing zeros to make the number of digits displayed a multiple of three (e.g. `123.450`) for
-     * readability. Explicitly set [minLength] to `1` to disable this behavior.
-     *
-     * This field has the default value of 0. If you want to omit it, use [optional].
-     *
-     * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
-     */
-    public fun appendSecondFraction(minLength: Int? = null, maxLength: Int? = null)
-
-    /**
-     * Appends an existing [DateTimeFormat] for the time part.
-     *
-     * Example:
-     * ```
-     * appendTime(LocalTime.Format.ISO)
-     * ```
-     */
-    public fun appendTime(format: DateTimeFormat<LocalTime>)
-}
-
 internal interface TimeFieldContainer {
     var minute: Int?
     var second: Int?
@@ -166,8 +100,8 @@ internal class HourDirective(padding: Padding) :
         spacePadding = padding.spaces(2)
     ) {
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${TimeFormatBuilderFields::appendHour.name}()"
-        else -> "${TimeFormatBuilderFields::appendHour.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendHour.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::appendHour.name}($padding)"
     }
 }
 
@@ -177,8 +111,8 @@ internal class AmPmHourDirective(padding: Padding) :
         spacePadding = padding.spaces(2)
     ) {
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${TimeFormatBuilderFields::appendAmPmHour.name}()"
-        else -> "${TimeFormatBuilderFields::appendAmPmHour.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}($padding)"
     }
 }
 
@@ -191,7 +125,7 @@ internal class AmPmMarkerDirective(amString: String, pmString: String) :
     ) {
 
     override val builderRepresentation: String =
-        "${TimeFormatBuilderFields::appendAmPmMarker.name}($amString, $pmString)"
+        "${DateTimeFormatBuilder.WithTime::appendAmPmMarker.name}($amString, $pmString)"
 }
 
 internal class MinuteDirective(padding: Padding) :
@@ -202,8 +136,8 @@ internal class MinuteDirective(padding: Padding) :
     ) {
 
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${TimeFormatBuilderFields::appendMinute.name}()"
-        else -> "${TimeFormatBuilderFields::appendMinute.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}($padding)"
     }
 }
 
@@ -215,8 +149,8 @@ internal class SecondDirective(padding: Padding) :
     ) {
 
     override val builderRepresentation: String = when (padding) {
-        Padding.ZERO -> "${TimeFormatBuilderFields::appendSecond.name}()"
-        else -> "${TimeFormatBuilderFields::appendSecond.name}($padding)"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}($padding)"
     }
 }
 
@@ -224,10 +158,10 @@ internal class FractionalSecondDirective(minDigits: Int? = null, maxDigits: Int?
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
 
     override val builderRepresentation: String = when {
-        minDigits == 1 && maxDigits == null -> "${TimeFormatBuilderFields::appendSecondFraction.name}()"
-        minDigits == 1 -> "${TimeFormatBuilderFields::appendSecondFraction.name}(maxLength = $maxDigits)"
-        maxDigits == null -> "${TimeFormatBuilderFields::appendSecondFraction.name}($minDigits)"
-        else -> "${TimeFormatBuilderFields::appendSecondFraction.name}($minDigits, $maxDigits)"
+        minDigits == 1 && maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}()"
+        minDigits == 1 -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}(maxLength = $maxDigits)"
+        maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits)"
+        else -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits, $maxDigits)"
     }
 }
 
@@ -241,7 +175,7 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
     override fun newIntermediate(): IncompleteLocalTime = IncompleteLocalTime()
 
     companion object {
-        fun build(block: TimeFormatBuilderFields.() -> Unit): LocalTimeFormat {
+        fun build(block: DateTimeFormatBuilder.WithTime.() -> Unit): LocalTimeFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalTimeFormat(builder.build())
@@ -250,7 +184,7 @@ internal class LocalTimeFormat(val actualFormat: StringFormat<TimeFieldContainer
     }
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
-        AbstractFormatBuilder<TimeFieldContainer, Builder>, TimeFormatBuilderFields {
+        AbstractDateTimeFormatBuilder<TimeFieldContainer, Builder>, DateTimeFormatBuilder.WithTime {
         override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
         override fun appendAmPmHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))

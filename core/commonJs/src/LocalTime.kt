@@ -75,7 +75,7 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         internal actual val MAX: LocalTime = LocalTime(jtLocalTime.MAX)
 
         @Suppress("FunctionName")
-        public actual fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
+        public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
     }
 

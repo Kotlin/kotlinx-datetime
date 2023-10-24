@@ -105,7 +105,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * There is a collection of predefined formats in [LocalTime.Formats].
          */
         @Suppress("FunctionName")
-        public fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime>
+        public fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime>
 
         internal val MIN: LocalTime
         internal val MAX: LocalTime

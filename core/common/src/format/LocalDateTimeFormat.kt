@@ -9,21 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
 
-/**
- * Functions specific to the date-time format builders containing the local-date and local-time fields.
- */
-public sealed interface DateTimeFormatBuilder : DateFormatBuilder, TimeFormatBuilderFields {
-    /**
-     * Appends an existing [DateTimeFormat] for the date-time part.
-     *
-     * Example:
-     * ```
-     * appendDateTime(LocalDateTime.Format.ISO)
-     * ```
-     */
-    public fun appendDateTime(format: DateTimeFormat<LocalDateTime>)
-}
-
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
 
 internal class IncompleteLocalDateTime(
@@ -51,7 +36,7 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
     override fun newIntermediate(): IncompleteLocalDateTime = IncompleteLocalDateTime()
 
     companion object {
-        fun build(block: DateTimeFormatBuilder.() -> Unit): LocalDateTimeFormat {
+        fun build(block: DateTimeFormatBuilder.WithDateTime.() -> Unit): LocalDateTimeFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
             return LocalDateTimeFormat(builder.build())
@@ -59,7 +44,7 @@ internal class LocalDateTimeFormat(val actualFormat: StringFormat<DateTimeFieldC
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
-        AbstractFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder {
+        AbstractDateTimeFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder.WithDateTime {
 
         override fun appendYear(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))

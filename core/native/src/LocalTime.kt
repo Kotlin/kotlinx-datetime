@@ -76,7 +76,7 @@ public actual class LocalTime actual constructor(
         internal actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
 
         @Suppress("FunctionName")
-        public actual fun Format(builder: TimeFormatBuilderFields.() -> Unit): DateTimeFormat<LocalTime> =
+        public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
     }
 

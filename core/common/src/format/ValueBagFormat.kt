@@ -66,12 +66,12 @@ import kotlin.reflect.*
 public class ValueBag internal constructor(internal val contents: ValueBagContents = ValueBagContents()) {
     public companion object {
         /**
-         * Creates a [DateTimeFormat] for [ValueBag] values using [ValueBagFormatBuilder].
+         * Creates a [DateTimeFormat] for [ValueBag] values using [DateTimeFormatBuilder.WithDateTimeComponents].
          *
          * There is a collection of predefined formats in [ValueBag.Formats].
          */
         @Suppress("FunctionName")
-        public fun Format(block: ValueBagFormatBuilder.() -> Unit): DateTimeFormat<ValueBag> {
+        public fun Format(block: DateTimeFormatBuilder.WithDateTimeComponents.() -> Unit): DateTimeFormat<ValueBag> {
             val builder = ValueBagFormat.Builder(AppendableFormatStructure())
             block(builder)
             return ValueBagFormat(builder.build())
@@ -383,29 +383,6 @@ public class ValueBag internal constructor(internal val contents: ValueBagConten
 }
 
 /**
- * Builder for [ValueBagFormat] values.
- */
-public sealed interface ValueBagFormatBuilder : DateTimeFormatBuilder, UtcOffsetFormatBuilderFields {
-    /**
-     * Appends the IANA time zone identifier, for example, "Europe/Berlin".
-     *
-     * When formatting, the timezone identifier is supplied as is, without any validation.
-     * On parsing, [TimeZone.availableZoneIds] is used to validate the identifier.
-     */
-    public fun appendTimeZoneId()
-
-    /**
-     * Appends an existing [DateTimeFormat].
-     *
-     * Example:
-     * ```
-     * appendValueBag(ValueBag.Format.RFC_1123)
-     * ```
-     */
-    public fun appendValueBag(format: DateTimeFormat<ValueBag>)
-}
-
-/**
  * Uses this format to format an unstructured [ValueBag].
  *
  * [block] is called on an empty [ValueBag] before formatting.
@@ -456,7 +433,7 @@ internal val timeZoneField = GenericFieldSpec(ValueBagContents::timeZoneId)
 internal class TimeZoneIdDirective(knownZones: Set<String>) :
     StringFieldFormatDirective<ValueBagContents>(timeZoneField, knownZones) {
 
-    override val builderRepresentation: String = "${ValueBagFormatBuilder::appendTimeZoneId.name}()"
+    override val builderRepresentation: String = "${DateTimeFormatBuilder.WithDateTimeComponents::appendTimeZoneId.name}()"
 }
 
 internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) :
@@ -468,7 +445,7 @@ internal class ValueBagFormat(val actualFormat: StringFormat<ValueBagContents>) 
     override fun newIntermediate(): ValueBagContents = ValueBagContents()
 
     class Builder(override val actualBuilder: AppendableFormatStructure<ValueBagContents>) :
-        AbstractFormatBuilder<ValueBagContents, Builder>, ValueBagFormatBuilder {
+        AbstractDateTimeFormatBuilder<ValueBagContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
         override fun appendYear(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 

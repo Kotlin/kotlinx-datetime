@@ -30,7 +30,7 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
         }
 
         @Suppress("FunctionName")
-        public actual fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset> =
+        public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
             UtcOffsetFormat.build(block)
     }
 

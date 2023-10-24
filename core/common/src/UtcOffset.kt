@@ -70,12 +70,12 @@ public expect class UtcOffset {
          *
          * Since [UtcOffset] values are rarely formatted and parsed on their own,
          * instances of [DateTimeFormat] obtained here will likely need to be passed to
-         * [UtcOffsetFormatBuilderFields.appendOffset] in a format builder for a larger data structure.
+         * [DateTimeFormatBuilder.WithUtcOffset.appendOffset] in a format builder for a larger data structure.
          *
          * There is a collection of predefined formats in [UtcOffset.Formats].
          */
         @Suppress("FunctionName")
-        public fun Format(block: UtcOffsetFormatBuilderFields.() -> Unit): DateTimeFormat<UtcOffset>
+        public fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset>
     }
 
     /**

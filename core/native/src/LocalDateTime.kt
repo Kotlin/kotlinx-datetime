@@ -23,7 +23,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
 
         @Suppress("FunctionName")
-        public actual fun Format(builder: DateTimeFormatBuilder.() -> Unit): DateTimeFormat<LocalDateTime> =
+        public actual fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime> =
             LocalDateTimeFormat.build(builder)
     }
 
