@@ -135,7 +135,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
 }
 
 @SharedImmutable
-private val allFormatConstants: List<Pair<String, StringFormat<*>>> = run {
+private val allFormatConstants: List<Pair<String, StringFormat<*>>> by lazy {
     fun unwrap(format: DateTimeFormat<*>): StringFormat<*> = (format as AbstractDateTimeFormat<*, *>).actualFormat
     // the formats are ordered vaguely by decreasing length, as the topmost among suitable ones is chosen.
     listOf(
