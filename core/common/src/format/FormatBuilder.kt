@@ -23,19 +23,19 @@ public sealed interface FormatBuilder {
 /**
  * Appends a format along with other ways to parse the same portion of the value.
  *
- * When parsing, the first, [mainFormat] is used to parse the value, and if parsing fails using that, the formats
- * from [otherFormats] are tried in order.
+ * When parsing, the first, [primaryFormat] is used to parse the value, and if parsing fails using that, the formats
+ * from [alternativeFormats] are tried in order.
  *
- * When formatting, the [mainFormat] is used to format the value.
+ * When formatting, the [primaryFormat] is used to format the value.
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T: FormatBuilder> T.alternativeParsing(
-    vararg otherFormats: T.() -> Unit,
-    mainFormat: T.() -> Unit
+    vararg alternativeFormats: T.() -> Unit,
+    primaryFormat: T.() -> Unit
 ): Unit = when (this) {
     is AbstractFormatBuilder<*, *> ->
-        appendAlternativeParsingImpl(*otherFormats as Array<out AbstractFormatBuilder<*, *>.() -> Unit>,
-            mainFormat = mainFormat as (AbstractFormatBuilder<*, *>.() -> Unit))
+        appendAlternativeParsingImpl(*alternativeFormats as Array<out AbstractFormatBuilder<*, *>.() -> Unit>,
+            mainFormat = primaryFormat as (AbstractFormatBuilder<*, *>.() -> Unit))
     else -> throw IllegalStateException("impossible")
 }
 
