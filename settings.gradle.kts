@@ -5,8 +5,10 @@ pluginManagement {
         gradlePluginPortal()
     }
     val dokkaVersion: String by settings
+    val benchmarksVersion: String by settings
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
+        id("me.champeau.jmh") version benchmarksVersion
     }
 }
 
@@ -16,3 +18,5 @@ include(":core")
 project(":core").name = "kotlinx-datetime"
 include(":serialization")
 project(":serialization").name = "kotlinx-datetime-serialization"
+include(":benchmarks")
+
