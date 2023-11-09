@@ -138,34 +138,35 @@ internal class Parser<Output>(
         onError: (ParseError) -> Unit,
         onSuccess: (Int, Output) -> Unit
     ) {
-        var states = mutableListOf(ParserState(defaultState(), StructureIndex(0, commands), startIndex))
+        var states = mutableListOf(ParserState(defaultState(), 0, commands, startIndex))
         while (states.isNotEmpty()) {
-            states = states.flatMap { state ->
-                val index = state.commandPosition
-                if (index.operationIndex < index.parserStructure.operations.size) {
-                    val newIndex = StructureIndex(index.operationIndex + 1, index.parserStructure)
-                    val command = state.commandPosition.parserStructure.operations[state.commandPosition.operationIndex]
+            val newStates = mutableListOf<ParserState<Output>>()
+            for (state in states) {
+                if (state.operationIndex < state.parserStructure.operations.size) {
+                    val command = state.parserStructure.operations[state.operationIndex]
                     val result = with(command) { state.output.consume(input, state.inputPosition) }
                     if (result.isOk()) {
-                        listOf(ParserState(state.output, newIndex, result.tryGetIndex()!!))
+                        newStates.add(
+                            ParserState(state.output, state.operationIndex + 1, state.parserStructure, result.tryGetIndex()!!)
+                        )
                     } else {
                         onError(result.tryGetError()!!)
-                        emptyList()
                     }
                 } else {
-                    index.parserStructure.followedBy.map { nextStructure ->
-                        ParserState(copyState(state.output), StructureIndex(0, nextStructure), state.inputPosition)
-                    }.also {
-                        if (it.isEmpty()) {
-                            if (allowDanglingInput || state.inputPosition == input.length) {
-                                onSuccess(state.inputPosition, state.output)
-                            } else {
-                                onError(ParseError(state.inputPosition) { "There is more input to consume" })
-                            }
+                    if (state.parserStructure.followedBy.isEmpty()) {
+                        if (allowDanglingInput || state.inputPosition == input.length) {
+                            onSuccess(state.inputPosition, state.output)
+                        } else {
+                            onError(ParseError(state.inputPosition) { "There is more input to consume" })
+                        }
+                    } else {
+                        for (nextStructure in state.parserStructure.followedBy) {
+                            newStates.add(ParserState(copyState(state.output), 0, nextStructure, state.inputPosition))
                         }
                     }
                 }
-            }.toMutableList()
+            }
+            states = newStates
         }
     }
 
@@ -185,12 +186,8 @@ internal class Parser<Output>(
 
     private inner class ParserState<Output>(
         val output: Output,
-        val commandPosition: StructureIndex<Output>,
-        val inputPosition: Int,
-    )
-
-    private class StructureIndex<in Output>(
         val operationIndex: Int,
-        val parserStructure: ParserStructure<Output>
+        val parserStructure: ParserStructure<Output>,
+        val inputPosition: Int,
     )
 }

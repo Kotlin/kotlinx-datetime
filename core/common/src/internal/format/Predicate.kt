@@ -9,6 +9,10 @@ internal interface Predicate<in T> {
     fun test(value: T): Boolean
 }
 
+internal object Truth: Predicate<Any?> {
+    override fun test(value: Any?): Boolean = true
+}
+
 internal class ComparisonPredicate<in T, E>(
     private val expectedValue: E,
     private val getter: (T) -> E?
@@ -16,8 +20,16 @@ internal class ComparisonPredicate<in T, E>(
     override fun test(value: T): Boolean = getter(value) == expectedValue
 }
 
-internal class ConjunctionPredicate<in T>(
+private class ConjunctionPredicate<in T>(
     private val predicates: List<Predicate<T>>
 ): Predicate<T> {
     override fun test(value: T): Boolean = predicates.all { it.test(value) }
+}
+
+internal fun<T> conjunctionPredicate(
+    predicates: List<Predicate<T>>
+): Predicate<T> = when {
+    predicates.isEmpty() -> Truth
+    predicates.size == 1 -> predicates.single()
+    else -> ConjunctionPredicate(predicates)
 }

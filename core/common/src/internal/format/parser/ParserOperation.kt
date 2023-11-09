@@ -79,18 +79,17 @@ internal class NumberSpanParserOperation<Output>(
             return ParseResult.Error(startIndex) {
                 "Only found $digitsInRow digits in a row, but need to parse $whatThisExpects"
             }
-        val lengths = consumers.map { it.length ?: (digitsInRow - minLength + 1) }
         var index = startIndex
-        for (i in lengths.indices) {
-            val numberString = input.substring(index, index + lengths[i])
-            try {
-                with(consumers[i]) { consume(numberString) }
-            } catch (e: Throwable) {
-                return ParseResult.Error(index, e) {
-                    "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}"
+        for (i in consumers.indices) {
+            val length = consumers[i].length ?: (digitsInRow - minLength + 1)
+            val numberString = input.substring(index, index + length)
+            val error = with(consumers[i]) { consume(numberString) }
+            if (error != null) {
+                return ParseResult.Error(index) {
+                    "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}: ${error.errorMessage()}"
                 }
             }
-            index += lengths[i]
+            index += length
         }
         return ParseResult.Ok(index)
     }

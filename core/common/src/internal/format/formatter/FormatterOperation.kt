@@ -28,9 +28,10 @@ internal class UnsignedIntFormatterStructure<in T>(
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
-        val numberStr = number(obj).toString()
-        val zeroPaddingStr = '0'.toString().repeat(maxOf(0, zeroPadding - numberStr.length))
-        builder.append(zeroPaddingStr, numberStr)
+        val num = number(obj)
+        val numberStr = num.toString()
+        repeat(zeroPadding - numberStr.length) { builder.append('0') }
+        builder.append(numberStr)
     }
 }
 

@@ -22,9 +22,28 @@ internal sealed class NumberConsumer<in Receiver>(
      * if [length] is `null`, with a string consisting of any number of digits. [consume] itself does not
      * necessarily check the length of the input string, instead expecting to be passed a valid one.
      *
-     * @throws NumberFormatException if the given [input] is too large a number.
+     * Returns `null` on success and a `NumberConsumptionError` on failure.
      */
-    abstract fun Receiver.consume(input: String)
+    abstract fun Receiver.consume(input: String): NumberConsumptionError?
+}
+
+internal sealed interface NumberConsumptionError {
+    fun errorMessage(): String
+    object ExpectedInt: NumberConsumptionError {
+        override fun errorMessage() = "expected an Int value"
+    }
+    object ExpectedLong: NumberConsumptionError {
+        override fun errorMessage() = "expected a Long value"
+    }
+    class TooManyDigits(val maxDigits: Int): NumberConsumptionError {
+        override fun errorMessage() = "expected at most $maxDigits digits"
+    }
+    class TooFewDigits(val minDigits: Int): NumberConsumptionError {
+        override fun errorMessage() = "expected at least $minDigits digits"
+    }
+    class WrongConstant(val expected: String): NumberConsumptionError {
+        override fun errorMessage() = "expected '$expected'"
+    }
 }
 
 /**
@@ -43,20 +62,23 @@ internal class UnsignedIntConsumer<in Receiver>(
         require(length == null || length in 1..9) { "Invalid length for field $whatThisExpects: $length" }
     }
 
-    override fun Receiver.consume(input: String) {
+    override fun Receiver.consume(input: String): NumberConsumptionError? {
         if (maxLength != null) {
             if (input.length > maxLength) {
-                throw NumberFormatException("Expected at most $maxLength digits for $whatThisExpects but got $input")
+                return NumberConsumptionError.TooManyDigits(maxLength)
             }
         }
         if (minLength != null) {
             if (input.length < minLength) {
-                throw NumberFormatException("Expected at least $minLength digits for $whatThisExpects but got $input")
+                return NumberConsumptionError.TooFewDigits(minLength)
             }
         }
-        when (val result = input.toIntOrNull()) {
-            null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
-            else -> setter(this, if (multiplyByMinus1) -result else result)
+        return when (val result = input.toIntOrNull()) {
+            null -> NumberConsumptionError.ExpectedInt
+            else -> {
+                setter(this, if (multiplyByMinus1) -result else result)
+                null
+            }
         }
     }
 }
@@ -72,16 +94,15 @@ internal class ReducedIntConsumer<in Receiver>(
     private val baseMod = base % modulo
     private val baseFloor = base - baseMod
 
-    override fun Receiver.consume(input: String) {
-        when (val result = input.toIntOrNull()) {
-            null -> throw NumberFormatException("Expected an Int value for $whatThisExpects but got $input")
-            else -> {
-                setter(this, if (result >= baseMod) {
-                    baseFloor + result
-                } else {
-                    baseFloor + modulo + result
-                })
-            }
+    override fun Receiver.consume(input: String): NumberConsumptionError? = when (val result = input.toIntOrNull()) {
+        null -> NumberConsumptionError.ExpectedInt
+        else -> {
+            setter(this, if (result >= baseMod) {
+                baseFloor + result
+            } else {
+                baseFloor + modulo + result
+            })
+            null
         }
     }
 }
@@ -92,8 +113,10 @@ internal class ReducedIntConsumer<in Receiver>(
 internal class ConstantNumberConsumer<in Receiver>(
     private val expected: String
 ) : NumberConsumer<Receiver>(expected.length, "the predefined string $expected") {
-    override fun Receiver.consume(input: String) {
-        require(input == expected) { "Expected '$expected' but got $input" }
+    override fun Receiver.consume(input: String): NumberConsumptionError? = if (input == expected) {
+        NumberConsumptionError.WrongConstant(expected)
+    } else {
+        null
     }
 }
 
@@ -111,8 +134,11 @@ internal class UnsignedLongConsumer<in Receiver>(
     }
 
     override fun Receiver.consume(input: String) = when (val result = input.toLongOrNull()) {
-        null -> throw NumberFormatException("Expected a Long value for $whatThisExpects but got $input")
-        else -> setter(this, result)
+        null -> NumberConsumptionError.ExpectedLong
+        else -> {
+            setter(this, result)
+            null
+        }
     }
 }
 
@@ -127,14 +153,17 @@ internal class FractionPartConsumer<in Receiver>(
         // TODO: bounds on maxLength
     }
 
-    override fun Receiver.consume(input: String) {
-        if (minLength != null && input.length < minLength)
-            throw NumberFormatException("Expected at least $minLength digits for $whatThisExpects but got $input")
-        if (maxLength != null && input.length > maxLength)
-            throw NumberFormatException("Expected at most $maxLength digits for $whatThisExpects but got $input")
-        when (val numerator = input.toIntOrNull()) {
-            null -> throw NumberFormatException("Expected at most a 9-digit value for $whatThisExpects but got $input")
-            else -> setter(this, DecimalFraction(numerator, input.length))
+    override fun Receiver.consume(input: String): NumberConsumptionError? = when {
+        minLength != null && input.length < minLength ->
+            NumberConsumptionError.TooFewDigits(minLength)
+        maxLength != null && input.length > maxLength ->
+            NumberConsumptionError.TooManyDigits(maxLength)
+        else -> when (val numerator = input.toIntOrNull()) {
+            null -> NumberConsumptionError.TooManyDigits(9)
+            else -> {
+                setter(this, DecimalFraction(numerator, input.length))
+                null
+            }
         }
     }
 }

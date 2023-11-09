@@ -109,7 +109,7 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
         is AlternativesParsingFormatStructure -> mainFormat.rec()
         is OptionalFormatStructure -> {
             val (formatter, fields) = format.rec()
-            val predicate = ConjunctionPredicate(fields.map {
+            val predicate = conjunctionPredicate(fields.map {
                 it.toComparisonPredicate() ?: throw IllegalArgumentException(
                     "The field '${it.name}' does not define a default value, and only fields that define a default value can" +
                         "be used in an 'optional' format."
@@ -118,7 +118,7 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
             ConditionalFormatter(
                 listOf(
                     predicate::test to ConstantStringFormatterStructure(onZero),
-                    ConjunctionPredicate<T>(emptyList())::test to formatter
+                    Truth::test to formatter
                 )
             ) to fields
         }
