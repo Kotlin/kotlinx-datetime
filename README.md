@@ -388,3 +388,5 @@ For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 
 After that, the project can be opened in IDEA and built with Gradle.
+
+For building and running benchmarks, see [README.md](benchmarks/README.md)
