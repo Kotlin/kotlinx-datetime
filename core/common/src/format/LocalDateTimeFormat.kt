@@ -46,47 +46,47 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
     private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractDateTimeFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder.WithDateTime {
 
-        override fun appendYear(padding: Padding) =
+        override fun year(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
-        override fun appendYearTwoDigits(base: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
+        override fun yearTwoDigits(baseYear: Int) =
+            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
 
-        override fun appendMonthNumber(padding: Padding) =
+        override fun monthNumber(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
-        override fun appendMonthName(names: MonthNames) =
+        override fun monthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
-        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
+        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
 
-        override fun appendDayOfWeek(names: DayOfWeekNames) =
+        override fun dayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
-        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun appendAmPmHour(padding: Padding) =
+        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun amPmHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
-        override fun appendAmPmMarker(amString: String, pmString: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+        override fun amPmMarker(am: String, pm: String) =
+            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
 
-        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
+        override fun secondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
-            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
+            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
+        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
+        override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
             is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
@@ -98,17 +98,17 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
 @SharedImmutable
 internal val ISO_DATETIME by lazy {
     LocalDateTimeFormat.build {
-        appendDate(ISO_DATE)
+        date(ISO_DATE)
         alternativeParsing({ char('t') }) { char('T') }
-        appendTime(ISO_TIME)
+        time(ISO_TIME)
     }
 }
 
 @SharedImmutable
 internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
     LocalDateTimeFormat.build {
-        appendDate(ISO_DATE)
+        date(ISO_DATE)
         alternativeParsing({ char('t') }) { char('T') }
-        appendTime(ISO_TIME_OPTIONAL_SECONDS)
+        time(ISO_TIME_OPTIONAL_SECONDS)
     }
 }

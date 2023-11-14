@@ -191,8 +191,8 @@ internal class YearDirective(private val padding: Padding) :
         outputPlusOnExceededWidth = 4,
     ) {
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendYear.name}()"
-        else -> "${DateTimeFormatBuilder.WithDate::appendYear.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::year.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::year.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is YearDirective && padding == other.padding
@@ -205,7 +205,7 @@ internal class ReducedYearDirective(val base: Int) :
         digits = 2,
         base = base,
     ) {
-    override val builderRepresentation: String get() = "${DateTimeFormatBuilder.WithDate::appendYearTwoDigits.name}($base)"
+    override val builderRepresentation: String get() = "${DateTimeFormatBuilder.WithDate::yearTwoDigits.name}($base)"
 
     override fun equals(other: Any?): Boolean = other is ReducedYearDirective && base == other.base
     override fun hashCode(): Int = base.hashCode()
@@ -218,8 +218,8 @@ internal class MonthDirective(private val padding: Padding) :
         spacePadding = padding.spaces(2),
     ) {
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendMonthNumber.name}()"
-        else -> "${DateTimeFormatBuilder.WithDate::appendMonthNumber.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is MonthDirective && padding == other.padding
@@ -229,7 +229,7 @@ internal class MonthDirective(private val padding: Padding) :
 internal class MonthNameDirective(private val names: MonthNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names) {
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithDate::appendMonthName.name}(${names.toKotlinCode()})"
+        "${DateTimeFormatBuilder.WithDate::monthName.name}(${names.toKotlinCode()})"
 
     override fun equals(other: Any?): Boolean = other is MonthNameDirective && names.names == other.names.names
     override fun hashCode(): Int = names.names.hashCode()
@@ -242,8 +242,8 @@ internal class DayDirective(private val padding: Padding) :
         spacePadding = padding.spaces(2),
     ) {
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::appendDayOfMonth.name}()"
-        else -> "${DateTimeFormatBuilder.WithDate::appendDayOfMonth.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}()"
+        else -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is DayDirective && padding == other.padding
@@ -254,7 +254,7 @@ internal class DayOfWeekDirective(private val names: DayOfWeekNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names) {
 
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithDate::appendDayOfWeek.name}(${names.toKotlinCode()})"
+        "${DateTimeFormatBuilder.WithDate::dayOfWeek.name}(${names.toKotlinCode()})"
 
     override fun equals(other: Any?): Boolean = other is DayOfWeekDirective && names.names == other.names.names
     override fun hashCode(): Int = names.names.hashCode()
@@ -279,25 +279,25 @@ internal class LocalDateFormat(override val actualFormat: StringFormat<DateField
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
         AbstractDateTimeFormatBuilder<DateFieldContainer, Builder>, DateTimeFormatBuilder.WithDate {
-        override fun appendYear(padding: Padding) =
+        override fun year(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
-        override fun appendYearTwoDigits(base: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
+        override fun yearTwoDigits(baseYear: Int) =
+            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
 
-        override fun appendMonthNumber(padding: Padding) =
+        override fun monthNumber(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
-        override fun appendMonthName(names: MonthNames) =
+        override fun monthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
-        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
-        override fun appendDayOfWeek(names: DayOfWeekNames) =
+        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
+        override fun dayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
-            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
+            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
@@ -307,9 +307,9 @@ internal class LocalDateFormat(override val actualFormat: StringFormat<DateField
 // these are constants so that the formats are not recreated every time they are used
 @SharedImmutable
 internal val ISO_DATE by lazy {
-    LocalDateFormat.build { appendYear(); char('-'); appendMonthNumber(); char('-'); appendDayOfMonth() }
+    LocalDateFormat.build { year(); char('-'); monthNumber(); char('-'); dayOfMonth() }
 }
 @SharedImmutable
 internal val ISO_DATE_BASIC by lazy {
-    LocalDateFormat.build { appendYear(); appendMonthNumber(); appendDayOfMonth() }
+    LocalDateFormat.build { year(); monthNumber(); dayOfMonth() }
 }

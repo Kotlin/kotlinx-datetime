@@ -57,20 +57,15 @@ public expect class UtcOffset {
          * // `GMT` on zero, `+4:30:15`, using a custom format:
          * UtcOffset.Format {
          *   optional("GMT") {
-         *     appendOffsetHours(Padding.NONE)
-         *     char(':')
-         *     appendOffsetMinutesOfHour()
-         *     optional {
-         *       char(':')
-         *       appendOffsetSecondsOfMinute()
-         *     }
+         *     offsetHours(Padding.NONE); char(':'); offsetMinutesOfHour()
+         *     optional { char(':'); offsetSecondsOfMinute() }
          *   }
          * }
          * ```
          *
          * Since [UtcOffset] values are rarely formatted and parsed on their own,
          * instances of [DateTimeFormat] obtained here will likely need to be passed to
-         * [DateTimeFormatBuilder.WithUtcOffset.appendOffset] in a format builder for a larger data structure.
+         * [DateTimeFormatBuilder.WithUtcOffset.offset] in a format builder for a larger data structure.
          *
          * There is a collection of predefined formats in [UtcOffset.Formats].
          */

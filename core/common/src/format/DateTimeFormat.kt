@@ -139,16 +139,16 @@ private val allFormatConstants: List<Pair<String, StringFormat<*>>> by lazy {
     fun unwrap(format: DateTimeFormat<*>): StringFormat<*> = (format as AbstractDateTimeFormat<*, *>).actualFormat
     // the formats are ordered vaguely by decreasing length, as the topmost among suitable ones is chosen.
     listOf(
-        "${DateTimeFormatBuilder.WithDateTimeComponents::appendDateTimeComponents.name}(DateTimeComponents.Formats.RFC_1123)" to
+        "${DateTimeFormatBuilder.WithDateTimeComponents::dateTimeComponents.name}(DateTimeComponents.Formats.RFC_1123)" to
             unwrap(DateTimeComponents.Formats.RFC_1123),
-        "${DateTimeFormatBuilder.WithDateTimeComponents::appendDateTimeComponents.name}(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)" to
+        "${DateTimeFormatBuilder.WithDateTimeComponents::dateTimeComponents.name}(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)" to
             unwrap(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET),
-        "${DateTimeFormatBuilder.WithDateTime::appendDate.name}(LocalDateTime.Formats.ISO)" to unwrap(LocalDateTime.Formats.ISO),
-        "${DateTimeFormatBuilder.WithDate::appendDate.name}(LocalDate.Formats.ISO)" to unwrap(LocalDate.Formats.ISO),
-        "${DateTimeFormatBuilder.WithDate::appendDate.name}(LocalDate.Formats.ISO_BASIC)" to unwrap(LocalDate.Formats.ISO_BASIC),
-        "${DateTimeFormatBuilder.WithTime::appendTime.name}(LocalTime.Formats.ISO)" to unwrap(LocalTime.Formats.ISO),
-        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.ISO)" to unwrap(UtcOffset.Formats.ISO),
-        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.ISO_BASIC)" to unwrap(UtcOffset.Formats.ISO_BASIC),
-        "${DateTimeFormatBuilder.WithUtcOffset::appendOffset.name}(UtcOffset.Formats.FOUR_DIGITS)" to unwrap(UtcOffset.Formats.FOUR_DIGITS),
+        "${DateTimeFormatBuilder.WithDateTime::date.name}(LocalDateTime.Formats.ISO)" to unwrap(LocalDateTime.Formats.ISO),
+        "${DateTimeFormatBuilder.WithDate::date.name}(LocalDate.Formats.ISO)" to unwrap(LocalDate.Formats.ISO),
+        "${DateTimeFormatBuilder.WithDate::date.name}(LocalDate.Formats.ISO_BASIC)" to unwrap(LocalDate.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithTime::time.name}(LocalTime.Formats.ISO)" to unwrap(LocalTime.Formats.ISO),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO)" to unwrap(UtcOffset.Formats.ISO),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO_BASIC)" to unwrap(UtcOffset.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.FOUR_DIGITS)" to unwrap(UtcOffset.Formats.FOUR_DIGITS),
     )
 }

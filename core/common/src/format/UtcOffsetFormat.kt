@@ -31,20 +31,20 @@ internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffset
         AbstractDateTimeFormatBuilder<UtcOffsetFieldContainer, Builder>, DateTimeFormatBuilder.WithUtcOffset {
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-        override fun appendOffsetHours(padding: Padding) =
+        override fun offsetHours(padding: Padding) =
             actualBuilder.add(SignedFormatStructure(
                 BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
                 withPlusSign = true
             ))
 
-        override fun appendOffsetMinutesOfHour(padding: Padding) =
+        override fun offsetMinutesOfHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
 
-        override fun appendOffsetSecondsOfMinute(padding: Padding) =
+        override fun offsetSecondsOfMinute(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendOffset(format: DateTimeFormat<UtcOffset>) = when (format) {
+        override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
             is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
         }
     }
@@ -72,7 +72,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
 ) {
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffsetWithoutZOnZero() {
-        appendOffsetHours()
+        offsetHours()
         when (outputMinute) {
             WhenToOutput.NEVER -> {}
             WhenToOutput.IF_NONZERO -> {
@@ -80,7 +80,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                     if (useSeparator) {
                         char(':')
                     }
-                    appendOffsetMinutesOfHour()
+                    offsetMinutesOfHour()
                     when (outputSecond) {
                         WhenToOutput.NEVER -> {}
                         WhenToOutput.IF_NONZERO -> {
@@ -88,7 +88,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                                 if (useSeparator) {
                                     char(':')
                                 }
-                                appendOffsetSecondsOfMinute()
+                                offsetSecondsOfMinute()
                             }
                         }
 
@@ -96,7 +96,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                             if (useSeparator) {
                                 char(':')
                             }
-                            appendOffsetSecondsOfMinute()
+                            offsetSecondsOfMinute()
                         }
                     }
                 }
@@ -106,7 +106,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                 if (useSeparator) {
                     char(':')
                 }
-                appendOffsetMinutesOfHour()
+                offsetMinutesOfHour()
                 when (outputSecond) {
                     WhenToOutput.NEVER -> {}
                     WhenToOutput.IF_NONZERO -> {
@@ -114,7 +114,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                             if (useSeparator) {
                                 char(':')
                             }
-                            appendOffsetSecondsOfMinute()
+                            offsetSecondsOfMinute()
                         }
                     }
 
@@ -122,7 +122,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
                         if (useSeparator) {
                             char(':')
                         }
-                        appendOffsetSecondsOfMinute()
+                        offsetSecondsOfMinute()
                     }
                 }
             }
@@ -214,7 +214,7 @@ internal class UtcOffsetWholeHoursDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetHours.name}(${padding.toKotlinCode()})"
+        "${DateTimeFormatBuilder.WithUtcOffset::offsetHours.name}(${padding.toKotlinCode()})"
 
     override fun equals(other: Any?): Boolean = other is UtcOffsetWholeHoursDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
@@ -227,8 +227,8 @@ internal class UtcOffsetMinuteOfHourDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() = when (padding) {
-        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetMinutesOfHour.name}()"
-        else -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetMinutesOfHour.name}(${padding.toKotlinCode()})"
+        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::offsetMinutesOfHour.name}()"
+        else -> "${DateTimeFormatBuilder.WithUtcOffset::offsetMinutesOfHour.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is UtcOffsetMinuteOfHourDirective && padding == other.padding
@@ -242,8 +242,8 @@ internal class UtcOffsetSecondOfMinuteDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() = when (padding) {
-        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetSecondsOfMinute.name}()"
-        else -> "${DateTimeFormatBuilder.WithUtcOffset::appendOffsetSecondsOfMinute.name}(${padding.toKotlinCode()})"
+        Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::offsetSecondsOfMinute.name}()"
+        else -> "${DateTimeFormatBuilder.WithUtcOffset::offsetSecondsOfMinute.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is UtcOffsetSecondOfMinuteDirective && padding == other.padding
@@ -256,12 +256,12 @@ internal val ISO_OFFSET by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
             optional("Z") {
-                appendOffsetHours()
+                offsetHours()
                 char(':')
-                appendOffsetMinutesOfHour()
+                offsetMinutesOfHour()
                 optional {
                     char(':')
-                    appendOffsetSecondsOfMinute()
+                    offsetSecondsOfMinute()
                 }
             }
         }
@@ -272,11 +272,11 @@ internal val ISO_OFFSET_BASIC by lazy {
     UtcOffsetFormat.build {
         alternativeParsing({ chars("z") }) {
             optional("Z") {
-                appendOffsetHours()
+                offsetHours()
                 optional {
-                    appendOffsetMinutesOfHour()
+                    offsetMinutesOfHour()
                     optional {
-                        appendOffsetSecondsOfMinute()
+                        offsetSecondsOfMinute()
                     }
                 }
             }
@@ -286,7 +286,7 @@ internal val ISO_OFFSET_BASIC by lazy {
 @SharedImmutable
 internal val FOUR_DIGIT_OFFSET by lazy {
     UtcOffsetFormat.build {
-        appendOffsetHours()
-        appendOffsetMinutesOfHour()
+        offsetHours()
+        offsetMinutesOfHour()
     }
 }

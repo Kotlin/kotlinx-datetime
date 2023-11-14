@@ -516,7 +516,7 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
 /**
  * Formats this value using the given [format] using the given [offset].
  *
- * [DateTimeComponents.Format.ISO_DATE_TIME_OFFSET] is the format used by [toString] and [Instant.Companion.parse].
+ * [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is the format used by [toString] and [Instant.Companion.parse].
  */
 public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: UtcOffset = UtcOffset.ZERO): String {
     val instant = this

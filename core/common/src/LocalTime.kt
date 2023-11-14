@@ -87,15 +87,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * Example:
          * ```
          * LocalTime.Format {
-         *   appendHour()
-         *   char(':')
-         *   appendMinute()
-         *   char(':')
-         *   appendSecond()
-         *   optional {
-         *     char('.')
-         *     appendSecondFraction()
-         *   }
+         *   hour(); char(':'); minute(); char(':'); second()
+         *   optional { char('.'); secondFraction() }
          * }
          * ```
          *

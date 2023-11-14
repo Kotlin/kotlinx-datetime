@@ -16,21 +16,21 @@ class DateTimeFormatTest {
         val almostRfc1123 = DateTimeComponents.Format {
             alternativeParsing({
             }) {
-                appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+                dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            appendDayOfMonth(Padding.NONE)
+            dayOfMonth(Padding.NONE)
             char(' ')
-            appendMonthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
+            monthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
             char(' ')
-            appendYear()
+            year()
             char(' ')
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             optional {
                 char(':')
-                appendSecond()
+                second()
             }
             char(' ')
             alternativeParsing({
@@ -39,7 +39,7 @@ class DateTimeFormatTest {
                 char('Z')
             }) {
                 optional("GMT") {
-                    appendOffset(UtcOffset.Formats.FOUR_DIGITS)
+                    offset(UtcOffset.Formats.FOUR_DIGITS)
                 }
             }
         }
@@ -47,21 +47,21 @@ class DateTimeFormatTest {
         assertEquals("""
             alternativeParsing({
             }) {
-                appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+                dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            appendDayOfMonth(Padding.NONE)
+            dayOfMonth(Padding.NONE)
             char(' ')
-            appendMonthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
+            monthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
             char(' ')
-            appendYear()
+            year()
             char(' ')
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             optional {
                 char(':')
-                appendSecond()
+                second()
             }
             char(' ')
             alternativeParsing({
@@ -70,7 +70,7 @@ class DateTimeFormatTest {
                 char('Z')
             }) {
                 optional("GMT") {
-                    appendOffset(UtcOffset.Formats.FOUR_DIGITS)
+                    offset(UtcOffset.Formats.FOUR_DIGITS)
                 }
             }
         """.trimIndent(), kotlinCode)

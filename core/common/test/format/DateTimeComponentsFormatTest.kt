@@ -44,10 +44,10 @@ class DateTimeComponentsFormatTest {
     @Test
     fun testZonedDateTime() {
         val format = DateTimeComponents.Format {
-            appendDateTime(LocalDateTime.Formats.ISO)
-            appendOffset(UtcOffset.Formats.ISO)
+            dateTime(LocalDateTime.Formats.ISO)
+            offset(UtcOffset.Formats.ISO)
             char('[')
-            appendTimeZoneId()
+            timeZoneId()
             char(']')
         }
         val berlin = "Europe/Berlin"
@@ -67,7 +67,7 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = DateTimeComponents.Format { appendTimeZoneId(); chars("X") }
+        val format = DateTimeComponents.Format { timeZoneId(); chars("X") }
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("${zone}X").timeZoneId)
         }
@@ -113,7 +113,7 @@ class DateTimeComponentsFormatTest {
         val input = "23:59:60"
         val extraDay: Boolean
         val time = DateTimeComponents.Format {
-          appendTime(LocalTime.Formats.ISO)
+          time(LocalTime.Formats.ISO)
         }.parse(input).apply {
           if (hour == 23 && minute == 59 && second == 60) {
             hour = 0; minute = 0; second = 0; extraDay = true

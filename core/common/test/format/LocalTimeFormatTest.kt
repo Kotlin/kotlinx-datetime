@@ -34,12 +34,12 @@ class LocalTimeFormatTest {
             put(LocalTime(23, 59, 0, 0), ("23:59" to setOf()))
         }
         test(times, LocalTime.Format {
-            appendUnicodeFormatString("HH:mm")
+            byUnicodePattern("HH:mm")
         })
         test(times, LocalTime.Format {
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
         })
     }
 
@@ -56,14 +56,14 @@ class LocalTimeFormatTest {
             put(LocalTime(0, 0, 59, 0), ("00:00:59" to setOf()))
         }
         test(times, LocalTime.Format {
-            appendUnicodeFormatString("HH:mm:ss")
+            byUnicodePattern("HH:mm:ss")
         })
         test(times, LocalTime.Format {
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             char(':')
-            appendSecond()
+            second()
         })
     }
 
@@ -78,11 +78,11 @@ class LocalTimeFormatTest {
             put(LocalTime(23, 0, 0, 0), ("11:00 PM" to setOf()))
         }
         test(times, LocalTime.Format {
-            appendAmPmHour()
+            amPmHour()
             char(':')
-            appendMinute()
+            minute()
             char(' ')
-            appendAmPmMarker("AM", "PM")
+            amPmMarker("AM", "PM")
         })
     }
 
@@ -122,12 +122,12 @@ class LocalTimeFormatTest {
     @Test
     fun testFormattingSecondFractions() {
         fun check(nanoseconds: Int, minLength: Int?, maxLength: Int?, string: String) {
-            val format = LocalTime.Format { appendSecondFraction(minLength, maxLength) }
+            val format = LocalTime.Format { secondFraction(minLength, maxLength) }
             val time = LocalTime(0, 0, 0, nanoseconds)
             assertEquals(string, format.format(time))
             val format2 = LocalTime.Format {
-                appendHour(); appendMinute(); appendSecond()
-                char('.'); appendSecondFraction(minLength, maxLength)
+                hour(); minute(); second()
+                char('.'); secondFraction(minLength, maxLength)
             }
             val time2 = format2.parse("123456.$string")
             assertEquals((string + "0".repeat(9 - string.length)).toInt(), time2.nanosecond)
@@ -178,14 +178,14 @@ class LocalTimeFormatTest {
     @Test
     fun testDoc() {
         val format = LocalTime.Format {
-          appendHour()
+          hour()
           char(':')
-          appendMinute()
+          minute()
           char(':')
-          appendSecond()
+          second()
           optional {
             char('.')
-            appendSecondFraction()
+            secondFraction()
           }
         }
         assertEquals("12:34:56", format.format(LocalTime(12, 34, 56)))

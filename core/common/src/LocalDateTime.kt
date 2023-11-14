@@ -48,14 +48,14 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * Examples:
          * ```
          * // `2020-08-30 18:43:13`, using predefined date and time formats
-         * LocalDateTime.Format { appendDate(LocalDate.Format.ISO); char(' ');  appendTime(LocalTime.Format.ISO) }
+         * LocalDateTime.Format { date(LocalDate.Formats.ISO); char(' '); time(LocalTime.Formats.ISO) }
          *
          * // `08/30 18:43:13`, using a custom format:
          * LocalDateTime.Format {
-         *   appendMonthNumber(); char('/'); appendDayOfMonth()
+         *   monthNumber(); char('/'); dayOfMonth()
          *   char(' ')
-         *   appendHour(); char(':'); appendMinute()
-         *   optional { char(':'); appendSecond() }
+         *   hour(); char(':'); minute()
+         *   optional { char(':'); second() }
          * }
          * ```
          *

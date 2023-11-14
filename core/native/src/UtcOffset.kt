@@ -120,7 +120,7 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
 private val lenientFormat = UtcOffsetFormat.build {
     alternativeParsing(
         {
-            appendOffsetHours(Padding.NONE)
+            offsetHours(Padding.NONE)
         },
         {
             appendIsoOffset(

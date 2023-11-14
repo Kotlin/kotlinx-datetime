@@ -38,21 +38,21 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44:00" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
-            appendUnicodeFormatString("-MM-dd HH:mm:ss")
+            year()
+            byUnicodePattern("-MM-dd HH:mm:ss")
         })
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
+            year()
             char('-')
-            appendMonthNumber()
+            monthNumber()
             char('-')
-            appendDayOfMonth()
+            dayOfMonth()
             char(' ')
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             char(':')
-            appendSecond()
+            second()
         })
     }
 
@@ -71,19 +71,19 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-01-01 13:44" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
-            appendUnicodeFormatString("-MM-dd HH:mm")
+            year()
+            byUnicodePattern("-MM-dd HH:mm")
         })
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
+            year()
             char('-')
-            appendMonthNumber()
+            monthNumber()
             char('-')
-            appendDayOfMonth()
+            dayOfMonth()
             char(' ')
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
         })
     }
 
@@ -102,16 +102,16 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-1234560101134400" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
-            appendUnicodeFormatString("MMddHHmmss")
+            year()
+            byUnicodePattern("MMddHHmmss")
         })
         test(dateTimes, LocalDateTime.Format {
-            appendYear()
-            appendMonthNumber()
-            appendDayOfMonth()
-            appendHour()
-            appendMinute()
-            appendSecond()
+            year()
+            monthNumber()
+            dayOfMonth()
+            hour()
+            minute()
+            second()
         })
     }
 
@@ -130,21 +130,21 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456-1-1 13:44:0" to setOf()))
         }
         test(dateTimes, LocalDateTime.Format {
-            appendYear(Padding.NONE)
-            appendUnicodeFormatString("-M-d H:m:s")
+            year(Padding.NONE)
+            byUnicodePattern("-M-d H:m:s")
         })
         test(dateTimes, LocalDateTime.Format {
-            appendYear(Padding.NONE)
+            year(Padding.NONE)
             char('-')
-            appendMonthNumber(Padding.NONE)
+            monthNumber(Padding.NONE)
             char('-')
-            appendDayOfMonth(Padding.NONE)
+            dayOfMonth(Padding.NONE)
             char(' ')
-            appendHour(Padding.NONE)
+            hour(Padding.NONE)
             char(':')
-            appendMinute(Padding.NONE)
+            minute(Padding.NONE)
             char(':')
-            appendSecond(Padding.NONE)
+            second(Padding.NONE)
         })
     }
 
@@ -165,17 +165,17 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456- 1- 1 13:44: 0" to setOf()))
         }
         val format = LocalDateTime.Format {
-            appendYear(Padding.SPACE)
+            year(Padding.SPACE)
             char('-')
-            appendMonthNumber(Padding.SPACE)
+            monthNumber(Padding.SPACE)
             char('-')
-            appendDayOfMonth(Padding.SPACE)
+            dayOfMonth(Padding.SPACE)
             char(' ')
-            appendHour(Padding.SPACE)
+            hour(Padding.SPACE)
             char(':')
-            appendMinute(Padding.SPACE)
+            minute(Padding.SPACE)
             char(':')
-            appendSecond(Padding.SPACE)
+            second(Padding.SPACE)
         }
         test(dateTimes, format)
         format.parse(" 008- 7- 5  0: 0: 0")
@@ -229,13 +229,13 @@ class LocalDateTimeFormatTest {
     @Test
     fun testDoc() {
         val dateTime = LocalDateTime(2020, 8, 30, 18, 43, 13, 0)
-        val format1 = LocalDateTime.Format { appendDate(LocalDate.Formats.ISO); char(' ');  appendTime(LocalTime.Formats.ISO) }
+        val format1 = LocalDateTime.Format { date(LocalDate.Formats.ISO); char(' ');  time(LocalTime.Formats.ISO) }
         assertEquals("2020-08-30 18:43:13", dateTime.format(format1))
         val format2 = LocalDateTime.Format {
-          appendMonthNumber(); char('/'); appendDayOfMonth()
+          monthNumber(); char('/'); dayOfMonth()
           char(' ')
-          appendHour(); char(':'); appendMinute()
-          optional { char(':'); appendSecond() }
+          hour(); char(':'); minute()
+          optional { char(':'); second() }
         }
         assertEquals("08/30 18:43:13", dateTime.format(format2))
     }

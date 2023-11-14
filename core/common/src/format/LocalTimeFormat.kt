@@ -9,6 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlin.native.concurrent.*
+import kotlin.reflect.KFunction
 
 internal interface TimeFieldContainer {
     var minute: Int?
@@ -100,8 +101,8 @@ internal class HourDirective(private val padding: Padding) :
         spacePadding = padding.spaces(2)
     ) {
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendHour.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendHour.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::hour.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::hour.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is HourDirective && padding == other.padding
@@ -114,8 +115,8 @@ internal class AmPmHourDirective(private val padding: Padding) :
         spacePadding = padding.spaces(2)
     ) {
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendAmPmHour.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::amPmHour.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::amPmHour.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is AmPmHourDirective && padding == other.padding
@@ -131,7 +132,7 @@ internal class AmPmMarkerDirective(private val amString: String, private val pmS
     ) {
 
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithTime::appendAmPmMarker.name}($amString, $pmString)"
+        "${DateTimeFormatBuilder.WithTime::amPmMarker.name}($amString, $pmString)"
 
     override fun equals(other: Any?): Boolean =
         other is AmPmMarkerDirective && amString == other.amString && pmString == other.pmString
@@ -146,8 +147,8 @@ internal class MinuteDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendMinute.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::minute.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::minute.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is MinuteDirective && padding == other.padding
@@ -162,8 +163,8 @@ internal class SecondDirective(private val padding: Padding) :
     ) {
 
     override val builderRepresentation: String get() = when (padding) {
-        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}()"
-        else -> "${DateTimeFormatBuilder.WithTime::appendSecond.name}(${padding.toKotlinCode()})"
+        Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::second.name}()"
+        else -> "${DateTimeFormatBuilder.WithTime::second.name}(${padding.toKotlinCode()})"
     }
 
     override fun equals(other: Any?): Boolean = other is SecondDirective && padding == other.padding
@@ -173,11 +174,15 @@ internal class SecondDirective(private val padding: Padding) :
 internal class FractionalSecondDirective(private val minDigits: Int? = null, private val maxDigits: Int? = null) :
     DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
 
-    override val builderRepresentation: String get() = when {
-        minDigits == 1 && maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}()"
-        minDigits == 1 -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}(maxLength = $maxDigits)"
-        maxDigits == null -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits)"
-        else -> "${DateTimeFormatBuilder.WithTime::appendSecondFraction.name}($minDigits, $maxDigits)"
+    override val builderRepresentation: String get() {
+        val ref = "secondFraction" // can't directly reference `secondFraction` due to resolution ambiguity
+        return when {
+            minDigits == null && maxDigits == null -> "$ref()"
+            minDigits == null -> "$ref(maxLength = $maxDigits)"
+            maxDigits == null -> "$ref(minLength = $minDigits)"
+            maxDigits == minDigits -> "$ref($minDigits)"
+            else -> "$ref($minDigits, $maxDigits)"
+        }
     }
 
     override fun equals(other: Any?): Boolean =
@@ -206,20 +211,20 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
         AbstractDateTimeFormatBuilder<TimeFieldContainer, Builder>, DateTimeFormatBuilder.WithTime {
-        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun appendAmPmHour(padding: Padding) =
+        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun amPmHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
-        override fun appendAmPmMarker(amString: String, pmString: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+        override fun amPmMarker(am: String, pm: String) =
+            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
 
-        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
+        override fun secondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
+        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
@@ -232,17 +237,17 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 @SharedImmutable
 internal val ISO_TIME by lazy {
     LocalTimeFormat.build {
-        appendHour()
+        hour()
         char(':')
-        appendMinute()
+        minute()
         alternativeParsing({
             // intentionally empty
         }) {
             char(':')
-            appendSecond()
+            second()
             optional {
                 char('.')
-                appendSecondFraction()
+                secondFraction()
             }
         }
     }
@@ -251,15 +256,15 @@ internal val ISO_TIME by lazy {
 @SharedImmutable
 internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
     LocalTimeFormat.build {
-        appendHour()
+        hour()
         char(':')
-        appendMinute()
+        minute()
         optional {
             char(':')
-            appendSecond()
+            second()
             optional {
                 char('.')
-                appendSecondFraction()
+                secondFraction()
             }
         }
     }

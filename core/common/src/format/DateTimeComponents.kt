@@ -23,7 +23,7 @@ import kotlin.reflect.*
  * Example:
  * ```
  * val input = "2020-03-16T23:59:59.999999999+03:00"
- * val bag = DateTimeComponents.Format.ISO_INSTANT.parse(input)
+ * val bag = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
  * val localDateTime = bag.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
  * val instant = bag.toInstantUsingOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
  * val offset = bag.toUtcOffset() // UtcOffset(hours = 3)
@@ -38,7 +38,7 @@ import kotlin.reflect.*
  * val input = "23:59:60"
  * val extraDay: Boolean
  * val time = DateTimeComponents.Format {
- *   appendTime(LocalTime.Format.ISO)
+ *   time(LocalTime.Formats.ISO)
  * }.parse(input).apply {
  *   if (hour == 23 && minute == 59 && second == 60) {
  *     hour = 0; minute = 0; second = 0; extraDay = true
@@ -54,7 +54,7 @@ import kotlin.reflect.*
  * Example:
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
- * DateTimeComponents.Format.RFC_1123.format {
+ * DateTimeComponents.Formats.RFC_1123.format {
  *    setDateTimeOffset(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
  *    setDateTimeOffset(UtcOffset(hours = 3))
  * }
@@ -99,20 +99,20 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          */
         public val ISO_DATE_TIME_OFFSET: DateTimeFormat<DateTimeComponents> = Format {
-            appendDate(ISO_DATE)
+            date(ISO_DATE)
             alternativeParsing({
                 char('t')
             }) {
                 char('T')
             }
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             char(':')
-            appendSecond()
+            second()
             optional {
                 char('.')
-                appendSecondFraction()
+                secondFraction()
             }
             appendIsoOffset(
                 zOnZero = true,
@@ -136,21 +136,21 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             alternativeParsing({
                 // the day of week may be missing
             }) {
-                appendDayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+                dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            appendDayOfMonth(Padding.NONE)
+            dayOfMonth(Padding.NONE)
             char(' ')
-            appendMonthName(MonthNames.ENGLISH_ABBREVIATED)
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
             char(' ')
-            appendYear()
+            year()
             char(' ')
-            appendHour()
+            hour()
             char(':')
-            appendMinute()
+            minute()
             optional {
                 char(':')
-                appendSecond()
+                second()
             }
             chars(" ")
             alternativeParsing({
@@ -159,7 +159,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 chars("Z")
             }) {
                 optional("GMT") {
-                    appendOffset(UtcOffset.Formats.FOUR_DIGITS)
+                    offset(UtcOffset.Formats.FOUR_DIGITS)
                 }
             }
         }
@@ -403,7 +403,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
  * Example:
  * ```
  * // Mon, 16 Mar 2020 23:59:59 +0300
- * DateTimeComponents.Format.RFC_1123.format {
+ * DateTimeComponents.Formats.RFC_1123.format {
  *    setDateTime(LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
  *    setOffset(UtcOffset(hours = 3))
  * }
@@ -447,7 +447,7 @@ internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
     StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
 
     override val builderRepresentation: String get() =
-        "${DateTimeFormatBuilder.WithDateTimeComponents::appendTimeZoneId.name}()"
+        "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
 
     override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
     override fun hashCode(): Int = knownZones.hashCode()
@@ -463,35 +463,35 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
 
     class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeComponentsContents>) :
         AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
-        override fun appendYear(padding: Padding) =
+        override fun year(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
 
-        override fun appendYearTwoDigits(base: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(base)))
+        override fun yearTwoDigits(baseYear: Int) =
+            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
 
-        override fun appendMonthNumber(padding: Padding) =
+        override fun monthNumber(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
 
-        override fun appendMonthName(names: MonthNames) =
+        override fun monthName(names: MonthNames) =
             actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
 
-        override fun appendDayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
-        override fun appendDayOfWeek(names: DayOfWeekNames) =
+        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
+        override fun dayOfWeek(names: DayOfWeekNames) =
             actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
 
-        override fun appendHour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun appendAmPmHour(padding: Padding) =
+        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
+        override fun amPmHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
 
-        override fun appendAmPmMarker(amString: String, pmString: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(amString, pmString)))
+        override fun amPmMarker(am: String, pm: String) =
+            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
 
-        override fun appendMinute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun appendSecond(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun appendSecondFraction(minLength: Int?, maxLength: Int?) =
+        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
+        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
+        override fun secondFraction(minLength: Int?, maxLength: Int?) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-        override fun appendOffsetHours(padding: Padding) =
+        override fun offsetHours(padding: Padding) =
             actualBuilder.add(
                 SignedFormatStructure(
                     BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
@@ -499,37 +499,37 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
                 )
             )
 
-        override fun appendOffsetMinutesOfHour(padding: Padding) =
+        override fun offsetMinutesOfHour(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
 
-        override fun appendOffsetSecondsOfMinute(padding: Padding) =
+        override fun offsetSecondsOfMinute(padding: Padding) =
             actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
-        override fun appendTimeZoneId() =
+        override fun timeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDate(dateFormat: DateTimeFormat<LocalDate>) = when (dateFormat) {
-            is LocalDateFormat -> actualBuilder.add(dateFormat.actualFormat.directives)
+        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
+            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendTime(format: DateTimeFormat<LocalTime>) = when (format) {
+        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
             is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendOffset(format: DateTimeFormat<UtcOffset>) = when (format) {
+        override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
             is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
+        override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
             is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
         @Suppress("NO_ELSE_IN_WHEN")
-        override fun appendDateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
+        override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
             is DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat.directives)
         }
 
