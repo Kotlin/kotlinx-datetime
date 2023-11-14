@@ -7,6 +7,7 @@ package kotlinx.datetime.internal.format
 
 import kotlinx.datetime.internal.format.formatter.*
 import kotlinx.datetime.internal.format.parser.*
+import kotlin.reflect.KMutableProperty1
 
 internal sealed interface FormatStructure<in T>
 
@@ -63,6 +64,10 @@ internal class OptionalFormatStructure<in T>(
 ) : NonConcatenatedFormatStructure<T> {
     override fun toString(): String = "Optional($onZero, $format)"
 
+    internal val fields = basicFormats(format).map { it.field }.distinct().map { field ->
+        PropertyWithDefault.fromField(field)
+    }
+
     override fun equals(other: Any?): Boolean =
         other is OptionalFormatStructure<*> && onZero == other.onZero && format == other.format
 
@@ -82,68 +87,57 @@ internal class ConcatenatedFormatStructure<in T>(
     }
 }
 
-internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> {
-    fun FormatStructure<T>.rec(): Pair<FormatterStructure<T>, Set<FieldSpec<T, *>>> = when (this) {
-        is BasicFormatStructure -> directive.formatter() to setOf(directive.field)
-        is ConstantFormatStructure -> ConstantStringFormatterStructure<T>(string) to emptySet()
-        is SignedFormatStructure -> {
-            val (innerFormat, fieldSpecs) = format.rec()
-            fun checkIfAllNegative(value: T): Boolean {
-                var seenNonZero = false
-                for (check in fieldSigns) {
-                    when {
-                        check.isNegative.get(value) == true -> seenNonZero = true
-                        check.isZero(value) -> continue
-                        else -> return false
-                    }
+internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> = when (this) {
+    is BasicFormatStructure -> directive.formatter()
+    is ConstantFormatStructure -> ConstantStringFormatterStructure<T>(string)
+    is SignedFormatStructure -> {
+        val innerFormat = format.formatter()
+        fun checkIfAllNegative(value: T): Boolean {
+            var seenNonZero = false
+            for (check in fieldSigns) {
+                when {
+                    check.isNegative.get(value) == true -> seenNonZero = true
+                    check.isZero(value) -> continue
+                    else -> return false
                 }
-                return seenNonZero
             }
-            SignedFormatter(
-                innerFormat,
-                ::checkIfAllNegative,
-                withPlusSign
-            ) to fieldSpecs
+            return seenNonZero
         }
+        SignedFormatter(
+            innerFormat,
+            ::checkIfAllNegative,
+            withPlusSign
+        )
+    }
 
-        is AlternativesParsingFormatStructure -> mainFormat.rec()
-        is OptionalFormatStructure -> {
-            val (formatter, fields) = format.rec()
-            val predicate = conjunctionPredicate(fields.map {
-                it.toComparisonPredicate() ?: throw IllegalArgumentException(
-                    "The field '${it.name}' does not define a default value, and only fields that define a default value can" +
-                        "be used in an 'optional' format."
-                )
-            })
-            ConditionalFormatter(
-                listOf(
-                    predicate::test to ConstantStringFormatterStructure(onZero),
-                    Truth::test to formatter
-                )
-            ) to fields
-        }
+    is AlternativesParsingFormatStructure -> mainFormat.formatter()
+    is OptionalFormatStructure -> {
+        val formatter = format.formatter()
+        val predicate = conjunctionPredicate(fields.map { it.isDefaultComparisonPredicate() })
+        ConditionalFormatter(
+            listOf(
+                predicate::test to ConstantStringFormatterStructure(onZero),
+                Truth::test to formatter
+            )
+        )
+    }
 
-        is ConcatenatedFormatStructure -> {
-            val (formatters, fields) = formats.map { it.rec() }.unzip()
-            if (formatters.size == 1) {
-                formatters.single()
-            } else {
-                ConcatenatedFormatter(formatters)
-            } to
-                fields.flatten().toSet()
+    is ConcatenatedFormatStructure -> {
+        val formatters = formats.map { it.formatter() }
+        if (formatters.size == 1) {
+            formatters.single()
+        } else {
+            ConcatenatedFormatter(formatters)
         }
     }
-    return rec().first
 }
-
-// A workaround: for some reason, replacing `E` with `*` causes this not to type properly, and `*` is inferred on the
-// call site, so we have to move this to a separate function.
-internal fun <T, E> FieldSpec<T, E>.toComparisonPredicate(): ComparisonPredicate<T, E>? =
-    defaultValue?.let { ComparisonPredicate(it, accessor::get) }
 
 private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
     is ConstantFormatStructure ->
-        ParserStructure(operations = listOf(PlainStringParserOperation(string)), followedBy = emptyList())
+        ParserStructure(
+            operations = if (string.isNotEmpty()) listOf(PlainStringParserOperation(string)) else emptyList(),
+            followedBy = emptyList()
+        )
 
     is SignedFormatStructure -> {
         listOf(
@@ -178,14 +172,27 @@ private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
         })
     }
 
-    is OptionalFormatStructure -> ParserStructure(
-        operations = emptyList(),
-        followedBy = if (onZero.isNotEmpty()) {
-            listOf(format.parser(), ConstantFormatStructure<T>(onZero).parser())
-        } else {
-            listOf(format.parser(), ParserStructure(operations = emptyList(), followedBy = emptyList()))
-        }
-    )
+    is OptionalFormatStructure -> {
+        ParserStructure(
+            operations = emptyList(),
+            followedBy = listOf(
+                format.parser(),
+                listOf(
+                    ConstantFormatStructure<T>(onZero).parser(),
+                    ParserStructure(
+                        listOf(
+                            UnconditionalModification {
+                                for (field in fields) {
+                                    field.assignDefault(it)
+                                }
+                            }
+                        ),
+                        emptyList()
+                    )
+                ).concat()
+            )
+        )
+    }
 }
 
 internal class StringFormat<in T>(internal val directives: ConcatenatedFormatStructure<T>) {
@@ -214,4 +221,22 @@ private fun <T> basicFormats(format: FormatStructure<T>): List<FieldFormatDirect
         }
     }
     rec(format)
+}
+
+internal class PropertyWithDefault<in T, E> private constructor(private val accessor: KMutableProperty1<T, E?>, private val defaultValue: E) {
+    companion object {
+        fun<T, E> fromField(field: FieldSpec<T, E>): PropertyWithDefault<T, E> {
+            val default = field.defaultValue
+            require(default != null) {
+                "The field '${field.name}' does not define a default value"
+            }
+            return PropertyWithDefault(field.accessor, default)
+        }
+    }
+
+    inline fun assignDefault(target: T) {
+        accessor.set(target, defaultValue)
+    }
+
+    inline fun isDefaultComparisonPredicate() = ComparisonPredicate(defaultValue, accessor::get)
 }

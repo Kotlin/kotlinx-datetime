@@ -137,6 +137,31 @@ class DateTimeComponentsFormatTest {
         assertEquals(UtcOffset(hours = 3), offset)
     }
 
+    @Test
+    fun testDefaultValueAssignment() {
+        val input = "2020-03-16T23:59"
+        val bagWithOptional = DateTimeComponents.Format {
+            date(ISO_DATE); char('T')
+            hour(); char(':'); minute()
+            optional {
+                char(':'); second()
+                optional { char('.'); secondFraction() }
+            }
+        }.parse(input)
+        assertEquals(0, bagWithOptional.second)
+        assertEquals(0, bagWithOptional.nanosecond)
+        val bagWithAlternative = DateTimeComponents.Format {
+            date(ISO_DATE); char('T')
+            hour(); char(':'); minute()
+            alternativeParsing({}) {
+                char(':'); second()
+                optional { char('.'); secondFraction() }
+            }
+        }.parse(input)
+        assertNull(bagWithAlternative.second)
+        assertNull(bagWithAlternative.nanosecond)
+    }
+
     private fun test(strings: Map<DateTimeComponents, Pair<String, Set<String>>>, format: DateTimeFormat<DateTimeComponents>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue

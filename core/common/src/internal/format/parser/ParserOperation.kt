@@ -121,6 +121,18 @@ internal class SignParser<Output>(
 }
 
 /**
+ * Consumes an empty string and unconditionally modifies the accumulator.
+ */
+internal class UnconditionalModification<Output>(
+    private val operation: (Output) -> Unit
+): ParserOperation<Output> {
+    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+        operation(this)
+        return ParseResult.Ok(startIndex)
+    }
+}
+
+/**
  * Matches the longest suitable string from `strings` and calls [consume] with the matched string.
  */
 internal class StringSetParserOperation<Output>(
