@@ -22,6 +22,7 @@ allprojects {
     repositories {
         addTrainRepositories(project)
         mavenCentral()
+        maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         // outputs the compiler version to logs so we can check whether the train configuration applied
@@ -33,4 +34,9 @@ allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
         compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
     }
+}
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
 }
