@@ -8,7 +8,6 @@ package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlin.js.*
 import kotlin.test.*
-import kotlinx.datetime.Date
 
 class JsConverterTest {
     @Test
