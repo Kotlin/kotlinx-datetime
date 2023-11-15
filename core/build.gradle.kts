@@ -51,8 +51,6 @@ kotlin {
         target("androidNativeX86")
         target("androidNativeX64")
          */
-        // Tier 4 (deprecated, but still in demand)
-        target("linuxArm32Hfp")
 
         // Darwin targets are listed separately
         common("darwin") {
@@ -72,9 +70,6 @@ kotlin {
             target("iosArm64")
             // Tier 3
             target("watchosDeviceArm64")
-            // Deprecated for removal
-            target("iosArm32")
-            target("watchosX86")
         }
     }
 

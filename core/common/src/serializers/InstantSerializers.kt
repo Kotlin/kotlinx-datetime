@@ -59,6 +59,7 @@ public object InstantComponentSerializer: KSerializer<Instant> {
                     else -> throw SerializationException("Unexpected index: $index")
                 }
             }
+            @OptIn(ExperimentalSerializationApi::class)
             if (epochSeconds == null) throw MissingFieldException("epochSeconds")
             Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
         }
