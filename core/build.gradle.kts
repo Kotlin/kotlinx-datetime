@@ -414,9 +414,10 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
     }
 }
 
-tasks.whenTaskAdded {
+// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
+tasks.configureEach {
     if (name == "compileJsAndWasmSharedMainKotlinMetadata") {
-        this.enabled = false
+        enabled = false
     }
 }
 
