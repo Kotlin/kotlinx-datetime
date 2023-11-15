@@ -27,7 +27,7 @@ internal sealed class NumberConsumer<in Receiver>(
     abstract fun Receiver.consume(input: String): NumberConsumptionError?
 }
 
-internal sealed interface NumberConsumptionError {
+internal interface NumberConsumptionError {
     fun errorMessage(): String
     object ExpectedInt: NumberConsumptionError {
         override fun errorMessage() = "expected an Int value"

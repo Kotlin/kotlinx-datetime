@@ -11,16 +11,12 @@ import kotlin.jvm.*
 internal value class ParseResult(val value: Any) {
     companion object {
         fun Ok(indexOfNextUnparsed: Int) = ParseResult(indexOfNextUnparsed)
-        fun Error(position: Int, cause: Throwable? = null, message: () -> String) =
-            ParseResult(ParseError(position, cause, message))
+        fun Error(position: Int, message: () -> String) =
+            ParseResult(ParseError(position, message))
     }
 
-    fun isOk() = value is Int
-    fun tryGetIndex(): Int? = if (value is Int) value else null
-    fun tryGetError(): ParseError? = if (value is ParseError) value else null
+    fun tryGetIndex(): Int? = value as? Int
+    fun tryGetError(): ParseError? = value as? ParseError
 }
 
-internal class ParseError(val position: Int, val cause: Throwable? = null, val message: () -> String)
-
-internal class ParseException(error: ParseError) : Exception("Position ${error.position}: ${error.message()}", error.cause)
-
+internal class ParseError(val position: Int, val message: () -> String)

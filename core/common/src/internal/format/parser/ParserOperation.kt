@@ -24,7 +24,7 @@ internal class PlainStringParserOperation<Output>(val string: String) : ParserOp
             return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse '$string'" }
         for (i in string.indices) {
             if (input[startIndex + i] != string[i]) return ParseResult.Error(startIndex) {
-                "Expected $string but got ${input[startIndex + i]}"
+                "Expected $string but got ${input.substring(startIndex, startIndex + i + 1)}"
             }
         }
         return ParseResult.Ok(startIndex + string.length)

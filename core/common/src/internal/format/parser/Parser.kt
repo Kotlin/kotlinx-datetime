@@ -138,38 +138,36 @@ internal class Parser<Output>(
         onError: (ParseError) -> Unit,
         onSuccess: (Int, Output) -> Unit
     ) {
-        var states = mutableListOf(ParserState(defaultState(), 0, commands, startIndex))
-        while (states.isNotEmpty()) {
-            val newStates = mutableListOf<ParserState<Output>>()
-            for (state in states) {
-                if (state.operationIndex < state.parserStructure.operations.size) {
-                    val command = state.parserStructure.operations[state.operationIndex]
-                    val result = with(command) { state.output.consume(input, state.inputPosition) }
-                    if (result.isOk()) {
-                        newStates.add(
-                            ParserState(state.output, state.operationIndex + 1, state.parserStructure, result.tryGetIndex()!!)
-                        )
-                    } else {
-                        onError(result.tryGetError()!!)
-                    }
+        val parseOptions = mutableListOf(ParserState(defaultState(), commands, startIndex))
+        outer@while (true) {
+            val state = parseOptions.removeLastOrNull() ?: break
+            val output = state.output
+            var inputPosition = state.inputPosition
+            val parserStructure = state.parserStructure
+            for (ix in parserStructure.operations.indices) {
+                val command = parserStructure.operations[ix]
+                val result = with(command) { output.consume(input, inputPosition) }
+                val newInputPosition = result.tryGetIndex()
+                if (newInputPosition != null) {
+                    inputPosition = newInputPosition
                 } else {
-                    if (state.parserStructure.followedBy.isEmpty()) {
-                        if (allowDanglingInput || state.inputPosition == input.length) {
-                            onSuccess(state.inputPosition, state.output)
-                        } else {
-                            onError(ParseError(state.inputPosition) { "There is more input to consume" })
-                        }
-                    } else {
-                        for (nextStructure in state.parserStructure.followedBy) {
-                            newStates.add(ParserState(copyState(state.output), 0, nextStructure, state.inputPosition))
-                        }
-                    }
+                    onError(result.tryGetError()!!)
+                    continue@outer
                 }
             }
-            states = newStates
+            if (parserStructure.followedBy.isEmpty()) {
+                if (allowDanglingInput || inputPosition == input.length) {
+                    onSuccess(inputPosition, output)
+                } else {
+                    onError(ParseError(inputPosition) { "There is more input to consume" })
+                }
+            } else {
+                for (ix in parserStructure.followedBy.indices.reversed()) {
+                    parseOptions.add(ParserState(copyState(output), parserStructure.followedBy[ix], inputPosition))
+                }
+            }
         }
     }
-
 
     fun match(input: CharSequence, startIndex: Int = 0): Output {
         val errors = mutableListOf<ParseError>()
@@ -184,10 +182,16 @@ internal class Parser<Output>(
         }
     }
 
+    fun matchOrNull(input: CharSequence, startIndex: Int = 0): Output? {
+        parse(input, startIndex, allowDanglingInput = false, { }, { _, out -> return@matchOrNull out })
+        return null
+    }
+
     private inner class ParserState<Output>(
         val output: Output,
-        val operationIndex: Int,
         val parserStructure: ParserStructure<Output>,
         val inputPosition: Int,
     )
 }
+
+internal class ParseException(error: ParseError) : Exception("Position ${error.position}: ${error.message()}")

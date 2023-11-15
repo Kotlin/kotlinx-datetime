@@ -126,11 +126,8 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
         }
     }
 
-    override fun parseOrNull(input: CharSequence): T? = try {
-        parser.match(input)
-    } catch (e: ParseException) {
-        null
-    }?.let { valueFromIntermediateOrNull(it) }
+    override fun parseOrNull(input: CharSequence): T? =
+        parser.matchOrNull(input)?.let { valueFromIntermediateOrNull(it) }
 
 }
 
