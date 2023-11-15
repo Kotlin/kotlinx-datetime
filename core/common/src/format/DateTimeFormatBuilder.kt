@@ -375,10 +375,6 @@ internal interface AbstractDateTimeFormatBuilder<Target, ActualSelf> :
     fun build(): StringFormat<Target> = StringFormat(actualBuilder.build())
 }
 
-internal interface Copyable<Self> {
-    fun copy(): Self
-}
-
 internal inline fun<T> StringFormat<T>.builderString(constants: List<Pair<String, StringFormat<*>>>): String =
     directives.builderString(constants)
 

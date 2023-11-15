@@ -7,6 +7,7 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.native.concurrent.*
 
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
@@ -33,7 +34,7 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
     override fun valueFromIntermediate(intermediate: IncompleteLocalDateTime): LocalDateTime =
         intermediate.toLocalDateTime()
 
-    override fun newIntermediate(): IncompleteLocalDateTime = IncompleteLocalDateTime()
+    override val emptyIntermediate: IncompleteLocalDateTime get() = emptyIncompleteLocalDateTime
 
     companion object {
         fun build(block: DateTimeFormatBuilder.WithDateTime.() -> Unit): LocalDateTimeFormat {
@@ -112,3 +113,6 @@ internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
         time(ISO_TIME_OPTIONAL_SECONDS)
     }
 }
+
+@SharedImmutable
+private val emptyIncompleteLocalDateTime = IncompleteLocalDateTime()

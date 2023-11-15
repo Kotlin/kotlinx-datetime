@@ -7,6 +7,7 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
@@ -54,7 +55,7 @@ internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffset
 
     override fun valueFromIntermediate(intermediate: IncompleteUtcOffset): UtcOffset = intermediate.toUtcOffset()
 
-    override fun newIntermediate(): IncompleteUtcOffset = IncompleteUtcOffset()
+    override val emptyIntermediate: IncompleteUtcOffset get() = emptyIncompleteUtcOffset
 
 }
 
@@ -290,3 +291,6 @@ internal val FOUR_DIGIT_OFFSET by lazy {
         offsetMinutesOfHour()
     }
 }
+
+@SharedImmutable
+private val emptyIncompleteUtcOffset = IncompleteUtcOffset()

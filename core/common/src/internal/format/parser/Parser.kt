@@ -115,9 +115,11 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     return naiveParser.simplify()
 }
 
-internal class Parser<Output>(
-    private val defaultState: () -> Output,
-    private val copyState: (Output) -> Output,
+internal interface Copyable<Self> {
+    fun copy(): Self
+}
+
+internal class Parser<Output: Copyable<Output>>(
     private val commands: ParserStructure<Output>
 ) {
     /**
@@ -134,14 +136,15 @@ internal class Parser<Output>(
     private inline fun parse(
         input: CharSequence,
         startIndex: Int,
+        initialContainer: Output,
         allowDanglingInput: Boolean,
         onError: (ParseError) -> Unit,
         onSuccess: (Int, Output) -> Unit
     ) {
-        val parseOptions = mutableListOf(ParserState(defaultState(), commands, startIndex))
+        val parseOptions = mutableListOf(ParserState(initialContainer, commands, startIndex))
         outer@while (true) {
             val state = parseOptions.removeLastOrNull() ?: break
-            val output = state.output
+            val output = state.output.copy()
             var inputPosition = state.inputPosition
             val parserStructure = state.parserStructure
             for (ix in parserStructure.operations.indices) {
@@ -163,15 +166,15 @@ internal class Parser<Output>(
                 }
             } else {
                 for (ix in parserStructure.followedBy.indices.reversed()) {
-                    parseOptions.add(ParserState(copyState(output), parserStructure.followedBy[ix], inputPosition))
+                    parseOptions.add(ParserState(output, parserStructure.followedBy[ix], inputPosition))
                 }
             }
         }
     }
 
-    fun match(input: CharSequence, startIndex: Int = 0): Output {
+    fun match(input: CharSequence, initialContainer: Output, startIndex: Int = 0): Output {
         val errors = mutableListOf<ParseError>()
-        parse(input, startIndex, allowDanglingInput = false, { errors.add(it) }, { _, out -> return@match out })
+        parse(input, startIndex, initialContainer, allowDanglingInput = false, { errors.add(it) }, { _, out -> return@match out })
         errors.sortByDescending { it.position }
         // `errors` can not be empty because each parser will have (successes + failures) >= 1, and here, successes == 0
         ParseException(errors.first()).let {
@@ -182,8 +185,8 @@ internal class Parser<Output>(
         }
     }
 
-    fun matchOrNull(input: CharSequence, startIndex: Int = 0): Output? {
-        parse(input, startIndex, allowDanglingInput = false, { }, { _, out -> return@matchOrNull out })
+    fun matchOrNull(input: CharSequence, initialContainer: Output, startIndex: Int = 0): Output? {
+        parse(input, startIndex, initialContainer, allowDanglingInput = false, { }, { _, out -> return@matchOrNull out })
         return null
     }
 

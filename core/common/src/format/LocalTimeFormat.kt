@@ -8,6 +8,7 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.native.concurrent.*
 import kotlin.reflect.KFunction
 
@@ -198,7 +199,7 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalTime): LocalTime = intermediate.toLocalTime()
 
-    override fun newIntermediate(): IncompleteLocalTime = IncompleteLocalTime()
+    override val emptyIntermediate: IncompleteLocalTime get() = emptyIncompleteLocalTime
 
     companion object {
         fun build(block: DateTimeFormatBuilder.WithTime.() -> Unit): LocalTimeFormat {
@@ -269,3 +270,6 @@ internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
         }
     }
 }
+
+@SharedImmutable
+private val emptyIncompleteLocalTime = IncompleteLocalTime()

@@ -93,7 +93,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
 
     abstract fun valueFromIntermediate(intermediate: U): T
 
-    abstract fun newIntermediate(): U
+    abstract val emptyIntermediate: U // should be part of the `Copyable` interface once the language allows this
 
     open fun valueFromIntermediateOrNull(intermediate: U): T? = try {
         valueFromIntermediate(intermediate)
@@ -109,13 +109,11 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
         actualFormat.formatter.format(intermediateFromValue(value), this)
     }
 
-    private fun copyIntermediate(intermediate: U): U = intermediate.copy()
-
-    private val parser: Parser<U> by lazy { Parser(::newIntermediate, ::copyIntermediate, actualFormat.parser) }
+    private val parser: Parser<U> by lazy { Parser(actualFormat.parser) }
 
     override fun parse(input: CharSequence): T {
         val matched = try {
-            parser.match(input)
+            parser.match(input, emptyIntermediate)
         } catch (e: ParseException) {
             throw DateTimeFormatException("Failed to parse value from '$input'", e)
         }
@@ -127,7 +125,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
     }
 
     override fun parseOrNull(input: CharSequence): T? =
-        parser.matchOrNull(input)?.let { valueFromIntermediateOrNull(it) }
+        parser.matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
 
 }
 

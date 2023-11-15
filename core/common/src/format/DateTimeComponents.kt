@@ -9,6 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
@@ -459,7 +460,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
 
     override fun valueFromIntermediate(intermediate: DateTimeComponentsContents): DateTimeComponents = DateTimeComponents(intermediate)
 
-    override fun newIntermediate(): DateTimeComponentsContents = DateTimeComponentsContents()
+    override val emptyIntermediate get() = emptyDateTimeComponentsContents
 
     class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeComponentsContents>) :
         AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
@@ -545,3 +546,6 @@ private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {
         reference.setValue(thisRef, property, value)
     }
 }
+
+@SharedImmutable
+private val emptyDateTimeComponentsContents = DateTimeComponentsContents()

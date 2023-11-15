@@ -8,6 +8,7 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.native.concurrent.*
 
 /**
@@ -267,7 +268,7 @@ internal class LocalDateFormat(override val actualFormat: StringFormat<DateField
 
     override fun valueFromIntermediate(intermediate: IncompleteLocalDate): LocalDate = intermediate.toLocalDate()
 
-    override fun newIntermediate(): IncompleteLocalDate = IncompleteLocalDate()
+    override val emptyIntermediate get() = emptyIncompleteLocalDate
 
     companion object {
         fun build(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> {
@@ -313,3 +314,6 @@ internal val ISO_DATE by lazy {
 internal val ISO_DATE_BASIC by lazy {
     LocalDateFormat.build { year(); monthNumber(); dayOfMonth() }
 }
+
+@SharedImmutable
+private val emptyIncompleteLocalDate = IncompleteLocalDate()
