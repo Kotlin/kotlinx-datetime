@@ -22,4 +22,4 @@ public actual enum class Month {
     DECEMBER;
 }
 
-internal fun jsMonth.toMonth(): Month = Month(this.value().toInt())
+internal fun jsMonth.toMonth(): Month = Month(this.value())

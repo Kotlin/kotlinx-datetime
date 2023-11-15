@@ -8,6 +8,7 @@ package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlin.js.*
 import kotlin.test.*
+import kotlinx.datetime.Date
 
 class JsConverterTest {
     @Test
@@ -22,7 +23,7 @@ class JsConverterTest {
     @Test
     fun toInstantTest() {
         val kotlinReleaseEpochMilliseconds = 1455494400000
-        val releaseDate = Date(milliseconds = kotlinReleaseEpochMilliseconds)
+        val releaseDate = Date(milliseconds = kotlinReleaseEpochMilliseconds.toDouble())
         val releaseInstant = "2016-02-15T00:00Z".toInstant()
         assertEquals(releaseInstant, releaseDate.toKotlinInstant())
     }

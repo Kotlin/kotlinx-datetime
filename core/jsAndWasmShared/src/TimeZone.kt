@@ -19,9 +19,9 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
+            (this === other) || (other is TimeZone && (this.zoneId === other.zoneId || this.zoneId.equals(other.zoneId)))
 
-    override fun hashCode(): Int = zoneId.hashCode().toInt()
+    override fun hashCode(): Int = zoneId.hashCode()
 
     override fun toString(): String = zoneId.toString()
 
@@ -30,7 +30,9 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
-            ofZone(ZoneId.of(zoneId))
+            jsTry {
+                ofZone(ZoneId.of(zoneId))
+            }
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
             throw e
@@ -46,7 +48,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         }
 
 
-        public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds().toSet()
+        public actual val availableZoneIds: Set<String> get() = getAvailableZoneIdsSet()
     }
 }
 
@@ -62,14 +64,18 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
 
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
-    kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+    jsTry {
+        kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+    }
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
 }
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
+    jsTry {
+        kotlinx.datetime.internal.JSJoda.LocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
+    }
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e

@@ -14,7 +14,7 @@ import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
         public actual fun parse(isoString: String): LocalDate = try {
-            jtLocalDate.parse(isoString).let(::LocalDate)
+            jsTry { jtLocalDate.parse(isoString) }.let(::LocalDate)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
@@ -24,7 +24,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 
         public actual fun fromEpochDays(epochDays: Int): LocalDate = try {
-            LocalDate(jtLocalDate.ofEpochDay(epochDays))
+            jsTry {  LocalDate(jtLocalDate.ofEpochDay(epochDays)) }
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
             throw e
@@ -33,7 +33,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
             this(try {
-                jtLocalDate.of(year, monthNumber, dayOfMonth)
+                jsTry { jtLocalDate.of(year, monthNumber, dayOfMonth) }
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                 throw e
@@ -49,13 +49,13 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     public actual val dayOfYear: Int get() = value.dayOfYear().toInt()
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is LocalDate && this.value == other.value)
+        (this === other) || (other is LocalDate && (this.value === other.value || this.value.equals(other.value)))
 
-    override fun hashCode(): Int = value.hashCode().toInt()
+    override fun hashCode(): Int = value.hashCode()
 
     actual override fun toString(): String = value.toString()
 
-    actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value).toInt()
+    actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
 
     public actual fun toEpochDays(): Int = value.toEpochDay().toInt()
 }
@@ -68,10 +68,12 @@ public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
 
 private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): LocalDate =
         try {
-            when (unit) {
-                is DateTimeUnit.DayBased -> this.value.plusDays(value.toDouble() * unit.days)
-                is DateTimeUnit.MonthBased -> this.value.plusMonths(value.toDouble() * unit.months)
-            }.let(::LocalDate)
+            jsTry {
+                when (unit) {
+                    is DateTimeUnit.DayBased -> this.value.plusDays(value.toDouble() * unit.days)
+                    is DateTimeUnit.MonthBased -> this.value.plusMonths(value.toDouble() * unit.months)
+                }.let(::LocalDate)
+            }
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException() && !e.isJodaArithmeticException()) throw e
             throw DateTimeArithmeticException("The result of adding $value of $unit to $this is out of LocalDate range.", e)
@@ -79,12 +81,14 @@ private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): L
 
 
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
-    with(period) {
-        return@with value
+    jsTry {
+        with(period) {
+            return@with value
                 .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
                 .run { if (days != 0) plusDays(days) else this }
 
-    }.let(::LocalDate)
+        }.let(::LocalDate)
+    }
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException() || e.isJodaArithmeticException()) throw DateTimeArithmeticException(e)
     throw e

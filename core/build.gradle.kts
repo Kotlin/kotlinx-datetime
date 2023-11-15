@@ -1,7 +1,6 @@
 import kotlinx.team.infra.mavenPublicationsPom
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
-import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
@@ -103,6 +102,16 @@ kotlin {
 //                outputFile = "kotlinx-datetime-tmp.js"
 //            }
 //        }
+    }
+
+    wasmJs {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
     }
 
     sourceSets.all {
@@ -212,6 +221,17 @@ kotlin {
         }
 
         val jsTest by getting {
+            dependsOn(jsAndWasmSharedTest)
+        }
+
+        val wasmJsMain by getting {
+            dependsOn(jsAndWasmSharedMain)
+            dependencies {
+                api("org.jetbrains.kotlin:kotlin-stdlib-wasm-js")
+            }
+        }
+
+        val wasmJsTest by getting {
             dependsOn(jsAndWasmSharedTest)
         }
 
@@ -390,4 +410,15 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
             suppress.set(true)
         }
     }
+}
+
+tasks.whenTaskAdded {
+    if (name == "compileJsAndWasmSharedMainKotlinMetadata") {
+        this.enabled = false
+    }
+}
+
+with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
+    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }

@@ -3,6 +3,7 @@ pluginManagement {
         maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         mavenCentral()
         gradlePluginPortal()
+        maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }
     val dokkaVersion: String by settings
     plugins {

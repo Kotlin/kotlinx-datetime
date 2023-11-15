@@ -17,4 +17,4 @@ public actual enum class DayOfWeek {
     SUNDAY;
 }
 
-internal fun jsDayOfWeek.toDayOfWeek(): DayOfWeek = DayOfWeek(this.value().toInt())
+internal fun jsDayOfWeek.toDayOfWeek(): DayOfWeek = DayOfWeek(this.value())
