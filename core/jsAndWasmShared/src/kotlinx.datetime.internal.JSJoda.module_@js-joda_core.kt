@@ -1243,29 +1243,4 @@ external open class ChronoZonedDateTime : Temporal {
 
 external interface Locale : InteropInterface
 
-external fun nativeJs(date: kotlinx.datetime.Date, zone: ZoneId = definedExternally): TemporalAccessor
-
-external fun nativeJs(date: kotlinx.datetime.Date): TemporalAccessor
-
-external fun nativeJs(date: InteropInterface, zone: ZoneId = definedExternally): TemporalAccessor
-
-external fun nativeJs(date: InteropInterface): TemporalAccessor
-
-external interface `T$0` : InteropInterface {
-    var toDate: () -> kotlinx.datetime.Date
-    var toEpochMilli: () -> Double
-}
-
-external fun convert(temporal: LocalDate, zone: ZoneId = definedExternally): `T$0`
-
-external fun convert(temporal: LocalDate): `T$0`
-
-external fun convert(temporal: LocalDateTime, zone: ZoneId = definedExternally): `T$0`
-
-external fun convert(temporal: LocalDateTime): `T$0`
-
-external fun convert(temporal: ZonedDateTime, zone: ZoneId = definedExternally): `T$0`
-
-external fun convert(temporal: ZonedDateTime): `T$0`
-
 external fun use(plugin: () -> InteropInterface): InteropInterface
