@@ -68,7 +68,6 @@ external open class ValueRange : InteropInterface {
 external open class TemporalAmount : InteropInterface {
     open fun <T : Temporal> addTo(temporal: T): T
     open fun get(unit: TemporalUnit): Int
-//    open fun units(): JsArray<TemporalUnit>
     open fun <T : Temporal> subtractFrom(temporal: T): T
 }
 
@@ -236,7 +235,6 @@ external open class Duration : TemporalAmount {
     open fun toMinutes(): Int
     open fun toNanos(): Double
     override fun toString(): String
-//    override fun units(): JsArray<TemporalUnit>
     open fun withNanos(nanoOfSecond: Double): Duration
     open fun withSeconds(seconds: Int): Duration
 
@@ -578,7 +576,6 @@ external open class Period : TemporalAmount {
     open fun toJSON(): String
     override fun toString(): String
     open fun toTotalMonths(): Int
-//    override fun units(): JsArray<TemporalUnit>
     open fun withDays(days: Int): Period
     open fun withMonths(months: Int): Period
     open fun withYears(years: Int): Period
@@ -996,7 +993,6 @@ external open class DayOfWeek : TemporalAccessor {
         fun from(temporal: TemporalAccessor): DayOfWeek
         fun of(dayOfWeek: Int): DayOfWeek
         fun valueOf(name: String): DayOfWeek
-//        fun values(): JsArray<DayOfWeek>
     }
 }
 
@@ -1036,7 +1032,6 @@ external open class Month : TemporalAccessor {
         fun from(temporal: TemporalAccessor): Month
         fun of(month: Int): Month
         fun valueOf(name: String): Month
-//        fun values(): JsArray<Month>
     }
 }
 
@@ -1062,7 +1057,6 @@ external open class DateTimeFormatter : InteropInterface {
         var ISO_ZONED_DATE_TIME: DateTimeFormatter
         fun ofPattern(pattern: String): DateTimeFormatter
         fun parsedExcessDays(): TemporalQuery<Period>
-//        fun parsedLeapSecond(): TemporalQuery<JsBoolean>
     }
 }
 
@@ -1165,7 +1159,6 @@ external open class ZoneOffsetTransition : InteropInterface {
     open fun offsetBefore(): ZoneOffset
     open fun toEpochSecond(): Double
     override fun toString(): String
-//    open fun validOffsets(): JsArray<ZoneOffset>
 
     companion object {
         fun of(transition: LocalDateTime, offsetBefore: ZoneOffset, offsetAfter: ZoneOffset): ZoneOffsetTransition
@@ -1190,9 +1183,6 @@ external open class ZoneRules : InteropInterface {
     open fun standardOffset(instant: Instant): ZoneOffset
     override fun toString(): String
     open fun transition(localDateTime: LocalDateTime): ZoneOffsetTransition
-//    open fun transitionRules(): JsArray<ZoneOffsetTransitionRule>
-//    open fun transitions(): JsArray<ZoneOffsetTransition>
-//    open fun validOffsets(localDateTime: LocalDateTime): JsArray<ZoneOffset>
 
     companion object {
         fun of(offest: ZoneOffset): ZoneRules
@@ -1202,7 +1192,6 @@ external open class ZoneRules : InteropInterface {
 external open class ZoneRulesProvider : InteropInterface {
     companion object {
         fun getRules(zoneId: String): ZoneRules
-//        fun getAvailableZoneIds(): JsArray<JsString>
     }
 }
 
