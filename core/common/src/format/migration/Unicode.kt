@@ -39,11 +39,56 @@ public annotation class FormatStringsInDatetimeFormats
  *
  * In addition to the standard syntax, this function also supports the following extensions:
  * * `[]` denote optional sections. For example, `hh:mm[:ss]` will allow parsing seconds optionally.
- *   This is similar to what is supported by the Java Time's `DateTimeFormatter` class, but with the difference that,
- *   for formatting, the optional sections have a different meaning: they are not included in the output if all the
- *   fields they contain have their default values. See [DateTimeFormatBuilder.optional] for more details.
- * * One or more `p` characters before a field specifies that the field should be padded with zeroes to the length
- *   equal to the number of `p` characters. This is also supported by the Java Time's `DateTimeFormatter` class.
+ *   This is similar to what is supported by the Java Time's `DateTimeFormatter` class.
+ *
+ * Usage example:
+ * ```
+ * DateTimeComponents.Format {
+ *   // 2023-01-20T23:53:16.312+03:30[Asia/Tehran]
+ *   byUnicodePattern("uuuu-MM-dd'T'HH:mm[:ss[.SSS]]xxxxx'['VV']'")
+ * }
+ * ```
+ *
+ * The list of supported directives is as follows:
+ *
+ * | **Directive**       | **Meaning**                                                                             |
+ * | `'string'`          | literal `string`, without quotes                                                        |
+ * | `'''`               | literal char `'`                                                                        |
+ * | `[fmt]`             | equivalent to `fmt` during formatting, but during parsing also accepts the empty string |
+ * | `u`                 | ISO year without padding                                                                |
+ * | `uu`                | last two digits of the ISO year, with the base year 2000                                |
+ * | `uuuu`              | ISO year, zero-padded to four digits                                                    |
+ * | `M`, `L`            | month number (1-12), without padding                                                    |
+ * | `MM`, `LL`          | month number (01-12), zero-padded to two digits                                         |
+ * | `d`                 | day-of-month (1-31), without padding                                                    |
+ * | `H`                 | hour-of-day (0-23), without padding                                                     |
+ * | `HH`                | hour-of-day (00-23), zero-padded to two digits                                          |
+ * | `m`                 | minute-of-hour (0-59), without padding                                                  |
+ * | `mm`                | minute-of-hour (00-59), zero-padded to two digits                                       |
+ * | `s`                 | second-of-hour (0-59), without padding                                                  |
+ * | `ss`                | second-of-hour (00-59), zero-padded to two digits                                       |
+ * | `S`, `SS`, `SSS`... | fraction-of-second without a leading dot, with as many digits as the format length      |
+ * | `VV`                | timezone name (for example, `Europe/Berlin`)                                            |
+ *
+ * The UTC offset is formatted using one of the following directives. In every one of these formats, hours, minutes,
+ * and seconds are zero-padded to two digits. Also, hours are unconditionally present.
+ * 
+ * | **Directive**          | **Minutes** | **Seconds** | **Separator** | **Representation of zero** |
+ * | `X`                    | unless zero | never       | none          | `Z`                        |
+ * | `XX`                   | always      | never       | none          | `Z`                        |
+ * | `XXX`                  | always      | never       | colon         | `Z`                        |
+ * | `XXXX`                 | always      | unless zero | none          | `Z`                        |
+ * | `XXXXX`, `ZZZZZ`       | always      | unless zero | colon         | `Z`                        |
+ * | `x`                    | unless zero | never       | none          | `+00`                      |
+ * | `xx`, `Z`, `ZZ`, `ZZZ` | always      | never       | none          | `+0000`                    |
+ * | `xxx`                  | always      | never       | colon         | `+00:00`                   |
+ * | `xxxx`                 | always      | unless zero | none          | `+0000`                    |
+ * | `xxxxx`                | always      | unless zero | colon         | `+00:00`                   |
+ *
+ * `y` is the most common way to represent the year, but it's not supported by [byUnicodePattern] because its
+ * interpretation depends on which calendar is being used.
+ * For the ISO chronology and years 0001 and later, one can obtain results that are equivalent to `yyyy` and `yy` like
+ * this: `byUnicodePattern(pattern.replace("yyyy", "uuuu").replace("yy", "uu")`.
  *
  * @throws IllegalArgumentException if the pattern is invalid or contains unsupported directives.
  * @throws IllegalArgumentException if the builder is incompatible with the specified directives.
@@ -378,7 +423,7 @@ internal sealed interface UnicodeFormat {
                 class FractionOfSecond(override val formatLength: Int) : WithSubsecondPrecision() {
                     override val formatLetter = 'S'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) =
-                        builder.secondFraction(minLength = formatLength, maxLength = formatLength)
+                        builder.secondFraction(formatLength)
                 }
 
                 class MilliOfDay(override val formatLength: Int) : WithSubsecondPrecision() {
@@ -407,7 +452,10 @@ internal sealed interface UnicodeFormat {
 
             class TimeZoneId(override val formatLength: Int) : ZoneBased() {
                 override val formatLetter = 'V'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents) = builder.timeZoneId()
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents) = when (formatLength) {
+                    2 -> builder.timeZoneId()
+                    else -> unknownLength()
+                }
             }
 
             class GenericTimeZoneName(override val formatLength: Int) : ZoneBased() {

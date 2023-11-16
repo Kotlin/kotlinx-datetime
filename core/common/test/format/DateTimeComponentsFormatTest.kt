@@ -162,6 +162,15 @@ class DateTimeComponentsFormatTest {
         assertNull(bagWithAlternative.nanosecond)
     }
 
+    @OptIn(FormatStringsInDatetimeFormats::class)
+    @Test
+    fun testByUnicodePatternDoc() {
+        val format = DateTimeComponents.Format {
+            byUnicodePattern("uuuu-MM-dd'T'HH:mm[:ss[.SSS]]xxxxx'['VV']'")
+        }
+        format.parse("2023-01-20T23:53:16.312+03:30[Asia/Tehran]")
+    }
+
     private fun test(strings: Map<DateTimeComponents, Pair<String, Set<String>>>, format: DateTimeFormat<DateTimeComponents>) {
         for ((value, stringsForValue) in strings) {
             val (canonicalString, otherStrings) = stringsForValue
