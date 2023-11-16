@@ -201,6 +201,7 @@ kotlin {
         }
 
         val jsAndWasmSharedMain by creating {
+            dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
@@ -208,6 +209,7 @@ kotlin {
         }
 
         val jsAndWasmSharedTest by creating {
+            dependsOn(commonTest.get())
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
