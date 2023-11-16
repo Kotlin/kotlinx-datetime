@@ -59,6 +59,7 @@ class ConvertersTest {
 
     // from threetenbp's tests for time zones
     @Test
+    @ExperimentalForeignApi
     fun zoneOffsetToNSTimeZone() {
         for (i in -18 * 60..18 * 60) {
             val hours = i / 60
@@ -94,6 +95,7 @@ class ConvertersTest {
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
+    @ExperimentalForeignApi
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
         val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
