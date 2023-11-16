@@ -150,10 +150,8 @@ public sealed interface DateTimeFormatBuilder {
         /**
          * The fractional part of the second without the leading dot.
          *
-         * When formatting, the decimal fraction will add trailing zeroes to the specified [minLength] and will round the
-         * number to fit in the specified [maxLength]. If [minLength] is `null`, the fraction will be formatted with
-         * enough trailing zeros to make the number of digits displayed a multiple of three (e.g. `123.450`) for
-         * readability. Explicitly set [minLength] to `1` to disable this behavior.
+         * When formatting, the decimal fraction will round the number to fit in the specified [maxLength] and will add
+         * trailing zeroes to the specified [minLength].
          *
          * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
          * digits long.
@@ -162,7 +160,7 @@ public sealed interface DateTimeFormatBuilder {
          *
          * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
          */
-        public fun secondFraction(minLength: Int? = null, maxLength: Int? = null)
+        public fun secondFraction(minLength: Int = 1, maxLength: Int = 9)
 
         /**
          * The fractional part of the second without the leading dot.
@@ -270,6 +268,31 @@ public sealed interface DateTimeFormatBuilder {
          * ```
          */
         public fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>)
+    }
+}
+
+/**
+ * The fractional part of the second without the leading dot.
+ *
+ * When formatting, the decimal fraction will round the number to fit in the specified [maxLength] and will add
+ * trailing zeroes to the specified [minLength].
+ *
+ * Additionally, [grouping] is a list, where the i'th element specifies how many trailing zeros to add during formatting
+ * when
+ *
+ * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
+ * digits long.
+ *
+ * This field has the default value of 0. If you want to omit it, use [optional].
+ *
+ * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
+ */
+internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(minLength: Int, maxLength: Int, grouping: List<Int>) {
+    val directiveToAdd = FractionalSecondDirective(minLength, maxLength, grouping)
+    when (this) {
+        is LocalTimeFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
+        is LocalDateTimeFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
+        is DateTimeComponentsFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
     }
 }
 

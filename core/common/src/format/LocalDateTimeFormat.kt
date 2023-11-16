@@ -44,7 +44,7 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
         }
     }
 
-    private class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
+    internal class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
         AbstractDateTimeFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder.WithDateTime {
 
         override fun year(padding: Padding) =
@@ -73,7 +73,7 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
 
         override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
         override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int?, maxLength: Int?) =
+        override fun secondFraction(minLength: Int, maxLength: Int) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")

@@ -189,11 +189,12 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
 
 internal abstract class DecimalFractionFieldFormatDirective<in Target>(
     final override val field: FieldSpec<Target, DecimalFraction>,
-    private val minDigits: Int?,
-    private val maxDigits: Int?,
+    private val minDigits: Int,
+    private val maxDigits: Int,
+    private val zerosToAdd: List<Int>,
 ) : FieldFormatDirective<Target> {
     override fun formatter(): FormatterStructure<Target> =
-        DecimalFractionFormatterStructure(field::getNotNull, minDigits, maxDigits)
+        DecimalFractionFormatterStructure(field::getNotNull, minDigits, maxDigits, zerosToAdd)
 
     override fun parser(): ParserStructure<Target> = ParserStructure(
         listOf(

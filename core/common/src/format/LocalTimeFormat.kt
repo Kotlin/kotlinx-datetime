@@ -10,7 +10,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.native.concurrent.*
-import kotlin.reflect.KFunction
 
 internal interface TimeFieldContainer {
     var minute: Int?
@@ -172,15 +171,20 @@ internal class SecondDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class FractionalSecondDirective(private val minDigits: Int? = null, private val maxDigits: Int? = null) :
-    DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits) {
+internal class FractionalSecondDirective(
+    private val minDigits: Int,
+    private val maxDigits: Int,
+    zerosToAdd: List<Int> = NO_EXTRA_ZEROS,
+) :
+    DecimalFractionFieldFormatDirective<TimeFieldContainer>(TimeFields.fractionOfSecond, minDigits, maxDigits, zerosToAdd) {
 
     override val builderRepresentation: String get() {
         val ref = "secondFraction" // can't directly reference `secondFraction` due to resolution ambiguity
+        // we ignore `grouping`, as it's not representable in the end users' code
         return when {
-            minDigits == null && maxDigits == null -> "$ref()"
-            minDigits == null -> "$ref(maxLength = $maxDigits)"
-            maxDigits == null -> "$ref(minLength = $minDigits)"
+            minDigits == 1 && maxDigits == 9 -> "$ref()"
+            minDigits == 1 -> "$ref(maxLength = $maxDigits)"
+            maxDigits == 1 -> "$ref(minLength = $minDigits)"
             maxDigits == minDigits -> "$ref($minDigits)"
             else -> "$ref($minDigits, $maxDigits)"
         }
@@ -189,7 +193,12 @@ internal class FractionalSecondDirective(private val minDigits: Int? = null, pri
     override fun equals(other: Any?): Boolean =
         other is FractionalSecondDirective && minDigits == other.minDigits && maxDigits == other.maxDigits
 
-    override fun hashCode(): Int = 31 * (minDigits ?: 0) + (maxDigits ?: 0)
+    override fun hashCode(): Int = 31 * minDigits + maxDigits
+
+    companion object {
+        val NO_EXTRA_ZEROS = listOf(0, 0, 0, 0, 0, 0, 0, 0, 0)
+        val GROUP_BY_THREE = listOf(2, 1, 0, 2, 1, 0, 2, 1, 0)
+    }
 }
 
 internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeFieldContainer>) :
@@ -221,7 +230,7 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 
         override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
         override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int?, maxLength: Int?) =
+        override fun secondFraction(minLength: Int, maxLength: Int) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         @Suppress("NO_ELSE_IN_WHEN")
@@ -248,7 +257,7 @@ internal val ISO_TIME by lazy {
             second()
             optional {
                 char('.')
-                secondFraction()
+                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
             }
         }
     }
@@ -265,7 +274,7 @@ internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
             second()
             optional {
                 char('.')
-                secondFraction()
+                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
             }
         }
     }

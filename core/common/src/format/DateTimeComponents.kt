@@ -113,7 +113,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             second()
             optional {
                 char('.')
-                secondFraction()
+                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
             }
             appendIsoOffset(
                 zOnZero = true,
@@ -489,7 +489,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
 
         override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
         override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int?, maxLength: Int?) =
+        override fun secondFraction(minLength: Int, maxLength: Int) =
             actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
         override fun offsetHours(padding: Padding) =

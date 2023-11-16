@@ -68,38 +68,39 @@ internal class SignedIntFormatterStructure<in T>(
 
 internal class DecimalFractionFormatterStructure<in T>(
     private val number: (T) -> DecimalFraction,
-    private val minDigits: Int?,
-    private val maxDigits: Int?,
+    private val minDigits: Int,
+    private val maxDigits: Int,
+    private val zerosToAdd: List<Int>,
 ): FormatterStructure<T> {
 
     init {
-        require(minDigits == null || minDigits in 1..9)
-        require(maxDigits == null || maxDigits in 1..9)
-        require(minDigits == null || maxDigits == null || minDigits <= maxDigits)
+        require(minDigits in 1..9)
+        require(maxDigits in minDigits..9)
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
         val number = number(obj)
-        val maxLength = maxDigits ?: 9
-        if (minDigits != null) {
-            val nDigitNumber = number.fractionalPartWithNDigits(maxLength)
-            val fullString = (nDigitNumber + POWERS_OF_TEN[maxLength]).toString().substring(1)
-            var zeroSpanStart = fullString.length
-            while (zeroSpanStart > minDigits && fullString[zeroSpanStart - 1] == '0') { zeroSpanStart-- }
-            val truncatedString = fullString.substring(0, zeroSpanStart)
-            builder.append(truncatedString)
-        } else {
-            val nanos = number.fractionalPartWithNDigits(9)
-            val digitsToOutput = minOf(maxLength, when {
-                nanos % 1000000 == 0 -> 3
-                nanos % 1000 == 0 -> 6
-                else -> 9
-            })
-            val numberToOutput = number.fractionalPartWithNDigits(digitsToOutput).let {
-                if (it >= POWERS_OF_TEN[digitsToOutput]) POWERS_OF_TEN[digitsToOutput] - 1 else it
-            }
-            builder.append((numberToOutput + POWERS_OF_TEN[digitsToOutput]).toString().substring(1))
+        // round the number to `maxDigits` significant figures
+        val numberWithRequiredPrecision = number.fractionalPartWithNDigits(maxDigits)
+        /* during rounding, it can happen that we get a whole second or more.
+        For example, 999_999_999 nanoseconds is rounded to 1000 milliseconds.
+        In this case, we output 999. */
+        if (numberWithRequiredPrecision >= POWERS_OF_TEN[maxDigits]) {
+            repeat(maxDigits) { builder.append('9') }
+            return
         }
+        // we strip away trailing zeros while we can
+        var zerosToStrip = 0
+        while (maxDigits > minDigits + zerosToStrip && numberWithRequiredPrecision % POWERS_OF_TEN[zerosToStrip + 1] == 0) {
+            ++zerosToStrip
+        }
+        // we add some zeros back if it means making the number that's being output prettier, like `.01` becoming `.010`
+        val zerosToAddBack = zerosToAdd[maxDigits - zerosToStrip - 1]
+        if (zerosToStrip >= zerosToAddBack) zerosToStrip -= zerosToAddBack
+        // the final stage of outputting the number
+        val digitsToOutput = maxDigits - zerosToStrip
+        val numberToOutput = numberWithRequiredPrecision / POWERS_OF_TEN[zerosToStrip]
+        builder.append((numberToOutput + POWERS_OF_TEN[digitsToOutput]).toString().substring(1))
     }
 }
 
