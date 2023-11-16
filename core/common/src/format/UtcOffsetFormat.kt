@@ -18,6 +18,27 @@ internal interface UtcOffsetFieldContainer {
     var secondsOfMinute: Int?
 }
 
+internal interface AbstractWithOffsetBuilder: DateTimeFormatBuilder.WithUtcOffset {
+    fun addFormatStructureForOffset(structure: FormatStructure<UtcOffsetFieldContainer>)
+
+    override fun offsetHours(padding: Padding) =
+        addFormatStructureForOffset(SignedFormatStructure(
+            BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
+            withPlusSign = true
+        ))
+
+    override fun offsetMinutesOfHour(padding: Padding) =
+        addFormatStructureForOffset(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
+
+    override fun offsetSecondsOfMinute(padding: Padding) =
+        addFormatStructureForOffset(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
+
+    @Suppress("NO_ELSE_IN_WHEN")
+    override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
+        is UtcOffsetFormat -> addFormatStructureForOffset(format.actualFormat.directives)
+    }
+}
+
 internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffsetFieldContainer>) :
     AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>() {
     companion object {
@@ -29,25 +50,13 @@ internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffset
     }
 
     private class Builder(override val actualBuilder: AppendableFormatStructure<UtcOffsetFieldContainer>) :
-        AbstractDateTimeFormatBuilder<UtcOffsetFieldContainer, Builder>, DateTimeFormatBuilder.WithUtcOffset {
+        AbstractDateTimeFormatBuilder<UtcOffsetFieldContainer, Builder>, AbstractWithOffsetBuilder {
+
+        override fun addFormatStructureForOffset(structure: FormatStructure<UtcOffsetFieldContainer>) {
+            actualBuilder.add(structure)
+        }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-        override fun offsetHours(padding: Padding) =
-            actualBuilder.add(SignedFormatStructure(
-                BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
-                withPlusSign = true
-            ))
-
-        override fun offsetMinutesOfHour(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
-
-        override fun offsetSecondsOfMinute(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
-            is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
     }
 
     override fun intermediateFromValue(value: UtcOffset): IncompleteUtcOffset =
@@ -142,7 +151,7 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
     }
 }
 
-internal object OffsetFields {
+private object OffsetFields {
     private val sign = object : FieldSign<UtcOffsetFieldContainer> {
         override val isNegative = UtcOffsetFieldContainer::isNegative
         override fun isZero(obj: UtcOffsetFieldContainer): Boolean =
@@ -221,7 +230,7 @@ internal class UtcOffsetWholeHoursDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class UtcOffsetMinuteOfHourDirective(private val padding: Padding) :
+private class UtcOffsetMinuteOfHourDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(
         OffsetFields.minutesOfHour,
         minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
@@ -236,7 +245,7 @@ internal class UtcOffsetMinuteOfHourDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class UtcOffsetSecondOfMinuteDirective(private val padding: Padding) :
+private class UtcOffsetSecondOfMinuteDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<UtcOffsetFieldContainer>(
         OffsetFields.secondsOfMinute,
         minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
@@ -284,6 +293,7 @@ internal val ISO_OFFSET_BASIC by lazy {
         }
     }
 }
+
 @SharedImmutable
 internal val FOUR_DIGIT_OFFSET by lazy {
     UtcOffsetFormat.build {

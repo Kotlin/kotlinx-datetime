@@ -288,11 +288,11 @@ public sealed interface DateTimeFormatBuilder {
  * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
  */
 internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(minLength: Int, maxLength: Int, grouping: List<Int>) {
-    val directiveToAdd = FractionalSecondDirective(minLength, maxLength, grouping)
+    @Suppress("NO_ELSE_IN_WHEN")
     when (this) {
-        is LocalTimeFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
-        is LocalDateTimeFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
-        is DateTimeComponentsFormat.Builder -> actualBuilder.add(BasicFormatStructure(directiveToAdd))
+        is AbstractWithTimeBuilder -> addFormatStructureForTime(
+            BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
+        )
     }
 }
 

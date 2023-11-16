@@ -130,7 +130,7 @@ internal interface DateFieldContainer {
     var isoDayOfWeek: Int?
 }
 
-internal object DateFields {
+private object DateFields {
     val year = SignedFieldSpec(DateFieldContainer::year, maxAbsoluteValue = null)
     val month = UnsignedFieldSpec(DateFieldContainer::monthNumber, minValue = 1, maxValue = 12)
     val dayOfMonth = UnsignedFieldSpec(DateFieldContainer::dayOfMonth, minValue = 1, maxValue = 31)
@@ -183,7 +183,7 @@ internal class IncompleteLocalDate(
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }
 
-internal class YearDirective(private val padding: Padding) :
+private class YearDirective(private val padding: Padding) :
     SignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.year,
         minDigits = padding.minDigits(4),
@@ -200,7 +200,7 @@ internal class YearDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class ReducedYearDirective(val base: Int) :
+private class ReducedYearDirective(val base: Int) :
     ReducedIntFieldDirective<DateFieldContainer>(
         DateFields.year,
         digits = 2,
@@ -212,7 +212,7 @@ internal class ReducedYearDirective(val base: Int) :
     override fun hashCode(): Int = base.hashCode()
 }
 
-internal class MonthDirective(private val padding: Padding) :
+private class MonthDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.month,
         minDigits = padding.minDigits(2),
@@ -227,7 +227,7 @@ internal class MonthDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class MonthNameDirective(private val names: MonthNames) :
+private class MonthNameDirective(private val names: MonthNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names) {
     override val builderRepresentation: String get() =
         "${DateTimeFormatBuilder.WithDate::monthName.name}(${names.toKotlinCode()})"
@@ -236,7 +236,7 @@ internal class MonthNameDirective(private val names: MonthNames) :
     override fun hashCode(): Int = names.names.hashCode()
 }
 
-internal class DayDirective(private val padding: Padding) :
+private class DayDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.dayOfMonth,
         minDigits = padding.minDigits(2),
@@ -251,7 +251,7 @@ internal class DayDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class DayOfWeekDirective(private val names: DayOfWeekNames) :
+private class DayOfWeekDirective(private val names: DayOfWeekNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names) {
 
     override val builderRepresentation: String get() =
@@ -279,29 +279,37 @@ internal class LocalDateFormat(override val actualFormat: StringFormat<DateField
     }
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateFieldContainer>) :
-        AbstractDateTimeFormatBuilder<DateFieldContainer, Builder>, DateTimeFormatBuilder.WithDate {
-        override fun year(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
+        AbstractDateTimeFormatBuilder<DateFieldContainer, Builder>, AbstractWithDateBuilder {
 
-        override fun yearTwoDigits(baseYear: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
-
-        override fun monthNumber(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
-
-        override fun monthName(names: MonthNames) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
-
-        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
-        override fun dayOfWeek(names: DayOfWeekNames) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
-            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
+        override fun addFormatStructureForDate(structure: FormatStructure<DateFieldContainer>) =
+            actualBuilder.add(structure)
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
+    }
+}
+
+internal interface AbstractWithDateBuilder: DateTimeFormatBuilder.WithDate {
+    fun addFormatStructureForDate(structure: FormatStructure<DateFieldContainer>)
+
+    override fun year(padding: Padding) =
+        addFormatStructureForDate(BasicFormatStructure(YearDirective(padding)))
+
+    override fun yearTwoDigits(baseYear: Int) =
+        addFormatStructureForDate(BasicFormatStructure(ReducedYearDirective(baseYear)))
+
+    override fun monthNumber(padding: Padding) =
+        addFormatStructureForDate(BasicFormatStructure(MonthDirective(padding)))
+
+    override fun monthName(names: MonthNames) =
+        addFormatStructureForDate(BasicFormatStructure(MonthNameDirective(names)))
+
+    override fun dayOfMonth(padding: Padding) = addFormatStructureForDate(BasicFormatStructure(DayDirective(padding)))
+    override fun dayOfWeek(names: DayOfWeekNames) =
+        addFormatStructureForDate(BasicFormatStructure(DayOfWeekDirective(names)))
+
+    @Suppress("NO_ELSE_IN_WHEN")
+    override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
+        is LocalDateFormat -> addFormatStructureForDate(format.actualFormat.directives)
     }
 }
 

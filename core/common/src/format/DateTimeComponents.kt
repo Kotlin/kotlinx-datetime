@@ -463,71 +463,19 @@ internal class DateTimeComponentsFormat(override val actualFormat: StringFormat<
     override val emptyIntermediate get() = emptyDateTimeComponentsContents
 
     class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeComponentsContents>) :
-        AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, DateTimeFormatBuilder.WithDateTimeComponents {
-        override fun year(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
+        AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, AbstractWithDateTimeBuilder,
+        AbstractWithOffsetBuilder, DateTimeFormatBuilder.WithDateTimeComponents
+    {
+        override fun addFormatStructureForDateTime(structure: FormatStructure<DateTimeFieldContainer>) {
+            actualBuilder.add(structure)
+        }
 
-        override fun yearTwoDigits(baseYear: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
-
-        override fun monthNumber(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
-
-        override fun monthName(names: MonthNames) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
-
-        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
-        override fun dayOfWeek(names: DayOfWeekNames) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
-
-        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun amPmHour(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
-
-        override fun amPmMarker(am: String, pm: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
-
-        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int, maxLength: Int) =
-            actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
-
-        override fun offsetHours(padding: Padding) =
-            actualBuilder.add(
-                SignedFormatStructure(
-                    BasicFormatStructure(UtcOffsetWholeHoursDirective(padding)),
-                    withPlusSign = true
-                )
-            )
-
-        override fun offsetMinutesOfHour(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetMinuteOfHourDirective(padding)))
-
-        override fun offsetSecondsOfMinute(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
+        override fun addFormatStructureForOffset(structure: FormatStructure<UtcOffsetFieldContainer>) {
+            actualBuilder.add(structure)
+        }
 
         override fun timeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
-            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
-            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
-            is UtcOffsetFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
-            is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
 
         @Suppress("NO_ELSE_IN_WHEN")
         override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {

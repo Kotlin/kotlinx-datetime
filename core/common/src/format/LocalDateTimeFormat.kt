@@ -45,53 +45,32 @@ internal class LocalDateTimeFormat(override val actualFormat: StringFormat<DateT
     }
 
     internal class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeFieldContainer>) :
-        AbstractDateTimeFormatBuilder<DateTimeFieldContainer, Builder>, DateTimeFormatBuilder.WithDateTime {
+        AbstractDateTimeFormatBuilder<DateTimeFieldContainer, Builder>, AbstractWithDateTimeBuilder {
 
-        override fun year(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(YearDirective(padding)))
-
-        override fun yearTwoDigits(baseYear: Int) =
-            actualBuilder.add(BasicFormatStructure(ReducedYearDirective(baseYear)))
-
-        override fun monthNumber(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(MonthDirective(padding)))
-
-        override fun monthName(names: MonthNames) =
-            actualBuilder.add(BasicFormatStructure(MonthNameDirective(names)))
-
-        override fun dayOfMonth(padding: Padding) = actualBuilder.add(BasicFormatStructure(DayDirective(padding)))
-
-        override fun dayOfWeek(names: DayOfWeekNames) =
-            actualBuilder.add(BasicFormatStructure(DayOfWeekDirective(names)))
-
-        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun amPmHour(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
-
-        override fun amPmMarker(am: String, pm: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
-
-        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int, maxLength: Int) =
-            actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
-            is LocalDateFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
-            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
-        }
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
-            is LocalDateTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        override fun addFormatStructureForDateTime(structure: FormatStructure<DateTimeFieldContainer>) {
+            actualBuilder.add(structure)
         }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
+    }
+}
+
+internal interface AbstractWithDateTimeBuilder:
+    AbstractWithDateBuilder, AbstractWithTimeBuilder, DateTimeFormatBuilder.WithDateTime
+{
+    fun addFormatStructureForDateTime(structure: FormatStructure<DateTimeFieldContainer>)
+
+    override fun addFormatStructureForDate(structure: FormatStructure<DateFieldContainer>) {
+        addFormatStructureForDateTime(structure)
+    }
+
+    override fun addFormatStructureForTime(structure: FormatStructure<TimeFieldContainer>) {
+        addFormatStructureForDateTime(structure)
+    }
+
+    @Suppress("NO_ELSE_IN_WHEN")
+    override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
+        is LocalDateTimeFormat -> addFormatStructureForDateTime(format.actualFormat.directives)
     }
 }
 

@@ -26,7 +26,7 @@ internal interface TimeFieldContainer {
         }
 }
 
-internal object TimeFields {
+private object TimeFields {
     val hour = UnsignedFieldSpec(TimeFieldContainer::hour, minValue = 0, maxValue = 23)
     val minute = UnsignedFieldSpec(TimeFieldContainer::minute, minValue = 0, maxValue = 59)
     val second = UnsignedFieldSpec(TimeFieldContainer::second, minValue = 0, maxValue = 59, defaultValue = 0)
@@ -94,7 +94,28 @@ internal class IncompleteLocalTime(
         }"
 }
 
-internal class HourDirective(private val padding: Padding) :
+internal interface AbstractWithTimeBuilder: DateTimeFormatBuilder.WithTime {
+    fun addFormatStructureForTime(structure: FormatStructure<TimeFieldContainer>)
+
+    override fun hour(padding: Padding) = addFormatStructureForTime(BasicFormatStructure(HourDirective(padding)))
+    override fun amPmHour(padding: Padding) =
+        addFormatStructureForTime(BasicFormatStructure(AmPmHourDirective(padding)))
+
+    override fun amPmMarker(am: String, pm: String) =
+        addFormatStructureForTime(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
+
+    override fun minute(padding: Padding) = addFormatStructureForTime(BasicFormatStructure(MinuteDirective(padding)))
+    override fun second(padding: Padding) = addFormatStructureForTime(BasicFormatStructure(SecondDirective(padding)))
+    override fun secondFraction(minLength: Int, maxLength: Int) =
+        addFormatStructureForTime(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
+
+    @Suppress("NO_ELSE_IN_WHEN")
+    override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
+        is LocalTimeFormat -> addFormatStructureForTime(format.actualFormat.directives)
+    }
+}
+
+private class HourDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.hour,
         minDigits = padding.minDigits(2),
@@ -109,7 +130,7 @@ internal class HourDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class AmPmHourDirective(private val padding: Padding) :
+private class AmPmHourDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.hourOfAmPm, minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
@@ -123,7 +144,7 @@ internal class AmPmHourDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class AmPmMarkerDirective(private val amString: String, private val pmString: String) :
+private class AmPmMarkerDirective(private val amString: String, private val pmString: String) :
     NamedEnumIntFieldFormatDirective<TimeFieldContainer, Boolean>(
         TimeFields.isPm, mapOf(
             false to amString,
@@ -139,7 +160,7 @@ internal class AmPmMarkerDirective(private val amString: String, private val pmS
     override fun hashCode(): Int = 31 * amString.hashCode() + pmString.hashCode()
 }
 
-internal class MinuteDirective(private val padding: Padding) :
+private class MinuteDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.minute,
         minDigits = padding.minDigits(2),
@@ -155,7 +176,7 @@ internal class MinuteDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
-internal class SecondDirective(private val padding: Padding) :
+private class SecondDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<TimeFieldContainer>(
         TimeFields.second,
         minDigits = padding.minDigits(2),
@@ -219,23 +240,11 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 
     }
 
-    internal class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
-        AbstractDateTimeFormatBuilder<TimeFieldContainer, Builder>, DateTimeFormatBuilder.WithTime {
-        override fun hour(padding: Padding) = actualBuilder.add(BasicFormatStructure(HourDirective(padding)))
-        override fun amPmHour(padding: Padding) =
-            actualBuilder.add(BasicFormatStructure(AmPmHourDirective(padding)))
+    private class Builder(override val actualBuilder: AppendableFormatStructure<TimeFieldContainer>) :
+        AbstractDateTimeFormatBuilder<TimeFieldContainer, Builder>, AbstractWithTimeBuilder {
 
-        override fun amPmMarker(am: String, pm: String) =
-            actualBuilder.add(BasicFormatStructure(AmPmMarkerDirective(am, pm)))
-
-        override fun minute(padding: Padding) = actualBuilder.add(BasicFormatStructure(MinuteDirective(padding)))
-        override fun second(padding: Padding) = actualBuilder.add(BasicFormatStructure(SecondDirective(padding)))
-        override fun secondFraction(minLength: Int, maxLength: Int) =
-            actualBuilder.add(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
-            is LocalTimeFormat -> actualBuilder.add(format.actualFormat.directives)
+        override fun addFormatStructureForTime(structure: FormatStructure<TimeFieldContainer>) {
+            actualBuilder.add(structure)
         }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
