@@ -174,16 +174,24 @@ internal sealed interface UnicodeFormat {
             else literal
     }
 
-    sealed interface Directive : UnicodeFormat {
-        sealed interface DateBased : Directive {
-            fun addToFormat(builder: DateTimeFormatBuilder.WithDate)
+    sealed class Directive : UnicodeFormat {
+        abstract val formatLength: Int
+        abstract val formatLetter: Char
+        override fun toString(): String = "$formatLetter".repeat(formatLength)
+        override fun equals(other: Any?): Boolean =
+            other is Directive && formatLetter == other.formatLetter && formatLength == other.formatLength
 
-            class Era(length: Int) : AbstractUnicodeDirective(length), DateBased {
+        override fun hashCode(): Int = formatLetter.hashCode() * 31 + formatLength
+
+        sealed class DateBased : Directive() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithDate)
+
+            class Era(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'G'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
             }
 
-            class Year(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class Year(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'u'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
                     when (formatLength) {
@@ -196,31 +204,31 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class YearOfEra(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class YearOfEra(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'y'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective(
                     "The locale-invariant ISO year directive '${"u".repeat(formatLength)}' can be used instead."
                 )
             }
 
-            class CyclicYearName(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class CyclicYearName(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'U'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = unsupportedDirective("cyclic-year")
             }
 
             // https://cldr.unicode.org/development/development-process/design-proposals/pattern-character-for-related-year
-            class RelatedGregorianYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class RelatedGregorianYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'r'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("related-gregorian-year")
             }
 
-            class DayOfYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class DayOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'D'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = unsupportedDirective("day-of-year")
             }
 
-            class MonthOfYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class MonthOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'M'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
                     when (formatLength) {
@@ -232,7 +240,7 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class StandaloneMonthOfYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class StandaloneMonthOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'L'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
                     when (formatLength) {
@@ -244,7 +252,7 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class DayOfMonth(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class DayOfMonth(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'd'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = when (formatLength) {
                     1 -> builder.dayOfMonth(Padding.NONE)
@@ -253,13 +261,13 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class ModifiedJulianDay(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class ModifiedJulianDay(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'g'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("modified-julian-day")
             }
 
-            class QuarterOfYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class QuarterOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'Q'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
                     when (formatLength) {
@@ -270,7 +278,7 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class StandaloneQuarterOfYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class StandaloneQuarterOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'q'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
                     when (formatLength) {
@@ -281,40 +289,40 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class WeekBasedYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class WeekBasedYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'Y'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("week-based-year")
             }
 
-            class WeekOfWeekBasedYear(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class WeekOfWeekBasedYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'w'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("week-of-week-based-year")
             }
 
-            class WeekOfMonth(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class WeekOfMonth(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'W'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("week-of-month")
             }
 
-            class DayOfWeek(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class DayOfWeek(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'E'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
             }
 
-            class LocalizedDayOfWeek(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class LocalizedDayOfWeek(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'e'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
             }
 
-            class StandaloneLocalizedDayOfWeek(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class StandaloneLocalizedDayOfWeek(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'c'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
             }
 
-            class DayOfWeekInMonth(length: Int) : AbstractUnicodeDirective(length), DateBased {
+            class DayOfWeekInMonth(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'F'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("day-of-week-in-month")
@@ -322,20 +330,20 @@ internal sealed interface UnicodeFormat {
 
         }
 
-        sealed interface TimeBased : Directive {
-            fun addToFormat(builder: DateTimeFormatBuilder.WithTime)
+        sealed class TimeBased : Directive() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithTime)
 
-            class AmPmMarker(length: Int) : AbstractUnicodeDirective(length), TimeBased {
+            class AmPmMarker(override val formatLength: Int) : TimeBased() {
                 override val formatLetter = 'a'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) = localizedDirective()
             }
 
-            class AmPmHourOfDay(length: Int) : AbstractUnicodeDirective(length), TimeBased {
+            class AmPmHourOfDay(override val formatLength: Int) : TimeBased() {
                 override val formatLetter = 'h'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) = localizedDirective()
             }
 
-            class HourOfDay(length: Int) : AbstractUnicodeDirective(length), TimeBased {
+            class HourOfDay(override val formatLength: Int) : TimeBased() {
                 override val formatLetter = 'H'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) = when (formatLength) {
                     1 -> builder.hour(Padding.NONE)
@@ -344,7 +352,7 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class MinuteOfHour(length: Int) : AbstractUnicodeDirective(length), TimeBased {
+            class MinuteOfHour(override val formatLength: Int) : TimeBased() {
                 override val formatLetter = 'm'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) = when (formatLength) {
                     1 -> builder.minute(Padding.NONE)
@@ -354,8 +362,8 @@ internal sealed interface UnicodeFormat {
             }
 
 
-            sealed interface WithSecondPrecision : TimeBased {
-                class SecondOfMinute(length: Int) : AbstractUnicodeDirective(length), WithSecondPrecision {
+            sealed class WithSecondPrecision : TimeBased() {
+                class SecondOfMinute(override val formatLength: Int) : WithSecondPrecision() {
                     override val formatLetter = 's'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) = when (formatLength) {
                         1 -> builder.second(Padding.NONE)
@@ -366,26 +374,26 @@ internal sealed interface UnicodeFormat {
 
             }
 
-            sealed interface WithSubsecondPrecision : WithSecondPrecision {
-                class FractionOfSecond(length: Int) : AbstractUnicodeDirective(length), WithSubsecondPrecision {
+            sealed class WithSubsecondPrecision : WithSecondPrecision() {
+                class FractionOfSecond(override val formatLength: Int) : WithSubsecondPrecision() {
                     override val formatLetter = 'S'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) =
                         builder.secondFraction(minLength = formatLength, maxLength = formatLength)
                 }
 
-                class MilliOfDay(length: Int) : AbstractUnicodeDirective(length), WithSubsecondPrecision {
+                class MilliOfDay(override val formatLength: Int) : WithSubsecondPrecision() {
                     override val formatLetter = 'A'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) =
                         unsupportedDirective("millisecond-of-day")
                 }
 
-                class NanoOfSecond(length: Int) : AbstractUnicodeDirective(length), WithSubsecondPrecision {
+                class NanoOfSecond(override val formatLength: Int) : WithSubsecondPrecision() {
                     override val formatLetter = 'n'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) =
                         unsupportedDirective("nano-of-second", "Maybe you meant 'S' instead of 'n'?")
                 }
 
-                class NanoOfDay(length: Int) : AbstractUnicodeDirective(length), WithSubsecondPrecision {
+                class NanoOfDay(override val formatLength: Int) : WithSubsecondPrecision() {
                     override val formatLetter = 'N'
                     override fun addToFormat(builder: DateTimeFormatBuilder.WithTime) =
                         unsupportedDirective("nanosecond-of-day")
@@ -393,39 +401,39 @@ internal sealed interface UnicodeFormat {
             }
         }
 
-        sealed interface ZoneBased : Directive {
-            fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents)
+        sealed class ZoneBased : Directive() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents)
 
 
-            class TimeZoneId(length: Int) : AbstractUnicodeDirective(length), ZoneBased {
+            class TimeZoneId(override val formatLength: Int) : ZoneBased() {
                 override val formatLetter = 'V'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents) = builder.timeZoneId()
             }
 
-            class GenericTimeZoneName(length: Int) : AbstractUnicodeDirective(length), ZoneBased {
+            class GenericTimeZoneName(override val formatLength: Int) : ZoneBased() {
                 override val formatLetter = 'v'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents) = localizedDirective()
             }
 
-            class TimeZoneName(length: Int) : AbstractUnicodeDirective(length), ZoneBased {
+            class TimeZoneName(override val formatLength: Int) : ZoneBased() {
                 override val formatLetter = 'z'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDateTimeComponents) =
                     localizedDirective("Format 'V' can be used to format time zone IDs in a locale-invariant manner.")
             }
         }
 
-        sealed interface OffsetBased : Directive {
-            fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset)
+        sealed class OffsetBased : Directive() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset)
 
-            fun outputMinutes(): WhenToOutput
+            abstract fun outputMinutes(): WhenToOutput
 
-            fun outputSeconds(): WhenToOutput
+            abstract fun outputSeconds(): WhenToOutput
 
             fun DateTimeFormatBuilder.WithUtcOffset.offset(zOnZero: Boolean, useSeparator: Boolean) {
                 isoOffset(zOnZero, useSeparator, outputMinutes(), outputSeconds())
             }
 
-            class LocalizedZoneOffset(length: Int) : AbstractUnicodeDirective(length), OffsetBased {
+            class LocalizedZoneOffset(override val formatLength: Int) : OffsetBased() {
                 override val formatLetter = 'O'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) = localizedDirective()
 
@@ -434,7 +442,7 @@ internal sealed interface UnicodeFormat {
                 override fun outputSeconds(): WhenToOutput = localizedDirective()
             }
 
-            class ZoneOffset1(length: Int) : AbstractUnicodeDirective(length), OffsetBased {
+            class ZoneOffset1(override val formatLength: Int) : OffsetBased() {
                 override val formatLetter = 'X'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
                     when (formatLength) {
@@ -454,7 +462,7 @@ internal sealed interface UnicodeFormat {
                     if (formatLength <= 3) WhenToOutput.NEVER else WhenToOutput.IF_NONZERO
             }
 
-            class ZoneOffset2(length: Int) : AbstractUnicodeDirective(length), OffsetBased {
+            class ZoneOffset2(override val formatLength: Int) : OffsetBased() {
                 override val formatLetter = 'x'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
                     when (formatLength) {
@@ -474,7 +482,7 @@ internal sealed interface UnicodeFormat {
                     if (formatLength <= 3) WhenToOutput.NEVER else WhenToOutput.IF_NONZERO
             }
 
-            class ZoneOffset3(length: Int) : AbstractUnicodeDirective(length), OffsetBased {
+            class ZoneOffset3(override val formatLength: Int) : OffsetBased() {
                 override val formatLetter = 'Z'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
                     when (formatLength) {
@@ -494,54 +502,45 @@ internal sealed interface UnicodeFormat {
     }
 }
 
-internal sealed class AbstractUnicodeDirective(val formatLength: Int) : UnicodeFormat.Directive {
-    abstract val formatLetter: Char
-    override fun toString(): String = "$formatLetter".repeat(formatLength)
-    override fun equals(other: Any?): Boolean =
-        other is AbstractUnicodeDirective && formatLetter == other.formatLetter && formatLength == other.formatLength
+private class UnknownUnicodeDirective(override val formatLetter: Char, override val formatLength: Int) : UnicodeFormat.Directive()
 
-    override fun hashCode(): Int = formatLetter.hashCode() * 31 + formatLength
-}
-
-private class UnknownUnicodeDirective(override val formatLetter: Char, length: Int) : AbstractUnicodeDirective(length)
-
-internal fun unicodeDirective(char: Char, length: Int): UnicodeFormat = when (char) {
-    'G' -> UnicodeFormat.Directive.DateBased.Era(length)
-    'y' -> UnicodeFormat.Directive.DateBased.YearOfEra(length)
-    'Y' -> UnicodeFormat.Directive.DateBased.WeekBasedYear(length)
-    'u' -> UnicodeFormat.Directive.DateBased.Year(length)
-    'U' -> UnicodeFormat.Directive.DateBased.CyclicYearName(length)
-    'r' -> UnicodeFormat.Directive.DateBased.RelatedGregorianYear(length)
-    'Q' -> UnicodeFormat.Directive.DateBased.QuarterOfYear(length)
-    'q' -> UnicodeFormat.Directive.DateBased.StandaloneQuarterOfYear(length)
-    'M' -> UnicodeFormat.Directive.DateBased.MonthOfYear(length)
-    'L' -> UnicodeFormat.Directive.DateBased.StandaloneMonthOfYear(length)
-    'w' -> UnicodeFormat.Directive.DateBased.WeekOfWeekBasedYear(length)
-    'W' -> UnicodeFormat.Directive.DateBased.WeekOfMonth(length)
-    'd' -> UnicodeFormat.Directive.DateBased.DayOfMonth(length)
-    'D' -> UnicodeFormat.Directive.DateBased.DayOfYear(length)
-    'F' -> UnicodeFormat.Directive.DateBased.DayOfWeekInMonth(length)
-    'g' -> UnicodeFormat.Directive.DateBased.ModifiedJulianDay(length)
-    'E' -> UnicodeFormat.Directive.DateBased.DayOfWeek(length)
-    'e' -> UnicodeFormat.Directive.DateBased.LocalizedDayOfWeek(length)
-    'c' -> UnicodeFormat.Directive.DateBased.StandaloneLocalizedDayOfWeek(length)
-    'a' -> UnicodeFormat.Directive.TimeBased.AmPmMarker(length)
-    'h' -> UnicodeFormat.Directive.TimeBased.AmPmHourOfDay(length)
-    'H' -> UnicodeFormat.Directive.TimeBased.HourOfDay(length)
-    'm' -> UnicodeFormat.Directive.TimeBased.MinuteOfHour(length)
-    's' -> UnicodeFormat.Directive.TimeBased.WithSecondPrecision.SecondOfMinute(length)
-    'S' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.FractionOfSecond(length)
-    'A' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.MilliOfDay(length)
-    'n' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.NanoOfSecond(length)
-    'N' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.NanoOfDay(length)
-    'V' -> UnicodeFormat.Directive.ZoneBased.TimeZoneId(length)
-    'v' -> UnicodeFormat.Directive.ZoneBased.GenericTimeZoneName(length)
-    'z' -> UnicodeFormat.Directive.ZoneBased.TimeZoneName(length)
-    'O' -> UnicodeFormat.Directive.OffsetBased.LocalizedZoneOffset(length)
-    'X' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset1(length)
-    'x' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset2(length)
-    'Z' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset3(length)
-    else -> UnknownUnicodeDirective(char, length)
+private fun unicodeDirective(char: Char, formatLength: Int): UnicodeFormat = when (char) {
+    'G' -> UnicodeFormat.Directive.DateBased.Era(formatLength)
+    'y' -> UnicodeFormat.Directive.DateBased.YearOfEra(formatLength)
+    'Y' -> UnicodeFormat.Directive.DateBased.WeekBasedYear(formatLength)
+    'u' -> UnicodeFormat.Directive.DateBased.Year(formatLength)
+    'U' -> UnicodeFormat.Directive.DateBased.CyclicYearName(formatLength)
+    'r' -> UnicodeFormat.Directive.DateBased.RelatedGregorianYear(formatLength)
+    'Q' -> UnicodeFormat.Directive.DateBased.QuarterOfYear(formatLength)
+    'q' -> UnicodeFormat.Directive.DateBased.StandaloneQuarterOfYear(formatLength)
+    'M' -> UnicodeFormat.Directive.DateBased.MonthOfYear(formatLength)
+    'L' -> UnicodeFormat.Directive.DateBased.StandaloneMonthOfYear(formatLength)
+    'w' -> UnicodeFormat.Directive.DateBased.WeekOfWeekBasedYear(formatLength)
+    'W' -> UnicodeFormat.Directive.DateBased.WeekOfMonth(formatLength)
+    'd' -> UnicodeFormat.Directive.DateBased.DayOfMonth(formatLength)
+    'D' -> UnicodeFormat.Directive.DateBased.DayOfYear(formatLength)
+    'F' -> UnicodeFormat.Directive.DateBased.DayOfWeekInMonth(formatLength)
+    'g' -> UnicodeFormat.Directive.DateBased.ModifiedJulianDay(formatLength)
+    'E' -> UnicodeFormat.Directive.DateBased.DayOfWeek(formatLength)
+    'e' -> UnicodeFormat.Directive.DateBased.LocalizedDayOfWeek(formatLength)
+    'c' -> UnicodeFormat.Directive.DateBased.StandaloneLocalizedDayOfWeek(formatLength)
+    'a' -> UnicodeFormat.Directive.TimeBased.AmPmMarker(formatLength)
+    'h' -> UnicodeFormat.Directive.TimeBased.AmPmHourOfDay(formatLength)
+    'H' -> UnicodeFormat.Directive.TimeBased.HourOfDay(formatLength)
+    'm' -> UnicodeFormat.Directive.TimeBased.MinuteOfHour(formatLength)
+    's' -> UnicodeFormat.Directive.TimeBased.WithSecondPrecision.SecondOfMinute(formatLength)
+    'S' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.FractionOfSecond(formatLength)
+    'A' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.MilliOfDay(formatLength)
+    'n' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.NanoOfSecond(formatLength)
+    'N' -> UnicodeFormat.Directive.TimeBased.WithSubsecondPrecision.NanoOfDay(formatLength)
+    'V' -> UnicodeFormat.Directive.ZoneBased.TimeZoneId(formatLength)
+    'v' -> UnicodeFormat.Directive.ZoneBased.GenericTimeZoneName(formatLength)
+    'z' -> UnicodeFormat.Directive.ZoneBased.TimeZoneName(formatLength)
+    'O' -> UnicodeFormat.Directive.OffsetBased.LocalizedZoneOffset(formatLength)
+    'X' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset1(formatLength)
+    'x' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset2(formatLength)
+    'Z' -> UnicodeFormat.Directive.OffsetBased.ZoneOffset3(formatLength)
+    else -> UnknownUnicodeDirective(char, formatLength)
 }
 
 @SharedImmutable
@@ -554,14 +553,14 @@ private fun unsupportedDirective(fieldName: String, recommendation: String? = nu
                 "Please report your use case to https://github.com/Kotlin/kotlinx-datetime/issues"
     )
 
-private fun AbstractUnicodeDirective.unknownLength(): Nothing =
+private fun UnicodeFormat.Directive.unknownLength(): Nothing =
     throw IllegalArgumentException("Unknown length $formatLength for the $formatLetter directive")
 
-private fun AbstractUnicodeDirective.localizedDirective(recommendation: String? = null): Nothing =
+private fun UnicodeFormat.Directive.localizedDirective(recommendation: String? = null): Nothing =
     throw IllegalArgumentException(
         "The directive '$this' is locale-dependent, but locales are not supported in Kotlin"
                 + if (recommendation != null) ". $recommendation" else ""
     )
 
-private fun AbstractUnicodeDirective.unsupportedPadding(digits: Int): Nothing =
+private fun UnicodeFormat.Directive.unsupportedPadding(digits: Int): Nothing =
     throw UnsupportedOperationException("Padding do $digits digits is not supported for the $formatLetter directive")
