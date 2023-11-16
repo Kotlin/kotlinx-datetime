@@ -3,9 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.format.migration
+package kotlinx.datetime.format
 
-import kotlinx.datetime.format.*
 import kotlin.native.concurrent.*
 
 /**
@@ -246,7 +245,7 @@ private class WeekOfMonth(length: Int) : AbstractUnicodeDirective(length), DateB
     override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = unsupportedDirective("week-of-month")
 }
 
-private class DayOfWeekDirective(length: Int) : AbstractUnicodeDirective(length), DateBasedUnicodeDirective {
+private class DayOfWeek(length: Int) : AbstractUnicodeDirective(length), DateBasedUnicodeDirective {
     override val formatLetter = 'E'
     override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
 }
@@ -345,11 +344,11 @@ private class ZoneOffset1(length: Int) : AbstractUnicodeDirective(length), Offse
     override val formatLetter = 'X'
     override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
         when (formatLength) {
-            1 -> builder.appendIsoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.NEVER)
-            2 -> builder.appendIsoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
-            3 -> builder.appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
-            4 -> builder.appendIsoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
-            5 -> builder.appendIsoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            1 -> builder.isoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.NEVER)
+            2 -> builder.isoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
+            3 -> builder.isoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
+            4 -> builder.isoOffset(zOnZero = true, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            5 -> builder.isoOffset(zOnZero = true, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
             else -> unknownLength()
         }
     }
@@ -359,11 +358,11 @@ private class ZoneOffset2(length: Int) : AbstractUnicodeDirective(length), Offse
     override val formatLetter = 'x'
     override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
         when (formatLength) {
-            1 -> builder.appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.NEVER)
-            2 -> builder.appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
-            3 -> builder.appendIsoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
-            4 -> builder.appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
-            5 -> builder.appendIsoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            1 -> builder.isoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.IF_NONZERO, outputSecond = WhenToOutput.NEVER)
+            2 -> builder.isoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
+            3 -> builder.isoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
+            4 -> builder.isoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            5 -> builder.isoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
             else -> unknownLength()
         }
     }
@@ -373,9 +372,9 @@ private class ZoneOffset3(length: Int) : AbstractUnicodeDirective(length), Offse
     override val formatLetter = 'Z'
     override fun addToFormat(builder: DateTimeFormatBuilder.WithUtcOffset) {
         when (formatLength) {
-            1, 2, 3 -> builder.appendIsoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
+            1, 2, 3 -> builder.isoOffset(zOnZero = false, useSeparator = false, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.NEVER)
             4 -> LocalizedZoneOffset(4).addToFormat(builder)
-            5 -> builder.appendIsoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
+            5 -> builder.isoOffset(zOnZero = false, useSeparator = true, outputMinute = WhenToOutput.ALWAYS, outputSecond = WhenToOutput.IF_NONZERO)
             else -> unknownLength()
         }
     }
@@ -400,7 +399,7 @@ internal fun unicodeDirective(char: Char, length: Int): UnicodeFormat = when (ch
     'D' -> DayOfYear(length)
     'F' -> DayOfWeekInMonth(length)
     'g' -> ModifiedJulianDay(length)
-    'E' -> DayOfWeekDirective(length)
+    'E' -> DayOfWeek(length)
     'e' -> LocalizedDayOfWeek(length)
     'c' -> StandaloneLocalizedDayOfWeek(length)
     'a' -> AmPmMarker(length)

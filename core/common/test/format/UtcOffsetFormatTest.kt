@@ -14,7 +14,7 @@ class UtcOffsetFormatTest {
     @Test
     fun testErrorHandling() {
         val format = UtcOffset.Format {
-            appendIsoOffset(
+            isoOffset(
                 zOnZero = true,
                 useSeparator = true,
                 outputMinute = WhenToOutput.ALWAYS,
@@ -53,14 +53,14 @@ class UtcOffsetFormatTest {
         }
         val lenientFormat = UtcOffsetFormat.build {
             alternativeParsing({
-                appendIsoOffset(
+                isoOffset(
                     zOnZero = false,
                     useSeparator = false,
                     outputMinute = WhenToOutput.IF_NONZERO,
                     outputSecond = WhenToOutput.IF_NONZERO
                 )
             }) {
-                appendIsoOffset(
+                isoOffset(
                     zOnZero = true,
                     useSeparator = true,
                     outputMinute = WhenToOutput.ALWAYS,

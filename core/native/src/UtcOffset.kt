@@ -123,7 +123,7 @@ private val lenientFormat = UtcOffsetFormat.build {
             offsetHours(Padding.NONE)
         },
         {
-            appendIsoOffset(
+            isoOffset(
                 zOnZero = false,
                 useSeparator = false,
                 outputMinute = WhenToOutput.IF_NONZERO,
@@ -131,7 +131,7 @@ private val lenientFormat = UtcOffsetFormat.build {
             )
         }
     ) {
-        appendIsoOffset(
+        isoOffset(
             zOnZero = true,
             useSeparator = true,
             outputMinute = WhenToOutput.ALWAYS,

@@ -9,7 +9,6 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
-import kotlinx.datetime.format.migration.*
 import kotlin.test.*
 
 class LocalDateTimeFormatTest {

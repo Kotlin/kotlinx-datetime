@@ -115,7 +115,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 char('.')
                 secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
             }
-            appendIsoOffset(
+            isoOffset(
                 zOnZero = true,
                 useSeparator = true,
                 outputMinute = WhenToOutput.IF_NONZERO,

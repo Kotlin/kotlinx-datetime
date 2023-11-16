@@ -71,10 +71,24 @@ internal class UtcOffsetFormat(override val actualFormat: StringFormat<UtcOffset
 internal enum class WhenToOutput {
     NEVER,
     IF_NONZERO,
-    ALWAYS,
+    ALWAYS;
 }
 
-internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
+internal fun<T: DateTimeFormatBuilder> T.outputIfNeeded(whenToOutput: WhenToOutput, format: T.() -> Unit) {
+    when (whenToOutput) {
+        WhenToOutput.NEVER -> { }
+        WhenToOutput.IF_NONZERO -> {
+            optional {
+                format()
+            }
+        }
+        WhenToOutput.ALWAYS -> {
+            format()
+        }
+    }
+}
+
+internal fun DateTimeFormatBuilder.WithUtcOffset.isoOffset(
     zOnZero: Boolean,
     useSeparator: Boolean,
     outputMinute: WhenToOutput,
@@ -83,58 +97,12 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffset(
     require(outputMinute >= outputSecond) { "Seconds cannot be included without minutes" }
     fun DateTimeFormatBuilder.WithUtcOffset.appendIsoOffsetWithoutZOnZero() {
         offsetHours()
-        when (outputMinute) {
-            WhenToOutput.NEVER -> {}
-            WhenToOutput.IF_NONZERO -> {
-                optional {
-                    if (useSeparator) {
-                        char(':')
-                    }
-                    offsetMinutesOfHour()
-                    when (outputSecond) {
-                        WhenToOutput.NEVER -> {}
-                        WhenToOutput.IF_NONZERO -> {
-                            optional {
-                                if (useSeparator) {
-                                    char(':')
-                                }
-                                offsetSecondsOfMinute()
-                            }
-                        }
-
-                        WhenToOutput.ALWAYS -> {
-                            if (useSeparator) {
-                                char(':')
-                            }
-                            offsetSecondsOfMinute()
-                        }
-                    }
-                }
-            }
-
-            WhenToOutput.ALWAYS -> {
-                if (useSeparator) {
-                    char(':')
-                }
-                offsetMinutesOfHour()
-                when (outputSecond) {
-                    WhenToOutput.NEVER -> {}
-                    WhenToOutput.IF_NONZERO -> {
-                        optional {
-                            if (useSeparator) {
-                                char(':')
-                            }
-                            offsetSecondsOfMinute()
-                        }
-                    }
-
-                    WhenToOutput.ALWAYS -> {
-                        if (useSeparator) {
-                            char(':')
-                        }
-                        offsetSecondsOfMinute()
-                    }
-                }
+        outputIfNeeded(outputMinute) {
+            if (useSeparator) { char(':') }
+            offsetMinutesOfHour()
+            outputIfNeeded(outputSecond) {
+                if (useSeparator) { char(':') }
+                offsetSecondsOfMinute()
             }
         }
     }
