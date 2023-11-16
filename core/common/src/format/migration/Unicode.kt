@@ -106,22 +106,30 @@ public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {
             is UnicodeFormat.Directive -> {
                 when (format) {
                     is UnicodeFormat.Directive.TimeBased -> {
-                        require(builder is DateTimeFormatBuilder.WithTime)
+                        require(builder is DateTimeFormatBuilder.WithTime) {
+                            "A time-based directive $format was used in a format builder that doesn't support time components"
+                        }
                         format.addToFormat(builder)
                     }
 
                     is UnicodeFormat.Directive.DateBased -> {
-                        require(builder is DateTimeFormatBuilder.WithDate)
+                        require(builder is DateTimeFormatBuilder.WithDate) {
+                            "A date-based directive $format was used in a format builder that doesn't support date components"
+                        }
                         format.addToFormat(builder)
                     }
 
                     is UnicodeFormat.Directive.ZoneBased -> {
-                        require(builder is DateTimeFormatBuilder.WithDateTimeComponents)
+                        require(builder is DateTimeFormatBuilder.WithDateTimeComponents) {
+                            "A time-zone-based directive $format was used in a format builder that doesn't support time-zone components"
+                        }
                         format.addToFormat(builder)
                     }
 
                     is UnicodeFormat.Directive.OffsetBased -> {
-                        require(builder is DateTimeFormatBuilder.WithUtcOffset)
+                        require(builder is DateTimeFormatBuilder.WithUtcOffset) {
+                            "A UTC-offset-based directive $format was used in a format builder that doesn't support UTC offset components"
+                        }
                         format.addToFormat(builder)
                     }
 
