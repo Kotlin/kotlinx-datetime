@@ -54,6 +54,8 @@ public sealed interface DateTimeFormatBuilder {
 
         /**
          * A month-of-year number, from 1 to 12.
+         *
+         * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
          */
         public fun monthNumber(padding: Padding = Padding.ZERO)
 
@@ -107,7 +109,7 @@ public sealed interface DateTimeFormatBuilder {
         public fun hour(padding: Padding = Padding.ZERO)
 
         /**
-         * The number of hours in the 12-hour clock:
+         * The hour of the day in the 12-hour clock:
          *
          * * Midnight is 12,
          * * Hours 1-11 are 1-11,
@@ -132,14 +134,14 @@ public sealed interface DateTimeFormatBuilder {
         public fun amPmMarker(am: String, pm: String)
 
         /**
-         * The number of minutes.
+         * The minute of hour.
          *
          * By default, it's zero-padded to two digits, but this can be changed with [padding].
          */
         public fun minute(padding: Padding = Padding.ZERO)
 
         /**
-         * The number of seconds.
+         * The second of minute.
          *
          * By default, it's zero-padded to two digits, but this can be changed with [padding].
          *
@@ -173,6 +175,8 @@ public sealed interface DateTimeFormatBuilder {
          * This field has the default value of 0. If you want to omit it, use [optional].
          *
          * @throws IllegalArgumentException if [fixedLength] is not in the range 1..9.
+         *
+         * @see secondFraction that accepts two parameters.
          */
         public fun secondFraction(fixedLength: Int) {
             secondFraction(fixedLength, fixedLength)
@@ -209,7 +213,7 @@ public sealed interface DateTimeFormatBuilder {
      */
     public sealed interface WithUtcOffset : DateTimeFormatBuilder {
         /**
-         * The total number of hours in the UTC offset, with a sign.
+         * The total number of hours in the UTC offset, including the sign.
          *
          * By default, it's zero-padded to two digits, but this can be changed with [padding].
          *

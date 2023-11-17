@@ -86,7 +86,10 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         }
     }
 
-    private fun getStringValue(target: Target): String = values[field.accessor.getterNotNull(target) - field.minValue]
+    private fun getStringValue(target: Target): String = field.accessor.getterNotNull(target).let {
+        values.getOrNull(it-field.minValue)
+            ?: "The value $it of ${field.name} does not have a corresponding string representation"
+    }
 
     private inner class AssignableString: AssignableField<Target, String> {
         override fun trySetWithoutReassigning(container: Target, newValue: String): String? =
@@ -119,10 +122,10 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
 
     private val reverseMapping = mapping.entries.associate { it.value to it.key }
 
-    private fun getStringValue(target: Target): String = mapping[field.accessor.getterNotNull(target)]
-        ?: throw IllegalStateException(
-            "The value ${field.accessor.getterNotNull(target)} is does not have a corresponding string representation"
-        )
+    private fun getStringValue(target: Target): String = field.accessor.getterNotNull(target).let {
+        mapping[field.accessor.getterNotNull(target)]
+            ?: "The value $it of ${field.name} does not have a corresponding string representation"
+    }
 
     private inner class AssignableString: AssignableField<Target, String> {
         override fun trySetWithoutReassigning(container: Target, newValue: String): String? =

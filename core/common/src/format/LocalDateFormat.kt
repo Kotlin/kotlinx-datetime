@@ -25,7 +25,7 @@ public class MonthNames(
     }
 
     /**
-     * Create a [MonthNames], accepting the month names in order from January to December.
+     * Create a [MonthNames] using the month names in order from January to December.
      */
     public constructor(
         january: String, february: String, march: String, april: String, may: String, june: String,
@@ -76,7 +76,7 @@ public class DayOfWeekNames(
     }
 
     /**
-     * A constructor that takes a list of day of week names, in order from Monday to Sunday.
+     * A constructor that takes the day of week names, in order from Monday to Sunday.
      */
     public constructor(
         monday: String,

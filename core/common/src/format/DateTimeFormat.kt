@@ -20,19 +20,19 @@ public sealed interface DateTimeFormat<T> {
     public fun format(value: T): String
 
     /**
-     * Formats the given [value] into the given [appendable], using this format.
+     * Formats the given [value] into the given [appendable] using this format.
      */
     public fun <A : Appendable> formatTo(appendable: A, value: T): A
 
     /**
-     * Parses the given [input] string as [T], using this format.
+     * Parses the given [input] string as [T] using this format.
      *
      * @throws IllegalArgumentException if the input string is not in the expected format or the value is invalid.
      */
     public fun parse(input: CharSequence): T
 
     /**
-     * Parses the given [input] string as [T], using this format.
+     * Parses the given [input] string as [T] using this format.
      *
      * @return the parsed value, or `null` if the input string is not in the expected format or the value is invalid.
      */

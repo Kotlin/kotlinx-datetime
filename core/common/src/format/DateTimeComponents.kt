@@ -80,7 +80,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     }
 
     /**
-     * The entry point for parsing and formatting [DateTimeComponents] values.
+     * A collection of formats for parsing and formatting [DateTimeComponents] values.
      *
      * If predefined formats are not sufficient, use [DateTimeComponents.Format] to create a custom
      * [kotlinx.datetime.format.DateTimeFormat] for [DateTimeComponents] values.
@@ -91,9 +91,9 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * ISO 8601 extended format for dates and times with UTC offset.
          *
          * Examples of valid strings:
-         * * `2020-01-01T23:59:59+01:00`
-         * * `2020-01-01T23:59:59+01`
-         * * `2020-01-01T23:59:59Z`
+         * * `2020-01-01T23:59:59.106+01:00`
+         * * `2020-01-01T23:59:59.123456789+01`
+         * * `+12020-01-31T23:59:59Z`
          *
          * This format uses the local date, local time, and UTC offset fields of [DateTimeComponents].
          *
@@ -168,7 +168,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * Writes the contents of the specified [localTime] to this [DateTimeComponents].
-     * The [localTime] is written to the [hour], [minute], [second] and [nanosecond] fields.
+     * The [localTime] is written to the [hour], [hourOfAmPm], [isPm], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -176,7 +176,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * Writes the contents of the specified [localDate] to this [DateTimeComponents].
-     * The [localDate] is written to the [year], [monthNumber] and [dayOfMonth] fields.
+     * The [localDate] is written to the [year], [monthNumber], [dayOfMonth], and [dayOfWeek] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -185,7 +185,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     /**
      * Writes the contents of the specified [localDateTime] to this [DateTimeComponents].
      * The [localDateTime] is written to the
-     * [year], [monthNumber], [dayOfMonth], [hour], [minute], [second] and [nanosecond] fields.
+     * [year], [monthNumber], [dayOfMonth], [dayOfWeek],
+     * [hour], [hourOfAmPm], [isPm], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -196,7 +197,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * Writes the contents of the specified [utcOffset] to this [DateTimeComponents].
-     * The [utcOffset] is written to the [offsetHours], [offsetMinutesOfHour] and [offsetSecondsOfMinute] fields.
+     * The [utcOffset] is written to the [offsetHours], [offsetMinutesOfHour], [offsetSecondsOfMinute], and
+     * [offsetIsNegative] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -236,23 +238,29 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         setOffset(utcOffset)
     }
 
-    /** Returns the year component of the date. */
+    /** The year component of the date. */
     public var year: Int? by contents.date::year
 
-    /** Returns the number-of-month (1..12) component of the date. */
+    /**
+     * The number-of-month (1..12) component of the date.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var monthNumber: Int? by TwoDigitNumber(contents.date::monthNumber)
 
-    /** Returns the month ([Month]) component of the date. */
+    /** The month ([Month]) component of the date. */
     public var month: Month?
         get() = monthNumber?.let { Month(it) }
         set(value) {
             monthNumber = value?.number
         }
 
-    /** Returns the day-of-month component of the date. */
+    /**
+     * The day-of-month component of the date.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var dayOfMonth: Int? by TwoDigitNumber(contents.date::dayOfMonth)
 
-    /** Returns the day-of-week component of the date. */
+    /** The day-of-week component of the date. */
     public var dayOfWeek: DayOfWeek?
         get() = contents.date.isoDayOfWeek?.let { DayOfWeek(it) }
         set(value) {
@@ -261,27 +269,46 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     // /** Returns the day-of-year component of the date. */
     // public var dayOfYear: Int
 
-    /** Returns the hour-of-day time component of this date/time value. */
+    /**
+     * The hour-of-day time component.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var hour: Int? by TwoDigitNumber(contents.time::hour)
 
-    /** Returns the 12-hour time component of this date/time value. */
+    /**
+     * The 12-hour time component.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     * @see isPm
+     */
     public var hourOfAmPm: Int? by TwoDigitNumber(contents.time::hourOfAmPm)
 
-    /** Returns the AM/PM state of the time component: `true` if PM, `false` if `AM`. */
+    /**
+     * The AM/PM state of the time component: `true` if PM, `false` if `AM`.
+     * @see hourOfAmPm
+     */
     public var isPm: Boolean? by contents.time::isPm
 
-    /** Returns the minute-of-hour time component of this date/time value. */
+    /**
+     * The minute-of-hour component.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var minute: Int? by TwoDigitNumber(contents.time::minute)
 
-    /** Returns the second-of-minute time component of this date/time value. */
+    /**
+     * The second-of-minute component.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var second: Int? by TwoDigitNumber(contents.time::second)
 
-    /** Returns the nanosecond-of-second time component of this date/time value. */
+    /**
+     * The nanosecond-of-second component.
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..999_999_999` range.
+     */
     public var nanosecond: Int?
         get() = contents.time.nanosecond
         set(value) {
             require(value == null || value in 0..999_999_999) {
-                "Nanosecond must be in the range [0, 999,999,999]."
+                "Nanosecond must be in the range [0, 999_999_999]."
             }
             contents.time.nanosecond = value
         }
@@ -289,13 +316,22 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     /** True if the offset is negative. */
     public var offsetIsNegative: Boolean? by contents.offset::isNegative
 
-    /** The total amount of full hours in the UTC offset, in the range [0; 18]. */
+    /**
+     * The total amount of full hours in the UTC offset, in the range [0; 18].
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var offsetHours: Int? by TwoDigitNumber(contents.offset::totalHoursAbs)
 
-    /** The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59]. */
+    /**
+     * The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59].
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var offsetMinutesOfHour: Int? by TwoDigitNumber(contents.offset::minutesOfHour)
 
-    /** The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59]. */
+    /**
+     * The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59].
+     * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
+     */
     public var offsetSecondsOfMinute: Int? by TwoDigitNumber(contents.offset::secondsOfMinute)
 
     /** The timezone identifier, for example, "Europe/Berlin". */
@@ -305,11 +341,12 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Builds a [UtcOffset] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
+     * * [offsetIsNegative] (default value is `false`)
      * * [offsetHours] (default value is 0)
      * * [offsetMinutesOfHour] (default value is 0)
      * * [offsetSecondsOfMinute] (default value is 0)
      *
-     * Since all of these fields have default values, this method never fails.
+     * @throws IllegalArgumentException if any of the fields has an out-of-range value.
      */
     public fun toUtcOffset(): UtcOffset = contents.offset.toUtcOffset()
 
@@ -331,12 +368,13 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Builds a [LocalTime] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
-     * * [hour]
+     * * [hour], [hourOfAmPm], and [isPm]
      * * [minute]
      * * [second] (default value is 0)
      * * [nanosecond] (default value is 0)
      *
-     * @throws IllegalArgumentException if hours or minutes are not present, or if any of the fields are invalid.
+     * @throws IllegalArgumentException if hours or minutes are not present, if any of the fields are invalid, or
+     * [hourOfAmPm] and [isPm] are inconsistent with [hour].
      */
     public fun toLocalTime(): LocalTime = contents.time.toLocalTime()
 
@@ -347,7 +385,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * * [year]
      * * [monthNumber]
      * * [dayOfMonth]
-     * * [hour]
+     * * [hour], [hourOfAmPm], and [isPm]
      * * [minute]
      * * [second] (default value is 0)
      * * [nanosecond] (default value is 0)
@@ -355,7 +393,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Also, [dayOfWeek] is checked for consistency with the other fields.
      *
      * @throws IllegalArgumentException if any of the required fields are not present,
-     * or if any of the fields are invalid.
+     * any of the fields are invalid, or there's inconsistency.
      *
      * @see toLocalDate
      * @see toLocalTime
@@ -370,7 +408,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Almost always equivalent to `toLocalDateTime().toInstant(toUtcOffset())`, but also accounts for cases when
      * the year is outside the range representable by [LocalDate] but not outside the range representable by [Instant].
      *
-     * @throws IllegalArgumentException if any of the required fields are not present.
+     * @throws IllegalArgumentException if any of the required fields are not present, out-of-range, or inconsistent
+     * with one another.
      */
     public fun toInstantUsingOffset(): Instant {
         val offset = toUtcOffset()
@@ -399,7 +438,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 /**
  * Uses this format to format an unstructured [DateTimeComponents].
  *
- * [block] is called on an empty [DateTimeComponents] before formatting.
+ * [block] is called on an initially-empty [DateTimeComponents] before formatting.
  *
  * Example:
  * ```
@@ -409,6 +448,10 @@ public class DateTimeComponents internal constructor(internal val contents: Date
  *    setOffset(UtcOffset(hours = 3))
  * }
  * ```
+ *
+ * @throws IllegalStateException if some values needed for the format are not present or can not be formatted:
+ * for example, trying to format [DateTimeFormatBuilder.WithDate.monthName] using a [DateTimeComponents.monthNumber]
+ * value of 20.
  */
 public fun DateTimeFormat<DateTimeComponents>.format(block: DateTimeComponents.() -> Unit): String = format(DateTimeComponents().apply { block() })
 
