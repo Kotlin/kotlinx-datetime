@@ -228,4 +228,11 @@ internal class DecimalFraction(
         }
 
     override fun equals(other: Any?): Boolean = other is DecimalFraction && compareTo(other) == 0
+
+    override fun toString(): String = buildString {
+        val denominator = POWERS_OF_TEN[digits]
+        append(fractionalPart / denominator)
+        append('.')
+        append((denominator + (fractionalPart % denominator)).toString().removePrefix("1"))
+    }
 }

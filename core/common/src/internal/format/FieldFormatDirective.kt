@@ -61,14 +61,14 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
 
     override fun formatter(): FormatterStructure<Target> {
         val formatter = UnsignedIntFormatterStructure(
-            number = field::getNotNull,
+            number = field.accessor::getterNotNull,
             zeroPadding = minDigits,
         )
         return if (spacePadding != null) SpacePaddedFormatter(formatter, spacePadding) else formatter
     }
 
     override fun parser(): ParserStructure<Target> =
-        spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, field::setWithoutReassigning, field.name)
+        spaceAndZeroPaddedUnsignedInt(minDigits, maxDigits, spacePadding, field.accessor, field.name)
 }
 
 /**
@@ -77,6 +77,7 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
 internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
     final override val field: UnsignedFieldSpec<Target>,
     private val values: List<String>,
+    private val name: String,
 ) : FieldFormatDirective<Target> {
 
     init {
@@ -85,10 +86,15 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
         }
     }
 
-    private fun getStringValue(target: Target): String = values[field.getNotNull(target) - field.minValue]
+    private fun getStringValue(target: Target): String = values[field.accessor.getterNotNull(target) - field.minValue]
 
-    private fun setStringValue(target: Target, value: String) {
-        field.setWithoutReassigning(target, values.indexOf(value) + field.minValue)
+    private inner class AssignableString: AssignableField<Target, String> {
+        override fun trySetWithoutReassigning(container: Target, newValue: String): String? =
+            field.accessor.trySetWithoutReassigning(container, values.indexOf(newValue) + field.minValue)?.let {
+                values[it - field.minValue]
+            }
+
+        override val name: String get() = this@NamedUnsignedIntFieldFormatDirective.name
     }
 
     override fun formatter(): FormatterStructure<Target> =
@@ -97,7 +103,7 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(
-                StringSetParserOperation(values, ::setStringValue, "One of $values for ${field.name}")
+                StringSetParserOperation(values, AssignableString(), "One of $values for $name")
             ), emptyList()
         )
 }
@@ -108,20 +114,21 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
 internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
     final override val field: FieldSpec<Target, Type>,
     private val mapping: Map<Type, String>,
+    private val name: String,
 ) : FieldFormatDirective<Target> {
 
     private val reverseMapping = mapping.entries.associate { it.value to it.key }
 
-    private fun getStringValue(target: Target): String = mapping[field.getNotNull(target)]
+    private fun getStringValue(target: Target): String = mapping[field.accessor.getterNotNull(target)]
         ?: throw IllegalStateException(
-            "The value ${field.getNotNull(target)} is does not have a corresponding string representation"
+            "The value ${field.accessor.getterNotNull(target)} is does not have a corresponding string representation"
         )
 
-    private fun setStringValue(target: Target, value: String) {
-        field.setWithoutReassigning(
-            target, reverseMapping[value]
-                ?: throw IllegalStateException("The string value $value does not have a corresponding enum value")
-        )
+    private inner class AssignableString: AssignableField<Target, String> {
+        override fun trySetWithoutReassigning(container: Target, newValue: String): String? =
+            field.accessor.trySetWithoutReassigning(container, reverseMapping[newValue]!!)?.let { mapping[it] }
+
+        override val name: String get() = this@NamedEnumIntFieldFormatDirective.name
     }
 
     override fun formatter(): FormatterStructure<Target> =
@@ -130,7 +137,7 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(
-                StringSetParserOperation(mapping.values, ::setStringValue, "One of ${mapping.values} for ${field.name}")
+                StringSetParserOperation(mapping.values, AssignableString(), "One of ${mapping.values} for $name")
             ), emptyList()
         )
 }
@@ -145,11 +152,11 @@ internal abstract class StringFieldFormatDirective<in Target>(
     }
 
     override fun formatter(): FormatterStructure<Target> =
-        StringFormatterStructure(field::getNotNull)
+        StringFormatterStructure(field.accessor::getterNotNull)
 
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
-            listOf(StringSetParserOperation(acceptedStrings, field::setWithoutReassigning, field.name)),
+            listOf(StringSetParserOperation(acceptedStrings, field.accessor, field.name)),
             emptyList()
         )
 }
@@ -169,7 +176,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
 
     override fun formatter(): FormatterStructure<Target> {
         val formatter = SignedIntFormatterStructure(
-            number = field::getNotNull,
+            number = field.accessor::getterNotNull,
             zeroPadding = minDigits ?: 0,
             outputPlusOnExceededWidth = outputPlusOnExceededWidth,
         )
@@ -181,7 +188,7 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
             minDigits = minDigits,
             maxDigits = maxDigits,
             spacePadding = spacePadding,
-            field::setWithoutReassigning,
+            field.accessor,
             field.name,
             plusOnExceedsWidth = outputPlusOnExceededWidth,
         )
@@ -194,12 +201,12 @@ internal abstract class DecimalFractionFieldFormatDirective<in Target>(
     private val zerosToAdd: List<Int>,
 ) : FieldFormatDirective<Target> {
     override fun formatter(): FormatterStructure<Target> =
-        DecimalFractionFormatterStructure(field::getNotNull, minDigits, maxDigits, zerosToAdd)
+        DecimalFractionFormatterStructure(field.accessor::getterNotNull, minDigits, maxDigits, zerosToAdd)
 
     override fun parser(): ParserStructure<Target> = ParserStructure(
         listOf(
             NumberSpanParserOperation(
-                listOf(FractionPartConsumer(minDigits, maxDigits, field::setWithoutReassigning, field.name))
+                listOf(FractionPartConsumer(minDigits, maxDigits, field.accessor, field.name))
             )
         ),
         emptyList()
@@ -214,16 +221,11 @@ internal abstract class ReducedIntFieldDirective<in Target>(
 
     override fun formatter(): FormatterStructure<Target> =
         ReducedIntFormatterStructure(
-            number = field::getNotNull,
+            number = field.accessor::getterNotNull,
             digits = digits,
             base = base,
         )
 
     override fun parser(): ParserStructure<Target> =
-        ReducedIntParser(
-            digits = digits,
-            base = base,
-            field::setWithoutReassigning,
-            field.name,
-        )
+        ReducedIntParser(digits = digits, base = base, field.accessor, field.name)
 }

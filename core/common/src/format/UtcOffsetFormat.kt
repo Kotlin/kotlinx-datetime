@@ -121,26 +121,26 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.isoOffset(
 
 private object OffsetFields {
     private val sign = object : FieldSign<UtcOffsetFieldContainer> {
-        override val isNegative = UtcOffsetFieldContainer::isNegative
+        override val isNegative = PropertyAccessor(UtcOffsetFieldContainer::isNegative)
         override fun isZero(obj: UtcOffsetFieldContainer): Boolean =
             (obj.totalHoursAbs ?: 0) == 0 && (obj.minutesOfHour ?: 0) == 0 && (obj.secondsOfMinute ?: 0) == 0
     }
     val totalHoursAbs = UnsignedFieldSpec(
-        UtcOffsetFieldContainer::totalHoursAbs,
+        PropertyAccessor(UtcOffsetFieldContainer::totalHoursAbs),
         defaultValue = 0,
         minValue = 0,
         maxValue = 18,
         sign = sign,
     )
     val minutesOfHour = UnsignedFieldSpec(
-        UtcOffsetFieldContainer::minutesOfHour,
+        PropertyAccessor(UtcOffsetFieldContainer::minutesOfHour),
         defaultValue = 0,
         minValue = 0,
         maxValue = 59,
         sign = sign,
     )
     val secondsOfMinute = UnsignedFieldSpec(
-        UtcOffsetFieldContainer::secondsOfMinute,
+        PropertyAccessor(UtcOffsetFieldContainer::secondsOfMinute),
         defaultValue = 0,
         minValue = 0,
         maxValue = 59,

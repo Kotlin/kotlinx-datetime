@@ -125,7 +125,7 @@ internal class SignParser<Output>(
  */
 internal class UnconditionalModification<Output>(
     private val operation: (Output) -> Unit
-): ParserOperation<Output> {
+) : ParserOperation<Output> {
     override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
         operation(this)
         return ParseResult.Ok(startIndex)
@@ -137,7 +137,7 @@ internal class UnconditionalModification<Output>(
  */
 internal class StringSetParserOperation<Output>(
     strings: Collection<String>,
-    private val setter: (Output, String) -> Unit,
+    private val setter: AssignableField<Output, String>,
     private val whatThisExpects: String,
 ) : ParserOperation<Output> {
 
@@ -198,10 +198,9 @@ internal class StringSetParserOperation<Output>(
             break // nothing found
         }
         return if (lastMatch != null) {
-            setter(this, input.subSequence(startIndex, lastMatch).toString())
-            ParseResult.Ok(lastMatch)
+            setter.setWithoutReassigning(this, input.substring(startIndex, lastMatch), startIndex, lastMatch)
         } else {
-            ParseResult.Error(startIndex) { "Expected $whatThisExpects but got ${input[startIndex]}" }
+            ParseResult.Error(startIndex) { "Expected $whatThisExpects but got ${input.substring(startIndex, index)}" }
         }
     }
 }
@@ -210,7 +209,7 @@ internal fun <Output> SignedIntParser(
     minDigits: Int?,
     maxDigits: Int?,
     spacePadding: Int?,
-    setter: (Output, Int) -> Unit,
+    setter: AssignableField<Output, Int>,
     name: String,
     plusOnExceedsWidth: Int?,
 ): ParserStructure<Output> {
@@ -258,7 +257,7 @@ internal fun <Target> spaceAndZeroPaddedUnsignedInt(
     minDigits: Int?,
     maxDigits: Int?,
     spacePadding: Int?,
-    setter: (Target, Int) -> Unit,
+    setter: AssignableField<Target, Int>,
     name: String,
     withMinus: Boolean = false,
 ): ParserStructure<Target> {
@@ -270,21 +269,24 @@ internal fun <Target> spaceAndZeroPaddedUnsignedInt(
         return ParserStructure(
             buildList {
                 if (withMinus) add(PlainStringParserOperation("-"))
-                add(NumberSpanParserOperation(
-                    listOf(
-                        UnsignedIntConsumer(
-                            minNumberLength - if (withMinus) 1 else 0,
-                            maxNumberLength - if (withMinus) 1 else 0,
-                            setter,
-                            name,
-                            multiplyByMinus1 = withMinus,
+                add(
+                    NumberSpanParserOperation(
+                        listOf(
+                            UnsignedIntConsumer(
+                                minNumberLength - if (withMinus) 1 else 0,
+                                maxNumberLength - if (withMinus) 1 else 0,
+                                setter,
+                                name,
+                                multiplyByMinus1 = withMinus,
+                            )
                         )
                     )
-                ))
+                )
             },
             emptyList()
         )
     }
+
     val maxPaddedNumberLength = minOf(maxNumberLength, spacePadding)
     if (minNumberLength >= maxPaddedNumberLength) return numberOfRequiredLengths(minNumberLength, maxNumberLength)
     // invariant: the length of the string parsed by 'accumulated' is exactly 'accumulatedWidth'
@@ -330,7 +332,7 @@ internal fun <Target> spaceAndZeroPaddedUnsignedInt(
 internal fun <Output> ReducedIntParser(
     digits: Int,
     base: Int,
-    setter: (Output, Int) -> Unit,
+    setter: AssignableField<Output, Int>,
     name: String,
 ): ParserStructure<Output> = ParserStructure(
     emptyList(),
@@ -386,3 +388,37 @@ internal fun <Output> ReducedIntParser(
         ),
     )
 )
+
+internal interface AssignableField<in Object, Type> {
+    /**
+     * If the field is not set, sets it to the given value.
+     * If the field is set to the given value, does nothing.
+     * If the field is set to a different value, throws [IllegalArgumentException].
+     *
+     * This function is used to ensure internal consistency during parsing.
+     * There exist formats where the same data is repeated several times in the same object, for example,
+     * "14:15 (02:15 PM)". In such cases, we want to ensure that the values are consistent.
+     */
+    fun trySetWithoutReassigning(container: Object, newValue: Type): Type?
+
+    /**
+     * The name of the field.
+     */
+    val name: String
+}
+
+private fun <Object, Type> AssignableField<Object, Type>.setWithoutReassigning(
+    receiver: Object,
+    value: Type,
+    position: Int,
+    nextIndex: Int
+): ParseResult {
+    val conflictingValue = trySetWithoutReassigning(receiver, value)
+    return if (conflictingValue === null) {
+        ParseResult.Ok(nextIndex)
+    } else {
+        ParseResult.Error(position) {
+            "Attempting to assign conflicting values '$conflictingValue' and '$value' to field '$name'"
+        }
+    }
+}

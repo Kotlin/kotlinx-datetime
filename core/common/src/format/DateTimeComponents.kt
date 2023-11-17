@@ -442,7 +442,7 @@ internal class DateTimeComponentsContents internal constructor(
 }
 
 @SharedImmutable
-internal val timeZoneField = GenericFieldSpec(DateTimeComponentsContents::timeZoneId)
+internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
 
 internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
     StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {

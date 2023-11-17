@@ -27,12 +27,12 @@ internal interface TimeFieldContainer {
 }
 
 private object TimeFields {
-    val hour = UnsignedFieldSpec(TimeFieldContainer::hour, minValue = 0, maxValue = 23)
-    val minute = UnsignedFieldSpec(TimeFieldContainer::minute, minValue = 0, maxValue = 59)
-    val second = UnsignedFieldSpec(TimeFieldContainer::second, minValue = 0, maxValue = 59, defaultValue = 0)
-    val fractionOfSecond = GenericFieldSpec(TimeFieldContainer::fractionOfSecond, defaultValue = DecimalFraction(0, 9))
-    val isPm = GenericFieldSpec(TimeFieldContainer::isPm)
-    val hourOfAmPm = UnsignedFieldSpec(TimeFieldContainer::hourOfAmPm, minValue = 1, maxValue = 12)
+    val hour = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::hour), minValue = 0, maxValue = 23)
+    val minute = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::minute), minValue = 0, maxValue = 59)
+    val second = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::second), minValue = 0, maxValue = 59, defaultValue = 0)
+    val fractionOfSecond = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::fractionOfSecond), defaultValue = DecimalFraction(0, 9))
+    val isPm = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::isPm))
+    val hourOfAmPm = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::hourOfAmPm), minValue = 1, maxValue = 12)
 }
 
 internal class IncompleteLocalTime(
@@ -149,7 +149,8 @@ private class AmPmMarkerDirective(private val amString: String, private val pmSt
         TimeFields.isPm, mapOf(
             false to amString,
             true to pmString,
-        )
+        ),
+        "AM/PM marker"
     ) {
 
     override val builderRepresentation: String get() =

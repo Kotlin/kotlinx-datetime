@@ -7,7 +7,6 @@ package kotlinx.datetime.internal.format
 
 import kotlinx.datetime.internal.format.formatter.*
 import kotlinx.datetime.internal.format.parser.*
-import kotlin.reflect.KMutableProperty1
 
 internal sealed interface FormatStructure<in T>
 
@@ -89,14 +88,14 @@ internal class ConcatenatedFormatStructure<in T>(
 
 internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> = when (this) {
     is BasicFormatStructure -> directive.formatter()
-    is ConstantFormatStructure -> ConstantStringFormatterStructure<T>(string)
+    is ConstantFormatStructure -> ConstantStringFormatterStructure(string)
     is SignedFormatStructure -> {
         val innerFormat = format.formatter()
         fun checkIfAllNegative(value: T): Boolean {
             var seenNonZero = false
             for (check in fieldSigns) {
                 when {
-                    check.isNegative.get(value) == true -> seenNonZero = true
+                    check.isNegative.getter(value) == true -> seenNonZero = true
                     check.isZero(value) -> continue
                     else -> return false
                 }
@@ -146,9 +145,9 @@ private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
                     SignParser(
                         isNegativeSetter = { value, isNegative ->
                             for (field in fieldSigns) {
-                                val wasNegative = field.isNegative.get(value) == true
+                                val wasNegative = field.isNegative.getter(value) == true
                                 // TODO: replacing `!=` with `xor` fails on JS
-                                field.isNegative.set(value, isNegative != wasNegative)
+                                field.isNegative.trySetWithoutReassigning(value, isNegative != wasNegative)
                             }
                         },
                         withPlusSign = withPlusSign,
@@ -223,7 +222,7 @@ private fun <T> basicFormats(format: FormatStructure<T>): List<FieldFormatDirect
     rec(format)
 }
 
-internal class PropertyWithDefault<in T, E> private constructor(private val accessor: KMutableProperty1<T, E?>, private val defaultValue: E) {
+internal class PropertyWithDefault<in T, E> private constructor(private val accessor: Accessor<T, E>, private val defaultValue: E) {
     companion object {
         fun<T, E> fromField(field: FieldSpec<T, E>): PropertyWithDefault<T, E> {
             val default = field.defaultValue
@@ -235,8 +234,8 @@ internal class PropertyWithDefault<in T, E> private constructor(private val acce
     }
 
     inline fun assignDefault(target: T) {
-        accessor.set(target, defaultValue)
+        accessor.trySetWithoutReassigning(target, defaultValue)
     }
 
-    inline fun isDefaultComparisonPredicate() = ComparisonPredicate(defaultValue, accessor::get)
+    inline fun isDefaultComparisonPredicate() = ComparisonPredicate(defaultValue, accessor::getter)
 }

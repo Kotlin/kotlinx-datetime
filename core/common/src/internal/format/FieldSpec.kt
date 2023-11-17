@@ -5,15 +5,45 @@
 
 package kotlinx.datetime.internal.format
 
+import kotlinx.datetime.internal.format.parser.AssignableField
 import kotlin.reflect.*
 
-private typealias Accessor<Object, Field> = KMutableProperty1<Object, Field?>
+internal interface Accessor<in Object, Field>: AssignableField<Object, Field> {
+    fun getter(container: Object): Field?
+
+    /**
+     * Function that returns the value of the field in the given object,
+     * or throws [IllegalStateException] if the field is not set.
+     *
+     * This function is used to access fields during formatting.
+     */
+    fun getterNotNull(container: Object): Field =
+        getter(container) ?: throw IllegalStateException("Field $name is not set")
+}
+
+internal class PropertyAccessor<Object, Field>(private val property: KMutableProperty1<Object, Field?>): Accessor<Object, Field> {
+    override val name: String get() = property.name
+
+    override fun trySetWithoutReassigning(container: Object, newValue: Field): Field? {
+        val oldValue = property.get(container)
+        return when {
+            oldValue === null -> {
+                property.set(container, newValue)
+                null
+            }
+            oldValue == newValue -> null
+            else -> oldValue
+        }
+    }
+
+    override fun getter(container: Object): Field? = property.get(container)
+}
 
 internal interface FieldSign<in Target> {
     /**
      * The field that is `true` if the value of the field is known to be negative, and `false` otherwise.
      */
-    val isNegative: Accessor<in Target, Boolean>
+    val isNegative: Accessor<Target, Boolean>
     fun isZero(obj: Target): Boolean
 }
 
@@ -30,7 +60,7 @@ internal interface FieldSpec<in Target, Type> {
     /**
      * The function with which the field can be accessed.
      */
-    val accessor: Accessor<in Target, Type>
+    val accessor: Accessor<Target, Type>
 
     /**
      * The default value of the field, or `null` if the field has none.
@@ -53,40 +83,11 @@ internal abstract class AbstractFieldSpec<in Target, Type>: FieldSpec<Target, Ty
 }
 
 /**
- * Function that returns the value of the field in the given object,
- * or throws [IllegalStateException] if the field is not set.
- *
- * This function is used to access fields during formatting.
- */
-internal fun <Object, Field> FieldSpec<Object, Field>.getNotNull(obj: Object): Field =
-    accessor.get(obj) ?: throw IllegalStateException("Field $name is not set")
-
-/**
- * If the field is not set, sets it to the given value.
- * If the field is set to the given value, does nothing.
- * If the field is set to a different value, throws [IllegalArgumentException].
- *
- * This function is used to ensure internal consistency during parsing.
- * There exist formats where the same data is repeated several times in the same object, for example,
- * "14:15 (02:15 PM)". In such cases, we want to ensure that the values are consistent.
- */
-internal fun <Object, Field> FieldSpec<Object, Field>.setWithoutReassigning(obj: Object, value: Field) {
-    val oldValue = accessor.get(obj)
-    if (oldValue != null) {
-        require(oldValue == value) {
-            "Attempting to assign conflicting values '$oldValue' and '$value' to field '$name'"
-        }
-    } else {
-        accessor.set(obj, value)
-    }
-}
-
-/**
  * A specification of a field that can contain values of any kind.
  * Used for fields additional information about which is not that important for parsing/formatting.
  */
 internal class GenericFieldSpec<in Target, Type>(
-    override val accessor: Accessor<in Target, Type>,
+    override val accessor: Accessor<Target, Type>,
     override val name: String = accessor.name,
     override val defaultValue: Type? = null,
     override val sign: FieldSign<Target>? = null,
@@ -96,7 +97,7 @@ internal class GenericFieldSpec<in Target, Type>(
  * A specification of a field that can only contain non-negative values.
  */
 internal class UnsignedFieldSpec<in Target>(
-    override val accessor: Accessor<in Target, Int>,
+    override val accessor: Accessor<Target, Int>,
     /**
      * The minimum value of the field.
      */
@@ -121,7 +122,7 @@ internal class UnsignedFieldSpec<in Target>(
 }
 
 internal class SignedFieldSpec<in Target>(
-    override val accessor: Accessor<in Target, Int>,
+    override val accessor: Accessor<Target, Int>,
     val maxAbsoluteValue: Int?,
     override val name: String = accessor.name,
     override val defaultValue: Int? = null,

@@ -131,10 +131,10 @@ internal interface DateFieldContainer {
 }
 
 private object DateFields {
-    val year = SignedFieldSpec(DateFieldContainer::year, maxAbsoluteValue = null)
-    val month = UnsignedFieldSpec(DateFieldContainer::monthNumber, minValue = 1, maxValue = 12)
-    val dayOfMonth = UnsignedFieldSpec(DateFieldContainer::dayOfMonth, minValue = 1, maxValue = 31)
-    val isoDayOfWeek = UnsignedFieldSpec(DateFieldContainer::isoDayOfWeek, minValue = 1, maxValue = 7)
+    val year = SignedFieldSpec(PropertyAccessor(DateFieldContainer::year), maxAbsoluteValue = null)
+    val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
+    val dayOfMonth = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfMonth), minValue = 1, maxValue = 31)
+    val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::isoDayOfWeek), minValue = 1, maxValue = 7)
 }
 
 /**
@@ -228,7 +228,7 @@ private class MonthDirective(private val padding: Padding) :
 }
 
 private class MonthNameDirective(private val names: MonthNames) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names) {
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names, "monthName") {
     override val builderRepresentation: String get() =
         "${DateTimeFormatBuilder.WithDate::monthName.name}(${names.toKotlinCode()})"
 
@@ -252,7 +252,7 @@ private class DayDirective(private val padding: Padding) :
 }
 
 private class DayOfWeekDirective(private val names: DayOfWeekNames) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names) {
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names, "dayOfWeekName") {
 
     override val builderRepresentation: String get() =
         "${DateTimeFormatBuilder.WithDate::dayOfWeek.name}(${names.toKotlinCode()})"

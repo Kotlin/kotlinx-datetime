@@ -44,6 +44,9 @@ internal interface NumberConsumptionError {
     class WrongConstant(val expected: String): NumberConsumptionError {
         override fun errorMessage() = "expected '$expected'"
     }
+    class Conflicting(val conflicting: Any): NumberConsumptionError {
+        override fun errorMessage() = "attempted to overwrite the existing value '$conflicting'"
+    }
 }
 
 /**
@@ -53,7 +56,7 @@ internal interface NumberConsumptionError {
 internal class UnsignedIntConsumer<in Receiver>(
     private val minLength: Int?,
     private val maxLength: Int?,
-    private val setter: (Receiver, Int) -> (Unit),
+    private val setter: AssignableField<Receiver, Int>,
     name: String,
     private val multiplyByMinus1: Boolean = false,
 ) : NumberConsumer<Receiver>(if (minLength == maxLength) minLength else null, name) {
@@ -62,30 +65,19 @@ internal class UnsignedIntConsumer<in Receiver>(
         require(length == null || length in 1..9) { "Invalid length for field $whatThisExpects: $length" }
     }
 
-    override fun Receiver.consume(input: String): NumberConsumptionError? {
-        if (maxLength != null) {
-            if (input.length > maxLength) {
-                return NumberConsumptionError.TooManyDigits(maxLength)
-            }
-        }
-        if (minLength != null) {
-            if (input.length < minLength) {
-                return NumberConsumptionError.TooFewDigits(minLength)
-            }
-        }
-        return when (val result = input.toIntOrNull()) {
+    override fun Receiver.consume(input: String): NumberConsumptionError? = when {
+        maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
+        minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
+        else -> when (val result = input.toIntOrNull()) {
             null -> NumberConsumptionError.ExpectedInt
-            else -> {
-                setter(this, if (multiplyByMinus1) -result else result)
-                null
-            }
+            else -> setter.setWithoutReassigning(this, if (multiplyByMinus1) -result else result)
         }
     }
 }
 
 internal class ReducedIntConsumer<in Receiver>(
     override val length: Int,
-    private val setter: (Receiver, Int) -> (Unit),
+    private val setter: AssignableField<Receiver, Int>,
     name: String,
     val base: Int,
 ): NumberConsumer<Receiver>(length, name) {
@@ -96,14 +88,11 @@ internal class ReducedIntConsumer<in Receiver>(
 
     override fun Receiver.consume(input: String): NumberConsumptionError? = when (val result = input.toIntOrNull()) {
         null -> NumberConsumptionError.ExpectedInt
-        else -> {
-            setter(this, if (result >= baseMod) {
-                baseFloor + result
-            } else {
-                baseFloor + modulo + result
-            })
-            null
-        }
+        else -> setter.setWithoutReassigning(this, if (result >= baseMod) {
+            baseFloor + result
+        } else {
+            baseFloor + modulo + result
+        })
     }
 }
 
@@ -125,7 +114,7 @@ internal class ConstantNumberConsumer<in Receiver>(
  */
 internal class UnsignedLongConsumer<in Receiver>(
     length: Int?,
-    private val setter: (Receiver, Long) -> (Unit),
+    private val setter: AssignableField<Receiver, Long>,
     name: String,
 ) : NumberConsumer<Receiver>(length, name) {
 
@@ -135,17 +124,14 @@ internal class UnsignedLongConsumer<in Receiver>(
 
     override fun Receiver.consume(input: String) = when (val result = input.toLongOrNull()) {
         null -> NumberConsumptionError.ExpectedLong
-        else -> {
-            setter(this, result)
-            null
-        }
+        else -> setter.setWithoutReassigning(this, result)
     }
 }
 
 internal class FractionPartConsumer<in Receiver>(
     private val minLength: Int?,
     private val maxLength: Int?,
-    private val setter: (Receiver, DecimalFraction) -> (Unit),
+    private val setter: AssignableField<Receiver, DecimalFraction>,
     name: String,
 ) : NumberConsumer<Receiver>(if (minLength == maxLength) minLength else null, name) {
     init {
@@ -154,16 +140,19 @@ internal class FractionPartConsumer<in Receiver>(
     }
 
     override fun Receiver.consume(input: String): NumberConsumptionError? = when {
-        minLength != null && input.length < minLength ->
-            NumberConsumptionError.TooFewDigits(minLength)
-        maxLength != null && input.length > maxLength ->
-            NumberConsumptionError.TooManyDigits(maxLength)
+        minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
+        maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
         else -> when (val numerator = input.toIntOrNull()) {
             null -> NumberConsumptionError.TooManyDigits(9)
-            else -> {
-                setter(this, DecimalFraction(numerator, input.length))
-                null
-            }
+            else -> setter.setWithoutReassigning(this, DecimalFraction(numerator, input.length))
         }
     }
+}
+
+private fun <Object, Type> AssignableField<Object, Type>.setWithoutReassigning(
+    receiver: Object,
+    value: Type,
+): NumberConsumptionError? {
+    val conflictingValue = trySetWithoutReassigning(receiver, value) ?: return null
+    return NumberConsumptionError.Conflicting(conflictingValue)
 }
