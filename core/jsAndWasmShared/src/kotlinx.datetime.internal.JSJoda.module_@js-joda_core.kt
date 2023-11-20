@@ -75,7 +75,6 @@ external open class TemporalAccessor : InteropInterface {
     open fun get(field: TemporalField): Int
     open fun <R : InteropInterface> query(query: TemporalQuery<R>): R?
     open fun range(field: TemporalField): ValueRange
-    open fun getLong(field: TemporalField): Long
     open fun isSupported(field: TemporalField): Boolean
 }
 
@@ -259,7 +258,6 @@ external open class Instant : Temporal {
     open fun compareTo(otherInstant: Instant): Int
     open fun epochSecond(): Double
     open fun equals(other: InteropInterface): Boolean
-    override fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     open fun isAfter(otherInstant: Instant): Boolean
     open fun isBefore(otherInstant: Instant): Boolean
@@ -312,7 +310,6 @@ external open class LocalDate : ChronoLocalDate {
     open fun dayOfWeek(): DayOfWeek
     open fun dayOfYear(): Int
     open fun equals(other: InteropInterface): Boolean
-    override fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     open fun isAfter(other: LocalDate): Boolean
     open fun isBefore(other: LocalDate): Boolean
@@ -380,7 +377,6 @@ external open class LocalDateTime : ChronoLocalDateTime {
     open fun dayOfYear(): Int
     open fun equals(other: InteropInterface): Boolean
     open fun format(formatter: DateTimeFormatter): String
-    override fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     open fun hour(): Int
     open fun isAfter(other: LocalDateTime): Boolean
@@ -455,8 +451,6 @@ external open class LocalTime : Temporal {
     open fun compareTo(other: LocalTime): Int
     open fun equals(other: InteropInterface): Boolean
     open fun format(formatter: DateTimeFormatter): String
-    open fun getLong(field: ChronoField): Long
-    override fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     open fun hour(): Int
     open fun isAfter(other: LocalTime): Boolean
@@ -527,7 +521,6 @@ external open class MonthDay : TemporalAccessor {
     open fun dayOfMonth(): Int
     open fun equals(other: InteropInterface): Boolean
     open fun format(formatter: DateTimeFormatter): String
-    override fun getLong(field: TemporalField): Long
     open fun isAfter(other: MonthDay): Boolean
     open fun isBefore(other: MonthDay): Boolean
     override fun isSupported(field: TemporalField): Boolean
@@ -602,7 +595,6 @@ external open class Year : Temporal {
     open fun atMonthDay(monthDay: MonthDay): LocalDate
     open fun compareTo(other: Year): Int
     open fun equals(other: InteropInterface): Boolean
-    override fun getLong(field: TemporalField): Long
     open fun isAfter(other: Year): Boolean
     open fun isBefore(other: Year): Boolean
     open fun isLeap(): Boolean
@@ -643,7 +635,6 @@ external open class YearMonth : Temporal {
     open fun compareTo(other: YearMonth): Int
     open fun equals(other: InteropInterface): Boolean
     open fun format(formatter: DateTimeFormatter): String
-    override fun getLong(field: TemporalField): Long
     open fun isAfter(other: YearMonth): Boolean
     open fun isBefore(other: YearMonth): Boolean
     open fun isLeapYear(): Boolean
@@ -693,7 +684,6 @@ external open class OffsetDateTime : Temporal {
     open fun dayOfWeek(): DayOfWeek
     open fun dayOfYear(): Int
     open fun hour(): Int
-    override fun getLong(field: TemporalField): Long
     open fun minute(): Int
     open fun month(): Month
     open fun monthValue(): Int
@@ -775,7 +765,6 @@ external open class OffsetTime : Temporal {
     open fun format(formatter: DateTimeFormatter): String
     override fun get(field: TemporalField): Int
     open fun hour(): Int
-    override fun getLong(field: TemporalField): Long
     open fun minute(): Int
     open fun nano(): Double
     open fun offset(): ZoneOffset
@@ -835,7 +824,6 @@ external open class ZonedDateTime : ChronoZonedDateTime {
     open fun dayOfYear(): Int
     override fun equals(other: InteropInterface): Boolean
     override fun format(formatter: DateTimeFormatter): String
-    override fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     open fun hour(): Int
     override fun isSupported(fieldOrUnit: TemporalField): Boolean
@@ -936,7 +924,6 @@ external open class ZoneOffset : ZoneId {
     open fun compareTo(other: ZoneOffset): Int
     override fun equals(other: InteropInterface): Boolean
     open fun get(field: TemporalField): Int
-    open fun getLong(field: TemporalField): Long
     override fun hashCode(): Int
     override fun id(): String
     override fun rules(): ZoneRules
@@ -971,7 +958,6 @@ external open class DayOfWeek : TemporalAccessor {
     open fun compareTo(other: DayOfWeek): Int
     open fun equals(other: InteropInterface): Boolean
     open fun displayName(style: TextStyle, locale: Locale): String
-    override fun getLong(field: TemporalField): Long
     override fun isSupported(field: TemporalField): Boolean
     open fun minus(days: Int): DayOfWeek
     open fun name(): String
@@ -1003,7 +989,6 @@ external open class Month : TemporalAccessor {
     open fun firstDayOfYear(leapYear: Boolean): Int
     open fun firstMonthOfQuarter(): Month
     open fun displayName(style: TextStyle, locale: Locale): String
-    override fun getLong(field: TemporalField): Long
     override fun isSupported(field: TemporalField): Boolean
     open fun length(leapYear: Boolean): Int
     open fun maxLength(): Int
