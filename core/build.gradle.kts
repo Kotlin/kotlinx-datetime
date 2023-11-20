@@ -191,18 +191,28 @@ kotlin {
             }
         }
 
-        val jsMain by getting {
+        val jsAndWasmSharedMain by creating {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
             }
         }
 
-        val jsTest by getting {
+        val jsAndWasmSharedTest by creating {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
+        }
+
+        val jsMain by getting {
+            dependsOn(jsAndWasmSharedMain)
+            dependencies {
+                api("org.jetbrains.kotlin:kotlin-stdlib-js")
+            }
+        }
+
+        val jsTest by getting {
+            dependsOn(jsAndWasmSharedTest)
         }
 
         val nativeMain by getting {
