@@ -1,7 +1,6 @@
 import kotlinx.team.infra.mavenPublicationsPom
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
-import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
@@ -105,6 +104,16 @@ kotlin {
 //                outputFile = "kotlinx-datetime-tmp.js"
 //            }
 //        }
+    }
+
+    wasmJs {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
     }
 
     sourceSets.all {
@@ -213,6 +222,14 @@ kotlin {
         }
 
         val jsTest by getting {
+            dependsOn(commonJsTest)
+        }
+
+        val wasmJsMain by getting {
+            dependsOn(commonJsMain)
+        }
+
+        val wasmJsTest by getting {
             dependsOn(commonJsTest)
         }
 
@@ -398,4 +415,12 @@ tasks.configureEach {
     if (name == "compileCommonJsMainKotlinMetadata") {
         enabled = false
     }
+}
+
+// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
+// check it here:
+// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
+with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
+    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }

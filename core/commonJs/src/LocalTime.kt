@@ -16,53 +16,53 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(
                 try {
-                    jtLocalTime.of(hour, minute, second, nanosecond)
+                    jsTry { jtLocalTime.of(hour, minute, second, nanosecond) }
                 } catch (e: Throwable) {
                     if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                     throw e
                 }
             )
 
-    public actual val hour: Int get() = value.hour().toInt()
-    public actual val minute: Int get() = value.minute().toInt()
-    public actual val second: Int get() = value.second().toInt()
+    public actual val hour: Int get() = value.hour()
+    public actual val minute: Int get() = value.minute()
+    public actual val second: Int get() = value.second()
     public actual val nanosecond: Int get() = value.nano().toInt()
-    public actual fun toSecondOfDay(): Int = value.toSecondOfDay().toInt()
-    public actual fun toMillisecondOfDay(): Int = (value.toNanoOfDay().toDouble() / NANOS_PER_MILLI).toInt()
+    public actual fun toSecondOfDay(): Int = value.toSecondOfDay()
+    public actual fun toMillisecondOfDay(): Int = (value.toNanoOfDay() / NANOS_PER_MILLI).toInt()
     public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay().toLong()
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is LocalTime && this.value == other.value)
+        (this === other) || (other is LocalTime && (this.value === other.value || this.value.equals(other.value)))
 
-    override fun hashCode(): Int = value.hashCode().toInt()
+    override fun hashCode(): Int = value.hashCode()
 
     actual override fun toString(): String = value.toString()
 
-    actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value).toInt()
+    actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
         public actual fun parse(isoString: String): LocalTime = try {
-            jtLocalTime.parse(isoString).let(::LocalTime)
+            jsTry { jtLocalTime.parse(isoString) }.let(::LocalTime)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
         }
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
-            jtLocalTime.ofSecondOfDay(secondOfDay, 0).let(::LocalTime)
+            jsTry { jtLocalTime.ofSecondOfDay(secondOfDay, 0) }.let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
 
         public actual fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime = try {
-            jtLocalTime.ofNanoOfDay(millisecondOfDay * 1_000_000.0).let(::LocalTime)
+            jsTry { jtLocalTime.ofNanoOfDay(millisecondOfDay * 1_000_000.0) }.let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
 
         public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime = try {
             // number of nanoseconds in a day is much less than `Number.MAX_SAFE_INTEGER`.
-            jtLocalTime.ofNanoOfDay(nanosecondOfDay.toDouble()).let(::LocalTime)
+            jsTry { jtLocalTime.ofNanoOfDay(nanosecondOfDay.toDouble()) }.let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
