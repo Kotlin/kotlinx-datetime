@@ -13,7 +13,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(try {
-                jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+                jsTry { jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond) }
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                 throw e
@@ -23,18 +23,18 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
             this(year, month.number, dayOfMonth, hour, minute, second, nanosecond)
 
     public actual constructor(date: LocalDate, time: LocalTime) :
-            this(jtLocalDateTime.of(date.value, time.value))
+            this(jsTry { jtLocalDateTime.of(date.value, time.value) })
 
-    public actual val year: Int get() = value.year().toInt()
-    public actual val monthNumber: Int get() = value.monthValue().toInt()
+    public actual val year: Int get() = value.year()
+    public actual val monthNumber: Int get() = value.monthValue()
     public actual val month: Month get() = value.month().toMonth()
-    public actual val dayOfMonth: Int get() = value.dayOfMonth().toInt()
+    public actual val dayOfMonth: Int get() = value.dayOfMonth()
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek().toDayOfWeek()
-    public actual val dayOfYear: Int get() = value.dayOfYear().toInt()
+    public actual val dayOfYear: Int get() = value.dayOfYear()
 
-    public actual val hour: Int get() = value.hour().toInt()
-    public actual val minute: Int get() = value.minute().toInt()
-    public actual val second: Int get() = value.second().toInt()
+    public actual val hour: Int get() = value.hour()
+    public actual val minute: Int get() = value.minute()
+    public actual val second: Int get() = value.second()
     public actual val nanosecond: Int get() = value.nano().toInt()
 
     public actual val date: LocalDate get() = LocalDate(value.toLocalDate()) // cache?
@@ -42,17 +42,17 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual val time: LocalTime get() = LocalTime(value.toLocalTime())
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is LocalDateTime && this.value == other.value)
+            (this === other) || (other is LocalDateTime && (this.value === other.value || this.value.equals(other.value)))
 
-    override fun hashCode(): Int = value.hashCode().toInt()
+    override fun hashCode(): Int = value.hashCode()
 
     actual override fun toString(): String = value.toString()
 
-    actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value).toInt()
+    actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
         public actual fun parse(isoString: String): LocalDateTime = try {
-            jtLocalDateTime.parse(isoString).let(::LocalDateTime)
+            jsTry { jtLocalDateTime.parse(isoString) }.let(::LocalDateTime)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
@@ -63,4 +63,3 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     }
 
 }
-

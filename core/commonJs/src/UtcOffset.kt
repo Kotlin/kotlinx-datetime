@@ -5,24 +5,24 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.JSJoda.ZoneOffset
+import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable(with = UtcOffsetSerializer::class)
-public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
-    public actual val totalSeconds: Int get() = zoneOffset.totalSeconds().toInt()
+public actual class UtcOffset internal constructor(internal val zoneOffset: jtZoneOffset) {
+    public actual val totalSeconds: Int get() = zoneOffset.totalSeconds()
 
-    override fun hashCode(): Int = zoneOffset.hashCode().toInt()
-    override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
+    override fun hashCode(): Int = zoneOffset.hashCode()
+    override fun equals(other: Any?): Boolean = other is UtcOffset && (this.zoneOffset === other.zoneOffset || this.zoneOffset.equals(other.zoneOffset))
     override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
 
-        public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
+        public actual val ZERO: UtcOffset = UtcOffset(jtZoneOffset.UTC)
 
         public actual fun parse(offsetString: String): UtcOffset = try {
-            ZoneOffset.of(offsetString).let(::UtcOffset)
+            jsTry { jtZoneOffset.of(offsetString) }.let(::UtcOffset)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
             throw e
@@ -35,11 +35,11 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
     try {
         when {
             hours != null ->
-                UtcOffset(ZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0))
+                UtcOffset(jsTry { jtZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0) })
             minutes != null ->
-                UtcOffset(ZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0))
+                UtcOffset(jsTry { jtZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0) })
             else -> {
-                UtcOffset(ZoneOffset.ofTotalSeconds(seconds ?: 0))
+                UtcOffset(jsTry { jtZoneOffset.ofTotalSeconds(seconds ?: 0) })
             }
         }
     } catch (e: Throwable) {
