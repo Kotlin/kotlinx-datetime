@@ -21,8 +21,11 @@ import kotlin.reflect.KClass
  */
 public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
-        element<Long>("nanoseconds")
+    // https://youtrack.jetbrains.com/issue/KT-63939
+    override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        buildClassSerialDescriptor("TimeBased") {
+            element<Long>("nanoseconds")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.TimeBased) {
@@ -65,8 +68,11 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
  */
 public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
-        element<Int>("days")
+    // https://youtrack.jetbrains.com/issue/KT-63939
+    override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        buildClassSerialDescriptor("DayBased") {
+            element<Int>("days")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.DayBased) {
@@ -109,8 +115,11 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
  */
 public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBased> {
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
-        element<Int>("months")
+    // https://youtrack.jetbrains.com/issue/KT-63939
+    override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        buildClassSerialDescriptor("MonthBased") {
+            element<Int>("months")
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.MonthBased) {
@@ -155,10 +164,13 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
 @OptIn(InternalSerializationApi::class)
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
-    private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
-        DateTimeUnit.DateBased::class,
-        arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class),
-        arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer))
+    // https://youtrack.jetbrains.com/issue/KT-63939
+    private val impl by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
+            DateTimeUnit.DateBased::class,
+            arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class),
+            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer))
+    }
 
     @InternalSerializationApi
     override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?):
@@ -189,10 +201,13 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
 @OptIn(InternalSerializationApi::class)
 public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 
-    private val impl = SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
-        DateTimeUnit::class,
-        arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class, DateTimeUnit.TimeBased::class),
-        arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
+    // https://youtrack.jetbrains.com/issue/KT-63939
+    private val impl by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
+            DateTimeUnit::class,
+            arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class, DateTimeUnit.TimeBased::class),
+            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
+    }
 
     @InternalSerializationApi
     override fun findPolymorphicSerializerOrNull(decoder: CompositeDecoder, klassName: String?): DeserializationStrategy<DateTimeUnit>? =
