@@ -12,3 +12,5 @@ internal actual fun getAvailableZoneIdsSet(): Set<String> =
 public actual external interface InteropInterface
 
 public actual typealias JsNonModule = kotlin.js.JsNonModule
+
+public actual typealias JsModule = kotlin.js.JsModule
