@@ -1,9 +1,9 @@
 @file:JsModule("@js-joda/core")
-@file:kotlinx.datetime.JsNonModule
+@file:kotlinx.datetime.internal.JsNonModule
 @file:Suppress("NO_EXPLICIT_VISIBILITY_IN_API_MODE", "INTERFACE_WITH_SUPERCLASS", "OVERRIDING_FINAL_MEMBER", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "CONFLICTING_OVERLOADS", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 package kotlinx.datetime.internal.JSJoda
 
-import kotlinx.datetime.InteropInterface
+import kotlinx.datetime.internal.InteropInterface
 import kotlin.js.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
