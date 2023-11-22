@@ -14,3 +14,7 @@ public expect interface InteropInterface
 @Target(AnnotationTarget.FILE)
 @OptionalExpectation
 public expect annotation class JsNonModule()
+
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.FILE)
+public expect annotation class JsModule(val import: String)
