@@ -73,7 +73,7 @@ external open class Temporal : TemporalAccessor {
     open fun minus(amount: TemporalAmount): Temporal
     open fun plus(amountToAdd: Int, unit: TemporalUnit): Temporal
     open fun plus(amount: TemporalAmount): Temporal
-    open fun until(endTemporal: Temporal, unit: TemporalUnit): Int
+    open fun until(endTemporal: Temporal, unit: TemporalUnit): Double
     open fun with(adjuster: TemporalAdjuster): Temporal
     open fun with(field: TemporalField, newValue: Int): Temporal
 }
@@ -235,7 +235,7 @@ external open class Duration : TemporalAmount {
         fun ofMillis(millis: Double): Duration
         fun ofMinutes(minutes: Int): Duration
         fun ofNanos(nanos: Double): Duration
-        fun ofSeconds(seconds: Int, nanoAdjustment: Int = definedExternally): Duration
+        fun ofSeconds(seconds: Int, nanoAdjustment: Int): Duration
         fun parse(text: String): Duration
     }
 }
@@ -278,9 +278,9 @@ external open class Instant : Temporal {
         var MAX_SECONDS: Instant
         var FROM: TemporalQuery<Instant>
         fun from(temporal: TemporalAccessor): Instant
-        fun now(clock: Clock = definedExternally): Instant
+        fun now(clock: Clock): Instant
         fun ofEpochMilli(epochMilli: Double): Instant
-        fun ofEpochSecond(epochSecond: Double, nanoAdjustment: Int = definedExternally): Instant
+        fun ofEpochSecond(epochSecond: Double, nanoAdjustment: Int): Instant
         fun parse(text: String): Instant
     }
 }
@@ -288,9 +288,9 @@ external open class Instant : Temporal {
 external open class LocalDate : ChronoLocalDate {
     open fun atStartOfDay(): LocalDateTime
     open fun atStartOfDay(zone: ZoneId): ZonedDateTime
-    open fun atTime(hour: Int, minute: Int, second: Int = definedExternally, nanoOfSecond: Double = definedExternally): LocalDateTime
+    open fun atTime(hour: Int, minute: Int, second: Int, nanoOfSecond: Double): LocalDateTime
     open fun atTime(hour: Int, minute: Int): LocalDateTime
-    open fun atTime(hour: Int, minute: Int, second: Int = definedExternally): LocalDateTime
+    open fun atTime(hour: Int, minute: Int, second: Int): LocalDateTime
     open fun atTime(time: LocalTime): LocalDateTime
     open fun chronology(): Chronology
     open fun compareTo(other: LocalDate): Int
@@ -345,14 +345,15 @@ external open class LocalDate : ChronoLocalDate {
         var EPOCH_0: LocalDate
         var FROM: TemporalQuery<LocalDate>
         fun from(temporal: TemporalAccessor): LocalDate
-        fun now(clockOrZone: Clock = definedExternally): LocalDate
-        fun now(clockOrZone: ZoneId = definedExternally): LocalDate
+        fun now(clockOrZone: Clock): LocalDate
+        fun now(clockOrZone: ZoneId): LocalDate
         fun of(year: Int, month: Month, dayOfMonth: Int): LocalDate
         fun of(year: Int, month: Int, dayOfMonth: Int): LocalDate
         fun ofEpochDay(epochDay: Int): LocalDate
-        fun ofInstant(instant: Instant, zoneId: ZoneId = definedExternally): LocalDate
+        fun ofInstant(instant: Instant, zoneId: ZoneId): LocalDate
         fun ofYearDay(year: Int, dayOfYear: Int): LocalDate
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): LocalDate
+        fun parse(text: String, formatter: DateTimeFormatter): LocalDate
+        fun parse(text: String): LocalDate
     }
 }
 
@@ -421,15 +422,15 @@ external open class LocalDateTime : ChronoLocalDateTime {
         var MAX: LocalDateTime
         var FROM: TemporalQuery<LocalDateTime>
         fun from(temporal: TemporalAccessor): LocalDateTime
-        fun now(clockOrZone: Clock = definedExternally): LocalDateTime
-        fun now(clockOrZone: ZoneId = definedExternally): LocalDateTime
+        fun now(clockOrZone: Clock): LocalDateTime
+        fun now(clockOrZone: ZoneId): LocalDateTime
         fun of(date: LocalDate, time: LocalTime): LocalDateTime
-        fun of(year: Int, month: Month, dayOfMonth: Int, hour: Int = definedExternally, minute: Int = definedExternally, second: Int = definedExternally, nanoSecond: Int = definedExternally): LocalDateTime
-        fun of(year: Int, month: Int, dayOfMonth: Int, hour: Int = definedExternally, minute: Int = definedExternally, second: Int = definedExternally, nanoSecond: Int = definedExternally): LocalDateTime
+        fun of(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanoSecond: Int): LocalDateTime
+        fun of(year: Int, month: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanoSecond: Int): LocalDateTime
         fun ofEpochSecond(epochSecond: Double, nanoOfSecond: Int, offset: ZoneOffset): LocalDateTime
         fun ofEpochSecond(epochSecond: Double, offset: ZoneOffset): LocalDateTime
-        fun ofInstant(instant: Instant, zoneId: ZoneId = definedExternally): LocalDateTime
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): LocalDateTime
+        fun ofInstant(instant: Instant, zoneId: ZoneId): LocalDateTime
+        fun parse(text: String): LocalDateTime
     }
 }
 
@@ -492,13 +493,13 @@ external open class LocalTime : Temporal {
         var NANOS_PER_DAY: Double
         var FROM: TemporalQuery<LocalTime>
         fun from(temporal: TemporalAccessor): LocalTime
-        fun now(clockOrZone: Clock = definedExternally): LocalTime
-        fun now(clockOrZone: ZoneId = definedExternally): LocalTime
-        fun of(hour: Int = definedExternally, minute: Int = definedExternally, second: Int = definedExternally, nanoOfSecond: Int = definedExternally): LocalTime
-        fun ofInstant(instant: Instant, zone: ZoneId = definedExternally): LocalTime
+        fun now(clockOrZone: Clock): LocalTime
+        fun now(clockOrZone: ZoneId): LocalTime
+        fun of(hour: Int, minute: Int, second: Int, nanoOfSecond: Int): LocalTime
+        fun ofInstant(instant: Instant, zone: ZoneId): LocalTime
         fun ofNanoOfDay(nanoOfDay: Double): LocalTime
-        fun ofSecondOfDay(secondOfDay: Int = definedExternally, nanoOfSecond: Int = definedExternally): LocalTime
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): LocalTime
+        fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime
+        fun parse(text: String): LocalTime
     }
 }
 
@@ -524,11 +525,11 @@ external open class MonthDay : TemporalAccessor {
     companion object {
         var FROM: TemporalQuery<MonthDay>
         fun from(temporal: TemporalAccessor): MonthDay
-        fun now(zoneIdOrClock: ZoneId = definedExternally): MonthDay
-        fun now(zoneIdOrClock: Clock = definedExternally): MonthDay
+        fun now(zoneIdOrClock: ZoneId): MonthDay
+        fun now(zoneIdOrClock: Clock): MonthDay
         fun of(month: Month, dayOfMonth: Int): MonthDay
         fun of(month: Int, dayOfMonth: Int): MonthDay
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): MonthDay
+        fun parse(text: String, formatter: DateTimeFormatter): MonthDay
     }
 }
 
@@ -609,10 +610,10 @@ external open class Year : Temporal {
         var FROM: TemporalQuery<Year>
         fun from(temporal: TemporalAccessor): Year
         fun isLeap(year: Int): Boolean
-        fun now(zoneIdOrClock: ZoneId = definedExternally): Year
-        fun now(zoneIdOrClock: Clock = definedExternally): Year
+        fun now(zoneIdOrClock: ZoneId): Year
+        fun now(zoneIdOrClock: Clock): Year
         fun of(isoYear: Int): Year
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): Year
+        fun parse(text: String, formatter: DateTimeFormatter): Year
     }
 }
 
@@ -652,11 +653,11 @@ external open class YearMonth : Temporal {
     companion object {
         var FROM: TemporalQuery<YearMonth>
         fun from(temporal: TemporalAccessor): YearMonth
-        fun now(zoneIdOrClock: ZoneId = definedExternally): YearMonth
-        fun now(zoneIdOrClock: Clock = definedExternally): YearMonth
+        fun now(zoneIdOrClock: ZoneId): YearMonth
+        fun now(zoneIdOrClock: Clock): YearMonth
         fun of(year: Int, monthOrInt: Month): YearMonth
         fun of(year: Int, monthOrInt: Int): YearMonth
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): YearMonth
+        fun parse(text: String, formatter: DateTimeFormatter): YearMonth
     }
 }
 
@@ -735,13 +736,13 @@ external open class OffsetDateTime : Temporal {
         var MAX: OffsetDateTime
         var FROM: TemporalQuery<OffsetDateTime>
         fun from(temporal: TemporalAccessor): OffsetDateTime
-        fun now(clockOrZone: Clock = definedExternally): OffsetDateTime
-        fun now(clockOrZone: ZoneId = definedExternally): OffsetDateTime
+        fun now(clockOrZone: Clock): OffsetDateTime
+        fun now(clockOrZone: ZoneId): OffsetDateTime
         fun of(dateTime: LocalDateTime, offset: ZoneOffset): OffsetDateTime
         fun of(date: LocalDate, time: LocalTime, offset: ZoneOffset): OffsetDateTime
         fun of(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanoOfSecond: Int, offset: ZoneOffset): OffsetDateTime
         fun ofInstant(instant: Instant, zone: ZoneId): OffsetDateTime
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): OffsetDateTime
+        fun parse(text: String): OffsetDateTime
     }
 }
 
@@ -797,12 +798,12 @@ external open class OffsetTime : Temporal {
         var MAX: OffsetTime
         var FROM: TemporalQuery<OffsetTime>
         fun from(temporal: TemporalAccessor): OffsetTime
-        fun now(clockOrZone: Clock = definedExternally): OffsetTime
-        fun now(clockOrZone: ZoneId = definedExternally): OffsetTime
+        fun now(clockOrZone: Clock): OffsetTime
+        fun now(clockOrZone: ZoneId): OffsetTime
         fun of(time: LocalTime, offset: ZoneOffset): OffsetTime
         fun of(hour: Int, minute: Int, second: Int, nanoOfSecond: Int, offset: ZoneOffset): OffsetTime
         fun ofInstant(instant: Instant, zone: ZoneId): OffsetTime
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): OffsetTime
+        fun parse(text: String, formatter: DateTimeFormatter): OffsetTime
     }
 }
 
@@ -874,16 +875,16 @@ external open class ZonedDateTime : ChronoZonedDateTime {
     companion object {
         var FROM: TemporalQuery<ZonedDateTime>
         fun from(temporal: TemporalAccessor): ZonedDateTime
-        fun now(clockOrZone: Clock = definedExternally): ZonedDateTime
-        fun now(clockOrZone: ZoneId = definedExternally): ZonedDateTime
+        fun now(clockOrZone: Clock): ZonedDateTime
+        fun now(clockOrZone: ZoneId): ZonedDateTime
         fun of(localDateTime: LocalDateTime, zone: ZoneId): ZonedDateTime
         fun of(date: LocalDate, time: LocalTime, zone: ZoneId): ZonedDateTime
         fun of(year: Int, month: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanoOfSecond: Int, zone: ZoneId): ZonedDateTime
         fun ofInstant(instant: Instant, zone: ZoneId): ZonedDateTime
         fun ofInstant(localDateTime: LocalDateTime, offset: ZoneOffset, zone: ZoneId): ZonedDateTime
-        fun ofLocal(localDateTime: LocalDateTime, zone: ZoneId, preferredOffset: ZoneOffset? = definedExternally): ZonedDateTime
+        fun ofLocal(localDateTime: LocalDateTime, zone: ZoneId, preferredOffset: ZoneOffset?): ZonedDateTime
         fun ofStrict(localDateTime: LocalDateTime, offset: ZoneOffset, zone: ZoneId): ZonedDateTime
-        fun parse(text: String, formatter: DateTimeFormatter = definedExternally): ZonedDateTime
+        fun parse(text: String): ZonedDateTime
     }
 }
 
@@ -1041,7 +1042,7 @@ external open class DateTimeFormatterBuilder : InteropInterface {
     open fun appendOffset(pattern: String, noOffsetText: String): DateTimeFormatterBuilder
     open fun appendOffsetId(): DateTimeFormatterBuilder
     open fun appendPattern(pattern: String): DateTimeFormatterBuilder
-    open fun appendValue(field: TemporalField, width: Int = definedExternally, maxWidth: Int = definedExternally, signStyle: SignStyle = definedExternally): DateTimeFormatterBuilder
+    open fun appendValue(field: TemporalField, width: Int, maxWidth: Int, signStyle: SignStyle): DateTimeFormatterBuilder
     open fun appendValueReduced(field: TemporalField, width: Int, maxWidth: Int, base: ChronoLocalDate): DateTimeFormatterBuilder
     open fun appendValueReduced(field: TemporalField, width: Int, maxWidth: Int, base: Int): DateTimeFormatterBuilder
     open fun appendZoneId(): DateTimeFormatterBuilder
@@ -1052,7 +1053,7 @@ external open class DateTimeFormatterBuilder : InteropInterface {
     open fun parseCaseSensitive(): DateTimeFormatterBuilder
     open fun parseLenient(): DateTimeFormatterBuilder
     open fun parseStrict(): DateTimeFormatterBuilder
-    open fun toFormatter(resolverStyle: ResolverStyle = definedExternally): DateTimeFormatter
+    open fun toFormatter(resolverStyle: ResolverStyle): DateTimeFormatter
 }
 
 external open class DecimalStyle : InteropInterface {

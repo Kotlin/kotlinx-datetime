@@ -5,7 +5,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.JSJoda.Month as jsMonth
+import kotlinx.datetime.internal.JodaTimeMonth as jsMonth
 
 public actual enum class Month {
     JANUARY,
