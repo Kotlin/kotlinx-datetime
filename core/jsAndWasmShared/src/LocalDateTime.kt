@@ -6,7 +6,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
+import kotlinx.datetime.internal.JodaTimeLocalDateTime as jtLocalDateTime
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
@@ -44,7 +44,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual val time: LocalTime get() = LocalTime(value.toLocalTime())
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is LocalDateTime && (this.value === other.value || this.value.equals(other.value)))
+        (this === other) || (other is LocalDateTime && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 

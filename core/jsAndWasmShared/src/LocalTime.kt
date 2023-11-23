@@ -7,7 +7,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.internal.JSJoda.LocalTime as jtLocalTime
+import kotlinx.datetime.internal.JodaTimeLocalTime as jtLocalTime
 
 @Serializable(LocalTimeIso8601Serializer::class)
 public actual class LocalTime internal constructor(internal val value: jtLocalTime) :
@@ -25,12 +25,12 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
                 }
             )
 
-    public actual val hour: Int get() = value.hour().toInt()
-    public actual val minute: Int get() = value.minute().toInt()
-    public actual val second: Int get() = value.second().toInt()
+    public actual val hour: Int get() = value.hour()
+    public actual val minute: Int get() = value.minute()
+    public actual val second: Int get() = value.second()
     public actual val nanosecond: Int get() = value.nano().toInt()
-    public actual fun toSecondOfDay(): Int = value.toSecondOfDay().toInt()
-    public actual fun toMillisecondOfDay(): Int = (value.toNanoOfDay().toDouble() / NANOS_PER_MILLI).toInt()
+    public actual fun toSecondOfDay(): Int = value.toSecondOfDay()
+    public actual fun toMillisecondOfDay(): Int = (value.toNanoOfDay() / NANOS_PER_MILLI).toInt()
     public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay().toLong()
 
     override fun equals(other: Any?): Boolean =
