@@ -7,7 +7,12 @@ pluginManagement {
     val dokkaVersion: String by settings
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
+
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version("0.4.0")
 }
 
 rootProject.name = "Kotlin-DateTime-library"

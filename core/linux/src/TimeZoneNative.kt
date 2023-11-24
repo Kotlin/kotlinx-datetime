@@ -75,4 +75,4 @@ internal actual fun currentTime(): Instant = memScoped {
     }
 }
 
-private val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))
+internal actual val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))
