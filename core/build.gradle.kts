@@ -72,9 +72,6 @@ kotlin {
             target("iosArm64")
             // Tier 3
             target("watchosDeviceArm64")
-            // Deprecated for removal
-            target("iosArm32")
-            target("watchosX86")
         }
     }
 
