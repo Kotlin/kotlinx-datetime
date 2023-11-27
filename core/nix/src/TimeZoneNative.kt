@@ -7,9 +7,7 @@
 package kotlinx.datetime
 
 import kotlinx.cinterop.memScoped
-import kotlinx.datetime.internal.OffsetInfo
-import kotlinx.datetime.internal.TimeZoneRules
-import kotlinx.datetime.internal.TzdbOnFilesystem
+import kotlinx.datetime.internal.*
 
 internal expect val tzdbOnFilesystem: TzdbOnFilesystem
 
@@ -23,9 +21,9 @@ internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual ove
         }
 
         actual fun currentSystemDefault(): RegionTimeZone {
-            val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second
+            val zoneId = currentSystemDefaultId()
                     ?: throw IllegalStateException("Failed to get the system timezone")
-            return of(zoneId.toString())
+            return of(zoneId)
         }
 
         actual val availableZoneIds: Set<String>
@@ -61,3 +59,5 @@ internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual ove
 
     actual override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 }
+
+internal expect fun currentSystemDefaultId(): String?

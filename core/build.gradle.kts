@@ -155,7 +155,12 @@ kotlin {
                 // do nothing special
             }
             konanTarget.family.isAppleFamily -> {
-                // do nothing special
+                compilations["main"].cinterops {
+                    create("declarations") {
+                        defFile("$projectDir/darwin/cinterop/definitions.def")
+                        headers("$projectDir/darwin/cinterop/definitions.h")
+                    }
+                }
             }
             else -> {
                 throw IllegalArgumentException("Unknown native target ${this@withType}")

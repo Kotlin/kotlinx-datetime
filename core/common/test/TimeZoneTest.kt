@@ -46,14 +46,23 @@ class TimeZoneTest {
 
     @Test
     fun availableZonesAreAvailable() {
+        val availableZones = mutableListOf<String>()
+        val nonAvailableZones = mutableListOf<Pair<String, Exception>>()
         for (zoneName in TimeZone.availableZoneIds) {
             val timezone = try {
                 TimeZone.of(zoneName)
             } catch (e: Exception) {
-                throw Exception("Zone $zoneName is not available", e)
+                nonAvailableZones.add(zoneName to e)
+                continue
             }
+            availableZones.add(zoneName)
             Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone)
             Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone)
+        }
+        if (nonAvailableZones.isNotEmpty()) {
+            println("Available zones: $availableZones")
+            println("Non-available zones: $nonAvailableZones")
+            throw nonAvailableZones[0].second
         }
     }
 

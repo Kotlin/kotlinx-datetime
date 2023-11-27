@@ -75,4 +75,7 @@ internal actual fun currentTime(): Instant = memScoped {
     }
 }
 
+internal actual fun currentSystemDefaultId(): String? =
+        pathToSystemDefault()?.second?.toString()
+
 internal actual val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))
