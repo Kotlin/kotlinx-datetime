@@ -170,7 +170,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-common")
                 compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
@@ -182,20 +181,13 @@ kotlin {
         }
 
         val jvmMain by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib")
-            }
         }
 
         val jvmTest by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-junit")
-            }
         }
 
         val jsMain by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
             }

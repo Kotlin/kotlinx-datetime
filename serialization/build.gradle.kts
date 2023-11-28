@@ -72,7 +72,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":kotlinx-datetime"))
-                api("org.jetbrains.kotlin:kotlin-stdlib-common")
             }
         }
 
@@ -84,11 +83,7 @@ kotlin {
         }
 
         val jvmMain by getting
-        val jvmTest by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-junit")
-            }
-        }
+        val jvmTest by getting
 
         val jsMain by getting
         val jsTest by getting {
