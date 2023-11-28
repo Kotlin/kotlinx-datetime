@@ -39,7 +39,7 @@ class ConvertersTest {
 
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
-        val month = Month.values().random()
+        val month = Month.entries.random()
         val day = (1..java.time.YearMonth.of(year, month).lengthOfMonth()).random()
         return LocalDate(year, month.number, day)
     }
