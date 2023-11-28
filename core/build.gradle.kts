@@ -6,6 +6,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     kotlin("multiplatform")
@@ -105,6 +106,11 @@ kotlin {
 //                outputFile = "kotlinx-datetime-tmp.js"
 //            }
 //        }
+    }
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets.all {
