@@ -304,6 +304,22 @@ tasks {
             exclude("tmp/.cache/expanded/expanded.lock")
         })
     }
+
+    // workaround from KT-61313
+    withType<Sign>().configureEach {
+        val pubName = name.removePrefix("sign").removeSuffix("Publication")
+
+        // These tasks only exist for native targets, hence findByName() to avoid trying to find them for other targets
+
+        // Task ':linkDebugTest<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
+        findByName("linkDebugTest$pubName")?.let {
+            mustRunAfter(it)
+        }
+        // Task ':compileTestKotlin<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
+        findByName("compileTestKotlin$pubName")?.let {
+            mustRunAfter(it)
+        }
+    }
 }
 
 val downloadWindowsZonesMapping by tasks.registering {
