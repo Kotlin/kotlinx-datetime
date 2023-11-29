@@ -16,6 +16,7 @@ kotlin {
     infra {
         target("linuxX64")
         target("linuxArm64")
+        target("linuxArm32Hfp")
         target("mingwX64")
         target("macosX64")
         target("macosArm64")
