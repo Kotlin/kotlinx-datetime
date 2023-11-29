@@ -202,7 +202,7 @@ kotlin {
             }
         }
 
-        val jsAndWasmSharedMain by creating {
+        val commonJsMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
@@ -210,7 +210,7 @@ kotlin {
             }
         }
 
-        val jsAndWasmSharedTest by creating {
+        val commonJsTest by creating {
             dependsOn(commonTest.get())
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
@@ -218,25 +218,25 @@ kotlin {
         }
 
         val jsMain by getting {
-            dependsOn(jsAndWasmSharedMain)
+            dependsOn(commonJsMain)
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-js")
             }
         }
 
         val jsTest by getting {
-            dependsOn(jsAndWasmSharedTest)
+            dependsOn(commonJsTest)
         }
 
         val wasmJsMain by getting {
-            dependsOn(jsAndWasmSharedMain)
+            dependsOn(commonJsMain)
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-stdlib-wasm-js")
             }
         }
 
         val wasmJsTest by getting {
-            dependsOn(jsAndWasmSharedTest)
+            dependsOn(commonJsTest)
         }
 
         val nativeMain by getting {
@@ -418,7 +418,7 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
 
 // Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
 tasks.configureEach {
-    if (name == "compileJsAndWasmSharedMainKotlinMetadata") {
+    if (name == "compileCommonJsMainKotlinMetadata") {
         enabled = false
     }
 }

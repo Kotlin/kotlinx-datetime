@@ -5,10 +5,10 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.JodaTimeChronoUnit
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JodaTimeLocalDate as jtLocalDate
+import kotlinx.datetime.internal.JodaTimeChronoUnit as jtChronoUnit
 
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
@@ -49,7 +49,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     public actual val dayOfYear: Int get() = value.dayOfYear()
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is LocalDate && (this.value === other.value || this.value.equals(other.value)))
+            (this === other) || (other is LocalDate && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
@@ -81,8 +81,8 @@ private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): L
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {
         return@with value
-            .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
-            .run { if (days != 0) plusDays(days) else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
+                .run { if (days != 0) plusDays(days) else this }
 
     }.let(::LocalDate)
 } catch (e: Throwable) {
@@ -95,8 +95,8 @@ public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
 public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     var startD = this.value
     val endD = other.value
-    val months = startD.until(endD,  JodaTimeChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
-    val days = startD.until(endD, JodaTimeChronoUnit.DAYS).toInt()
+    val months = startD.until(endD, jtChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
+    val days = startD.until(endD, jtChronoUnit.DAYS).toInt()
 
     return DatePeriod(totalMonths = months, days)
 }
@@ -107,10 +107,10 @@ public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
 }
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
-        this.value.until(other.value, JodaTimeChronoUnit.DAYS).toInt()
+        this.value.until(other.value, jtChronoUnit.DAYS).toInt()
 
 public actual fun LocalDate.monthsUntil(other: LocalDate): Int =
-        this.value.until(other.value, JodaTimeChronoUnit.MONTHS).toInt()
+        this.value.until(other.value, jtChronoUnit.MONTHS).toInt()
 
 public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
-        this.value.until(other.value, JodaTimeChronoUnit.YEARS).toInt()
+        this.value.until(other.value, jtChronoUnit.YEARS).toInt()

@@ -42,7 +42,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual val time: LocalTime get() = LocalTime(value.toLocalTime())
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is LocalDateTime && this.value == other.value)
+            (this === other) || (other is LocalDateTime && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
@@ -63,4 +63,3 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     }
 
 }
-

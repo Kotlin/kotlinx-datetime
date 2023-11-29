@@ -5,16 +5,18 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.internal.JodaTimeLocalDateTime
 import kotlinx.datetime.internal.JodaTimeZoneId
+import kotlinx.datetime.internal.JodaTimeLocalDateTime as jtLocalDateTime
+import kotlinx.datetime.internal.JodaTimeZoneId as jtZoneId
+import kotlinx.datetime.internal.JodaTimeZoneOffset as jtZoneOffset
 import kotlinx.datetime.internal.getAvailableZoneIdsSet
 import kotlinx.datetime.serializers.*
-import kotlinx.datetime.internal.JodaTimeZoneOffset as jtZoneOffset
 import kotlinx.serialization.Serializable
 
 @Serializable(with = TimeZoneSerializer::class)
-public actual open class TimeZone internal constructor(internal val zoneId: JodaTimeZoneId) {
+public actual open class TimeZone internal constructor(internal val zoneId: jtZoneId) {
     public actual val id: String get() = zoneId.id()
+
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
@@ -28,11 +30,11 @@ public actual open class TimeZone internal constructor(internal val zoneId: Joda
     override fun toString(): String = zoneId.toString()
 
     public actual companion object {
-        public actual fun currentSystemDefault(): TimeZone = ofZone(JodaTimeZoneId.systemDefault())
+        public actual fun currentSystemDefault(): TimeZone = ofZone(jtZoneId.systemDefault())
         public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
-            ofZone(JodaTimeZoneId.of(zoneId))
+            ofZone(jtZoneId.of(zoneId))
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
             throw e
@@ -55,22 +57,23 @@ public actual open class TimeZone internal constructor(internal val zoneId: Joda
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone
-internal constructor(public actual val offset: UtcOffset, zoneId: JodaTimeZoneId): TimeZone(zoneId) {
+internal constructor(public actual val offset: UtcOffset, zoneId: jtZoneId): TimeZone(zoneId) {
     public actual constructor(offset: UtcOffset) : this(offset, offset.zoneOffset)
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public actual val totalSeconds: Int get() = offset.totalSeconds
 }
 
+
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
-    JodaTimeLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+    jtLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
 }
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    JodaTimeLocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
+    jtLocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e

@@ -21,11 +21,9 @@ import kotlin.reflect.KClass
  */
 public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBased> {
 
-    override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("TimeBased") {
-            element<Long>("nanoseconds")
-        }
-
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TimeBased") {
+        element<Long>("nanoseconds")
+    }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.TimeBased) {
         encoder.encodeStructure(descriptor) {
@@ -67,10 +65,9 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
  */
 public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased> {
 
-    override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("DayBased") {
-            element<Int>("days")
-        }
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DayBased") {
+        element<Int>("days")
+    }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.DayBased) {
         encoder.encodeStructure(descriptor) {
@@ -112,10 +109,9 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
  */
 public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBased> {
 
-    override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("MonthBased") {
-            element<Int>("months")
-        }
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MonthBased") {
+        element<Int>("months")
+    }
 
     override fun serialize(encoder: Encoder, value: DateTimeUnit.MonthBased) {
         encoder.encodeStructure(descriptor) {
@@ -160,12 +156,10 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
     private val impl by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        SealedClassSerializer(
-            "kotlinx.datetime.DateTimeUnit.DateBased",
+        SealedClassSerializer("kotlinx.datetime.DateTimeUnit.DateBased",
             DateTimeUnit.DateBased::class,
             arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class),
-            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer)
-        )
+            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer))
     }
 
     @InternalSerializationApi
@@ -197,13 +191,11 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
 @OptIn(InternalSerializationApi::class)
 public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
 
-    private val impl by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        SealedClassSerializer(
-            "kotlinx.datetime.DateTimeUnit",
+    private val impl  by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        SealedClassSerializer("kotlinx.datetime.DateTimeUnit",
             DateTimeUnit::class,
             arrayOf(DateTimeUnit.DayBased::class, DateTimeUnit.MonthBased::class, DateTimeUnit.TimeBased::class),
-            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer)
-        )
+            arrayOf(DayBasedDateTimeUnitSerializer, MonthBasedDateTimeUnitSerializer, TimeBasedDateTimeUnitSerializer))
     }
 
     @InternalSerializationApi
