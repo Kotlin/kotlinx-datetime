@@ -26,7 +26,7 @@ public actual open class JodaTimeTemporal(override val value: Temporal) : JodaTi
 }
 
 public actual open class JodaTimeChronoUnit(override val value: ChronoUnit) : JodaTimeTemporalUnit(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeChronoUnit && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeChronoUnit && value === other.value)
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
 
@@ -39,7 +39,7 @@ public actual open class JodaTimeChronoUnit(override val value: ChronoUnit) : Jo
 }
 
 public actual open class JodaTimeClock(val value: Clock)  {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeClock && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeClock && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun instant(): JodaTimeInstant = JodaTimeInstant(value.instant())
@@ -50,7 +50,7 @@ public actual open class JodaTimeClock(val value: Clock)  {
 }
 
 public actual open class JodaTimeDuration(val value: Duration) : JodaTimeTemporalAmount() {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeDuration && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeDuration && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun nano(): Double = value.nano()
@@ -63,11 +63,11 @@ public actual open class JodaTimeDuration(val value: Duration) : JodaTimeTempora
 }
 
 public actual open class JodaTimeInstant(override val value: Instant) : JodaTimeTemporal(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeInstant && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeInstant && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun atZone(zone: JodaTimeZoneId): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.atZone(zone.value))
+        JodaTimeZonedDateTime(jsTry { value.atZone(zone.value) })
     actual fun compareTo(otherInstant: JodaTimeInstant): Int = value.compareTo(otherInstant.value)
     actual fun epochSecond(): Double = value.epochSecond()
     actual fun nano(): Double = value.nano()
@@ -76,26 +76,26 @@ public actual open class JodaTimeInstant(override val value: Instant) : JodaTime
         actual var MIN: JodaTimeInstant = JodaTimeInstant(Instant.MIN)
         actual var MAX: JodaTimeInstant = JodaTimeInstant(Instant.MAX)
         actual fun ofEpochSecond(epochSecond: Double, nanoAdjustment: Int): JodaTimeInstant =
-            jsTry { JodaTimeInstant(Instant.ofEpochSecond(epochSecond, nanoAdjustment)) }
+            JodaTimeInstant(jsTry { Instant.ofEpochSecond(epochSecond, nanoAdjustment) })
     }
 }
 
 public actual open class JodaTimeLocalDate(override val value: LocalDate) : JodaTimeChronoLocalDate(value) {
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeLocalDate && value.equals(other.value))
+    actual override fun hashCode(): Int = value.hashCode()
+    actual override fun toString(): String = value.toString()
     actual fun atStartOfDay(zone: JodaTimeZoneId): JodaTimeZonedDateTime =
         JodaTimeZonedDateTime(value.atStartOfDay(zone.value))
     actual fun compareTo(other: JodaTimeLocalDate): Int = value.compareTo(other.value)
     actual fun dayOfMonth(): Int = value.dayOfMonth()
     actual fun dayOfWeek(): JodaTimeDayOfWeek = JodaTimeDayOfWeek(value.dayOfWeek())
     actual fun dayOfYear(): Int = value.dayOfYear()
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeLocalDate && value.equals(other.value)
-    actual override fun hashCode(): Int = value.hashCode()
-    actual override fun toString(): String = value.toString()
     actual fun month(): JodaTimeMonth = JodaTimeMonth(value.month())
     actual fun monthValue(): Int = value.monthValue()
     actual fun plusDays(daysToAdd: Int): JodaTimeLocalDate =
-        JodaTimeLocalDate(value.plusDays(daysToAdd))
+        JodaTimeLocalDate(jsTry { value.plusDays(daysToAdd) })
     actual fun plusMonths(monthsToAdd: Int): JodaTimeLocalDate =
-        JodaTimeLocalDate(value.plusMonths(monthsToAdd))
+        JodaTimeLocalDate(jsTry { value.plusMonths(monthsToAdd) })
     actual fun toEpochDay(): Double = value.toEpochDay()
     actual fun year(): Int = value.year()
 
@@ -103,16 +103,16 @@ public actual open class JodaTimeLocalDate(override val value: LocalDate) : Joda
         actual var MIN: JodaTimeLocalDate = JodaTimeLocalDate(LocalDate.MIN)
         actual var MAX: JodaTimeLocalDate = JodaTimeLocalDate(LocalDate.MAX)
         actual fun of(year: Int, month: Int, dayOfMonth: Int): JodaTimeLocalDate =
-            JodaTimeLocalDate(LocalDate.of(year, month, dayOfMonth))
+            JodaTimeLocalDate(jsTry { LocalDate.of(year, month, dayOfMonth) })
         actual fun ofEpochDay(epochDay: Int):  JodaTimeLocalDate =
-            JodaTimeLocalDate(LocalDate.ofEpochDay(epochDay))
+            JodaTimeLocalDate(jsTry { LocalDate.ofEpochDay(epochDay) })
         actual fun parse(text: String): JodaTimeLocalDate =
-            JodaTimeLocalDate(LocalDate.parse(text))
+            JodaTimeLocalDate(jsTry { LocalDate.parse(text) })
     }
 }
 
 public actual open class JodaTimeLocalDateTime(override val value: LocalDateTime) : JodaTimeChronoLocalDateTime(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeLocalDateTime && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeLocalDateTime && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
 
@@ -136,18 +136,18 @@ public actual open class JodaTimeLocalDateTime(override val value: LocalDateTime
         actual var MIN: JodaTimeLocalDateTime = JodaTimeLocalDateTime(LocalDateTime.MIN)
         actual var MAX: JodaTimeLocalDateTime = JodaTimeLocalDateTime(LocalDateTime.MAX)
         actual fun of(date: JodaTimeLocalDate, time: JodaTimeLocalTime): JodaTimeLocalDateTime =
-            JodaTimeLocalDateTime(LocalDateTime.of(date.value, time.value))
+            JodaTimeLocalDateTime(jsTry { LocalDateTime.of(date.value, time.value) })
         actual fun of(year: Int, month: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanoSecond: Int): JodaTimeLocalDateTime =
-            JodaTimeLocalDateTime(LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoSecond))
+            JodaTimeLocalDateTime(jsTry { LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoSecond) })
         actual fun ofInstant(instant: JodaTimeInstant, zoneId: JodaTimeZoneId): JodaTimeLocalDateTime =
-            JodaTimeLocalDateTime(LocalDateTime.ofInstant(instant.value, zoneId.value))
+            JodaTimeLocalDateTime(jsTry { LocalDateTime.ofInstant(instant.value, zoneId.value) })
         actual fun parse(text: String): JodaTimeLocalDateTime =
-            JodaTimeLocalDateTime(LocalDateTime.parse(text))
+            JodaTimeLocalDateTime(jsTry { LocalDateTime.parse(text) })
     }
 }
 
 public actual open class JodaTimeLocalTime(override val value: LocalTime) : JodaTimeTemporal(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeLocalTime && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeLocalTime && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun compareTo(other: JodaTimeLocalTime): Int = value.compareTo(other.value)
@@ -162,18 +162,18 @@ public actual open class JodaTimeLocalTime(override val value: LocalTime) : Joda
         actual var MIN: JodaTimeLocalTime = JodaTimeLocalTime(LocalTime.MIN)
         actual var MAX: JodaTimeLocalTime = JodaTimeLocalTime(LocalTime.MAX)
         actual fun of(hour: Int, minute: Int, second: Int, nanoOfSecond: Int): JodaTimeLocalTime =
-            JodaTimeLocalTime(LocalTime.of(hour, minute, second, nanoOfSecond))
+            JodaTimeLocalTime(jsTry { LocalTime.of(hour, minute, second, nanoOfSecond) })
         actual fun ofNanoOfDay(nanoOfDay: Double): JodaTimeLocalTime =
-            JodaTimeLocalTime(LocalTime.ofNanoOfDay(nanoOfDay))
+            JodaTimeLocalTime(jsTry { LocalTime.ofNanoOfDay(nanoOfDay) })
         actual fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): JodaTimeLocalTime =
-            JodaTimeLocalTime(LocalTime.ofSecondOfDay(secondOfDay, nanoOfSecond))
+            JodaTimeLocalTime(jsTry { LocalTime.ofSecondOfDay(secondOfDay, nanoOfSecond) })
         actual fun parse(text: String): JodaTimeLocalTime =
-            JodaTimeLocalTime(LocalTime.parse(text))
+            JodaTimeLocalTime(jsTry { LocalTime.parse(text) })
     }
 }
 
 public actual open class JodaTimeOffsetDateTime(override val value: OffsetDateTime) : JodaTimeTemporal(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeOffsetDateTime && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeOffsetDateTime && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun toInstant(): JodaTimeInstant = JodaTimeInstant(value.toInstant())
@@ -182,37 +182,37 @@ public actual open class JodaTimeOffsetDateTime(override val value: OffsetDateTi
         actual fun ofInstant(instant: JodaTimeInstant, zone: JodaTimeZoneId): JodaTimeOffsetDateTime =
             JodaTimeOffsetDateTime(OffsetDateTime.ofInstant(instant.value, zone.value))
         actual fun parse(text: String): JodaTimeOffsetDateTime =
-            JodaTimeOffsetDateTime(OffsetDateTime.parse(text))
+            JodaTimeOffsetDateTime(jsTry { OffsetDateTime.parse(text) })
     }
 }
 
 public actual open class JodaTimeZonedDateTime(override val value: ZonedDateTime) : JodaTimeChronoZonedDateTime(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeZonedDateTime && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeZonedDateTime && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun plusDays(days: Int): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusDays(days))
+        JodaTimeZonedDateTime(jsTry { value.plusDays(days) })
     actual fun plusDays(days: Double): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusDays(days))
+        JodaTimeZonedDateTime(jsTry { value.plusDays(days) })
     actual fun plusHours(hours: Int): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusHours(hours))
+        JodaTimeZonedDateTime(jsTry { value.plusHours(hours) })
     actual fun plusMinutes(minutes: Int): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusMinutes(minutes))
+        JodaTimeZonedDateTime(jsTry { value.plusMinutes(minutes) })
     actual fun plusMonths(months: Int): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusMonths(months))
+        JodaTimeZonedDateTime(jsTry { value.plusMonths(months) })
     actual fun plusMonths(months: Double): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusMonths(months))
+        JodaTimeZonedDateTime(jsTry { value.plusMonths(months) })
     actual fun plusNanos(nanos: Double): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusNanos(nanos))
+        JodaTimeZonedDateTime(jsTry { value.plusNanos(nanos) })
     actual fun plusSeconds(seconds: Int): JodaTimeZonedDateTime =
-        JodaTimeZonedDateTime(value.plusSeconds(seconds))
+        JodaTimeZonedDateTime(jsTry { value.plusSeconds(seconds) })
 }
 
 internal actual fun JodaTimeZoneId.toZoneOffset(): JodaTimeZoneOffset? =
     (value as? ZoneOffset)?.let(::JodaTimeZoneOffset)
 
 public actual open class JodaTimeZoneId(open val value: ZoneId)  {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeZoneId && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeZoneId && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun id(): String = value.id()
@@ -221,12 +221,12 @@ public actual open class JodaTimeZoneId(open val value: ZoneId)  {
 
     actual companion object {
         actual fun systemDefault(): JodaTimeZoneId = JodaTimeZoneId(ZoneId.systemDefault())
-        actual fun of(zoneId: String): JodaTimeZoneId = JodaTimeZoneId(ZoneId.of(zoneId))
+        actual fun of(zoneId: String): JodaTimeZoneId = JodaTimeZoneId(jsTry { ZoneId.of(zoneId) })
     }
 }
 
 public actual open class JodaTimeZoneOffset(override val value: ZoneOffset) : JodaTimeZoneId(value) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeZoneOffset && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeZoneOffset && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun totalSeconds(): Int = value.totalSeconds()
@@ -234,30 +234,30 @@ public actual open class JodaTimeZoneOffset(override val value: ZoneOffset) : Jo
     actual companion object {
         actual var UTC: JodaTimeZoneOffset = JodaTimeZoneOffset(ZoneOffset.UTC)
         actual fun of(offsetId: String): JodaTimeZoneOffset =
-            JodaTimeZoneOffset(ZoneOffset.of(offsetId))
+            JodaTimeZoneOffset(jsTry { ZoneOffset.of(offsetId) })
         actual fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): JodaTimeZoneOffset =
-            JodaTimeZoneOffset(ZoneOffset.ofHoursMinutesSeconds(hours, minutes, seconds))
+            JodaTimeZoneOffset(jsTry { ZoneOffset.ofHoursMinutesSeconds(hours, minutes, seconds) })
         actual fun ofTotalSeconds(totalSeconds: Int): JodaTimeZoneOffset =
-            JodaTimeZoneOffset(ZoneOffset.ofTotalSeconds(totalSeconds))
+            JodaTimeZoneOffset(jsTry { ZoneOffset.ofTotalSeconds(totalSeconds) })
     }
 }
 
 public actual open class JodaTimeDayOfWeek(private val value: DayOfWeek) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeDayOfWeek && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeDayOfWeek && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun value(): Int = value.value()
 }
 
 public actual open class JodaTimeMonth(private val value: Month) {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeMonth && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeMonth && value.equals(other.value))
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun value(): Int = value.value()
 }
 
 public actual open class JodaTimeZoneRules(private val value: ZoneRules)  {
-    actual override fun equals(other: Any?): Boolean = other is JodaTimeZoneRules && value.equals(other.value)
+    actual override fun equals(other: Any?): Boolean = this === other || (other is JodaTimeZoneRules && value === other.value)
     actual override fun hashCode(): Int = value.hashCode()
     actual override fun toString(): String = value.toString()
     actual fun isFixedOffset(): Boolean = value.isFixedOffset()

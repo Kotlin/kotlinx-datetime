@@ -25,9 +25,7 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: Joda
         public actual val ZERO: UtcOffset = UtcOffset(JodaTimeZoneOffset.UTC)
 
         public actual fun parse(offsetString: String): UtcOffset = try {
-            jsTry {
-                JodaTimeZoneOffset.of(offsetString).let(::UtcOffset)
-            }
+            JodaTimeZoneOffset.of(offsetString).let(::UtcOffset)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
             throw e
@@ -38,17 +36,15 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: Joda
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
 public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
     try {
-        jsTry {
-            when {
-                hours != null ->
-                    UtcOffset(JodaTimeZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0))
+        when {
+            hours != null ->
+                UtcOffset(JodaTimeZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0))
 
-                minutes != null ->
-                    UtcOffset(JodaTimeZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0))
+            minutes != null ->
+                UtcOffset(JodaTimeZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0))
 
-                else -> {
-                    UtcOffset(JodaTimeZoneOffset.ofTotalSeconds(seconds ?: 0))
-                }
+            else -> {
+                UtcOffset(JodaTimeZoneOffset.ofTotalSeconds(seconds ?: 0))
             }
         }
     } catch (e: Throwable) {

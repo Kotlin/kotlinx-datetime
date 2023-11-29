@@ -67,16 +67,14 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 Instant(jtClock.systemUTC().instant())
 
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant = try {
-            jsTry {
-                fromEpochSeconds(epochMilliseconds / MILLIS_PER_ONE, epochMilliseconds % MILLIS_PER_ONE * NANOS_PER_MILLI)
-            }
+            fromEpochSeconds(epochMilliseconds / MILLIS_PER_ONE, epochMilliseconds % MILLIS_PER_ONE * NANOS_PER_MILLI)
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
             if (epochMilliseconds > 0) MAX else MIN
         }
 
         public actual fun parse(isoString: String): Instant = try {
-            Instant(jsTry { jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)) }.toInstant())
+            Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)).toInstant())
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
@@ -94,21 +92,19 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
-            jsTry {
                 /* Performing normalization here because otherwise this fails:
                assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(),
                             Instant.fromEpochSeconds(0, Long.MAX_VALUE).nanosecondsOfSecond) */
                 val secs = safeAdd(epochSeconds, nanosecondAdjustment.floorDiv(NANOS_PER_ONE.toLong()))
                 val nos = nanosecondAdjustment.mod(NANOS_PER_ONE.toLong()).toInt()
                 Instant(jtInstant.ofEpochSecond(secs.toDouble(), nos))
-            }
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException() && e !is ArithmeticException) throw e
             if (epochSeconds > 0) MAX else MIN
         }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant = try {
-            jsTry { Instant(jtInstant.ofEpochSecond(epochSeconds.toDouble(), nanosecondAdjustment)) }
+            Instant(jtInstant.ofEpochSecond(epochSeconds.toDouble(), nanosecondAdjustment))
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException()) throw e
             if (epochSeconds > 0) MAX else MIN
@@ -124,18 +120,16 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
 
 public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
-    jsTry {
-        val thisZdt = this.value.atZone(timeZone.zoneId)
-        with(period) {
-            thisZdt
-                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
-                .run { if (days != 0) plusDays(days) else this }
-                .run { if (hours != 0) plusHours(hours) else this }
-                .run { if (minutes != 0) plusMinutes(minutes) else this }
-                .run { if (seconds != 0) plusSeconds(seconds) else this }
-                .run { if (nanoseconds != 0) plusNanos(nanoseconds.toDouble()) else this }
-        }.toInstant().let(::Instant)
-    }
+    val thisZdt = this.value.atZone(timeZone.zoneId)
+    with(period) {
+        thisZdt
+            .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
+            .run { if (days != 0) plusDays(days) else this }
+            .run { if (hours != 0) plusHours(hours) else this }
+            .run { if (minutes != 0) plusMinutes(minutes) else this }
+            .run { if (seconds != 0) plusSeconds(seconds) else this }
+            .run { if (nanoseconds != 0) plusNanos(nanoseconds.toDouble()) else this }
+    }.toInstant().let(::Instant)
 }    catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
@@ -150,20 +144,18 @@ public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant 
 
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
         try {
-            jsTry {
-                val thisZdt = this.atZone(timeZone)
-                when (unit) {
-                    is DateTimeUnit.TimeBased -> {
-                        plus(value, unit).value.checkZone(timeZone)
-                    }
+            val thisZdt = this.atZone(timeZone)
+            when (unit) {
+                is DateTimeUnit.TimeBased -> {
+                    plus(value, unit).value.checkZone(timeZone)
+                }
 
-                    is DateTimeUnit.DayBased ->
-                        thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
+                is DateTimeUnit.DayBased ->
+                    thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
 
-                    is DateTimeUnit.MonthBased ->
-                        thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
-                }.let(::Instant)
-            }
+                is DateTimeUnit.MonthBased ->
+                    thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
+            }.let(::Instant)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
             throw e
@@ -171,19 +163,17 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
 
 public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
         try {
-            jsTry {
-                val thisZdt = this.atZone(timeZone)
-                when (unit) {
-                    is DateTimeUnit.TimeBased ->
-                        plus(value.toLong(), unit).value.checkZone(timeZone)
+            val thisZdt = this.atZone(timeZone)
+            when (unit) {
+                is DateTimeUnit.TimeBased ->
+                    plus(value.toLong(), unit).value.checkZone(timeZone)
 
-                    is DateTimeUnit.DayBased ->
-                        thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
+                is DateTimeUnit.DayBased ->
+                    thisZdt.plusDays(value.toDouble() * unit.days).toInstant()
 
-                    is DateTimeUnit.MonthBased ->
-                        thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
-                }.let(::Instant)
-            }
+                is DateTimeUnit.MonthBased ->
+                    thisZdt.plusMonths(value.toDouble() * unit.months).toInstant()
+            }.let(::Instant)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
             throw e
@@ -197,10 +187,8 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
 
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     try {
-        jsTry {
-            multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
-                Instant(plusFix(d.toDouble(), r.toInt()))
-            }
+        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
+            Instant(plusFix(d.toDouble(), r.toInt()))
         }
     } catch (e: Throwable) {
         if (!e.isJodaDateTimeException()) {
@@ -210,29 +198,25 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
     }
 
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod = try {
-    jsTry {
-        var thisZdt = this.value.atZone(timeZone.zoneId)
-        val otherZdt = other.value.atZone(timeZone.zoneId)
+    var thisZdt = this.value.atZone(timeZone.zoneId)
+    val otherZdt = other.value.atZone(timeZone.zoneId)
 
-        val months = thisZdt.until(otherZdt, JodaTimeChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
-        val days = thisZdt.until(otherZdt, JodaTimeChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
-        val nanoseconds = thisZdt.until(otherZdt, JodaTimeChronoUnit.NANOS)
+    val months = thisZdt.until(otherZdt, JodaTimeChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
+    val days = thisZdt.until(otherZdt, JodaTimeChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
+    val nanoseconds = thisZdt.until(otherZdt, JodaTimeChronoUnit.NANOS)
 
-        buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds.toLong())
-    }
+    buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds.toLong())
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
-    jsTry {
-        val thisZdt = this.atZone(timeZone)
-        val otherZdt = other.atZone(timeZone)
-        when (unit) {
-            is DateTimeUnit.TimeBased -> until(other, unit)
-            is DateTimeUnit.DayBased -> (thisZdt.until(otherZdt, JodaTimeChronoUnit.DAYS) / unit.days).toLong()
-            is DateTimeUnit.MonthBased -> (thisZdt.until(otherZdt, JodaTimeChronoUnit.MONTHS) / unit.months).toLong()
-        }
+    val thisZdt = this.atZone(timeZone)
+    val otherZdt = other.atZone(timeZone)
+    when (unit) {
+        is DateTimeUnit.TimeBased -> until(other, unit)
+        is DateTimeUnit.DayBased -> (thisZdt.until(otherZdt, JodaTimeChronoUnit.DAYS) / unit.days).toLong()
+        is DateTimeUnit.MonthBased -> (thisZdt.until(otherZdt, JodaTimeChronoUnit.MONTHS) / unit.months).toLong()
     }
 } catch (e: ArithmeticException) {
     if (this < other) Long.MAX_VALUE else Long.MIN_VALUE

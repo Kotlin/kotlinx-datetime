@@ -5,8 +5,5 @@
 
 package kotlinx.datetime
 
-internal actual fun Throwable.isJodaArithmeticException(): Boolean = this.asDynamic().name == "ArithmeticException"
-internal actual fun Throwable.isJodaDateTimeException(): Boolean = this.asDynamic().name == "DateTimeException"
-internal actual fun Throwable.isJodaDateTimeParseException(): Boolean = this.asDynamic().name == "DateTimeParseException"
-
-internal actual inline fun <reified T : Any> jsTry(crossinline body: () -> T): T = body()
+internal actual fun Throwable.hasJsExceptionName(name: String): Boolean =
+    this.asDynamic().name == name

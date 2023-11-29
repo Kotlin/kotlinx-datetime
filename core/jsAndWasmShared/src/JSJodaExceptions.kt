@@ -5,8 +5,8 @@
 
 package kotlinx.datetime
 
-internal expect fun Throwable.isJodaArithmeticException(): Boolean
-internal expect fun Throwable.isJodaDateTimeException(): Boolean
-internal expect fun Throwable.isJodaDateTimeParseException(): Boolean
+internal fun Throwable.isJodaArithmeticException(): Boolean = hasJsExceptionName("ArithmeticException")
+internal fun Throwable.isJodaDateTimeException(): Boolean = hasJsExceptionName("DateTimeException")
+internal fun Throwable.isJodaDateTimeParseException(): Boolean = hasJsExceptionName("DateTimeParseException")
 
-internal expect inline fun <reified T : Any> jsTry(crossinline body: () -> T): T
+internal expect fun Throwable.hasJsExceptionName(name: String): Boolean

@@ -33,9 +33,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Joda
         public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
 
         public actual fun of(zoneId: String): TimeZone = try {
-            jsTry {
-                ofZone(JodaTimeZoneId.of(zoneId))
-            }
+            ofZone(JodaTimeZoneId.of(zoneId))
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalTimeZoneException(e)
             throw e
@@ -66,18 +64,14 @@ internal constructor(public actual val offset: UtcOffset, zoneId: JodaTimeZoneId
 }
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
-    jsTry {
-        JodaTimeLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
-    }
+    JodaTimeLocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
 }
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    jsTry {
-        JodaTimeLocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
-    }
+    JodaTimeLocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
     throw e
