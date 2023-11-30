@@ -111,6 +111,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        allWarningsAsErrors.set(true)
     }
 
     sourceSets.all {
