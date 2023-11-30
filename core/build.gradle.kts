@@ -219,9 +219,6 @@ kotlin {
 
         val jsMain by getting {
             dependsOn(commonJsMain)
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-js")
-            }
         }
 
         val jsTest by getting {
@@ -230,9 +227,6 @@ kotlin {
 
         val wasmJsMain by getting {
             dependsOn(commonJsMain)
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-wasm-js")
-            }
         }
 
         val wasmJsTest by getting {
