@@ -10,5 +10,3 @@ internal fun Throwable.isJodaDateTimeException(): Boolean = hasJsExceptionName("
 internal fun Throwable.isJodaDateTimeParseException(): Boolean = hasJsExceptionName("DateTimeParseException")
 
 internal expect fun Throwable.hasJsExceptionName(name: String): Boolean
-
-internal expect inline fun <reified T : Any> jsTry(crossinline body: () -> T): T

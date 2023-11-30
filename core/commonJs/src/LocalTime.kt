@@ -7,7 +7,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.internal.JSJoda.LocalTime as jtLocalTime
+import kotlinx.datetime.internal.JodaTimeLocalTime as jtLocalTime
 
 @Serializable(LocalTimeIso8601Serializer::class)
 public actual class LocalTime internal constructor(internal val value: jtLocalTime) :
@@ -16,7 +16,7 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(
                 try {
-                    jsTry { jtLocalTime.of(hour, minute, second, nanosecond) }
+                    jtLocalTime.of(hour, minute, second, nanosecond)
                 } catch (e: Throwable) {
                     if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                     throw e
@@ -32,7 +32,7 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     public actual fun toNanosecondOfDay(): Long = value.toNanoOfDay().toLong()
 
     override fun equals(other: Any?): Boolean =
-        (this === other) || (other is LocalTime && (this.value === other.value || this.value.equals(other.value)))
+        (this === other) || (other is LocalTime && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
@@ -42,27 +42,27 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
     public actual companion object {
         public actual fun parse(isoString: String): LocalTime = try {
-            jsTry { jtLocalTime.parse(isoString) }.let(::LocalTime)
+            jtLocalTime.parse(isoString).let(::LocalTime)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
         }
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
-            jsTry { jtLocalTime.ofSecondOfDay(secondOfDay, 0) }.let(::LocalTime)
+            jtLocalTime.ofSecondOfDay(secondOfDay, 0).let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
 
         public actual fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime = try {
-            jsTry { jtLocalTime.ofNanoOfDay(millisecondOfDay * 1_000_000.0) }.let(::LocalTime)
+            jtLocalTime.ofNanoOfDay(millisecondOfDay * 1_000_000.0).let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }
 
         public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime = try {
             // number of nanoseconds in a day is much less than `Number.MAX_SAFE_INTEGER`.
-            jsTry { jtLocalTime.ofNanoOfDay(nanosecondOfDay.toDouble()) }.let(::LocalTime)
+            jtLocalTime.ofNanoOfDay(nanosecondOfDay.toDouble()).let(::LocalTime)
         } catch (e: Throwable) {
             throw IllegalArgumentException(e)
         }

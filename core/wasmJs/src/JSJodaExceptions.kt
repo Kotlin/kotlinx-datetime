@@ -29,7 +29,7 @@ internal class JsException(val jsException: JsAny): Throwable() {
         get() = getExceptionMessage(jsException)
 }
 
-internal actual inline fun <reified T : Any> jsTry(crossinline body: () -> T): T {
+internal inline fun <reified T : Any> jsTry(crossinline body: () -> T): T {
     var result: T? = null
     val exception = withCaughtJsException {
         result = body()

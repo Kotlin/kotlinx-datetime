@@ -5,7 +5,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.JSJoda.DayOfWeek as jsDayOfWeek
+import kotlinx.datetime.internal.JodaTimeDayOfWeek as jsDayOfWeek
 
 public actual enum class DayOfWeek {
     MONDAY,

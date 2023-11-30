@@ -7,14 +7,14 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
-import kotlinx.datetime.internal.JSJoda.ChronoUnit as jtChronoUnit
+import kotlinx.datetime.internal.JodaTimeLocalDate as jtLocalDate
+import kotlinx.datetime.internal.JodaTimeChronoUnit as jtChronoUnit
 
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
         public actual fun parse(isoString: String): LocalDate = try {
-            jsTry { jtLocalDate.parse(isoString) }.let(::LocalDate)
+            jtLocalDate.parse(isoString).let(::LocalDate)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e
@@ -24,7 +24,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 
         public actual fun fromEpochDays(epochDays: Int): LocalDate = try {
-            LocalDate(jsTry { jtLocalDate.ofEpochDay(epochDays) })
+            LocalDate(jtLocalDate.ofEpochDay(epochDays))
         } catch (e: Throwable) {
             if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
             throw e
@@ -33,7 +33,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
             this(try {
-                jsTry { jtLocalDate.of(year, monthNumber, dayOfMonth) }
+                jtLocalDate.of(year, monthNumber, dayOfMonth)
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                 throw e
@@ -49,7 +49,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     public actual val dayOfYear: Int get() = value.dayOfYear()
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is LocalDate && (this.value === other.value || this.value.equals(other.value)))
+            (this === other) || (other is LocalDate && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
@@ -69,8 +69,8 @@ public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
 private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): LocalDate =
         try {
             when (unit) {
-                is DateTimeUnit.DayBased -> jsTry { this.value.plusDays((value.toDouble() * unit.days).toInt()) }
-                is DateTimeUnit.MonthBased -> jsTry { this.value.plusMonths((value.toDouble() * unit.months).toInt()) }
+                is DateTimeUnit.DayBased -> this.value.plusDays((value.toDouble() * unit.days).toInt())
+                is DateTimeUnit.MonthBased -> this.value.plusMonths((value.toDouble() * unit.months).toInt())
             }.let(::LocalDate)
         } catch (e: Throwable) {
             if (!e.isJodaDateTimeException() && !e.isJodaArithmeticException()) throw e
@@ -81,8 +81,8 @@ private fun LocalDate.plusNumber(value: Number, unit: DateTimeUnit.DateBased): L
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {
         return@with value
-                .run { if (totalMonths != 0) jsTry { plusMonths(totalMonths) } else this }
-                .run { if (days != 0) jsTry { plusDays(days) } else this }
+                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
+                .run { if (days != 0) plusDays(days) else this }
 
     }.let(::LocalDate)
 } catch (e: Throwable) {
@@ -95,7 +95,7 @@ public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
 public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     var startD = this.value
     val endD = other.value
-    val months = startD.until(endD, jtChronoUnit.MONTHS).toInt(); startD = jsTry { startD.plusMonths(months) }
+    val months = startD.until(endD, jtChronoUnit.MONTHS).toInt(); startD = startD.plusMonths(months)
     val days = startD.until(endD, jtChronoUnit.DAYS).toInt()
 
     return DatePeriod(totalMonths = months, days)

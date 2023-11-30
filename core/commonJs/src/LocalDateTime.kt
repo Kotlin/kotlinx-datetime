@@ -6,14 +6,14 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
+import kotlinx.datetime.internal.JodaTimeLocalDateTime as jtLocalDateTime
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(try {
-                jsTry { jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond) }
+                jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                 throw e
@@ -23,7 +23,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
             this(year, month.number, dayOfMonth, hour, minute, second, nanosecond)
 
     public actual constructor(date: LocalDate, time: LocalTime) :
-            this(jsTry { jtLocalDateTime.of(date.value, time.value) })
+            this(jtLocalDateTime.of(date.value, time.value))
 
     public actual val year: Int get() = value.year()
     public actual val monthNumber: Int get() = value.monthValue()
@@ -42,7 +42,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual val time: LocalTime get() = LocalTime(value.toLocalTime())
 
     override fun equals(other: Any?): Boolean =
-            (this === other) || (other is LocalDateTime && (this.value === other.value || this.value.equals(other.value)))
+            (this === other) || (other is LocalDateTime && this.value == other.value)
 
     override fun hashCode(): Int = value.hashCode()
 
@@ -52,7 +52,7 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
     public actual companion object {
         public actual fun parse(isoString: String): LocalDateTime = try {
-            jsTry { jtLocalDateTime.parse(isoString) }.let(::LocalDateTime)
+            jtLocalDateTime.parse(isoString).let(::LocalDateTime)
         } catch (e: Throwable) {
             if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             throw e

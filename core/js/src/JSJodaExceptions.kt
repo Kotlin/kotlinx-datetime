@@ -7,5 +7,3 @@ package kotlinx.datetime
 
 internal actual fun Throwable.hasJsExceptionName(name: String): Boolean =
     this.asDynamic().name == name
-
-internal actual inline fun <reified T : Any> jsTry(crossinline body: () -> T): T = body()
