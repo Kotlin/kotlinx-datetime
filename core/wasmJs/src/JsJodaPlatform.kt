@@ -22,6 +22,13 @@ public actual open class JodaTimeChronoZonedDateTime(override val value: ChronoZ
 }
 public actual open class JodaTimeTemporal(override val value: Temporal) : JodaTimeTemporalAccessor(value) {
     actual open fun until(endTemporal: JodaTimeTemporal, unit: JodaTimeTemporalUnit): Double =
+        /**
+         * * Can throw for [JodaTimeZonedDateTime] values if the offsets are different.
+         * * Can throw for values with local time components if the difference between them is a large number of days
+         *   and the requested time unit is time-based.
+         *
+         * The caller must ensure this doesn't happen.
+         */
         value.until(endTemporal.value, unit.value)
 }
 
@@ -262,5 +269,5 @@ public actual open class JodaTimeZoneRules(private val value: ZoneRules)  {
     actual override fun toString(): String = value.toString()
     actual fun isFixedOffset(): Boolean = value.isFixedOffset()
     actual fun offsetOfInstant(instant: JodaTimeInstant): JodaTimeZoneOffset =
-        JodaTimeZoneOffset(value.offsetOfInstant(instant.value))
+        JodaTimeZoneOffset(jsTry { value.offsetOfInstant(instant.value) })
 }

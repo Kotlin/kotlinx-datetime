@@ -79,9 +79,13 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
     throw e
 }
 
-
-public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
-        zoneId.rules().offsetOfInstant(instant.value).let(::UtcOffset)
+// throws DateTimeArithmeticException if the number of milliseconds is too large to represent as a safe int in JS
+public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset = try {
+    zoneId.rules().offsetOfInstant(instant.value).let(::UtcOffset)
+} catch (e: Throwable) {
+    if (e.isJodaArithmeticException()) throw DateTimeArithmeticException(e)
+    throw e
+}
 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)

@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
@@ -251,6 +252,10 @@ class InstantTest {
         val instant3 = instant2 - 2.hours
         val offset3 = instant3.offsetIn(zone)
         assertEquals(offset1, offset3)
+
+        // TODO: fails on JS
+        // // without the minus, this test fails on JVM
+        // (Instant.MAX - (2 * 365).days).offsetIn(zone)
     }
 
     @Test
@@ -617,5 +622,12 @@ class InstantRangeTest {
             assertEquals(expected = Instant.MAX, actual = Instant.MAX + smallDuration)
             assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
         }
+    }
+
+    @Test
+    fun subtractInstants() {
+        val max = Instant.fromEpochSeconds(31494816403199L)
+        val min = Instant.fromEpochSeconds(-31619119219200L)
+        assertEquals(max.epochSeconds - min.epochSeconds, (max - min).inWholeSeconds)
     }
 }
