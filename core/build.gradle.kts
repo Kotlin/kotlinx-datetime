@@ -193,18 +193,27 @@ kotlin {
             }
         }
 
-        val jsMain by getting {
+        val commonJsMain by creating {
+            dependsOn(commonMain.get())
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
             }
         }
 
-        val jsTest by getting {
+        val commonJsTest by creating {
+            dependsOn(commonTest.get())
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
+        }
+
+        val jsMain by getting {
+            dependsOn(commonJsMain)
+        }
+
+        val jsTest by getting {
+            dependsOn(commonJsTest)
         }
 
         val nativeMain by getting {
@@ -381,5 +390,12 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
             matchingRegex.set(".*\\.internal\\..*")
             suppress.set(true)
         }
+    }
+}
+
+// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
+tasks.configureEach {
+    if (name == "compileCommonJsMainKotlinMetadata") {
+        enabled = false
     }
 }
