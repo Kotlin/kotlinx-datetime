@@ -64,6 +64,6 @@ internal actual fun currentSystemDefaultZone(): RegionTimeZone {
     */
     NSTimeZone.resetSystemTimeZone()
     val zone = NSTimeZone.systemTimeZone
-    val zoneId = zone.name ?: throw IllegalStateException("Failed to get the system timezone")
+    val zoneId = zone.name
     return RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
 }

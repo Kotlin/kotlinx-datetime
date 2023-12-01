@@ -134,7 +134,7 @@ private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second 
 
 internal fun currentTime(): Instant = memScoped {
     val tm = alloc<timespec>()
-    val error = clock_gettime(CLOCK_REALTIME, tm.ptr)
+    val error = clock_gettime(CLOCK_REALTIME.convert(), tm.ptr)
     check(error == 0) { "Error when reading the system clock: ${strerror(errno)}" }
     try {
         require(tm.tv_nsec in 0 until NANOS_PER_ONE)
