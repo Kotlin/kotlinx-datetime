@@ -3,21 +3,18 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:OptIn(kotlinx.cinterop.UnsafeNumber::class)
+@file:OptIn(kotlinx.cinterop.UnsafeNumber::class, kotlinx.cinterop.ExperimentalForeignApi::class)
 
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
-internal actual fun currentTime(): Instant = NSDate.date().toKotlinInstant()
-
 // iOS simulator needs a different path, hence the check. See https://github.com/HowardHinnant/date/pull/577
-@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
-internal actual val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString(
+internal actual val systemTzdb: TimezoneDatabase = TzdbOnFilesystem(Path.fromString(
         if (kotlinxDatetimeRunningInSimulator) "/usr/share/zoneinfo" else "/var/db/timezone/zoneinfo"))
 
-internal actual fun currentSystemDefaultId(): String? {
+internal actual fun currentSystemDefaultZone(): RegionTimeZone {
     /* The framework has its own cache of the system timezone. Calls to
     [NSTimeZone systemTimeZone] do not reflect changes to the system timezone
     and instead just return the cached value. Thus, to acquire the current
@@ -67,5 +64,6 @@ internal actual fun currentSystemDefaultId(): String? {
     */
     NSTimeZone.resetSystemTimeZone()
     val zone = NSTimeZone.systemTimeZone
-    return zone.name
+    val zoneId = zone.name ?: throw IllegalStateException("Failed to get the system timezone")
+    return RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
 }

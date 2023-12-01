@@ -6,11 +6,16 @@
  * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
  */
 
+@file:OptIn(ExperimentalForeignApi::class)
+
 package kotlinx.datetime
 
+import kotlinx.cinterop.*
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.optional
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
+import platform.posix.*
 import kotlin.math.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
@@ -127,7 +132,17 @@ private const val MAX_SECOND = 31494816403199L // +1000000-12-31T23:59:59
 
 private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
 
-internal expect fun currentTime(): Instant
+internal fun currentTime(): Instant = memScoped {
+    val tm = alloc<timespec>()
+    val error = clock_gettime(CLOCK_REALTIME, tm.ptr)
+    check(error == 0) { "Error when reading the system clock: ${strerror(errno)}" }
+    try {
+        require(tm.tv_nsec in 0 until NANOS_PER_ONE)
+        Instant(tm.tv_sec.convert(), tm.tv_nsec.convert())
+    } catch (e: IllegalArgumentException) {
+        throw IllegalStateException("The readings from the system clock (${tm.tv_sec} seconds, ${tm.tv_nsec} nanoseconds) are not representable as an Instant")
+    }
+}
 
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {

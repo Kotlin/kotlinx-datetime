@@ -6,15 +6,13 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
-import kotlinx.datetime.ZonedDateTime
-import kotlinx.datetime.plusSeconds
 
-internal class TzdbOnFilesystem(defaultTzdbPath: Path) {
+internal class TzdbOnFilesystem(defaultTzdbPath: Path): TimezoneDatabase {
 
-    internal fun rulesForId(id: String): TimeZoneRules =
+    override fun rulesForId(id: String): TimeZoneRules =
         readTzFile(tzdbPath.resolve(Path.fromString(id)).readBytes()).toTimeZoneRules()
 
-    internal fun availableTimeZoneIds(): Set<String> = buildSet {
+    override fun availableTimeZoneIds(): Set<String> = buildSet {
         tzdbPath.traverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 

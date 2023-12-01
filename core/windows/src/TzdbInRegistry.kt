@@ -9,7 +9,7 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.internal.*
 import platform.windows.*
 
-internal class TzdbInRegistry {
+internal class TzdbInRegistry: TimezoneDatabase {
 
     // TODO: starting version 1703 of Windows 10, the ICU library is also bundled, with more accurate/ timezone information.
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
@@ -44,13 +44,13 @@ internal class TzdbInRegistry {
         }
     }
 
-    internal fun rulesForId(id: String): TimeZoneRules {
+    override fun rulesForId(id: String): TimeZoneRules {
         val standardName = standardToWindows[id] ?: throw IllegalTimeZoneException("Unknown time zone $id")
         return windowsToRules[standardName]
                 ?: throw IllegalTimeZoneException("The rules for time zone $id are absent in the Windows registry")
     }
 
-    internal fun availableTimeZoneIds(): Set<String> = standardToWindows.filter {
+    override fun availableTimeZoneIds(): Set<String> = standardToWindows.filter {
         windowsToRules.containsKey(it.value)
     }.keys
 
@@ -212,4 +212,13 @@ private fun getLastWindowsError(): String = memScoped {
             null,
     )
     buf.value!!.toKStringFromUtf16().also { LocalFree(buf.ptr) }
+}
+
+internal val tzdbInRegistry = TzdbInRegistry()
+
+internal actual val systemTzdb: TimezoneDatabase = tzdbInRegistry
+
+internal actual fun currentSystemDefaultZone(): RegionTimeZone {
+    val (name, zoneRules) = tzdbInRegistry.currentSystemDefault()
+    return RegionTimeZone(zoneRules, name)
 }
