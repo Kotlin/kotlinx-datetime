@@ -287,7 +287,7 @@ val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
 The implementation of date/time types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
 
 - in JVM: [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API;
-- in JS: [`js-joda`](https://js-joda.github.io/js-joda/) library;
+- in Js and Wasm-Js: [`js-joda`](https://js-joda.github.io/js-joda/) library;
 - in Native: based on the [ThreeTen backport project](https://www.threeten.org/threetenbp/)
   - time zone support is provided by [date](https://github.com/HowardHinnant/date/) C++ library;
 
@@ -303,7 +303,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 
 The library is published to Maven Central.
 
-The library is compatible with the Kotlin Standard Library not lower than `1.5.0`.
+The library is compatible with the Kotlin Standard Library not lower than `1.9.0`.
 
 If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer 
 and enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
@@ -324,7 +324,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
              }
         }
     }
@@ -335,7 +335,7 @@ kotlin {
 
 ```groovy
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 }
 ```
 
@@ -375,7 +375,7 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 <dependency>
     <groupId>org.jetbrains.kotlinx</groupId>
     <artifactId>kotlinx-datetime-jvm</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 

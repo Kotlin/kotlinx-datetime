@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.0
+
+- Update Kotlin dependency to 1.9.21, kotlinx.serialization to 1.6.2
+- Add support of Wasm-Js target through Js interop with the same js-joda library as in Js ([#315](https://github.com/Kotlin/kotlinx-datetime/pull/315))
+- Prevent secondary outputs of Java 9 compilation getting packed into jar ([#305](https://github.com/Kotlin/kotlinx-datetime/pull/305))
+
 ## 0.4.1
 
 - Update Kotlin dependency to 1.8.21, kotlinx.serialization to 1.5.1
