@@ -406,18 +406,10 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
             matchingRegex.set(".*\\.internal\\..*")
             suppress.set(true)
         }
-
-        if (name.endsWith("Main")) {
-            sourceLink {
-                // sources are located in PLATFORM/src,
-                // where PLATFORM could be jvm, js, darwin, etc
-                // configuration happens upper in the build script
-                val platform = name.dropLast(4)
-                val relPath = rootProject.projectDir.toPath().relativize(projectDir.toPath())
-                localDirectory.set(projectDir.resolve("$platform/src"))
-                remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/master/$relPath/$platform/src"))
-                remoteLineSuffix.set("#L")
-            }
+        sourceLink {
+            localDirectory.set(rootDir)
+            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/master"))
+            remoteLineSuffix.set("#L")
         }
     }
 }
