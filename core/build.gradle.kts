@@ -408,7 +408,7 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
         }
         sourceLink {
             localDirectory.set(rootDir)
-            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/master"))
+            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/v${project.version}"))
             remoteLineSuffix.set("#L")
         }
     }
