@@ -112,7 +112,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
     override fun parse(input: CharSequence): T {
         val matched = try {
             // without the fully qualified name, the compilation fails for some reason
-            kotlinx.datetime.internal.format.parser.Parser(actualFormat.parser).match(input, emptyIntermediate)
+            Parser(actualFormat.parser).match(input, emptyIntermediate)
         } catch (e: ParseException) {
             throw DateTimeFormatException("Failed to parse value from '$input'", e)
         }
@@ -125,7 +125,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
 
     override fun parseOrNull(input: CharSequence): T? =
         // without the fully qualified name, the compilation fails for some reason
-        kotlinx.datetime.internal.format.parser.Parser(actualFormat.parser).matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
+        Parser(actualFormat.parser).matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
 
 }
 
