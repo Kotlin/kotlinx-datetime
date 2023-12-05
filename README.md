@@ -1,4 +1,4 @@
-# Kotlinx DateTime
+# kotlinx-datetime
 
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains official project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub) 
@@ -301,7 +301,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 
 > Note that the library is experimental, and the API is subject to change.
 
-The library is published by Maven Central.
+The library is published to Maven Central.
 
 The library is compatible with the Kotlin Standard Library not lower than `1.9.0`.
 
