@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal.format.parser
 
+import kotlin.jvm.*
+
 /**
  * Describes the commands that the parser must execute, in two portions:
  * * [operations], which are executed in order, and
@@ -119,7 +121,8 @@ internal interface Copyable<Self> {
     fun copy(): Self
 }
 
-internal class Parser<Output: Copyable<Output>>(
+@JvmInline
+internal value class Parser<Output: Copyable<Output>>(
     private val commands: ParserStructure<Output>
 ) {
     /**
@@ -142,31 +145,31 @@ internal class Parser<Output: Copyable<Output>>(
         onSuccess: (Int, Output) -> Unit
     ) {
         val parseOptions = mutableListOf(ParserState(initialContainer, commands, startIndex))
-        outer@while (true) {
+        iterate_over_alternatives@while (true) {
             val state = parseOptions.removeLastOrNull() ?: break
             val output = state.output.copy()
             var inputPosition = state.inputPosition
             val parserStructure = state.parserStructure
-            for (ix in parserStructure.operations.indices) {
-                val command = parserStructure.operations[ix]
-                val result = with(command) { output.consume(input, inputPosition) }
-                val newInputPosition = result.tryGetIndex()
-                if (newInputPosition != null) {
-                    inputPosition = newInputPosition
-                } else {
-                    onError(result.tryGetError()!!)
-                    continue@outer
+            run parse_one_alternative@{
+                for (ix in parserStructure.operations.indices) {
+                    parserStructure.operations[ix].consume(output, input, inputPosition).match(
+                        { inputPosition = it },
+                        {
+                            onError(it)
+                            return@parse_one_alternative // continue@iterate_over_alternatives, if that were supported
+                        }
+                    )
                 }
-            }
-            if (parserStructure.followedBy.isEmpty()) {
-                if (allowDanglingInput || inputPosition == input.length) {
-                    onSuccess(inputPosition, output)
+                if (parserStructure.followedBy.isEmpty()) {
+                    if (allowDanglingInput || inputPosition == input.length) {
+                        onSuccess(inputPosition, output)
+                    } else {
+                        onError(ParseError(inputPosition) { "There is more input to consume" })
+                    }
                 } else {
-                    onError(ParseError(inputPosition) { "There is more input to consume" })
-                }
-            } else {
-                for (ix in parserStructure.followedBy.indices.reversed()) {
-                    parseOptions.add(ParserState(output, parserStructure.followedBy[ix], inputPosition))
+                    for (ix in parserStructure.followedBy.indices.reversed()) {
+                        parseOptions.add(ParserState(output, parserStructure.followedBy[ix], inputPosition))
+                    }
                 }
             }
         }
@@ -190,7 +193,7 @@ internal class Parser<Output: Copyable<Output>>(
         return null
     }
 
-    private inner class ParserState<Output>(
+    private class ParserState<Output>(
         val output: Output,
         val parserStructure: ParserStructure<Output>,
         val inputPosition: Int,

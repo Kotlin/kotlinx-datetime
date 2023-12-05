@@ -6,7 +6,7 @@
 package kotlinx.datetime.internal.format.parser
 
 internal interface ParserOperation<in Output> {
-    fun Output.consume(input: CharSequence, startIndex: Int): ParseResult
+    fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult
 }
 
 /**
@@ -19,7 +19,7 @@ internal class PlainStringParserOperation<Output>(val string: String) : ParserOp
         require(!string[string.length - 1].isDigit())
     }
 
-    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         if (startIndex + string.length > input.length)
             return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse '$string'" }
         for (i in string.indices) {
@@ -68,7 +68,7 @@ internal class NumberSpanParserOperation<Output>(
             }
         }
 
-    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         if (startIndex + minLength > input.length)
             return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse $whatThisExpects" }
         var digitsInRow = 0
@@ -83,7 +83,7 @@ internal class NumberSpanParserOperation<Output>(
         for (i in consumers.indices) {
             val length = consumers[i].length ?: (digitsInRow - minLength + 1)
             val numberString = input.substring(index, index + length)
-            val error = with(consumers[i]) { consume(numberString) }
+            val error = consumers[i].consume(storage, numberString)
             if (error != null) {
                 return ParseResult.Error(index) {
                     "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}: ${error.errorMessage()}"
@@ -102,16 +102,16 @@ internal class SignParser<Output>(
     private val withPlusSign: Boolean,
     private val whatThisExpects: String,
 ) : ParserOperation<Output> {
-    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         if (startIndex >= input.length)
             return ParseResult.Ok(startIndex)
         val char = input[startIndex]
         if (char == '-') {
-            isNegativeSetter(this, true)
+            isNegativeSetter(storage, true)
             return ParseResult.Ok(startIndex + 1)
         }
         if (char == '+' && withPlusSign) {
-            isNegativeSetter(this, false)
+            isNegativeSetter(storage, false)
             return ParseResult.Ok(startIndex + 1)
         }
         return ParseResult.Error(startIndex) { "Expected $whatThisExpects but got $char" }
@@ -126,8 +126,8 @@ internal class SignParser<Output>(
 internal class UnconditionalModification<Output>(
     private val operation: (Output) -> Unit
 ) : ParserOperation<Output> {
-    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
-        operation(this)
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
+        operation(storage)
         return ParseResult.Ok(startIndex)
     }
 }
@@ -182,7 +182,7 @@ internal class StringSetParserOperation<Output>(
         reduceTrie(trie)
     }
 
-    override fun Output.consume(input: CharSequence, startIndex: Int): ParseResult {
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         var node = trie
         var index = startIndex
         var lastMatch: Int? = null
@@ -198,7 +198,7 @@ internal class StringSetParserOperation<Output>(
             break // nothing found
         }
         return if (lastMatch != null) {
-            setter.setWithoutReassigning(this, input.substring(startIndex, lastMatch), startIndex, lastMatch)
+            setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
         } else {
             ParseResult.Error(startIndex) { "Expected $whatThisExpects but got ${input.substring(startIndex, index)}" }
         }

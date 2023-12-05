@@ -24,7 +24,7 @@ internal sealed class NumberConsumer<in Receiver>(
      *
      * Returns `null` on success and a `NumberConsumptionError` on failure.
      */
-    abstract fun Receiver.consume(input: String): NumberConsumptionError?
+    abstract fun consume(storage: Receiver, input: String): NumberConsumptionError?
 }
 
 internal interface NumberConsumptionError {
@@ -65,12 +65,12 @@ internal class UnsignedIntConsumer<in Receiver>(
         require(length == null || length in 1..9) { "Invalid length for field $whatThisExpects: $length" }
     }
 
-    override fun Receiver.consume(input: String): NumberConsumptionError? = when {
+    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when {
         maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
         minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
         else -> when (val result = input.toIntOrNull()) {
             null -> NumberConsumptionError.ExpectedInt
-            else -> setter.setWithoutReassigning(this, if (multiplyByMinus1) -result else result)
+            else -> setter.setWithoutReassigning(storage, if (multiplyByMinus1) -result else result)
         }
     }
 }
@@ -86,9 +86,9 @@ internal class ReducedIntConsumer<in Receiver>(
     private val baseMod = base % modulo
     private val baseFloor = base - baseMod
 
-    override fun Receiver.consume(input: String): NumberConsumptionError? = when (val result = input.toIntOrNull()) {
+    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when (val result = input.toIntOrNull()) {
         null -> NumberConsumptionError.ExpectedInt
-        else -> setter.setWithoutReassigning(this, if (result >= baseMod) {
+        else -> setter.setWithoutReassigning(storage, if (result >= baseMod) {
             baseFloor + result
         } else {
             baseFloor + modulo + result
@@ -102,7 +102,7 @@ internal class ReducedIntConsumer<in Receiver>(
 internal class ConstantNumberConsumer<in Receiver>(
     private val expected: String
 ) : NumberConsumer<Receiver>(expected.length, "the predefined string $expected") {
-    override fun Receiver.consume(input: String): NumberConsumptionError? = if (input == expected) {
+    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = if (input == expected) {
         NumberConsumptionError.WrongConstant(expected)
     } else {
         null
@@ -122,9 +122,9 @@ internal class UnsignedLongConsumer<in Receiver>(
         require(length == null || length in 1..18) { "Invalid length for field $whatThisExpects: $length" }
     }
 
-    override fun Receiver.consume(input: String) = when (val result = input.toLongOrNull()) {
+    override fun consume(storage: Receiver, input: String) = when (val result = input.toLongOrNull()) {
         null -> NumberConsumptionError.ExpectedLong
-        else -> setter.setWithoutReassigning(this, result)
+        else -> setter.setWithoutReassigning(storage, result)
     }
 }
 
@@ -139,12 +139,12 @@ internal class FractionPartConsumer<in Receiver>(
         // TODO: bounds on maxLength
     }
 
-    override fun Receiver.consume(input: String): NumberConsumptionError? = when {
+    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when {
         minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
         maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
         else -> when (val numerator = input.toIntOrNull()) {
             null -> NumberConsumptionError.TooManyDigits(9)
-            else -> setter.setWithoutReassigning(this, DecimalFraction(numerator, input.length))
+            else -> setter.setWithoutReassigning(storage, DecimalFraction(numerator, input.length))
         }
     }
 }
