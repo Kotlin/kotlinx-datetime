@@ -10,7 +10,6 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
-import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
 
 @Serializable(with = UtcOffsetSerializer::class)
@@ -116,7 +115,6 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
         }
     }
 
-@SharedImmutable
 private val lenientFormat = UtcOffsetFormat.build {
     alternativeParsing(
         {

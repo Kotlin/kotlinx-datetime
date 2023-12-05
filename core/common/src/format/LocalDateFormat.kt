@@ -314,14 +314,11 @@ internal interface AbstractWithDateBuilder: DateTimeFormatBuilder.WithDate {
 }
 
 // these are constants so that the formats are not recreated every time they are used
-@SharedImmutable
 internal val ISO_DATE by lazy {
     LocalDateFormat.build { year(); char('-'); monthNumber(); char('-'); dayOfMonth() }
 }
-@SharedImmutable
 internal val ISO_DATE_BASIC by lazy {
     LocalDateFormat.build { year(); monthNumber(); dayOfMonth() }
 }
 
-@SharedImmutable
 private val emptyIncompleteLocalDate = IncompleteLocalDate()

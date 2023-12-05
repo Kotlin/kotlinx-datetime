@@ -484,7 +484,6 @@ internal class DateTimeComponentsContents internal constructor(
         date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
 }
 
-@SharedImmutable
 internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
 
 internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
@@ -538,5 +537,4 @@ private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {
     }
 }
 
-@SharedImmutable
 private val emptyDateTimeComponentsContents = DateTimeComponentsContents()

@@ -109,11 +109,10 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
         actualFormat.formatter.format(intermediateFromValue(value), this)
     }
 
-    private val parser: Parser<U> by lazy { Parser(actualFormat.parser) }
-
     override fun parse(input: CharSequence): T {
         val matched = try {
-            parser.match(input, emptyIntermediate)
+            // without the fully qualified name, the compilation fails for some reason
+            kotlinx.datetime.internal.format.parser.Parser(actualFormat.parser).match(input, emptyIntermediate)
         } catch (e: ParseException) {
             throw DateTimeFormatException("Failed to parse value from '$input'", e)
         }
@@ -125,11 +124,11 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
     }
 
     override fun parseOrNull(input: CharSequence): T? =
-        parser.matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
+        // without the fully qualified name, the compilation fails for some reason
+        kotlinx.datetime.internal.format.parser.Parser(actualFormat.parser).matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
 
 }
 
-@SharedImmutable
 private val allFormatConstants: List<Pair<String, StringFormat<*>>> by lazy {
     fun unwrap(format: DateTimeFormat<*>): StringFormat<*> = (format as AbstractDateTimeFormat<*, *>).actualFormat
     // the formats are ordered vaguely by decreasing length, as the topmost among suitable ones is chosen.

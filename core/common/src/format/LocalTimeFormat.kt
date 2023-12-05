@@ -254,7 +254,6 @@ internal class LocalTimeFormat(override val actualFormat: StringFormat<TimeField
 }
 
 // these are constants so that the formats are not recreated every time they are used
-@SharedImmutable
 internal val ISO_TIME by lazy {
     LocalTimeFormat.build {
         hour()
@@ -273,7 +272,6 @@ internal val ISO_TIME by lazy {
     }
 }
 
-@SharedImmutable
 internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
     LocalTimeFormat.build {
         hour()
@@ -290,5 +288,4 @@ internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
     }
 }
 
-@SharedImmutable
 private val emptyIncompleteLocalTime = IncompleteLocalTime()

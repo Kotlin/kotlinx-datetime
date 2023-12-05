@@ -75,7 +75,6 @@ internal interface AbstractWithDateTimeBuilder:
 }
 
 // these are constants so that the formats are not recreated every time they are used
-@SharedImmutable
 internal val ISO_DATETIME by lazy {
     LocalDateTimeFormat.build {
         date(ISO_DATE)
@@ -84,7 +83,6 @@ internal val ISO_DATETIME by lazy {
     }
 }
 
-@SharedImmutable
 internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
     LocalDateTimeFormat.build {
         date(ISO_DATE)
@@ -93,5 +91,4 @@ internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
     }
 }
 
-@SharedImmutable
 private val emptyIncompleteLocalDateTime = IncompleteLocalDateTime()

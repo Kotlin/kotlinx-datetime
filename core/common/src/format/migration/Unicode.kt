@@ -599,7 +599,6 @@ private fun unicodeDirective(char: Char, formatLength: Int): UnicodeFormat = whe
     else -> UnknownUnicodeDirective(char, formatLength)
 }
 
-@SharedImmutable
 private val nonPlainCharacters = ('a'..'z') + ('A'..'Z') + listOf('[', ']', '\'')
 
 private fun unsupportedDirective(fieldName: String, recommendation: String? = null): Nothing =
