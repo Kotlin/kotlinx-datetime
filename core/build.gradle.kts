@@ -406,6 +406,11 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
             matchingRegex.set(".*\\.internal\\..*")
             suppress.set(true)
         }
+        sourceLink {
+            localDirectory.set(rootDir)
+            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/latest-release"))
+            remoteLineSuffix.set("#L")
+        }
     }
 }
 
