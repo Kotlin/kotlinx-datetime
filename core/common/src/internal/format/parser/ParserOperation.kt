@@ -15,8 +15,8 @@ internal interface ParserOperation<in Output> {
 internal class PlainStringParserOperation<Output>(val string: String) : ParserOperation<Output> {
     init {
         require(string.isNotEmpty()) { "Empty string is not allowed" }
-        require(!string[0].isDigit())
-        require(!string[string.length - 1].isDigit())
+        require(!string[0].isDigit()) { "String '$string' starts with a digit" }
+        require(!string[string.length - 1].isDigit()) { "String '$string' ends with a digit" }
     }
 
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {

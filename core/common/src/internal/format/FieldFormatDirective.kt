@@ -48,7 +48,9 @@ internal abstract class UnsignedIntFieldFormatDirective<in Target>(
     private val maxDigits: Int = field.maxDigits
 
     init {
-        require(minDigits >= 0)
+        require(minDigits >= 0) {
+            "The minimum number of digits ($minDigits) is negative"
+        }
         require(maxDigits >= minDigits) {
             "The maximum number of digits ($maxDigits) is less than the minimum number of digits ($minDigits)"
         }
@@ -151,7 +153,9 @@ internal abstract class StringFieldFormatDirective<in Target>(
 ) : FieldFormatDirective<Target> {
 
     init {
-        require(acceptedStrings.isNotEmpty())
+        require(acceptedStrings.isNotEmpty()) {
+            "The set of accepted strings is empty"
+        }
     }
 
     override fun formatter(): FormatterStructure<Target> =
@@ -173,8 +177,10 @@ internal abstract class SignedIntFieldFormatDirective<in Target>(
 ) : FieldFormatDirective<Target> {
 
     init {
-        require(minDigits == null || minDigits >= 0)
-        require(maxDigits == null || minDigits == null || maxDigits >= minDigits)
+        require(minDigits == null || minDigits >= 0) { "The minimum number of digits ($minDigits) is negative" }
+        require(maxDigits == null || minDigits == null || maxDigits >= minDigits) {
+            "The maximum number of digits ($maxDigits) is less than the minimum number of digits ($minDigits)"
+        }
     }
 
     override fun formatter(): FormatterStructure<Target> {

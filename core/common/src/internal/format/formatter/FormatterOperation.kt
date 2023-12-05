@@ -23,8 +23,8 @@ internal class UnsignedIntFormatterStructure<in T>(
 ): FormatterStructure<T> {
 
     init {
-        require(zeroPadding >= 0)
-        require(zeroPadding <= 9)
+        require(zeroPadding >= 0) { "The minimum number of digits ($zeroPadding) is negative" }
+        require(zeroPadding <= 9) { "The minimum number of digits ($zeroPadding) exceeds the length of an Int" }
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
@@ -42,8 +42,8 @@ internal class SignedIntFormatterStructure<in T>(
 ): FormatterStructure<T> {
 
     init {
-        require(zeroPadding >= 0)
-        require(zeroPadding <= 9)
+        require(zeroPadding >= 0) { "The minimum number of digits ($zeroPadding) is negative" }
+        require(zeroPadding <= 9) { "The minimum number of digits ($zeroPadding) exceeds the length of an Int" }
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
@@ -74,8 +74,12 @@ internal class DecimalFractionFormatterStructure<in T>(
 ): FormatterStructure<T> {
 
     init {
-        require(minDigits in 1..9)
-        require(maxDigits in minDigits..9)
+        require(minDigits in 1..9) {
+            "The minimum number of digits ($minDigits) is not in range 1..9"
+        }
+        require(maxDigits in minDigits..9) {
+            "The maximum number of digits ($maxDigits) is not in range $minDigits..9"
+        }
     }
 
     override fun format(obj: T, builder: Appendable, minusNotRequired: Boolean) {
