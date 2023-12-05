@@ -134,7 +134,25 @@ internal fun <T> FormatStructure<T>.formatter(): FormatterStructure<T> = when (t
 private fun <T> FormatStructure<T>.parser(): ParserStructure<T> = when (this) {
     is ConstantFormatStructure ->
         ParserStructure(
-            operations = if (string.isNotEmpty()) listOf(PlainStringParserOperation(string)) else emptyList(),
+            operations = when {
+                string.isEmpty() -> emptyList()
+                else -> buildList {
+                    val suffix = if (string[0].isDigit()) {
+                        add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(string.takeWhile { it.isDigit() }))))
+                        string.dropWhile { it.isDigit() }
+                    } else {
+                        string
+                    }
+                    if (suffix.isNotEmpty()) {
+                        if (suffix[suffix.length - 1].isDigit()) {
+                            add(PlainStringParserOperation(suffix.dropLastWhile { it.isDigit() }))
+                            add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(suffix.takeLastWhile { it.isDigit() }))))
+                        } else {
+                            add(PlainStringParserOperation(suffix))
+                        }
+                    }
+                }
+            },
             followedBy = emptyList()
         )
 

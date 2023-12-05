@@ -75,4 +75,18 @@ class DateTimeFormatTest {
             }
         """.trimIndent(), kotlinCode)
     }
+
+    @Test
+    fun testParseStringWithNumbers() {
+        val formats = listOf(
+            "0123x0123",
+            "0123x",
+            "x0123",
+            "0123",
+            "x"
+        )
+        for (format in formats) {
+            DateTimeComponents.Format { chars(format) }.parse(format)
+        }
+    }
 }

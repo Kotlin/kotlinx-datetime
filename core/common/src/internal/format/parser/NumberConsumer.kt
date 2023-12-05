@@ -103,9 +103,9 @@ internal class ConstantNumberConsumer<in Receiver>(
     private val expected: String
 ) : NumberConsumer<Receiver>(expected.length, "the predefined string $expected") {
     override fun consume(storage: Receiver, input: String): NumberConsumptionError? = if (input == expected) {
-        NumberConsumptionError.WrongConstant(expected)
-    } else {
         null
+    } else {
+        NumberConsumptionError.WrongConstant(expected)
     }
 }
 
