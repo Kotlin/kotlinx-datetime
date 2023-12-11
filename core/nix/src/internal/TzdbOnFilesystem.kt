@@ -7,7 +7,7 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 
-internal class TzdbOnFilesystem(defaultTzdbPath: Path): TimezoneDatabase {
+internal class TzdbOnFilesystem(val tzdbPath: Path): TimezoneDatabase {
 
     override fun rulesForId(id: String): TimeZoneRules =
         readTzFile(tzdbPath.resolve(Path.fromString(id)).readBytes()).toTimeZoneRules()
@@ -16,19 +16,6 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path): TimezoneDatabase {
         tzdbPath.traverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 
-    private val tzdbPath = defaultTzdbPath.check()?.let { defaultTzdbPath }
-        ?: pathToSystemDefault()?.first ?: throw IllegalStateException("Could not find the path to the timezone database")
-
-}
-
-internal fun pathToSystemDefault(): Pair<Path, Path>? {
-    val info = Path(true, listOf("etc", "localtime")).readLink() ?: return null
-    val i = info.components.indexOf("zoneinfo")
-    if (!info.isAbsolute || i == -1 || i == info.components.size - 1) return null
-    return Pair(
-            Path(true, info.components.subList(0, i + 1)),
-            Path(false, info.components.subList(i + 1, info.components.size))
-    )
 }
 
 private val tzdbUnneededFiles = setOf(

@@ -7,12 +7,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.*
 import platform.Foundation.*
-
-// iOS simulator needs a different path, hence the check. See https://github.com/HowardHinnant/date/pull/577
-internal actual val systemTzdb: TimezoneDatabase = TzdbOnFilesystem(Path.fromString(
-        if (kotlinxDatetimeRunningInSimulator) "/usr/share/zoneinfo" else "/var/db/timezone/zoneinfo"))
 
 internal actual fun currentSystemDefaultZone(): RegionTimeZone {
     /* The framework has its own cache of the system timezone. Calls to

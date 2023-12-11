@@ -44,6 +44,8 @@ public fun NSDate.toKotlinInstant(): Instant {
  * to [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
  * [IllegalArgumentException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
  * nearest minute.
+ *
+ * If the time zone is unknown to the Foundation framework, [IllegalArgumentException] will be thrown.
  */
 public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone) {
     require (offset.totalSeconds % 60 == 0) {
