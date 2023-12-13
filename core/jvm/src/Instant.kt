@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
+import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import kotlin.time.*
@@ -107,20 +108,6 @@ private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {
     throw DateTimeArithmeticException(e)
 }
 
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant {
-    try {
-        val thisZdt = atZone(timeZone)
-        return with(period) {
-            thisZdt
-                    .run { if (totalMonths != 0) plusMonths(totalMonths.toLong()) else this }
-                    .run { if (days != 0) plusDays(days.toLong()) else this }
-                    .run { if (totalNanoseconds != 0L) plusNanos(totalNanoseconds) else this }
-        }.toInstant().let(::Instant)
-    } catch (e: DateTimeException) {
-        throw DateTimeArithmeticException(e)
-    }
-}
-
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
         plus(1L, unit, timeZone)
@@ -156,20 +143,6 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         if (e !is DateTimeException && e !is ArithmeticException) throw e
         if (value > 0) Instant.MAX else Instant.MIN
     }
-
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    var thisZdt = this.atZone(timeZone)
-    val otherZdt = other.atZone(timeZone)
-
-    val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
-    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
-    val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
-
-    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
-        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
-    }
-    return buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds)
-}
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
     val thisZdt = this.atZone(timeZone)

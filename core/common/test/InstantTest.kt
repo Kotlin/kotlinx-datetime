@@ -268,6 +268,16 @@ class InstantTest {
     }
 
     @Test
+    fun dateTimePeriodWithGapBetweenMonthsAndDays() {
+        val zone = TimeZone.of("America/New_York")
+        // LocalDateTime(2019, 3, 10, 2, 0) is a gap.
+        // If months and days are not added atomically, the result will be adjusted.
+        val start = Instant.parse("2019-02-10T02:00:00-05:00")
+        val end = start.plus(DateTimePeriod(months = 1, days = 1), zone)
+        assertEquals(Instant.parse("2019-03-11T02:00:00-04:00"), end)
+    }
+
+    @Test
     fun diffInvariant() {
         repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)

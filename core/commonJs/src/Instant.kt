@@ -118,23 +118,6 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     }
 }
 
-
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
-    val thisZdt = jsTry { this.value.atZone(timeZone.zoneId) }
-    with(period) {
-        thisZdt
-                .run { if (totalMonths != 0) jsTry { plusMonths(totalMonths) } else this }
-                .run { if (days != 0) jsTry { plusDays(days) } else this }
-                .run { if (hours != 0) jsTry { plusHours(hours) } else this }
-                .run { if (minutes != 0) jsTry { plusMinutes(minutes) } else this }
-                .run { if (seconds != 0) jsTry { plusSeconds(seconds) } else this }
-                .run { if (nanoseconds != 0) jsTry { plusNanos(nanoseconds.toDouble()) } else this }
-    }.toInstant().let(::Instant)
-}    catch (e: Throwable) {
-    if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e)
-    throw e
-}
-
 private fun Instant.atZone(zone: TimeZone): jtZonedDateTime = jsTry { value.atZone(zone.zoneId) }
 private fun jtInstant.checkZone(zone: TimeZone): jtInstant = apply { jsTry { atZone(zone.zoneId) } }
 
@@ -192,19 +175,6 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         }
         if (value > 0) Instant.MAX else Instant.MIN
     }
-
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod = try {
-    var thisZdt = jsTry { this.value.atZone(timeZone.zoneId) }
-    val otherZdt = jsTry { other.value.atZone(timeZone.zoneId) }
-
-    val months = thisZdt.until(otherZdt, jtChronoUnit.MONTHS); thisZdt = jsTry { thisZdt.plusMonths(months) }
-    val days = thisZdt.until(otherZdt, jtChronoUnit.DAYS); thisZdt = jsTry { thisZdt.plusDays(days) }
-    val nanoseconds = thisZdt.until(otherZdt, jtChronoUnit.NANOS)
-
-    buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds.toLong())
-} catch (e: Throwable) {
-    if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
-}
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
     val thisZdt = this.atZone(timeZone)

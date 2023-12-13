@@ -8,6 +8,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
+import kotlin.math.*
 import kotlin.time.*
 
 /**
@@ -221,7 +222,17 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
  */
-public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant
+public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant {
+    val ldt = toLocalDateTimeFailing(timeZone)
+    return with(period) {
+        val newDate = ldt.date
+            .run { if (totalMonths != 0) plus(totalMonths, DateTimeUnit.MONTH) else this }
+            .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
+        LocalDateTime(newDate, ldt.time).toInstant(timeZone).run {
+            if (totalNanoseconds != 0L) plus(totalNanoseconds, DateTimeUnit.NANOSECOND) else this
+        }.check(timeZone)
+    }
+}
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
@@ -255,7 +266,23 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  *     Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  */
-public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
+public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+    val thisLdt = toLocalDateTimeFailing(timeZone)
+    val otherLdt = other.toLocalDateTimeFailing(timeZone)
+    var thisDate = thisLdt.date
+    val otherDate = otherLdt.date
+    val months = thisDate.until(otherDate, DateTimeUnit.MONTH) // `until` on dates never fails
+    thisDate = thisDate.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val days = thisDate.until(otherDate, DateTimeUnit.DAY) // `until` on dates never fails
+    if (days.absoluteValue > 31) {
+        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
+    }
+    thisDate = thisDate.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
+    val thisInstant = LocalDateTime(thisDate, thisLdt.time).toInstant(timeZone)
+    val nanoseconds = thisInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
+
+    return buildDateTimePeriod(months, days, nanoseconds)
+}
 
 /**
  * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
@@ -521,3 +548,16 @@ internal const val DISTANT_FUTURE_SECONDS = 3093527980800
  * Be careful: this function may throw for some values of the [Instant].
  */
 internal expect fun Instant.toStringWithOffset(offset: UtcOffset): String
+
+/** Check that [Instant] fits in [LocalDateTime].
+ * This is done on the results of computations for consistency with other platforms.
+ */
+internal fun Instant.check(zone: TimeZone): Instant = this@check.also {
+    toLocalDateTimeFailing(zone)
+}
+
+internal fun Instant.toLocalDateTimeFailing(zone: TimeZone): LocalDateTime = try {
+    toLocalDateTime(zone)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
+}
