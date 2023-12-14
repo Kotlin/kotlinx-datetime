@@ -120,7 +120,7 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
     override fun offsetAtImpl(instant: Instant): UtcOffset = offset
 
     override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime =
-        ZonedDateTime(dateTime, this, offset)
+        ZonedDateTime(dateTime, offset)
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
     override fun localDateTimeToInstant(dateTime: LocalDateTime): Instant = dateTime.toInstant(offset)
