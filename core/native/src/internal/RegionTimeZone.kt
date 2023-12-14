@@ -18,12 +18,12 @@ internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: 
         }
     }
 
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime =
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): LocalDateTimeWithOffset =
         when (val info = tzid.infoAtDatetime(dateTime)) {
-            is OffsetInfo.Regular -> ZonedDateTime(dateTime, info.offset)
+            is OffsetInfo.Regular -> LocalDateTimeWithOffset(dateTime, info.offset)
             is OffsetInfo.Gap -> {
                 try {
-                    ZonedDateTime(dateTime.plusSeconds(info.transitionDurationSeconds), info.offsetAfter)
+                    LocalDateTimeWithOffset(dateTime.plusSeconds(info.transitionDurationSeconds), info.offsetAfter)
                 } catch (e: IllegalArgumentException) {
                     throw DateTimeArithmeticException(
                         "Overflow whet correcting the date-time to not be in the transition gap",
@@ -32,7 +32,7 @@ internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: 
                 }
             }
 
-            is OffsetInfo.Overlap -> ZonedDateTime(
+            is OffsetInfo.Overlap -> LocalDateTimeWithOffset(
                 dateTime,
                 if (info.offsetAfter == preferred) info.offsetAfter else info.offsetBefore
             )
