@@ -103,14 +103,14 @@ private object SystemTimeZone: TimeZone() {
         UtcOffset(minutes = -Date(instant.toEpochMilliseconds().toDouble()).getTimezoneOffset().toInt())
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L49-L55 */
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): LocalDateTimeWithOffset {
         val epochMilli = dateTime.toInstant(UTC).toEpochMilliseconds()
         val offsetInMinutesBeforePossibleTransition = Date(epochMilli.toDouble()).getTimezoneOffset().toInt()
         val epochMilliSystemZone = epochMilli +
                 offsetInMinutesBeforePossibleTransition * SECONDS_PER_MINUTE * MILLIS_PER_ONE
         val offsetInMinutesAfterPossibleTransition = Date(epochMilliSystemZone.toDouble()).getTimezoneOffset().toInt()
         val offset = UtcOffset(minutes = -offsetInMinutesAfterPossibleTransition)
-        return ZonedDateTime(dateTime, offset)
+        return LocalDateTimeWithOffset(dateTime, offset)
     }
 
     override fun equals(other: Any?): Boolean = other === this
