@@ -110,7 +110,7 @@ private object SystemTimeZone: TimeZone() {
                 offsetInMinutesBeforePossibleTransition * SECONDS_PER_MINUTE * MILLIS_PER_ONE
         val offsetInMinutesAfterPossibleTransition = Date(epochMilliSystemZone.toDouble()).getTimezoneOffset().toInt()
         val offset = UtcOffset(minutes = -offsetInMinutesAfterPossibleTransition)
-        return ZonedDateTime(dateTime, this, offset)
+        return ZonedDateTime(dateTime, offset)
     }
 
     override fun equals(other: Any?): Boolean = other === this
