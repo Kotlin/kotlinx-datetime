@@ -50,7 +50,7 @@ private val tzdbPaths = sequence {
 
 // taken from https://github.com/HowardHinnant/date/blob/ab37c362e35267d6dee02cb47760f9e9c669d3be/src/tz.cpp#L3951-L3952
 internal fun pathToSystemDefault(): Pair<Path, Path>? {
-    val info = Path(true, listOf("etc", "localtime")).chaseSymlinks().first
+    val info = Path(true, listOf("etc", "localtime")).chaseSymlinks()
     val i = info.components.indexOf("zoneinfo")
     if (!info.isAbsolute || i == -1 || i == info.components.size - 1) return null
     return Pair(
@@ -60,5 +60,5 @@ internal fun pathToSystemDefault(): Pair<Path, Path>? {
 }
 
 internal actual val systemTzdb: TimezoneDatabase = tzdbPaths.find {
-    it.chaseSymlinks().second?.isDirectory == true
+    it.chaseSymlinks().check()?.isDirectory == true
 }?.let { TzdbOnFilesystem(it) } ?: throw IllegalStateException("Could not find the path to the timezone database")

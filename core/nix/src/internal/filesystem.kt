@@ -53,15 +53,12 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
     }
 }
 
-internal fun Path.chaseSymlinks(): Pair<Path, PathInfo?> {
+internal fun Path.chaseSymlinks(): Path {
     var realPath = this
-    var stat: PathInfo? = realPath.check()
-    while (stat?.isSymlink == true) {
-        stat = null
+    while (true) {
         realPath = realPath.readLink() ?: break
-        stat = realPath.check() ?: break
     }
-    return realPath to stat
+    return realPath
 }
 
 // `stat(2)` lists the other available fields
