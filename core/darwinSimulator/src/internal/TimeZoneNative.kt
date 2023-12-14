@@ -3,8 +3,6 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime
-
-import kotlinx.datetime.internal.*
+package kotlinx.datetime.internal
 
 internal actual fun getTzdbPath(): Path = Path.fromString("/usr/share/zoneinfo.default")

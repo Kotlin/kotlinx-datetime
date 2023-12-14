@@ -1,11 +1,10 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:OptIn(kotlinx.cinterop.UnsafeNumber::class, kotlinx.cinterop.ExperimentalForeignApi::class)
-
-package kotlinx.datetime
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+package kotlinx.datetime.internal
 
 import platform.Foundation.*
 
