@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
@@ -15,8 +15,8 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
         val err = stat(this@Path.toString(), stat.ptr)
         if (err != 0) return null
         object : PathInfo {
-            override val isDirectory: Boolean = stat.st_mode.toInt() and S_IFMT == S_IFDIR // `inode(7)`, S_ISDIR
-            override val isSymlink: Boolean = stat.st_mode.toInt() and S_IFMT == S_IFLNK // `inode(7)`, S_ISLNK
+            override val isDirectory: Boolean get() = stat.st_mode.toInt() and S_IFMT == S_IFDIR // `inode(7)`, S_ISDIR
+            override val isSymlink: Boolean get() = stat.st_mode.toInt() and S_IFMT == S_IFLNK // `inode(7)`, S_ISLNK
         }
     }
 
@@ -51,6 +51,17 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
             return Path(absolutePath, components)
         }
     }
+}
+
+internal fun Path.chaseSymlinks(): Pair<Path, PathInfo?> {
+    var realPath = this
+    var stat: PathInfo? = realPath.check()
+    while (stat?.isSymlink == true) {
+        stat = null
+        realPath = realPath.readLink() ?: break
+        stat = realPath.check() ?: break
+    }
+    return realPath to stat
 }
 
 // `stat(2)` lists the other available fields

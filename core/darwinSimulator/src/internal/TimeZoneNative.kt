@@ -5,4 +5,4 @@
 
 package kotlinx.datetime.internal
 
-internal actual fun getTzdbPath(): Path = Path.fromString("/usr/share/zoneinfo.default")
+internal actual fun defaultTzdbPath(): String? = "/usr/share/zoneinfo.default"

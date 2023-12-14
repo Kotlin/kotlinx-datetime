@@ -5,4 +5,4 @@
 
 package kotlinx.datetime.internal
 
-internal actual fun getTzdbPath(): Path = Path.fromString("/var/db/timezone/zoneinfo")
+internal actual fun defaultTzdbPath(): String? = "/var/db/timezone/zoneinfo"
