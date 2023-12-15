@@ -171,20 +171,24 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
     with(period) {
         val initialOffset = offsetIn(timeZone)
         val initialLdt = toLocalDateTimeFailing(initialOffset)
+        val instantAfterMonths: Instant
         val offsetAfterMonths: UtcOffset
         val ldtAfterMonths: LocalDateTime
         if (totalMonths != 0L) {
-            val (ldt, offset) = timeZone.atZone(initialLdt.plus(totalMonths, DateTimeUnit.MONTH), initialOffset)
-            offsetAfterMonths = offset
-            ldtAfterMonths = ldt
+            val unresolvedLdtWithMonths = initialLdt.plus(totalMonths, DateTimeUnit.MONTH)
+            instantAfterMonths = timeZone.localDateTimeToInstant(unresolvedLdtWithMonths, initialOffset)
+            offsetAfterMonths = instantAfterMonths.offsetIn(timeZone)
+            ldtAfterMonths = instantAfterMonths.toLocalDateTimeFailing(offsetAfterMonths)
         } else {
+            instantAfterMonths = this@plus
             offsetAfterMonths = initialOffset
             ldtAfterMonths = initialLdt
         }
         val instantAfterMonthsAndDays = if (days != 0) {
-            timeZone.atZone(ldtAfterMonths.plus(days, DateTimeUnit.DAY), offsetAfterMonths).toInstant()
+            val unresolvedLdtWithDays = ldtAfterMonths.plus(days, DateTimeUnit.DAY)
+            timeZone.localDateTimeToInstant(unresolvedLdtWithDays, offsetAfterMonths)
         } else {
-            ldtAfterMonths.toInstant(offsetAfterMonths)
+            instantAfterMonths
         }
         instantAfterMonthsAndDays
             .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
@@ -205,9 +209,9 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
     when (unit) {
         is DateTimeUnit.DateBased -> {
-            val preferredOffset = offsetIn(timeZone)
-            val initialLdt = toLocalDateTimeFailing(preferredOffset)
-            timeZone.atZone(initialLdt.plus(value, unit), preferredOffset).toInstant()
+            val initialOffset = offsetIn(timeZone)
+            val initialLdt = toLocalDateTimeFailing(initialOffset)
+            timeZone.localDateTimeToInstant(initialLdt.plus(value, unit), preferred = initialOffset)
         }
         is DateTimeUnit.TimeBased ->
             check(timeZone).plus(value, unit).check(timeZone)
@@ -230,15 +234,21 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
     }
 
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    val thisOffset1 = offsetIn(timeZone)
-    val thisLdt1 = toLocalDateTimeFailing(thisOffset1)
+    val initialOffset = offsetIn(timeZone)
+    val initialLdt = toLocalDateTimeFailing(initialOffset)
     val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
 
-    val months = thisLdt1.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
-    val (thisLdt2, thisOffset2) = timeZone.atZone(thisLdt1.plus(months, DateTimeUnit.MONTH), thisOffset1) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt2.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
-    val (thisLdt3, thisOffset3) = timeZone.atZone(thisLdt2.plus(days, DateTimeUnit.DAY), thisOffset2) // won't throw: thisLdt + days <= otherLdt
-    val nanoseconds = thisLdt3.toInstant(thisOffset3).until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
+    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
+    val unresolvedLdtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH)
+        // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val instantWithMonths = timeZone.localDateTimeToInstant(unresolvedLdtWithMonths, preferred = initialOffset)
+    val offsetWithMonths = instantWithMonths.offsetIn(timeZone)
+    val ldtWithMonths = instantWithMonths.toLocalDateTimeFailing(offsetWithMonths)
+    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
+    val unresolvedLdtWithDays = ldtWithMonths.plus(days, DateTimeUnit.DAY)
+    val newInstant = timeZone.localDateTimeToInstant(unresolvedLdtWithDays, preferred = initialOffset)
+        // won't throw: thisLdt + days <= otherLdt
+    val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
 
     return buildDateTimePeriod(months, days.toInt(), nanoseconds)
 }
