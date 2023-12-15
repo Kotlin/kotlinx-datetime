@@ -219,9 +219,9 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val initialLdt = toLocalDateTimeFailing(initialOffset)
     val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
 
-    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH).toLong().toInt() // `until` on dates never fails
+    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
     val ldtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY).toLong().toInt() // `until` on dates never fails
+    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
     val newInstant = timeZone.localDateTimeToInstant(ldtWithMonths.plus(days, DateTimeUnit.DAY), preferred = initialOffset) // won't throw: thisLdt + days <= otherLdt
     val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
 
