@@ -96,21 +96,21 @@ private object SystemTimeZone: TimeZone() {
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/LocalDate.js#L1404-L1416 +
     * https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L69-L71 */
-    override fun atStartOfDay(date: LocalDate): Instant = atZone(date.atTime(LocalTime.MIN)).toInstant()
+    override fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstant(date.atTime(LocalTime.MIN))
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L21-L24 */
     override fun offsetAtImpl(instant: Instant): UtcOffset =
         UtcOffset(minutes = -Date(instant.toEpochMilliseconds().toDouble()).getTimezoneOffset().toInt())
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L49-L55 */
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): LocalDateTimeWithOffset {
+    override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant {
         val epochMilli = dateTime.toInstant(UTC).toEpochMilliseconds()
         val offsetInMinutesBeforePossibleTransition = Date(epochMilli.toDouble()).getTimezoneOffset().toInt()
         val epochMilliSystemZone = epochMilli +
                 offsetInMinutesBeforePossibleTransition * SECONDS_PER_MINUTE * MILLIS_PER_ONE
         val offsetInMinutesAfterPossibleTransition = Date(epochMilliSystemZone.toDouble()).getTimezoneOffset().toInt()
         val offset = UtcOffset(minutes = -offsetInMinutesAfterPossibleTransition)
-        return LocalDateTimeWithOffset(dateTime, offset)
+        return dateTime.toInstant(offset)
     }
 
     override fun equals(other: Any?): Boolean = other === this
