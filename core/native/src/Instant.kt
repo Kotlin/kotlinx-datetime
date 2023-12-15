@@ -166,23 +166,10 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val initialOffset = offsetIn(timeZone)
-        val initialLdt = toLocalDateTimeFailing(initialOffset)
-        val offsetAfterMonths: UtcOffset
-        val ldtAfterMonths: LocalDateTime
-        if (totalMonths != 0) {
-            val (ldt, offset) = timeZone.atZone(initialLdt.plus(totalMonths, DateTimeUnit.MONTH), initialOffset)
-            offsetAfterMonths = offset
-            ldtAfterMonths = ldt
-        } else {
-            offsetAfterMonths = initialOffset
-            ldtAfterMonths = initialLdt
-        }
-        val instantAfterMonthsAndDays = if (days != 0) {
-            timeZone.atZone(ldtAfterMonths.plus(days, DateTimeUnit.DAY), offsetAfterMonths).toInstant()
-        } else {
-            ldtAfterMonths.toInstant(offsetAfterMonths)
-        }
-        instantAfterMonthsAndDays
+        val newLdt = toLocalDateTimeFailing(initialOffset)
+            .run { if (totalMonths != 0) { plus(totalMonths, DateTimeUnit.MONTH) } else { this } }
+            .run { if (days != 0) { plus(days, DateTimeUnit.DAY) } else { this } }
+        timeZone.atZone(newLdt, preferred = initialOffset).toInstant()
             .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
     }.check(timeZone)
 } catch (e: ArithmeticException) {
@@ -203,9 +190,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
         is DateTimeUnit.DateBased -> {
             if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)
                 throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
-            val preferredOffset = offsetIn(timeZone)
-            val initialLdt = toLocalDateTimeFailing(preferredOffset)
-            timeZone.atZone(initialLdt.plus(value.toInt(), unit), preferredOffset).toInstant()
+            val initialOffset = offsetIn(timeZone)
+            val initialLdt = toLocalDateTimeFailing(initialOffset)
+            timeZone.atZone(initialLdt.plus(value.toInt(), unit), preferred = initialOffset).toInstant()
         }
         is DateTimeUnit.TimeBased ->
             check(timeZone).plus(value, unit).check(timeZone)
@@ -228,15 +215,15 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
     }
 
 public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    val thisOffset1 = offsetIn(timeZone)
-    val thisLdt1 = toLocalDateTimeFailing(thisOffset1)
+    val initialOffset = offsetIn(timeZone)
+    val initialLdt = toLocalDateTimeFailing(initialOffset)
     val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
 
-    val months = thisLdt1.until(otherLdt, DateTimeUnit.MONTH).toLong().toInt() // `until` on dates never fails
-    val (thisLdt2, thisOffset2) = timeZone.atZone(thisLdt1.plus(months, DateTimeUnit.MONTH), thisOffset1) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt2.until(otherLdt, DateTimeUnit.DAY).toLong().toInt() // `until` on dates never fails
-    val (thisLdt3, thisOffset3) = timeZone.atZone(thisLdt2.plus(days, DateTimeUnit.DAY), thisOffset2) // won't throw: thisLdt + days <= otherLdt
-    val nanoseconds = thisLdt3.toInstant(thisOffset3).until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
+    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH).toLong().toInt() // `until` on dates never fails
+    val ldtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY).toLong().toInt() // `until` on dates never fails
+    val newInstant = timeZone.atZone(ldtWithMonths.plus(days, DateTimeUnit.DAY), preferred = initialOffset).toInstant() // won't throw: thisLdt + days <= otherLdt
+    val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
 
     return buildDateTimePeriod(months, days, nanoseconds)
 }
