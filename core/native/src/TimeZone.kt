@@ -92,10 +92,7 @@ public actual open class TimeZone internal constructor() {
         throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
     }
 
-    internal open fun localDateTimeToInstant(dateTime: LocalDateTime): Instant =
-        atZone(dateTime).toInstant()
-
-    internal open fun atZone(dateTime: LocalDateTime, preferred: UtcOffset? = null): LocalDateTimeWithOffset =
+    internal open fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset? = null): Instant =
         error("Should be overridden")
 
     override fun equals(other: Any?): Boolean =
@@ -119,11 +116,10 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 
     override fun offsetAtImpl(instant: Instant): UtcOffset = offset
 
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): LocalDateTimeWithOffset =
-        LocalDateTimeWithOffset(dateTime, offset)
+    override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
+        dateTime.toInstant(offset)
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
-    override fun localDateTimeToInstant(dateTime: LocalDateTime): Instant = dateTime.toInstant(offset)
 }
 
 
