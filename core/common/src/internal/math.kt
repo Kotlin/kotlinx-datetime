@@ -5,8 +5,6 @@
 
 package kotlinx.datetime.internal
 
-import kotlin.native.concurrent.*
-
 internal fun Long.clampToInt(): Int =
         when {
             this > Int.MAX_VALUE -> Int.MAX_VALUE
@@ -182,7 +180,6 @@ internal fun multiplyAndAdd(d: Long, n: Long, r: Long): Long {
     return safeAdd(safeMultiply(md, n), mr)
 }
 
-@ThreadLocal
 internal val POWERS_OF_TEN = intArrayOf(
     1,
     10,
@@ -234,5 +231,11 @@ internal class DecimalFraction(
         append(fractionalPart / denominator)
         append('.')
         append((denominator + (fractionalPart % denominator)).toString().removePrefix("1"))
+    }
+
+    override fun hashCode(): Int {
+        var result = fractionalPart
+        result = 31 * result + digits
+        return result
     }
 }

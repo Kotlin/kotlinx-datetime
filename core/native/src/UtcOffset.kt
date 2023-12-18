@@ -10,7 +10,6 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
-import kotlin.native.concurrent.ThreadLocal
 
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
@@ -98,7 +97,6 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
 }
 
-@ThreadLocal
 private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf(0 to UtcOffset.ZERO)
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

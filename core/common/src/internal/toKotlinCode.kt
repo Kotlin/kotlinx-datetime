@@ -25,6 +25,3 @@ internal fun Char.toKotlinCode(): String = when (this) {
     '\'' -> "'\\''"
     else -> "'$this'"
 }
-
-internal fun<T> List<T>.toKotlinCode(elementRepr: T.() -> String): String =
-    joinToString(", ", "listOf(", ")") { it.elementRepr() }
