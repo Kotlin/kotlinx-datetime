@@ -51,10 +51,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalDateTime): Int {
-        val d = date.compareTo(other.date)
-        if (d != 0) {
-            return d
-        }
+        onNonZero(date.compareTo(other.date)) { return it }
         return time.compareTo(other.time)
     }
 
@@ -112,11 +109,7 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBa
  * @throws IllegalArgumentException if the result exceeds the boundaries
  * @throws ArithmeticException if arithmetic overflow occurs
  */
-internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
-{
-    if (seconds == 0) {
-        return this
-    }
+internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime = onNonZero(seconds) {
     val currentNanoOfDay = time.toNanosecondOfDay() // at most a day
     val totalNanos: Long = seconds % SECONDS_PER_DAY * NANOS_PER_ONE.toLong() + // at most a day
         currentNanoOfDay
@@ -124,7 +117,7 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
         totalNanos.floorDiv(NANOS_PER_DAY) // max 2 days
     val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
-    return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
+    LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
 }
 
 private val ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {

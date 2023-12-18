@@ -86,18 +86,9 @@ public actual class LocalTime actual constructor(
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalTime): Int {
-        val h = hour.compareTo(other.hour)
-        if (h != 0) {
-            return h
-        }
-        val m = minute.compareTo(other.minute)
-        if (m != 0) {
-            return m
-        }
-        val s = second.compareTo(other.second)
-        if (s != 0) {
-            return s
-        }
+        onNonZero(hour.compareTo(other.hour)) { return it }
+        onNonZero(minute.compareTo(other.minute)) { return it }
+        onNonZero(second.compareTo(other.second)) { return it }
         return nanosecond.compareTo(other.nanosecond)
     }
 
