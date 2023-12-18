@@ -281,8 +281,8 @@ public sealed interface DateTimeFormatBuilder {
  * When formatting, the decimal fraction will round the number to fit in the specified [maxLength] and will add
  * trailing zeroes to the specified [minLength].
  *
- * Additionally, [grouping] is a list, where the i'th element specifies how many trailing zeros to add during formatting
- * when
+ * Additionally, [grouping] is a list, where the i'th (1-based) element specifies how many trailing zeros to add during
+ * formatting when the number would have i digits.
  *
  * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
  * digits long.
@@ -389,15 +389,6 @@ internal interface AbstractDateTimeFormatBuilder<Target, ActualSelf> :
     }
 
     override fun chars(value: String) = actualBuilder.add(ConstantFormatStructure(value))
-
-    fun withSharedSignImpl(outputPlus: Boolean, block: ActualSelf.() -> Unit) {
-        actualBuilder.add(
-            SignedFormatStructure(
-                createEmpty().also { block(it) }.actualBuilder.build(),
-                outputPlus
-            )
-        )
-    }
 
     fun build(): StringFormat<Target> = StringFormat(actualBuilder.build())
 }

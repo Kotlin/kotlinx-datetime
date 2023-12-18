@@ -185,9 +185,7 @@ class LocalDateTimeFormatTest {
         assertFailsWith<DateTimeFormatException> { format.parse("+008- 7- 5  0: 0: 0") }
         assertFailsWith<DateTimeFormatException> { format.parse("  -08- 7- 5  0: 0: 0") }
         assertFailsWith<DateTimeFormatException> { format.parse("   -08- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> {
-            format.parse("-8- 7- 5  0: 0: 0")
-        }
+        assertFailsWith<DateTimeFormatException> { format.parse("-8- 7- 5  0: 0: 0") }
     }
 
     @Test

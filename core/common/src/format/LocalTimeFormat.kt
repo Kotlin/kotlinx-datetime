@@ -9,7 +9,16 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlin.native.concurrent.*
+
+/**
+ * The AM/PM marker that indicates whether the hour in range `1..12` is before or after noon.
+ */
+public enum class AmPmMarker {
+    /** The time is before noon. */
+    AM,
+    /** The time is after noon. */
+    PM,
+}
 
 internal interface TimeFieldContainer {
     var minute: Int?
@@ -17,7 +26,7 @@ internal interface TimeFieldContainer {
     var nanosecond: Int?
     var hour: Int?
     var hourOfAmPm: Int?
-    var isPm: Boolean?
+    var amPm: AmPmMarker?
 
     var fractionOfSecond: DecimalFraction?
         get() = nanosecond?.let { DecimalFraction(it, 9) }
@@ -31,14 +40,14 @@ private object TimeFields {
     val minute = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::minute), minValue = 0, maxValue = 59)
     val second = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::second), minValue = 0, maxValue = 59, defaultValue = 0)
     val fractionOfSecond = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::fractionOfSecond), defaultValue = DecimalFraction(0, 9))
-    val isPm = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::isPm))
+    val amPm = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::amPm))
     val hourOfAmPm = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::hourOfAmPm), minValue = 1, maxValue = 12)
 }
 
 internal class IncompleteLocalTime(
     override var hour: Int? = null,
     override var hourOfAmPm: Int? = null,
-    override var isPm: Boolean? = null,
+    override var amPm: AmPmMarker? = null,
     override var minute: Int? = null,
     override var second: Int? = null,
     override var nanosecond: Int? = null
@@ -48,20 +57,20 @@ internal class IncompleteLocalTime(
             hourOfAmPm?.let {
                 require((hour + 11) % 12 + 1 == it) { "Inconsistent hour and hour-of-am-pm: hour is $hour, but hour-of-am-pm is $it" }
             }
-            isPm?.let {
-                require(isPm != null && isPm != (hour >= 12)) {
-                    "Inconsistent hour and the AM/PM marker: hour is $hour, but the AM/PM marker is ${if (it) "PM" else "AM"}"
+            amPm?.let { amPm ->
+                require((amPm == AmPmMarker.PM) == (hour >= 12)) {
+                    "Inconsistent hour and the AM/PM marker: hour is $hour, but the AM/PM marker is $amPm"
                 }
             }
             hour
         } ?: hourOfAmPm?.let { hourOfAmPm ->
-            isPm?.let { isPm ->
-                hourOfAmPm.let { if (it == 12) 0 else it } + if (isPm) 12 else 0
+            amPm?.let { amPm ->
+                hourOfAmPm.let { if (it == 12) 0 else it } + if (amPm == AmPmMarker.PM) 12 else 0
             }
         } ?: throw DateTimeFormatException("Incomplete time: missing hour")
         return LocalTime(
             hour,
-            getParsedField(minute, "minute"),
+            requireParsedField(minute, "minute"),
             second ?: 0,
             nanosecond ?: 0,
         )
@@ -70,20 +79,20 @@ internal class IncompleteLocalTime(
     fun populateFrom(localTime: LocalTime) {
         hour = localTime.hour
         hourOfAmPm = (localTime.hour + 11) % 12 + 1
-        isPm = localTime.hour >= 12
+        amPm = if (localTime.hour >= 12) AmPmMarker.PM else AmPmMarker.AM
         minute = localTime.minute
         second = localTime.second
         nanosecond = localTime.nanosecond
     }
 
-    override fun copy(): IncompleteLocalTime = IncompleteLocalTime(hour, hourOfAmPm, isPm, minute, second, nanosecond)
+    override fun copy(): IncompleteLocalTime = IncompleteLocalTime(hour, hourOfAmPm, amPm, minute, second, nanosecond)
 
     override fun equals(other: Any?): Boolean =
-        other is IncompleteLocalTime && hour == other.hour && hourOfAmPm == other.hourOfAmPm && isPm == other.isPm &&
+        other is IncompleteLocalTime && hour == other.hour && hourOfAmPm == other.hourOfAmPm && amPm == other.amPm &&
             minute == other.minute && second == other.second && nanosecond == other.nanosecond
 
     override fun hashCode(): Int =
-        (hour ?: 0) * 31 + (hourOfAmPm ?: 0) * 31 + (isPm?.hashCode() ?: 0) * 31 + (minute ?: 0) * 31 +
+        (hour ?: 0) * 31 + (hourOfAmPm ?: 0) * 31 + (amPm?.hashCode() ?: 0) * 31 + (minute ?: 0) * 31 +
             (second ?: 0) * 31 + (nanosecond ?: 0)
 
     override fun toString(): String =
@@ -145,10 +154,10 @@ private class AmPmHourDirective(private val padding: Padding) :
 }
 
 private class AmPmMarkerDirective(private val amString: String, private val pmString: String) :
-    NamedEnumIntFieldFormatDirective<TimeFieldContainer, Boolean>(
-        TimeFields.isPm, mapOf(
-            false to amString,
-            true to pmString,
+    NamedEnumIntFieldFormatDirective<TimeFieldContainer, AmPmMarker>(
+        TimeFields.amPm, mapOf(
+            AmPmMarker.AM to amString,
+            AmPmMarker.PM to pmString,
         ),
         "AM/PM marker"
     ) {

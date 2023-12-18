@@ -148,7 +148,7 @@ private val dateTimeComponentsTemporalQuery = TemporalQuery { accessor ->
             ChronoField.MONTH_OF_YEAR to { monthNumber = it },
             ChronoField.DAY_OF_MONTH to { dayOfMonth = it },
             ChronoField.DAY_OF_WEEK to { dayOfWeek = DayOfWeek(it) },
-            ChronoField.AMPM_OF_DAY to { isPm = it == 1 },
+            ChronoField.AMPM_OF_DAY to { amPm = if (it == 1) AmPmMarker.PM else AmPmMarker.AM },
             ChronoField.CLOCK_HOUR_OF_AMPM to { hourOfAmPm = it },
             ChronoField.HOUR_OF_DAY to { hour = it },
             ChronoField.MINUTE_OF_HOUR to { minute = it },

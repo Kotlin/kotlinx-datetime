@@ -40,6 +40,17 @@ class DateTimeComponentsTest {
         }
     }
 
+    @Test
+    fun testGettingInvalidMonth() {
+        for (month in 1..12) {
+            assertEquals(Month(month), DateTimeComponents().apply { monthNumber = month }.month)
+        }
+        for (month in listOf(0, 13, 60, 99)) {
+            val components = DateTimeComponents().apply { monthNumber = month }
+            assertFailsWith<IllegalArgumentException> { components.month }
+        }
+    }
+
     val twoDigitFields = listOf(
         DateTimeComponents::monthNumber,
         DateTimeComponents::dayOfMonth,

@@ -535,11 +535,3 @@ public fun Instant.Companion.parse(input: CharSequence, format: DateTimeFormat<D
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800
-
-/**
- * Displays the given Instant in the given [offset].
- *
- * Be careful: this function may throw for some values of the [Instant].
- */
-internal fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offset)

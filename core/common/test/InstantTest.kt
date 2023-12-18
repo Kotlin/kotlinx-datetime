@@ -6,13 +6,11 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
@@ -120,19 +118,24 @@ class InstantTest {
             Instant.DISTANT_PAST,
             Instant.fromEpochSeconds(0, 0))
 
-        val offsets = listOf(
-            UtcOffset.parse("Z"),
-            UtcOffset.parse("+03:12:14"),
-            UtcOffset.parse("-03:12:14"),
-            UtcOffset.parse("+02:35"),
-            UtcOffset.parse("-02:35"),
-            UtcOffset.parse("+04"),
-            UtcOffset.parse("-04"),
+        val offsetStrings = listOf(
+            "Z",
+            "+03:12:14",
+            "-03:12:14",
+            "+02:35",
+            "-02:35",
+            "+04",
+            "-04",
         )
 
+        val offsets = offsetStrings.map { UtcOffset.parse(it) }
+
         for (instant in instants) {
-            for (offset in offsets) {
-                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offset)
+            for (offsetIx in offsets.indices) {
+                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offsets[offsetIx])
+                val offsetString = offsetStrings[offsetIx]
+                assertEquals(offsetString, offsetString.commonSuffixWith(str))
+                assertEquals(instant, Instant.parse(str, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET))
                 assertEquals(instant, Instant.parse(str))
             }
         }

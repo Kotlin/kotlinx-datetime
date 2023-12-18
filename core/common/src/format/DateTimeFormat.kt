@@ -8,7 +8,6 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.*
-import kotlin.native.concurrent.*
 
 /**
  * A format for parsing and formatting date-time-related values.
@@ -46,11 +45,8 @@ public sealed interface DateTimeFormat<T> {
          * The typical use case for this is to create a [DateTimeFormat] instance using a non-idiomatic approach and
          * then convert it to a builder DSL.
          */
-        public fun formatAsKotlinBuilderDsl(format: DateTimeFormat<*>): String {
-            when (format) {
-                is AbstractDateTimeFormat<*, *> -> return format.actualFormat.builderString(allFormatConstants)
-                else -> error("Unsupported format: $format")
-            }
+        public fun formatAsKotlinBuilderDsl(format: DateTimeFormat<*>): String = when (format) {
+            is AbstractDateTimeFormat<*, *> -> format.actualFormat.builderString(allFormatConstants)
         }
     }
 }

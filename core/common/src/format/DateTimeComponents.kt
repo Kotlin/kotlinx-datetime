@@ -11,7 +11,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.safeMultiply
-import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -24,10 +23,10 @@ import kotlin.reflect.*
  * Example:
  * ```
  * val input = "2020-03-16T23:59:59.999999999+03:00"
- * val bag = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
- * val localDateTime = bag.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
- * val instant = bag.toInstantUsingOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
- * val offset = bag.toUtcOffset() // UtcOffset(hours = 3)
+ * val components = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
+ * val localDateTime = components.toLocalDateTime() // LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999)
+ * val instant = components.toInstantUsingOffset() // Instant.parse("2020-03-16T20:59:59.999999999Z")
+ * val offset = components.toUtcOffset() // UtcOffset(hours = 3)
  * ```
  *
  * Another purpose is to support parsing and formatting data with out-of-bounds values. For example, parsing
@@ -168,7 +167,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * Writes the contents of the specified [localTime] to this [DateTimeComponents].
-     * The [localTime] is written to the [hour], [hourOfAmPm], [isPm], [minute], [second] and [nanosecond] fields.
+     * The [localTime] is written to the [hour], [hourOfAmPm], [amPm], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -186,7 +185,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Writes the contents of the specified [localDateTime] to this [DateTimeComponents].
      * The [localDateTime] is written to the
      * [year], [monthNumber], [dayOfMonth], [dayOfWeek],
-     * [hour], [hourOfAmPm], [isPm], [minute], [second] and [nanosecond] fields.
+     * [hour], [hourOfAmPm], [amPm], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      */
@@ -247,7 +246,10 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      */
     public var monthNumber: Int? by TwoDigitNumber(contents.date::monthNumber)
 
-    /** The month ([Month]) component of the date. */
+    /**
+     * The month ([Month]) component of the date.
+     * @throws IllegalArgumentException during getting if [monthNumber] is outside the `1..12` range.
+     */
     public var month: Month?
         get() = monthNumber?.let { Month(it) }
         set(value) {
@@ -270,23 +272,23 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     // public var dayOfYear: Int
 
     /**
-     * The hour-of-day time component.
+     * The hour-of-day (0..23) time component.
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
      */
     public var hour: Int? by TwoDigitNumber(contents.time::hour)
 
     /**
-     * The 12-hour time component.
+     * The 12-hour (1..12) time component.
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
-     * @see isPm
+     * @see amPm
      */
     public var hourOfAmPm: Int? by TwoDigitNumber(contents.time::hourOfAmPm)
 
     /**
-     * The AM/PM state of the time component: `true` if PM, `false` if `AM`.
+     * The AM/PM state of the time component.
      * @see hourOfAmPm
      */
-    public var isPm: Boolean? by contents.time::isPm
+    public var amPm: AmPmMarker? by contents.time::amPm
 
     /**
      * The minute-of-hour component.
@@ -368,13 +370,13 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * Builds a [LocalTime] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
-     * * [hour], [hourOfAmPm], and [isPm]
+     * * [hour], [hourOfAmPm], and [amPm]
      * * [minute]
      * * [second] (default value is 0)
      * * [nanosecond] (default value is 0)
      *
      * @throws IllegalArgumentException if hours or minutes are not present, if any of the fields are invalid, or
-     * [hourOfAmPm] and [isPm] are inconsistent with [hour].
+     * [hourOfAmPm] and [amPm] are inconsistent with [hour].
      */
     public fun toLocalTime(): LocalTime = contents.time.toLocalTime()
 
@@ -385,7 +387,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * * [year]
      * * [monthNumber]
      * * [dayOfMonth]
-     * * [hour], [hourOfAmPm], and [isPm]
+     * * [hour], [hourOfAmPm], and [amPm]
      * * [minute]
      * * [second] (default value is 0)
      * * [nanosecond] (default value is 0)
@@ -421,7 +423,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * * and is a multiple of 400, which is the number of years in a leap cycle, which means that taking the
          *   remainder of the year after dividing by 40_000 will not change the leap year status of the year.
          */
-        truncatedDate.year = getParsedField(truncatedDate.year, "year") % 10_000
+        truncatedDate.year = requireParsedField(truncatedDate.year, "year") % 10_000
         val totalSeconds = try {
             val secDelta = safeMultiply((year!! / 10_000).toLong(), SECONDS_PER_10000_YEARS)
             val epochDays = truncatedDate.toLocalDate().toEpochDays().toLong()

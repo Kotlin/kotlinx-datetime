@@ -17,16 +17,52 @@ class DateTimeComponentsFormatTest {
         assertDateTimeComponentsEqual(
             dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO),
             format.parse("Tue, 3 Jun 2008 11:05:30 GMT"))
+        // the same date, but with an incorrect day-of-week:
         assertDateTimeComponentsEqual(
             DateTimeComponents().apply {
-                year = 2008
-                monthNumber = 6
-                dayOfMonth = 40
+                year = 2008; monthNumber = 6; dayOfMonth = 3; dayOfWeek = DayOfWeek.MONDAY
+                setTime(LocalTime(11, 5, 30))
+                setOffset(UtcOffset.ZERO)
+            },
+            format.parse("Mon, 3 Jun 2008 11:05:30 GMT"))
+        assertDateTimeComponentsEqual(
+            DateTimeComponents().apply {
+                year = 2008; monthNumber = 6; dayOfMonth = 40; dayOfWeek = DayOfWeek.TUESDAY
                 setTime(LocalTime(11, 5, 30))
                 setOffset(UtcOffset.ZERO)
             },
             format.parse("Tue, 40 Jun 2008 11:05:30 GMT"))
         assertFailsWith<DateTimeFormatException> { format.parse("Bue, 3 Jun 2008 11:05:30 GMT") }
+    }
+
+    @Test
+    fun testInconsistentLocalTime() {
+        val formatTime = LocalTime.Format {
+            hour(); char(':'); minute();
+            chars(" ("); amPmHour(); char(':'); minute(); char(' '); amPmMarker("AM", "PM"); char(')')
+        }
+        val format = DateTimeComponents.Format { time(formatTime) }
+        val time1 = "23:15 (11:15 PM)" // a normal time after noon
+        assertDateTimeComponentsEqual(
+            DateTimeComponents().apply { hour = 23; hourOfAmPm = 11; minute = 15; amPm = AmPmMarker.PM },
+            format.parse(time1)
+        )
+        assertEquals(LocalTime(23, 15), formatTime.parse(time1))
+        val time2 = "23:15 (11:15 AM)" // a time with an inconsistent AM/PM marker
+        assertDateTimeComponentsEqual(
+            DateTimeComponents().apply { hour = 23; hourOfAmPm = 11; minute = 15; amPm = AmPmMarker.AM },
+            format.parse(time2)
+        )
+        assertFailsWith<IllegalArgumentException> { formatTime.parse(time2) }
+        val time3 = "23:15 (10:15 PM)" // a time with an inconsistent number of hours
+        assertDateTimeComponentsEqual(
+            DateTimeComponents().apply { hour = 23; hourOfAmPm = 10; minute = 15; amPm = AmPmMarker.PM },
+            format.parse(time3)
+        )
+        assertFailsWith<IllegalArgumentException> { formatTime.parse(time3) }
+        val time4 = "23:15 (11:16 PM)" // a time with an inconsistently duplicated field
+        assertFailsWith<IllegalArgumentException> { format.parse(time4) }
+        assertFailsWith<IllegalArgumentException> { formatTime.parse(time4) }
     }
 
     @Test

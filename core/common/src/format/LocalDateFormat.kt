@@ -9,7 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlin.native.concurrent.*
 
 /**
  * A description of how month names are formatted.
@@ -116,7 +115,7 @@ internal fun DayOfWeekNames.toKotlinCode(): String = when (this.names) {
     else -> names.joinToString(", ", "DayOfWeekNames(", ")", transform = String::toKotlinCode)
 }
 
-internal fun <T> getParsedField(field: T?, name: String): T {
+internal fun <T> requireParsedField(field: T?, name: String): T {
     if (field == null) {
         throw DateTimeFormatException("Can not create a $name from the given input: the field $name is missing")
     }
@@ -148,9 +147,9 @@ internal class IncompleteLocalDate(
 ) : DateFieldContainer, Copyable<IncompleteLocalDate> {
     fun toLocalDate(): LocalDate {
         val date = LocalDate(
-            getParsedField(year, "year"),
-            getParsedField(monthNumber, "monthNumber"),
-            getParsedField(dayOfMonth, "dayOfMonth")
+            requireParsedField(year, "year"),
+            requireParsedField(monthNumber, "monthNumber"),
+            requireParsedField(dayOfMonth, "dayOfMonth")
         )
         isoDayOfWeek?.let {
             if (it != date.dayOfWeek.isoDayNumber) {
