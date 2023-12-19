@@ -275,23 +275,7 @@ internal val ISO_TIME by lazy {
             second()
             optional {
                 char('.')
-                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
-            }
-        }
-    }
-}
-
-internal val ISO_TIME_OPTIONAL_SECONDS by lazy {
-    LocalTimeFormat.build {
-        hour()
-        char(':')
-        minute()
-        optional {
-            char(':')
-            second()
-            optional {
-                char('.')
-                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+                secondFraction(1, 9)
             }
         }
     }

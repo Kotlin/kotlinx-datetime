@@ -33,7 +33,8 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = parse(isoString, ISO_TIME_OPTIONAL_SECONDS)
+        public actual fun parse(isoString: String): LocalTime =
+            parse(isoString, ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
@@ -126,9 +127,25 @@ public actual class LocalTime actual constructor(
         return total
     }
 
-    actual override fun toString(): String = format(ISO_TIME_OPTIONAL_SECONDS)
+    actual override fun toString(): String = format(ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
     override fun equals(other: Any?): Boolean =
         other is LocalTime && this.compareTo(other) == 0
 
+}
+
+internal val ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
+    LocalTimeFormat.build {
+        hour()
+        char(':')
+        minute()
+        optional {
+            char(':')
+            second()
+            optional {
+                char('.')
+                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+            }
+        }
+    }
 }

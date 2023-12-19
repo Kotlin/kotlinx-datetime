@@ -28,13 +28,17 @@ public expect class LocalTime : Comparable<LocalTime> {
     public companion object {
 
         /**
-         * Parses a string that represents a time value in ISO-8601 and returns the parsed [LocalTime] value.
+         * A shortcut for calling [parse] with [Formats.ISO].
          *
-         * Examples of time in ISO-8601 format:
+         * Parses a string that represents a time value in ISO 8601 and returns the parsed [LocalTime] value.
+         *
+         * Examples of time in ISO 8601 format:
          * - `18:43`
          * - `18:43:00`
-         * - `18:43:00.500`
+         * - `18:43:00.5`
          * - `18:43:00.123456789`
+         *
+         * Guaranteed to parse all strings that [LocalTime.toString] produces.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are
          * exceeded.
@@ -116,7 +120,7 @@ public expect class LocalTime : Comparable<LocalTime> {
         /**
          * ISO 8601 extended format.
          *
-         * Examples: `12:34`, `12:34:56`, `12:34:56.789`.
+         * Examples: `12:34`, `12:34:56`, `12:34:56.789`, `12:34:56.1234`.
          *
          * When formatting, seconds are always included, even if they are zero.
          * Fractional parts of the second are included if non-zero.
@@ -171,9 +175,14 @@ public expect class LocalTime : Comparable<LocalTime> {
     public override operator fun compareTo(other: LocalTime): Int
 
     /**
-     * Converts this time value to the ISO-8601 string representation.
+     * Converts this time value to the ISO 8601 string representation:
+     * * `12:34`
+     * * `12:34:56.5`
+     * * `12:34:56.123456789`
      *
-     * @see LocalDateTime.parse
+     * @see Formats.ISO for a very similar format. The difference is that [Formats.ISO] will always include seconds,
+     * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
+     * @see LocalTime.parse
      */
     public override fun toString(): String
 }

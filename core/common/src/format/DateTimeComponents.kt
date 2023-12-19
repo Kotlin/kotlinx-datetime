@@ -89,8 +89,17 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         /**
          * ISO 8601 extended format for dates and times with UTC offset.
          *
-         * Examples of valid strings:
-         * * `2020-01-01T23:59:59.106+01:00`
+         * Supports the following ways of specifying the time zone offset:
+         * - the `Z` designator for the UTC+0 time zone,
+         * - a custom time zone offset specified with `+hh`, or `+hh:mm`, or `+hh:mm:ss`
+         *   (with `+` being replaced with `-` for the negative offsets)
+         *
+         * Examples of instants in the ISO 8601 format:
+         * - `2020-08-30T18:43:00Z`
+         * - `2020-08-30T18:43:00.50Z`
+         * - `2020-08-30T18:43:00.123456789Z`
+         * - `2020-08-30T18:40:00+03:00`
+         * - `2020-08-30T18:40:00+03:30:20`
          * * `2020-01-01T23:59:59.123456789+01`
          * * `+12020-01-31T23:59:59Z`
          *
@@ -112,7 +121,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             second()
             optional {
                 char('.')
-                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+                secondFraction(1, 9)
             }
             isoOffset(
                 zOnZero = true,

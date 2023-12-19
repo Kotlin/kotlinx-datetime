@@ -28,14 +28,18 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
 
         /**
-         * Parses a string that represents a date/time value in ISO-8601 format including date and time components
+         * A shortcut for calling [parse] with [Formats.ISO].
+         *
+         * Parses a string that represents a date/time value in ISO 8601 format including date and time components
          * but without any time zone component and returns the parsed [LocalDateTime] value.
          *
-         * Examples of date/time in ISO-8601 format:
+         * Examples of date/time in ISO 8601 format:
          * - `2020-08-30T18:43`
          * - `2020-08-30T18:43:00`
-         * - `2020-08-30T18:43:00.500`
+         * - `2020-08-30T18:43:00.5`
          * - `2020-08-30T18:43:00.123456789`
+         *
+         * Guaranteed to parse all strings that [LocalDateTime.toString] produces.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are
          * exceeded.
@@ -86,7 +90,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * Examples of date/time in ISO 8601 format:
          * - `2020-08-30T18:43`
          * - `+12020-08-30T18:43:00`
-         * - `0000-08-30T18:43:00.500`
+         * - `0000-08-30T18:43:00.5`
          * - `-0001-08-30T18:43:00.123456789`
          *
          * When formatting, seconds are always included, even if they are zero.
@@ -200,8 +204,16 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public override operator fun compareTo(other: LocalDateTime): Int
 
     /**
-     * Converts this date/time value to the ISO-8601 string representation.
+     * Converts this date/time value to the ISO 8601 string representation.
      *
+     * Examples of date/time in ISO 8601 format:
+     * - `2020-08-30T18:43`
+     * - `2020-08-30T18:43:00`
+     * - `2020-08-30T18:43:00.500`
+     * - `2020-08-30T18:43:00.123456789`
+     *
+     * @see Formats.ISO for a very similar format. The difference is that [Formats.ISO] will always include seconds,
+     * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
      * @see LocalDateTime.parse
      */
     public override fun toString(): String

@@ -83,12 +83,4 @@ internal val ISO_DATETIME by lazy {
     }
 }
 
-internal val ISO_DATETIME_OPTIONAL_SECONDS by lazy {
-    LocalDateTimeFormat.build {
-        date(ISO_DATE)
-        alternativeParsing({ char('t') }) { char('T') }
-        time(ISO_TIME_OPTIONAL_SECONDS)
-    }
-}
-
 private val emptyIncompleteLocalDateTime = IncompleteLocalDateTime()

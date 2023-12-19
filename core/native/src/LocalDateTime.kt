@@ -17,7 +17,8 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime = parse(isoString, ISO_DATETIME_OPTIONAL_SECONDS)
+        public actual fun parse(isoString: String): LocalDateTime =
+            parse(isoString, ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
@@ -66,7 +67,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = format(ISO_DATETIME_OPTIONAL_SECONDS)
+    actual override fun toString(): String = format(ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
@@ -124,4 +125,12 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
     val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
     return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
+}
+
+private val ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
+    LocalDateTimeFormat.build {
+        date(ISO_DATE)
+        alternativeParsing({ char('t') }) { char('T') }
+        time(ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
+    }
 }

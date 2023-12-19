@@ -98,7 +98,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
-    actual override fun toString(): String = format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)
+    actual override fun toString(): String = format(ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS)
 
     public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
@@ -139,11 +139,8 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        public actual fun parse(isoString: String): Instant = try {
-            DateTimeComponents.parse(isoString, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingOffset()
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
-        }
+        public actual fun parse(isoString: String): Instant =
+            parse(isoString, ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS)
 
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 
@@ -244,3 +241,27 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
             until(other, unit)
         }
     }
+
+private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {
+    date(ISO_DATE)
+    alternativeParsing({
+        char('t')
+    }) {
+        char('T')
+    }
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+    optional {
+        char('.')
+        secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+    }
+    isoOffset(
+        zOnZero = true,
+        useSeparator = true,
+        outputMinute = WhenToOutput.IF_NONZERO,
+        outputSecond = WhenToOutput.IF_NONZERO
+    )
+}
