@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 
 plugins {
     kotlin("multiplatform")
@@ -127,6 +128,10 @@ kotlin {
         }
     }
 
+    wasmWasi {
+        nodejs()
+    }
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -218,14 +223,37 @@ kotlin {
             dependsOn(commonJsTest)
         }
 
-        val nativeMain by getting {
+        val nativeAndWasmWasiMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
+        val nativeAndWasmWasiTest by creating {}
+
+        val nixAndWasmWasiMain by creating {
+            dependsOn(nativeAndWasmWasiMain)
+        }
+
+        val nativeMain by getting {
+            dependsOn(nativeAndWasmWasiMain)
+        }
+
         val nativeTest by getting {
+            dependsOn(nativeAndWasmWasiTest)
+        }
+
+        val nixMain by getting {
+            dependsOn(nixAndWasmWasiMain)
+        }
+
+        val wasmWasiMain by getting {
+            dependsOn(nixAndWasmWasiMain)
+        }
+
+        val wasmWasiTest by getting {
+            dependsOn(nativeAndWasmWasiTest)
         }
 
         val darwinMain by getting {
@@ -407,4 +435,12 @@ tasks.configureEach {
 with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
     nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
     nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+}
+
+task("generateWasmWasiZoneInfo") {
+    doLast {
+        val zoneInfoDir = File("/usr/share/zoneinfo")
+        val outputDir = File(projectDir, "wasmWasi/src/internal/tzData")
+        generateWasmWasiZoneInfos(zoneInfoDir, outputDir)
+    }
 }
