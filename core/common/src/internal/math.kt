@@ -234,8 +234,6 @@ internal class DecimalFraction(
     }
 
     override fun hashCode(): Int {
-        var result = fractionalPart
-        result = 31 * result + digits
-        return result
+        throw UnsupportedOperationException("DecimalFraction is not supposed to be used as a hash key")
     }
 }
