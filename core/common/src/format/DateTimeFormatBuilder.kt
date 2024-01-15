@@ -152,13 +152,16 @@ public sealed interface DateTimeFormatBuilder {
         /**
          * The fractional part of the second without the leading dot.
          *
-         * When formatting, the decimal fraction will round the number to fit in the specified [maxLength] and will add
+         * When formatting, the decimal fraction will be rounded to fit in the specified [maxLength] and will add
          * trailing zeroes to the specified [minLength].
          *
          * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
          * digits long.
          *
          * This field has the default value of 0. If you want to omit it, use [optional].
+         *
+         * See also the [secondFraction] overload that accepts just one parameter, the exact length of the fractional
+         * part.
          *
          * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
          */
@@ -167,12 +170,15 @@ public sealed interface DateTimeFormatBuilder {
         /**
          * The fractional part of the second without the leading dot.
          *
-         * When formatting, the decimal fraction will add trailing zeroes or round as necessary to always output
+         * When formatting, the decimal fraction will add trailing zeroes or be rounded as necessary to always output
          * exactly the number of digits specified in [fixedLength].
          *
          * When parsing, exactly [fixedLength] digits will be consumed.
          *
          * This field has the default value of 0. If you want to omit it, use [optional].
+         *
+         * See also the [secondFraction] overload that accepts two parameters, the minimum and maximum length of the
+         * fractional part.
          *
          * @throws IllegalArgumentException if [fixedLength] is not in the range 1..9.
          *
