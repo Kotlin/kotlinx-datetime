@@ -154,6 +154,9 @@ public sealed interface DateTimeFormatBuilder {
          *
          * When formatting, the decimal fraction will be rounded to fit in the specified [maxLength] and will add
          * trailing zeroes to the specified [minLength].
+         * Rounding is performed using the round-half-up rounding mode. If rounding the fraction would result in a carry
+         * to the whole part, the whole part stays the same, and the fraction is formatted as repeated nines, so
+         * rounding `15.9996` to milliseconds outputs `15.999`.
          *
          * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
          * digits long.
@@ -172,6 +175,9 @@ public sealed interface DateTimeFormatBuilder {
          *
          * When formatting, the decimal fraction will add trailing zeroes or be rounded as necessary to always output
          * exactly the number of digits specified in [fixedLength].
+         * Rounding is performed using the round-half-up rounding mode. If rounding the fraction would result in a carry
+         * to the whole part, the whole part stays the same, and the fraction is formatted as repeated nines, so
+         * rounding `15.9996` to milliseconds outputs `15.999`.
          *
          * When parsing, exactly [fixedLength] digits will be consumed.
          *
