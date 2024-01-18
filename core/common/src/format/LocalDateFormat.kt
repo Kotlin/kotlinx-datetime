@@ -182,7 +182,7 @@ internal class IncompleteLocalDate(
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }
 
-private class YearDirective(private val padding: Padding) :
+private class YearDirective(private val padding: Padding, private val isYearOfEra: Boolean = false) :
     SignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.year,
         minDigits = padding.minDigits(4),
@@ -193,22 +193,62 @@ private class YearDirective(private val padding: Padding) :
     override val builderRepresentation: String get() = when (padding) {
         Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::year.name}()"
         else -> "${DateTimeFormatBuilder.WithDate::year.name}(${padding.toKotlinCode()})"
+    }.let {
+        if (isYearOfEra) { it + YEAR_OF_ERA_COMMENT } else it
     }
 
-    override fun equals(other: Any?): Boolean = other is YearDirective && padding == other.padding
-    override fun hashCode(): Int = padding.hashCode()
+    override fun equals(other: Any?): Boolean =
+        other is YearDirective && padding == other.padding && isYearOfEra == other.isYearOfEra
+    override fun hashCode(): Int = padding.hashCode() * 31 + isYearOfEra.hashCode()
 }
 
-private class ReducedYearDirective(val base: Int) :
+private class ReducedYearDirective(val base: Int, private val isYearOfEra: Boolean = false) :
     ReducedIntFieldDirective<DateFieldContainer>(
         DateFields.year,
         digits = 2,
         base = base,
     ) {
-    override val builderRepresentation: String get() = "${DateTimeFormatBuilder.WithDate::yearTwoDigits.name}($base)"
+    override val builderRepresentation: String get() =
+        "${DateTimeFormatBuilder.WithDate::yearTwoDigits.name}($base)".let {
+            if (isYearOfEra) { it + YEAR_OF_ERA_COMMENT } else it
+        }
 
-    override fun equals(other: Any?): Boolean = other is ReducedYearDirective && base == other.base
-    override fun hashCode(): Int = base.hashCode()
+    override fun equals(other: Any?): Boolean =
+        other is ReducedYearDirective && base == other.base && isYearOfEra == other.isYearOfEra
+    override fun hashCode(): Int = base.hashCode() * 31 + isYearOfEra.hashCode()
+}
+
+private const val YEAR_OF_ERA_COMMENT =
+    " /** TODO: the original format had an `y` directive, so the behavior is different on years earlier than 1 AD. See the [kotlinx.datetime.format.byUnicodePattern] documentation for details. */"
+
+/**
+ * A special directive for year-of-era that behaves equivalently to [DateTimeFormatBuilder.WithDate.year].
+ * This is the result of calling [byUnicodePattern] on a pattern that uses the ubiquitous "y" symbol.
+ * We need a separate directive so that, when using [DateTimeFormat.formatAsKotlinBuilderDsl], we can print an
+ * additional comment and explain that the behavior was not preserved exactly.
+ */
+internal fun DateTimeFormatBuilder.WithDate.yearOfEra(padding: Padding) {
+    @Suppress("NO_ELSE_IN_WHEN")
+    when (this) {
+        is AbstractWithDateBuilder -> addFormatStructureForDate(
+            BasicFormatStructure(YearDirective(padding, isYearOfEra = true))
+        )
+    }
+}
+
+/**
+ * A special directive for year-of-era that behaves equivalently to [DateTimeFormatBuilder.WithDate.year].
+ * This is the result of calling [byUnicodePattern] on a pattern that uses the ubiquitous "y" symbol.
+ * We need a separate directive so that, when using [DateTimeFormat.formatAsKotlinBuilderDsl], we can print an
+ * additional comment and explain that the behavior was not preserved exactly.
+ */
+internal fun DateTimeFormatBuilder.WithDate.yearOfEraTwoDigits(baseYear: Int) {
+    @Suppress("NO_ELSE_IN_WHEN")
+    when (this) {
+        is AbstractWithDateBuilder -> addFormatStructureForDate(
+            BasicFormatStructure(ReducedYearDirective(baseYear, isYearOfEra = true))
+        )
+    }
 }
 
 private class MonthDirective(private val padding: Padding) :

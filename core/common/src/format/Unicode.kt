@@ -86,10 +86,16 @@ public annotation class FormatStringsInDatetimeFormats
  * | `xxxx`                 | always      | unless zero | none          | `+0000`                    |
  * | `xxxxx`                | always      | unless zero | colon         | `+00:00`                   |
  *
- * `y` is the most common way to represent the year, but it's not supported by [byUnicodePattern] because its
- * interpretation depends on which calendar is being used.
- * For the ISO chronology and years 0001 and later, one can obtain results that are equivalent to `yyyy` and `yy` like
- * this: `byUnicodePattern(pattern.replace("yyyy", "uuuu").replace("yy", "uu")`.
+ * Additionally, because the `y` directive is very often used instead of `u`, they are taken to mean the same.
+ * This may lead to unexpected results if the year is negative: `y` would always produce a positive number, whereas
+ * `u` may sometimes produce a negative one. For example:
+ * ```
+ * LocalDate(-10, 1, 5).format { byUnicodeFormat("yyyy-MM-dd") } // -0010-01-05
+ * LocalDate(-10, 1, 5).toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")) // 0011-01-05
+ * ```
+ *
+ * Note that, when the format includes the era directive, [byUnicodePattern] will fail with an exception, so almost all
+ * of the intentional usages of `y` will correctly report an error instead of behaving slightly differently.
  *
  * @throws IllegalArgumentException if the pattern is invalid or contains unsupported directives.
  * @throws IllegalArgumentException if the builder is incompatible with the specified directives.
@@ -260,9 +266,13 @@ internal sealed interface UnicodeFormat {
 
             class YearOfEra(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'y'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective(
-                    "The locale-invariant ISO year directive '${"u".repeat(formatLength)}' can be used instead."
-                )
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = when (formatLength) {
+                    1 -> builder.yearOfEra(padding = Padding.NONE)
+                    2 -> builder.yearOfEraTwoDigits(baseYear = 2000)
+                    3 -> unsupportedPadding(formatLength)
+                    4 -> builder.yearOfEra(padding = Padding.ZERO)
+                    else -> unsupportedPadding(formatLength)
+                }
             }
 
             class CyclicYearName(override val formatLength: Int) : DateBased() {
