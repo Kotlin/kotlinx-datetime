@@ -76,6 +76,20 @@ class DateTimeFormatTest {
         """.trimIndent(), kotlinCode)
     }
 
+    /**
+     * Check that we mention [byUnicodePattern] in the string representation of the format when the conversion is
+     * incorrect.
+     */
+    @OptIn(FormatStringsInDatetimeFormats::class)
+    @Test
+    fun testStringRepresentationAfterIncorrectConversion() {
+        for (format in listOf("yyyy-MM-dd", "yy-MM-dd")) {
+            assertContains(DateTimeFormat.formatAsKotlinBuilderDsl(
+                DateTimeComponents.Format { byUnicodePattern(format) }
+            ), "byUnicodePattern")
+        }
+    }
+
     @Test
     fun testParseStringWithNumbers() {
         val formats = listOf(

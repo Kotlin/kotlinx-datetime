@@ -106,9 +106,7 @@ class UnicodeFormatTest {
             directives.any { it is UnicodeFormat.Directive.ZoneBased } -> TimeZone.availableZoneIds
             else -> setOf("Europe/Berlin")
         }
-        val format = DateTimeComponents.Format {
-            byUnicodePattern(pattern.replace("yyyy", "uuuu").replace("yy", "uu"))
-        }
+        val format = DateTimeComponents.Format { byUnicodePattern(pattern) }
         val javaFormat = DateTimeFormatter.ofPattern(pattern)
         for (date in dates) {
             for (time in times) {
