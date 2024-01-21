@@ -58,6 +58,7 @@ internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual ove
     actual override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 }
 
+@OptIn(UnsafeNumber::class)
 internal actual fun currentTime(): Instant = memScoped {
     val tm = alloc<timespec>()
     val error = clock_gettime(CLOCK_REALTIME, tm.ptr)
