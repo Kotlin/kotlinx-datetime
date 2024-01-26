@@ -298,14 +298,9 @@ public sealed class DateTimePeriod {
 }
 
 /**
- * Parses the ISO-8601 duration representation as a [DateTimePeriod].
- *
- * See [DateTimePeriod.parse] for examples.
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are exceeded.
- *
- * @see DateTimePeriod.parse
+ * @suppress
  */
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DateTimePeriod.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
 /**
@@ -358,16 +353,9 @@ public class DatePeriod internal constructor(
 }
 
 /**
- * Parses the ISO-8601 duration representation as a [DatePeriod].
- *
- * This function is equivalent to [DateTimePeriod.parse], but will fail if any of the time components are not
- * zero.
- *
- * @throws IllegalArgumentException if the text cannot be parsed, the boundaries of [DatePeriod] are exceeded,
- * or any time components are not zero.
- *
- * @see DateTimePeriod.parse
+ * @suppress
  */
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DatePeriod.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(

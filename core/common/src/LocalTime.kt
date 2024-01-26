@@ -136,12 +136,9 @@ public expect class LocalTime : Comparable<LocalTime> {
 }
 
 /**
- * Converts this string representing a time value in ISO-8601 format to a [LocalTime] value.
- *
- * See [LocalTime.parse] for examples of time string representations.
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
+ * @suppress
  */
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
 
 /**
