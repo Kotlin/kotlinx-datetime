@@ -133,12 +133,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 }
 
 /**
- * Converts this string representing a date/time value in ISO-8601 format including date and time components
- * but without any time zone component to a [LocalDateTime] value.
- *
- * See [LocalDateTime.parse] for examples of date/time string representations.
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
+ * @suppress
  */
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDateTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
