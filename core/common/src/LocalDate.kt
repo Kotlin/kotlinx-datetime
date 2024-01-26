@@ -192,12 +192,9 @@ public fun LocalDate.Companion.parse(input: CharSequence, format: DateTimeFormat
     format.parse(input)
 
 /**
- * Converts this string representing a date in ISO-8601 format to a [LocalDate] value.
- *
- * See [LocalDate.parse] for examples of local date string representations.
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+ * @suppress
  */
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDate.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 /**
