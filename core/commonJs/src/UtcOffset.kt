@@ -6,6 +6,10 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
+import kotlinx.datetime.internal.JSJoda.ChronoField as jtChronoField
+import kotlinx.datetime.internal.JSJoda.DateTimeFormatterBuilder as jtDateTimeFormatterBuilder
+import kotlinx.datetime.internal.JSJoda.ResolverStyle as jtResolverStyle
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 
@@ -18,15 +22,17 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: jtZo
     override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
+        private val format = jtDateTimeFormatterBuilder().appendOffsetId().toFormatter(jtResolverStyle.STRICT)
 
         public actual val ZERO: UtcOffset = UtcOffset(jtZoneOffset.UTC)
 
-        public actual fun parse(offsetString: String): UtcOffset = try {
-            jsTry { jtZoneOffset.of(offsetString) }.let(::UtcOffset)
+        public actual fun parse(offsetString: String): UtcOffset = UtcOffset(seconds = try {
+            jsTry { format.parse(offsetString).get(jtChronoField.OFFSET_SECONDS) }
         } catch (e: Throwable) {
+            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
             if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
             throw e
-        }
+        })
     }
 }
 

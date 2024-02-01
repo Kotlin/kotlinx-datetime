@@ -9,6 +9,7 @@ import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatterBuilder
 
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
@@ -19,11 +20,12 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
     override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
+        private val format = DateTimeFormatterBuilder().appendOffsetId().toFormatter()
 
         public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
 
         public actual fun parse(offsetString: String): UtcOffset = try {
-            ZoneOffset.of(offsetString).let(::UtcOffset)
+            format.parse(offsetString, ZoneOffset::from).let(::UtcOffset)
         } catch (e: DateTimeException) {
             throw DateTimeFormatException(e)
         }

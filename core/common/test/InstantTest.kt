@@ -124,8 +124,8 @@ class InstantTest {
             UtcOffset.parse("-03:12:14"),
             UtcOffset.parse("+02:35"),
             UtcOffset.parse("-02:35"),
-            UtcOffset.parse("+04"),
-            UtcOffset.parse("-04"),
+            UtcOffset.parse("+04:00"),
+            UtcOffset.parse("-04:00"),
         )
 
         for (instant in instants) {

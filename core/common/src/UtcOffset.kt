@@ -41,8 +41,8 @@ public expect class UtcOffset {
          *
          * Examples of valid strings:
          * - `Z` or `+00:00`, an offset of zero;
-         * - `+05`, five hours;
-         * - `-02`, minus two hours;
+         * - `+05:00`, five hours;
+         * - `-02:00`, minus two hours;
          * - `+03:30`, three hours and thirty minutes;
          * - `+01:23:45`, an hour, 23 minutes, and 45 seconds.
          */
