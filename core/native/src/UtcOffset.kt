@@ -23,7 +23,7 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun parse(offsetString: String): UtcOffset = lenientFormat.parse(offsetString)
+        public actual fun parse(offsetString: String): UtcOffset = ISO_OFFSET.parse(offsetString)
 
         private fun validateTotal(totalSeconds: Int) {
             if (totalSeconds !in -18 * SECONDS_PER_HOUR .. 18 * SECONDS_PER_HOUR) {
@@ -94,12 +94,3 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
             UtcOffset.ofSeconds(seconds ?: 0)
         }
     }
-
-private val lenientFormat = UtcOffsetFormat.build {
-    alternativeParsing(
-        { offsetHours(Padding.NONE) },
-        { offset(ISO_OFFSET_BASIC) }
-    ) {
-        offset(ISO_OFFSET)
-    }
-}

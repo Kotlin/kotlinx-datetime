@@ -9,6 +9,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.*
 import kotlin.test.*
 
 
@@ -19,14 +20,12 @@ class ThreeTenBpTimeZoneTest {
 
     @Test
     fun utcIsCached() {
-        val values = arrayOf(
-            "Z", "+0",
-            "+00", "+0000", "+00:00", "+000000", "+00:00:00",
-            "-00", "-0000", "-00:00", "-000000", "-00:00:00")
+        val values = arrayOf("Z", "+00:00", "+00:00:00", "-00:00", "-00:00:00")
         for (v in values) {
             val test = UtcOffset.parse(v)
             assertSame(test, UtcOffset.ZERO)
         }
+        assertSame(UtcOffsetFormat.build { offsetHours(padding = Padding.NONE) }.parse("-0"), UtcOffset.ZERO)
     }
 
     @Test
