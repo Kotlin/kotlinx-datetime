@@ -8,6 +8,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -34,7 +35,7 @@ public actual open class TimeZone internal constructor() {
             }
             try {
                 if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
-                    return UtcOffset.parse(zoneId).asTimeZone()
+                    return UtcOffset.parse(zoneId, lenientOffsetFormat).asTimeZone()
                 }
                 if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
                     return FixedOffsetTimeZone(UtcOffset.ZERO, zoneId)
@@ -43,14 +44,14 @@ public actual open class TimeZone internal constructor() {
                     zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")
                 ) {
                     val prefix = zoneId.take(3)
-                    val offset = UtcOffset.parse(zoneId.substring(3))
+                    val offset = UtcOffset.parse(zoneId.substring(3), lenientOffsetFormat)
                     return when (offset.totalSeconds) {
                         0 -> FixedOffsetTimeZone(offset, prefix)
                         else -> FixedOffsetTimeZone(offset, "$prefix$offset")
                     }
                 }
                 if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
-                    val offset = UtcOffset.parse(zoneId.substring(2))
+                    val offset = UtcOffset.parse(zoneId.substring(2), lenientOffsetFormat)
                     return when (offset.totalSeconds) {
                         0 -> FixedOffsetTimeZone(offset, "UT")
                         else -> FixedOffsetTimeZone(offset, "UT$offset")
@@ -159,3 +160,26 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
     timeZone.atStartOfDay(this)
+
+private val lenientOffsetFormat = UtcOffsetFormat.build {
+    alternativeParsing(
+        {
+            offsetHours(Padding.NONE)
+        },
+        {
+            isoOffset(
+                zOnZero = false,
+                useSeparator = false,
+                outputMinute = WhenToOutput.IF_NONZERO,
+                outputSecond = WhenToOutput.IF_NONZERO
+            )
+        }
+    ) {
+        isoOffset(
+            zOnZero = true,
+            useSeparator = true,
+            outputMinute = WhenToOutput.ALWAYS,
+            outputSecond = WhenToOutput.IF_NONZERO
+        )
+    }
+}
