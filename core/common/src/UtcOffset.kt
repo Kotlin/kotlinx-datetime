@@ -37,17 +37,16 @@ public expect class UtcOffset {
         public val ZERO: UtcOffset
 
         /**
-         * Parses a string that represents an offset in an ISO-8601 time shift extended format, also supporting
-         * specifying the number of seconds or not specifying the number of minutes.
+         * A shortcut for calling [DateTimeFormat.parse].
          *
-         * Examples of valid strings:
-         * - `Z` or `+00:00`, an offset of zero;
-         * - `+05:00`, five hours;
-         * - `-02:00`, minus two hours;
-         * - `+03:30`, three hours and thirty minutes;
-         * - `+01:23:45`, an hour, 23 minutes, and 45 seconds.
+         * Parses a string that represents a UTC offset and returns the parsed [UtcOffset] value.
+         *
+         * If [format] is not specified, [Formats.ISO] is used.
+         *
+         * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are
+         * exceeded.
          */
-        public fun parse(offsetString: String): UtcOffset
+        public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffestFormat()): UtcOffset
 
         /**
          * Creates a new format for parsing and formatting [UtcOffset] values.
@@ -84,11 +83,16 @@ public expect class UtcOffset {
      */
     public object Formats {
         /**
-         * ISO 8601 extended format, which is the format used by [UtcOffset.toString].
+         * ISO 8601 extended format, which is the format used by [UtcOffset.parse] and [UtcOffset.toString].
+         *
+         * An extension of the ISO 8601 is that this format allows parsing and formatting seconds.
+         *
+         * When formatting, seconds are omitted if they are zero. If the whole offset is zero, the letter `Z` is output.
          *
          * Examples of UTC offsets in ISO 8601 format:
-         * - `Z`
-         * - `+05:00`
+         * - `Z` or `+00:00`, an offset of zero;
+         * - `+05:00`, five hours;
+         * - `-02:00`, minus two hours;
          * - `-17:16`
          * - `+10:36:30`
          */
@@ -96,6 +100,10 @@ public expect class UtcOffset {
 
         /**
          * ISO 8601 basic format.
+         *
+         * An extension of the ISO 8601 is that this format allows parsing and formatting seconds.
+         *
+         * When formatting, seconds are omitted if they are zero. If the whole offset is zero, the letter `Z` is output.
          *
          * Examples of UTC offsets in ISO 8601 basic format:
          * - `Z`
@@ -122,6 +130,15 @@ public expect class UtcOffset {
          */
         public val FOUR_DIGITS: DateTimeFormat<UtcOffset>
     }
+
+    /**
+     * Converts this UTC offset to the extended ISO-8601 string representation.
+     *
+     * @see Formats.ISO for the format details.
+     * @see parse for the dual operation: obtaining [UtcOffset] from a string.
+     * @see UtcOffset.format for formatting using a custom format.
+     */
+    public override fun toString(): String
 }
 
 /**
@@ -129,15 +146,6 @@ public expect class UtcOffset {
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
 public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.format(this)
-
-/**
- * Parses a [UtcOffset] value using the given [format].
- * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are exceeded.
- */
-public fun UtcOffset.Companion.parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset =
-    format.parse(input)
 
 /**
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.
@@ -163,3 +171,6 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
  * Returns the fixed-offset time zone with the given UTC offset.
  */
 public fun UtcOffset.asTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+internal fun getIsoUtcOffestFormat() = UtcOffset.Formats.ISO

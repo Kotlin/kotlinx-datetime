@@ -45,11 +45,16 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = try {
-            jtLocalTime.parse(isoString).let(::LocalTime)
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
+            if (format === Formats.ISO) {
+                try {
+                    jtLocalTime.parse(input).let(::LocalTime)
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                format.parse(input)
+            }
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jtLocalTime.ofSecondOfDay(secondOfDay.toLong()).let(::LocalTime)

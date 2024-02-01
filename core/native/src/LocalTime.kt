@@ -33,8 +33,7 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime =
-            parse(isoString, ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)

@@ -16,13 +16,13 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
     override fun hashCode(): Int = totalSeconds
     override fun equals(other: Any?): Boolean = other is UtcOffset && this.totalSeconds == other.totalSeconds
-    override fun toString(): String = format(Formats.ISO)
+    actual override fun toString(): String = format(Formats.ISO)
 
     public actual companion object {
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun parse(offsetString: String): UtcOffset = parse(offsetString, Formats.ISO)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
 
         private fun validateTotal(totalSeconds: Int) {
             if (totalSeconds !in -18 * SECONDS_PER_HOUR..18 * SECONDS_PER_HOUR) {

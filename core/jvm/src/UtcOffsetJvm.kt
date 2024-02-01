@@ -10,7 +10,7 @@ import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatterBuilder
+import java.time.format.*
 
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
@@ -18,17 +18,16 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
 
     override fun hashCode(): Int = zoneOffset.hashCode()
     override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
-    override fun toString(): String = zoneOffset.toString()
+    actual override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
-        private val format = DateTimeFormatterBuilder().appendOffsetId().toFormatter()
-
         public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
 
-        public actual fun parse(offsetString: String): UtcOffset = try {
-            format.parse(offsetString, ZoneOffset::from).let(::UtcOffset)
-        } catch (e: DateTimeException) {
-            throw DateTimeFormatException(e)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = when {
+            format === Formats.ISO -> parseWithFormat(input, isoFormat)
+            format === Formats.ISO_BASIC -> parseWithFormat(input, isoBasicFormat)
+            format === Formats.FOUR_DIGITS -> parseWithFormat(input, fourDigitsFormat)
+            else -> format.parse(input)
         }
 
         @Suppress("FunctionName")
@@ -58,3 +57,19 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
     } catch (e: DateTimeException) {
         throw IllegalArgumentException(e)
     }
+
+private val isoFormat by lazy {
+    DateTimeFormatterBuilder().parseCaseInsensitive().appendOffsetId().toFormatter()
+}
+private val isoBasicFormat by lazy {
+    DateTimeFormatterBuilder().parseCaseInsensitive().appendOffset("+HHmmss", "Z").toFormatter()
+}
+private val fourDigitsFormat by lazy {
+    DateTimeFormatterBuilder().parseCaseInsensitive().appendOffset("+HHMM", "+0000").toFormatter()
+}
+
+private fun parseWithFormat(input: CharSequence, format: DateTimeFormatter) = try {
+    format.parse(input, ZoneOffset::from).let(::UtcOffset)
+} catch (e: DateTimeException) {
+    throw DateTimeFormatException(e)
+}

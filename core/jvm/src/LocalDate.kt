@@ -19,11 +19,16 @@ import java.time.LocalDate as jtLocalDate
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDate = try {
-            jtLocalDate.parse(isoString).let(::LocalDate)
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
+            if (format === Formats.ISO) {
+                try {
+                    jtLocalDate.parse(input).let(::LocalDate)
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                format.parse(input)
+            }
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)

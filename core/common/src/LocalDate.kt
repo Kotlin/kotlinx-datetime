@@ -24,14 +24,18 @@ import kotlinx.serialization.Serializable
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
         /**
-         * Parses a string that represents a date in ISO-8601 format
-         * and returns the parsed [LocalDate] value.
+         * A shortcut for calling [DateTimeFormat.parse].
          *
-         * An example of a local date in ISO-8601 format: `2020-08-30`.
+         * Parses a string that represents a date and returns the parsed [LocalDate] value.
+         *
+         * If [format] is not specified, [Formats.ISO] is used.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+         *
+         * @see LocalDate.toString for formatting using the default format.
+         * @see LocalDate.format for formatting using a custom format.
          */
-        public fun parse(isoString: String): LocalDate
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()): LocalDate
 
         /**
          * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
@@ -169,9 +173,11 @@ public expect class LocalDate : Comparable<LocalDate> {
     public override fun compareTo(other: LocalDate): Int
 
     /**
-     * Converts this date to the ISO-8601 string representation.
+     * Converts this date to the extended ISO-8601 string representation.
      *
-     * @see LocalDate.parse
+     * @see Formats.ISO for the format details.
+     * @see parse for the dual operation: obtaining [LocalDate] from a string.
+     * @see LocalDate.format for formatting using a custom format.
      */
     public override fun toString(): String
 }
@@ -181,15 +187,6 @@ public expect class LocalDate : Comparable<LocalDate> {
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
 public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.format(this)
-
-/**
- * Parses a [LocalDate] value using the given [format].
- * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
- */
-public fun LocalDate.Companion.parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
-    format.parse(input)
 
 /**
  * @suppress
@@ -376,3 +373,6 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+internal fun getIsoDateFormat() = LocalDate.Formats.ISO
