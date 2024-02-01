@@ -15,11 +15,10 @@ import kotlin.test.*
 class UtcOffsetSerializationTest {
 
     private fun testSerializationAsPrimitive(serializer: KSerializer<UtcOffset>) {
-        val offset2h = UtcOffset.parse("+2")
+        val offset2h = UtcOffset(hours = 2)
         assertEquals("\"+02:00\"", Json.encodeToString(serializer, offset2h))
         assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02:00\""))
-        assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02\""))
-        assertEquals(offset2h, Json.decodeFromString(serializer, "\"+2\""))
+        assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02:00:00\""))
 
         assertFailsWith<IllegalArgumentException> {
             Json.decodeFromString(serializer, "\"UTC+02:00\"") // not an offset

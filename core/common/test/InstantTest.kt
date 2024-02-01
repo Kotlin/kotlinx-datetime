@@ -128,7 +128,16 @@ class InstantTest {
             "-04",
         )
 
-        val offsets = offsetStrings.map { UtcOffset.parse(it) }
+        val offsetFormat = UtcOffset.Format {
+            optional("Z") {
+                offsetHours()
+                optional {
+                    char(':'); offsetMinutesOfHour()
+                    optional { char(':'); offsetSecondsOfMinute() }
+                }
+            }
+        }
+        val offsets = offsetStrings.map { UtcOffset.parse(it, offsetFormat) }
 
         for (instant in instants) {
             for (offsetIx in offsets.indices) {
