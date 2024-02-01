@@ -153,29 +153,28 @@ public expect class Instant : Comparable<Instant> {
         public fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant
 
         /**
-         * A shortcut for calling [parse] with [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET].
+         * A shortcut for calling [DateTimeFormat.parse], followed by [DateTimeComponents.toInstantUsingOffset].
          *
-         * Parses a string that represents an instant in ISO 8601 format including date and time components and
-         * the mandatory time zone offset and returns the parsed [Instant] value.
+         * Parses a string that represents an instant including date and time components and a mandatory
+         * time zone offset and returns the parsed [Instant] value.
          *
-         * Examples of instants in the ISO 8601 format:
-         * - `2020-08-30T18:43:00Z`
-         * - `2020-08-30T18:43:00.50Z`
-         * - `2020-08-30T18:43:00.123456789Z`
-         * - `2020-08-30T18:40:00+03:00`
-         * - `2020-08-30T18:40:00+03:30:20`
-         * * `2020-01-01T23:59:59.123456789+01`
-         * * `+12020-01-31T23:59:59Z`
+         * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
+         * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
+         * time is parsed, even if it's in the last 1000 seconds of the day.
+         * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered valid time.
+         * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
          *
-         * Guaranteed to parse all strings that [Instant.toString] produces.
+         * If the format is not specified, [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is used.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          *
-         * @see Instant.toString
-         * @see DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
+         * @see Instant.toString for formatting using the default format.
+         * @see Instant.format for formatting using a custom format.
          */
-        public fun parse(isoString: String): Instant
-
+        public fun parse(
+            input: CharSequence,
+            format: DateTimeFormat<DateTimeComponents> = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
+        ): Instant
 
         /**
          * An instant value that is far in the past.
@@ -513,33 +512,16 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
 /**
  * Formats this value using the given [format] using the given [offset].
  *
- * [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is the format very similar to the one used by [toString] and
- * [Instant.Companion.parse]. The only difference is that [Instant.toString] adds trailing zeros to the
- * fraction-of-second component so that the number of digits after a dot is a multiple of three.
+ * Equivalent to calling [DateTimeFormat.format] on [format] and using [DateTimeComponents.setDateTimeOffset] in
+ * the lambda.
+ *
+ * [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is a format very similar to the one used by [toString].
+ * The only difference is that [Instant.toString] adds trailing zeros to the fraction-of-second component so that the
+ * number of digits after a dot is a multiple of three.
  */
 public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: UtcOffset = UtcOffset.ZERO): String {
     val instant = this
     return format.format { setDateTimeOffset(instant, offset) }
-}
-
-/**
- * Parses an [Instant] value using the given [format].
- *
- * Equivalent to calling [DateTimeFormat.parse] on [format] with [input] and obtaining the resulting [Instant] using
- * [DateTimeComponents.toInstantUsingOffset].
- *
- * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
- * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
- * time is parsed, even if it's in the last 1000 seconds of the day.
- * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered valid time.
- * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
- */
-public fun Instant.Companion.parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
-    format.parse(input).toInstantUsingOffset()
-} catch (e: IllegalArgumentException) {
-    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
 }
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201

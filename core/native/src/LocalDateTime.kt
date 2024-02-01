@@ -17,8 +17,8 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime =
-            parse(isoString, ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
+            format.parse(input)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)

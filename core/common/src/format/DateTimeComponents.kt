@@ -106,6 +106,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * This format uses the local date, local time, and UTC offset fields of [DateTimeComponents].
          *
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
+         *
+         * Guaranteed to parse all strings that [Instant.toString] produces.
          */
         public val ISO_DATE_TIME_OFFSET: DateTimeFormat<DateTimeComponents> = Format {
             date(ISO_DATE)

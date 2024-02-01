@@ -139,8 +139,11 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        public actual fun parse(isoString: String): Instant =
-            parse(isoString, ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            format.parse(input).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+        }
 
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 

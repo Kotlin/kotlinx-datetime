@@ -5,9 +5,12 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalDate.*
+import kotlinx.datetime.LocalDate.Companion.parse
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
+
 
 /**
  * The time part of [LocalDateTime].
@@ -28,22 +31,17 @@ public expect class LocalTime : Comparable<LocalTime> {
     public companion object {
 
         /**
-         * A shortcut for calling [parse] with [Formats.ISO].
+         * A shortcut for calling [DateTimeFormat.parse].
          *
-         * Parses a string that represents a time value in ISO 8601 and returns the parsed [LocalTime] value.
-         *
-         * Examples of time in ISO 8601 format:
-         * - `18:43`
-         * - `18:43:00`
-         * - `18:43:00.5`
-         * - `18:43:00.123456789`
-         *
-         * Guaranteed to parse all strings that [LocalTime.toString] produces.
+         * Parses a string that represents time-of-day and returns the parsed [LocalTime] value.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are
          * exceeded.
+         *
+         * @see LocalTime.toString for formatting using the default format.
+         * @see LocalTime.format for formatting using a custom format.
          */
-        public fun parse(isoString: String): LocalTime
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()): LocalTime
 
         /**
          * Constructs a [LocalTime] that represents the specified number of seconds since the start of a calendar day.
@@ -124,6 +122,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          *
          * When formatting, seconds are always included, even if they are zero.
          * Fractional parts of the second are included if non-zero.
+         *
+         * Guaranteed to parse all strings that [LocalTime.toString] produces.
          */
         public val ISO: DateTimeFormat<LocalTime>
     }
@@ -175,14 +175,22 @@ public expect class LocalTime : Comparable<LocalTime> {
     public override operator fun compareTo(other: LocalTime): Int
 
     /**
-     * Converts this time value to the ISO 8601 string representation:
-     * * `12:34`
-     * * `12:34:56.5`
-     * * `12:34:56.123456789`
+     * Converts this time value to the extended ISO-8601 string representation.
+     *
+     * For readability, if the time represents a round minute (without seconds or fractional seconds),
+     * the string representation will not include seconds. Also, fractions of seconds will add trailing zeros to
+     * the fractional part until the number of digits after the dot is a multiple of three.
+     *
+     * Examples of output:
+     * - `18:43`
+     * - `18:43:00`
+     * - `18:43:00.500`
+     * - `18:43:00.123456789`
      *
      * @see Formats.ISO for a very similar format. The difference is that [Formats.ISO] will always include seconds,
      * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
-     * @see LocalTime.parse
+     * @see parse for the dual operation: obtaining [LocalTime] from a string.
+     * @see LocalTime.format for formatting using a custom format.
      */
     public override fun toString(): String
 }
@@ -192,15 +200,6 @@ public expect class LocalTime : Comparable<LocalTime> {
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  */
 public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.format(this)
-
-/**
- * Parses a [LocalTime] value using the given [format].
- * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are exceeded.
- */
-public fun LocalTime.Companion.parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
-    format.parse(input)
 
 /**
  * @suppress
@@ -224,3 +223,6 @@ public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): Local
  * Combines this time's components with the specified [LocalDate] components into a [LocalDateTime] value.
  */
 public fun LocalTime.atDate(date: LocalDate): LocalDateTime = LocalDateTime(date, this)
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+internal fun getIsoTimeFormat() = LocalTime.Formats.ISO

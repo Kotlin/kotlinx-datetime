@@ -44,12 +44,17 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = try {
-            jsTry { jtLocalTime.parse(isoString) }.let(::LocalTime)
-        } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
+            if (format === Formats.ISO) {
+                try {
+                    jsTry { jtLocalTime.parse(input.toString()) }.let(::LocalTime)
+                } catch (e: Throwable) {
+                    if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
+                    throw e
+                }
+            } else {
+                format.parse(input)
+            }
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jsTry { jtLocalTime.ofSecondOfDay(secondOfDay, 0) }.let(::LocalTime)

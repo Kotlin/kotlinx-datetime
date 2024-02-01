@@ -5,6 +5,8 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalDate.*
+import kotlinx.datetime.LocalDate.Companion.parse
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
@@ -28,23 +30,17 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
 
         /**
-         * A shortcut for calling [parse] with [Formats.ISO].
+         * A shortcut for calling [DateTimeFormat.parse].
          *
-         * Parses a string that represents a date/time value in ISO 8601 format including date and time components
+         * Parses a string that represents a date/time value including date and time components
          * but without any time zone component and returns the parsed [LocalDateTime] value.
          *
-         * Examples of date/time in ISO 8601 format:
-         * - `2020-08-30T18:43`
-         * - `2020-08-30T18:43:00`
-         * - `2020-08-30T18:43:00.5`
-         * - `2020-08-30T18:43:00.123456789`
-         *
-         * Guaranteed to parse all strings that [LocalDateTime.toString] produces.
+         * If [format] is not specified, [Formats.ISO] is used.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are
          * exceeded.
          */
-        public fun parse(isoString: String): LocalDateTime
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()): LocalDateTime
 
         /**
          * Creates a new format for parsing and formatting [LocalDateTime] values.
@@ -95,6 +91,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          *
          * When formatting, seconds are always included, even if they are zero.
          * Fractional parts of the second are included if non-zero.
+         *
+         * Guaranteed to parse all strings that [LocalDateTime.toString] produces.
          */
         public val ISO: DateTimeFormat<LocalDateTime>
     }
@@ -206,15 +204,21 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /**
      * Converts this date/time value to the ISO 8601 string representation.
      *
-     * Examples of date/time in ISO 8601 format:
+     * For readability, if the time represents a round minute (without seconds or fractional seconds),
+     * the string representation will not include seconds. Also, fractions of seconds will add trailing zeros to
+     * the fractional part until its length is a multiple of three.
+     *
+     * Examples of output:
      * - `2020-08-30T18:43`
      * - `2020-08-30T18:43:00`
      * - `2020-08-30T18:43:00.500`
      * - `2020-08-30T18:43:00.123456789`
      *
+     * @see LocalTime.toString for details of how the time part is formatted.
      * @see Formats.ISO for a very similar format. The difference is that [Formats.ISO] will always include seconds,
      * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
-     * @see LocalDateTime.parse
+     * @see parse for the dual operation: obtaining [LocalDateTime] from a string.
+     * @see LocalDateTime.format for formatting using a custom format.
      */
     public override fun toString(): String
 }
@@ -226,17 +230,10 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String = format.format(this)
 
 /**
- * Parses a [LocalDateTime] value using the given [format].
- * Equivalent to calling [DateTimeFormat.parse] on [format] with [input].
- *
- * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are exceeded.
- */
-public fun LocalDateTime.Companion.parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
-    format.parse(input)
-
-/**
  * @suppress
  */
 @Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDateTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
+// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+internal fun getIsoDateTimeFormat() = LocalDateTime.Formats.ISO
