@@ -77,6 +77,30 @@ class DateTimeFormatTest {
     }
 
     /**
+     * Tests printing of a format that embeds some constants.
+     */
+    @Test
+    fun testStringRepresentationWithConstants() {
+        val format = DateTimeComponents.Format {
+            date(LocalDate.Formats.ISO)
+            char(' ')
+            time(LocalTime.Formats.ISO)
+            optional {
+                offset(UtcOffset.Formats.ISO)
+            }
+        }
+        val kotlinCode = DateTimeFormat.formatAsKotlinBuilderDsl(format)
+        assertEquals("""
+            date(LocalDate.Formats.ISO)
+            char(' ')
+            time(LocalTime.Formats.ISO)
+            optional {
+                offset(UtcOffset.Formats.ISO)
+            }
+        """.trimIndent(), kotlinCode)
+    }
+
+    /**
      * Check that we mention [byUnicodePattern] in the string representation of the format when the conversion is
      * incorrect.
      */

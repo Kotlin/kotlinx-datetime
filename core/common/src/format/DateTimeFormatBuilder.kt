@@ -472,6 +472,9 @@ private fun<T> FormatStructure<T>.builderString(constants: List<Pair<String, Str
                         }
                         append(constant.first)
                         index += constantDirectives.size
+                        if (index < formats.size) {
+                            appendLine()
+                        }
                         continue@loop
                     }
                 }
