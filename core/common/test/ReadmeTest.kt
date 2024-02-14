@@ -87,6 +87,34 @@ class ReadmeTest {
     }
 
     @Test
+    fun testUnicodePatterns() {
+        assertEquals("""
+                date(LocalDate.Formats.ISO)
+                char('T')
+                hour()
+                char(':')
+                minute()
+                char(':')
+                second()
+                alternativeParsing({
+                }) {
+                    char('.')
+                    secondFraction(3)
+                }
+                offset(UtcOffset.Formats.FOUR_DIGITS)
+            """.trimIndent(),
+            DateTimeFormat.formatAsKotlinBuilderDsl(DateTimeComponents.Format {
+                byUnicodePattern("uuuu-MM-dd'T'HH:mm:ss[.SSS]Z")
+            })
+        )
+        @OptIn(FormatStringsInDatetimeFormats::class)
+        val dateTimeFormat = LocalDateTime.Format {
+            byUnicodePattern("yyyy-MM-dd'T'HH:mm:ss[.SSS]")
+        }
+        dateTimeFormat.parse("2023-12-24T23:59:59")
+    }
+
+    @Test
     fun testParsingAndFormattingPartialCompoundOrOutOfBoundsData() {
         val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
             .parse("2024-01")

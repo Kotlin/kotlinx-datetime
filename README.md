@@ -219,6 +219,51 @@ val date = dateFormat.parse("12/24 2023")
 println(date.format(LocalDate.Formats.ISO_BASIC)) // "20231224"
 ```
 
+#### Using Unicode format strings (like `yyyy-MM-dd`)
+
+Given a constant format string like the ones used by Java's
+[DateTimeFormatter.ofPattern](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) can be
+converted to Kotlin code using the following invocation:
+
+```kotlin
+// import kotlinx.datetime.format.*
+
+println(DateTimeFormat.formatAsKotlinBuilderDsl(DateTimeComponents.Format {
+    byUnicodePattern("uuuu-MM-dd'T'HH:mm:ss[.SSS]Z")
+}))
+
+// will print:
+/*
+date(LocalDate.Formats.ISO)
+char('T')
+hour()
+char(':')
+minute()
+char(':')
+second()
+alternativeParsing({
+}) {
+    char('.')
+    secondFraction(3)
+}
+offset(UtcOffset.Formats.FOUR_DIGITS)
+ */
+```
+
+When your format string is not constant, with the `FormatStringsInDatetimeFormats` opt-in,
+you can use the format without converting it to Kotlin code beforehand:
+
+```kotlin
+val formatPattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]"
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+val dateTimeFormat = LocalDateTime.Format {
+    byUnicodePattern(formatPattern)
+}
+
+dateTimeFormat.parse("2023-12-24T23:59:59")
+```
+
 ### Parsing and formatting partial, compound or out-of-bounds data
 
 Sometimes, the required string format doesn't fully correspond to any of the
