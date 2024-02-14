@@ -41,7 +41,8 @@ class UnicodeFormatTest {
             "HHmm", "MM/dd/yy",
             "yyyy_MM_dd_HH_mm_ss", "yyyy-MM-d 'at' HH:mm ", "yyyy:MM:dd HH:mm:ss",
             "yyyy年MM月dd日 HH:mm:ss", "yyyy年MM月dd日", "dd.MM.yyyy. HH:mm:ss", "ss", "ddMMyyyy",
-            "yyyyMMdd'T'HHmmss'Z'", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssX"
+            "yyyyMMdd'T'HHmmss'Z'", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssX",
+            "yyyy-MM-dd'T'HH:mm:ss[.SSS]X" // not in top 100, but interesting, as it contains an optional section
         )
         val localizedPatterns = listOf(
             "MMMM", "hh:mm a", "h:mm a", "dd MMMM yyyy", "dd MMM yyyy", "yyyy-MM-dd hh:mm:ss", "d MMMM yyyy", "MMM",

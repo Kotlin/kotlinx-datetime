@@ -103,13 +103,14 @@ public annotation class FormatStringsInDatetimeFormats
  */
 @FormatStringsInDatetimeFormats
 public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {
-    val builder = this
     val directives = UnicodeFormat.parse(pattern)
-    fun rec(format: UnicodeFormat) {
+    fun rec(builder: DateTimeFormatBuilder, format: UnicodeFormat) {
         when (format) {
             is UnicodeFormat.StringLiteral -> builder.chars(format.literal)
-            is UnicodeFormat.Sequence -> format.formats.forEach { rec(it) }
-            is UnicodeFormat.OptionalGroup -> builder.alternativeParsing({}) { rec(format.format) }
+            is UnicodeFormat.Sequence -> format.formats.forEach { rec(builder, it) }
+            is UnicodeFormat.OptionalGroup -> builder.alternativeParsing({}) {
+                rec(this, format.format)
+            }
             is UnicodeFormat.Directive -> {
                 when (format) {
                     is UnicodeFormat.Directive.TimeBased -> {
@@ -147,7 +148,7 @@ public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {
             }
         }
     }
-    rec(directives)
+    rec(this, directives)
 }
 
 /*
