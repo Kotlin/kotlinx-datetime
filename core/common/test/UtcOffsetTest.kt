@@ -26,13 +26,10 @@ class UtcOffsetTest {
             "-01_00", "-01;00", "-01@00", "-01:AA",
             "@01:00")
 
-        val invalidStandaloneOffsets = listOf(
+        val fixedOffsetTimeZoneIds = listOf(
+            "UTC", "UTC+0", "GMT+01", "UT-01", "Etc/UTC",
             "+0000", "+0100", "+1800", "+180000",
             "+4", "+0", "-0",
-        )
-
-        val fixedOffsetTimeZoneIds = listOf(
-            "UTC", "UTC+0", "GMT+01", "UT-01", "Etc/UTC"
         )
 
         val offsetSecondsRange = -18 * 60 * 60 .. +18 * 60 * 60
@@ -91,9 +88,6 @@ class UtcOffsetTest {
     @Test
     fun invalidUtcOffsetStrings() {
         for (v in invalidUtcOffsetStrings) {
-            assertFailsWith<DateTimeFormatException>("Should fail: $v") { UtcOffset.parse(v) }
-        }
-        for (v in invalidStandaloneOffsets) {
             assertFailsWith<DateTimeFormatException>("Should fail: $v") { UtcOffset.parse(v) }
         }
         for (v in fixedOffsetTimeZoneIds) {
