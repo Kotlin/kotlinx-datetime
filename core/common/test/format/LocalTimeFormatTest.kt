@@ -176,9 +176,9 @@ class LocalTimeFormatTest {
         check(987654321, null, 7, "9876543")
         check(987654321, null, 6, "987654")
         check(987654321, null, 5, "98765")
-        check(987654321, null, 4, "9877")
-        check(987654321, null, 3, "988")
-        check(987654321, null, 2, "99")
+        check(987654321, null, 4, "9876")
+        check(987654321, null, 3, "987")
+        check(987654321, null, 2, "98")
         check(987654321, null, 1, "9")
     }
 
