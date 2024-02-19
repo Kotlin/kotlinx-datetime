@@ -8,11 +8,9 @@ package kotlinx.datetime.format.test
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import java.text.ParsePosition
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoField
-import java.time.temporal.TemporalField
-import java.time.temporal.TemporalQueries
-import java.time.temporal.TemporalQuery
+import java.time.temporal.*
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -114,16 +112,19 @@ class UnicodeFormatTest {
                 for (offset in offsets) {
                     for (zone in zones) {
                         try {
-                            val stringFromKotlin = format.format {
+                            val components = DateTimeComponents().apply {
                                 setDate(date); setTime(time); setOffset(offset); timeZoneId = zone
                             }
+                            val stringFromKotlin = format.format(components)
+                            val stringFromJava = javaFormat.format(components.temporalAccessor())
                             val parsePosition = ParsePosition(0)
                             val parsed = javaFormat.parseUnresolved(stringFromKotlin, parsePosition)
                                 ?: throw IllegalStateException("$parsePosition on $stringFromKotlin")
                             val componentsFromJava = parsed.query(dateTimeComponentsTemporalQuery)
                             // the string produced by Kotlin is parsable by Java:
                             assertEquals(stringFromKotlin, format.format(componentsFromJava))
-                            val stringFromJava = javaFormat.format(parsed)
+                            val newStringFromJava = javaFormat.format(parsed)
+                            assertEquals(stringFromJava, newStringFromJava)
                             // the string produced by Java is the same as the one by Kotlin:
                             assertEquals(stringFromKotlin, stringFromJava)
                             val componentsFromKotlin = format.parse(stringFromKotlin)
@@ -137,6 +138,19 @@ class UnicodeFormatTest {
             }
         }
     }
+}
+
+private fun DateTimeComponents.temporalAccessor() = object : TemporalAccessor {
+    override fun isSupported(field: TemporalField?): Boolean = true
+
+    override fun getLong(field: TemporalField?): Long {
+        if (field === ChronoField.OFFSET_SECONDS) {
+            return toUtcOffset().totalSeconds.toLong()
+        } else {
+            return toLocalDateTime().toJavaLocalDateTime().atZone(ZoneId.of(timeZoneId)).getLong(field)
+        }
+    }
+
 }
 
 private val dateTimeComponentsTemporalQuery = TemporalQuery { accessor ->
@@ -220,6 +234,7 @@ val interestingTimes: List<LocalTime> = listOf(
     LocalTime(0, 0, 0, 10),
     LocalTime(0, 0, 0, 1),
     LocalTime(0, 0, 0, 999999999),
+    LocalTime(0, 0, 0, 998900000),
     LocalTime(0, 0, 0, 99999999),
     LocalTime(0, 0, 0, 9999999),
     LocalTime(0, 0, 0, 999999),

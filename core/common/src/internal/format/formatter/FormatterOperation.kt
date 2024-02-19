@@ -86,13 +86,6 @@ internal class DecimalFractionFormatterStructure<in T>(
         val number = number(obj)
         // round the number to `maxDigits` significant figures
         val numberWithRequiredPrecision = number.fractionalPartWithNDigits(maxDigits)
-        /* during rounding, it can happen that we get a whole second or more.
-        For example, 999_999_999 nanoseconds is rounded to 1000 milliseconds.
-        In this case, we output 999. */
-        if (numberWithRequiredPrecision >= POWERS_OF_TEN[maxDigits]) {
-            repeat(maxDigits) { builder.append('9') }
-            return
-        }
         // we strip away trailing zeros while we can
         var zerosToStrip = 0
         while (maxDigits > minDigits + zerosToStrip && numberWithRequiredPrecision % POWERS_OF_TEN[zerosToStrip + 1] == 0) {

@@ -212,11 +212,12 @@ internal class DecimalFraction(
 
     /**
      * The integral numerator of the fraction, but with [newDigits] digits after the decimal point.
+     * The rounding is done using the towards-zero rounding mode.
      */
     fun fractionalPartWithNDigits(newDigits: Int): Int = when {
         newDigits == digits -> fractionalPart
         newDigits > digits -> fractionalPart * POWERS_OF_TEN[newDigits - digits]
-        else -> (fractionalPart / POWERS_OF_TEN[digits - newDigits - 1] + 5) / 10
+        else -> fractionalPart / POWERS_OF_TEN[digits - newDigits]
     }
 
     override fun compareTo(other: DecimalFraction): Int =
