@@ -89,10 +89,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         /**
          * ISO 8601 extended format for dates and times with UTC offset.
          *
-         * Supports the following ways of specifying the time zone offset:
-         * - the `Z` designator for the UTC+0 time zone,
-         * - a custom time zone offset specified with `+hh`, or `+hh:mm`, or `+hh:mm:ss`
-         *   (with `+` being replaced with `-` for the negative offsets)
+         * For specifying the time zone offset, the format uses the [UtcOffset.Formats.ISO] format, except that during
+         * parsing, specifying the minutes is optional.
+         *
+         * This format differs from [LocalTime.Formats.ISO] in its time part in that
+         * specifying the seconds is *not* optional.
          *
          * Examples of instants in the ISO 8601 format:
          * - `2020-08-30T18:43:00Z`
@@ -125,12 +126,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 char('.')
                 secondFraction(1, 9)
             }
-            isoOffset(
-                zOnZero = true,
-                useSeparator = true,
-                outputMinute = WhenToOutput.IF_NONZERO,
-                outputSecond = WhenToOutput.IF_NONZERO
-            )
+            alternativeParsing({
+                offsetHours()
+            }) {
+                offset(UtcOffset.Formats.ISO)
+            }
         }
 
         /**
