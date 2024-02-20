@@ -257,6 +257,30 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun offset(format: DateTimeFormat<UtcOffset>)
     }
+
+    /**
+     * Builder for formats for values that have all the date-time components:
+     * date, time, UTC offset, and the timezone ID.
+     */
+    public sealed interface WithDateTimeComponents : WithDateTime, WithUtcOffset {
+        /**
+         * The IANA time zone identifier, for example, "Europe/Berlin".
+         *
+         * When formatting, the timezone identifier is supplied as is, without any validation.
+         * On parsing, [TimeZone.availableZoneIds] is used to validate the identifier.
+         */
+        public fun timeZoneId()
+
+        /**
+         * An existing [DateTimeFormat].
+         *
+         * Example:
+         * ```
+         * dateTimeComponents(DateTimeComponents.Formats.RFC_1123)
+         * ```
+         */
+        public fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>)
+    }
 }
 
 /**
