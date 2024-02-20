@@ -55,6 +55,12 @@ public class MonthNames(
     }
 }
 
+internal fun MonthNames.toKotlinCode(): String = when (this.names) {
+    MonthNames.ENGLISH_FULL.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_FULL.name}"
+    MonthNames.ENGLISH_ABBREVIATED.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_ABBREVIATED.name}"
+    else -> names.joinToString(", ", "MonthNames(", ")", transform = String::toKotlinCode)
+}
+
 /**
  * A description of how day of week names are formatted.
  */
@@ -101,6 +107,12 @@ public class DayOfWeekNames(
             )
         )
     }
+}
+
+internal fun DayOfWeekNames.toKotlinCode(): String = when (this.names) {
+    DayOfWeekNames.ENGLISH_FULL.names -> "DayOfWeekNames.${DayOfWeekNames.Companion::ENGLISH_FULL.name}"
+    DayOfWeekNames.ENGLISH_ABBREVIATED.names -> "DayOfWeekNames.${DayOfWeekNames.Companion::ENGLISH_ABBREVIATED.name}"
+    else -> names.joinToString(", ", "DayOfWeekNames(", ")", transform = String::toKotlinCode)
 }
 
 internal fun <T> requireParsedField(field: T?, name: String): T {
@@ -178,6 +190,16 @@ private class YearDirective(private val padding: Padding, private val isYearOfEr
         spacePadding = padding.spaces(4),
         outputPlusOnExceededWidth = 4,
     ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::year.name}()"
+            else -> "${DateTimeFormatBuilder.WithDate::year.name}(${padding.toKotlinCode()})"
+        }.let {
+            if (isYearOfEra) {
+                it + YEAR_OF_ERA_COMMENT
+            } else it
+        }
+
     override fun equals(other: Any?): Boolean =
         other is YearDirective && padding == other.padding && isYearOfEra == other.isYearOfEra
 
@@ -190,11 +212,22 @@ private class ReducedYearDirective(val base: Int, private val isYearOfEra: Boole
         digits = 2,
         base = base,
     ) {
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDate::yearTwoDigits.name}($base)".let {
+                if (isYearOfEra) {
+                    it + YEAR_OF_ERA_COMMENT
+                } else it
+            }
+
     override fun equals(other: Any?): Boolean =
         other is ReducedYearDirective && base == other.base && isYearOfEra == other.isYearOfEra
 
     override fun hashCode(): Int = base.hashCode() * 31 + isYearOfEra.hashCode()
 }
+
+private const val YEAR_OF_ERA_COMMENT =
+    " /** TODO: the original format had an `y` directive, so the behavior is different on years earlier than 1 AD. See the [kotlinx.datetime.format.byUnicodePattern] documentation for details. */"
 
 /**
  * A special directive for year-of-era that behaves equivalently to [DateTimeFormatBuilder.WithDate.year].
@@ -232,12 +265,22 @@ private class MonthDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2),
     ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}()"
+            else -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is MonthDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
 
 private class MonthNameDirective(private val names: MonthNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names, "monthName") {
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDate::monthName.name}(${names.toKotlinCode()})"
+
     override fun equals(other: Any?): Boolean = other is MonthNameDirective && names.names == other.names.names
     override fun hashCode(): Int = names.names.hashCode()
 }
@@ -248,12 +291,23 @@ private class DayDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2),
     ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}()"
+            else -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is DayDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
 
 private class DayOfWeekDirective(private val names: DayOfWeekNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names, "dayOfWeekName") {
+
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDate::dayOfWeek.name}(${names.toKotlinCode()})"
+
     override fun equals(other: Any?): Boolean = other is DayOfWeekDirective && names.names == other.names.names
     override fun hashCode(): Int = names.names.hashCode()
 }

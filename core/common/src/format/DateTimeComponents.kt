@@ -513,6 +513,10 @@ internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponent
 internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
     StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
 
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+
     override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
     override fun hashCode(): Int = knownZones.hashCode()
 }

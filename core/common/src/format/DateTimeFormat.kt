@@ -36,6 +36,19 @@ public sealed interface DateTimeFormat<T> {
      * @return the parsed value, or `null` if the input string is not in the expected format or the value is invalid.
      */
     public fun parseOrNull(input: CharSequence): T?
+
+    public companion object {
+        /**
+         * Produces Kotlin code that, when pasted into a Kotlin source file, creates a [DateTimeFormat] instance that
+         * behaves identically to [format].
+         *
+         * The typical use case for this is to create a [DateTimeFormat] instance using a non-idiomatic approach and
+         * then convert it to a builder DSL.
+         */
+        public fun formatAsKotlinBuilderDsl(format: DateTimeFormat<*>): String = when (format) {
+            is AbstractDateTimeFormat<*, *> -> format.actualFormat.builderString(allFormatConstants)
+        }
+    }
 }
 
 /**
@@ -110,4 +123,15 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
         // without the fully qualified name, the compilation fails for some reason
         Parser(actualFormat.parser()).matchOrNull(input, emptyIntermediate)?.let { valueFromIntermediateOrNull(it) }
 
+}
+
+private val allFormatConstants: List<Pair<String, CachedFormatStructure<*>>> by lazy {
+    fun unwrap(format: DateTimeFormat<*>): CachedFormatStructure<*> = (format as AbstractDateTimeFormat<*, *>).actualFormat
+    // the formats are ordered vaguely by decreasing length, as the topmost among suitable ones is chosen.
+    listOf(
+        "${DateTimeFormatBuilder.WithDateTimeComponents::dateTimeComponents.name}(DateTimeComponents.Formats.RFC_1123)" to
+            unwrap(DateTimeComponents.Formats.RFC_1123),
+        "${DateTimeFormatBuilder.WithDateTimeComponents::dateTimeComponents.name}(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)" to
+            unwrap(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET),
+    )
 }

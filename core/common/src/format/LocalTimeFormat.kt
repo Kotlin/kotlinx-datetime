@@ -134,6 +134,12 @@ private class HourDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::hour.name}()"
+            else -> "${DateTimeFormatBuilder.WithTime::hour.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is HourDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -143,6 +149,12 @@ private class AmPmHourDirective(private val padding: Padding) :
         TimeFields.hourOfAmPm, minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::amPmHour.name}()"
+            else -> "${DateTimeFormatBuilder.WithTime::amPmHour.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is AmPmHourDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -155,6 +167,11 @@ private class AmPmMarkerDirective(private val amString: String, private val pmSt
         ),
         "AM/PM marker"
     ) {
+
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithTime::amPmMarker.name}($amString, $pmString)"
+
     override fun equals(other: Any?): Boolean =
         other is AmPmMarkerDirective && amString == other.amString && pmString == other.pmString
 
@@ -167,6 +184,13 @@ private class MinuteDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
+
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::minute.name}()"
+            else -> "${DateTimeFormatBuilder.WithTime::minute.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is MinuteDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -177,6 +201,13 @@ private class SecondDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
+
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithTime::second.name}()"
+            else -> "${DateTimeFormatBuilder.WithTime::second.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is SecondDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -192,6 +223,20 @@ internal class FractionalSecondDirective(
         maxDigits,
         zerosToAdd
     ) {
+
+    override val builderRepresentation: String
+        get() {
+            val ref = "secondFraction" // can't directly reference `secondFraction` due to resolution ambiguity
+            // we ignore `grouping`, as it's not representable in the end users' code
+            return when {
+                minDigits == 1 && maxDigits == 9 -> "$ref()"
+                minDigits == 1 -> "$ref(maxLength = $maxDigits)"
+                maxDigits == 1 -> "$ref(minLength = $minDigits)"
+                maxDigits == minDigits -> "$ref($minDigits)"
+                else -> "$ref($minDigits, $maxDigits)"
+            }
+        }
+
     override fun equals(other: Any?): Boolean =
         other is FractionalSecondDirective && minDigits == other.minDigits && maxDigits == other.maxDigits
 
