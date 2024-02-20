@@ -382,3 +382,91 @@ internal interface AbstractDateTimeFormatBuilder<Target, ActualSelf> :
 
     fun build(): CachedFormatStructure<Target> = CachedFormatStructure(actualBuilder.build().formats)
 }
+
+internal fun <T> FormatStructure<T>.builderString(constants: List<Pair<String, CachedFormatStructure<*>>>): String =
+    when (this) {
+        is BasicFormatStructure -> directive.builderRepresentation
+        is ConstantFormatStructure -> if (string.length == 1) {
+            "${DateTimeFormatBuilder::char.name}(${string[0].toKotlinCode()})"
+        } else {
+            "${DateTimeFormatBuilder::chars.name}(${string.toKotlinCode()})"
+        }
+
+        is SignedFormatStructure -> {
+            if (format is BasicFormatStructure && format.directive is UtcOffsetWholeHoursDirective) {
+                format.directive.builderRepresentation
+            } else {
+                buildString {
+                    if (withPlusSign) appendLine("withSharedSign(outputPlus = true) {")
+                    else appendLine("withSharedSign {")
+                    appendLine(format.builderString(constants).prependIndent(CODE_INDENT))
+                    append("}")
+                }
+            }
+        }
+
+        is OptionalFormatStructure -> buildString {
+            if (onZero == "") {
+                appendLine("${DateTimeFormatBuilder::optional.name} {")
+            } else {
+                appendLine("${DateTimeFormatBuilder::optional.name}(${onZero.toKotlinCode()}) {")
+            }
+            val subformat = format.builderString(constants)
+            if (subformat.isNotEmpty()) {
+                appendLine(subformat.prependIndent(CODE_INDENT))
+            }
+            append("}")
+        }
+
+        is AlternativesParsingFormatStructure -> buildString {
+            append("${DateTimeFormatBuilder::alternativeParsing.name}(")
+            for (alternative in formats) {
+                appendLine("{")
+                val subformat = alternative.builderString(constants)
+                if (subformat.isNotEmpty()) {
+                    appendLine(subformat.prependIndent(CODE_INDENT))
+                }
+                append("}, ")
+            }
+            if (this[length - 2] == ',') {
+                repeat(2) {
+                    deleteAt(length - 1)
+                }
+            }
+            appendLine(") {")
+            appendLine(mainFormat.builderString(constants).prependIndent(CODE_INDENT))
+            append("}")
+        }
+
+        is ConcatenatedFormatStructure -> buildString {
+            if (formats.isNotEmpty()) {
+                var index = 0
+                loop@ while (index < formats.size) {
+                    searchConstant@ for (constant in constants) {
+                        val constantDirectives = constant.second.formats
+                        if (formats.size - index >= constantDirectives.size) {
+                            for (i in constantDirectives.indices) {
+                                if (formats[index + i] != constantDirectives[i]) {
+                                    continue@searchConstant
+                                }
+                            }
+                            append(constant.first)
+                            index += constantDirectives.size
+                            if (index < formats.size) {
+                                appendLine()
+                            }
+                            continue@loop
+                        }
+                    }
+                    if (index == formats.size - 1) {
+                        append(formats.last().builderString(constants))
+                    } else {
+                        appendLine(formats[index].builderString(constants))
+                    }
+                    ++index
+                }
+            }
+        }
+    }
+
+private const val CODE_INDENT = "    "

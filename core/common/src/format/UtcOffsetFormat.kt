@@ -196,6 +196,11 @@ internal class UtcOffsetWholeHoursDirective(private val padding: Padding) :
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2)
     ) {
+
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithUtcOffset::offsetHours.name}(${padding.toKotlinCode()})"
+
     override fun equals(other: Any?): Boolean = other is UtcOffsetWholeHoursDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -205,6 +210,13 @@ private class UtcOffsetMinuteOfHourDirective(private val padding: Padding) :
         OffsetFields.minutesOfHour,
         minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
     ) {
+
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::offsetMinutesOfHour.name}()"
+            else -> "${DateTimeFormatBuilder.WithUtcOffset::offsetMinutesOfHour.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is UtcOffsetMinuteOfHourDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }
@@ -214,6 +226,13 @@ private class UtcOffsetSecondOfMinuteDirective(private val padding: Padding) :
         OffsetFields.secondsOfMinute,
         minDigits = padding.minDigits(2), spacePadding = padding.spaces(2)
     ) {
+
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.NONE -> "${DateTimeFormatBuilder.WithUtcOffset::offsetSecondsOfMinute.name}()"
+            else -> "${DateTimeFormatBuilder.WithUtcOffset::offsetSecondsOfMinute.name}(${padding.toKotlinCode()})"
+        }
+
     override fun equals(other: Any?): Boolean = other is UtcOffsetSecondOfMinuteDirective && padding == other.padding
     override fun hashCode(): Int = padding.hashCode()
 }

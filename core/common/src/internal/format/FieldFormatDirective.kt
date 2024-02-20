@@ -27,6 +27,11 @@ internal interface FieldFormatDirective<in Target> {
      * The parser structure that parses the field.
      */
     fun parser(): ParserStructure<Target>
+
+    /**
+     * The string with the code that, when evaluated in the builder context, appends the directive.
+     */
+    val builderRepresentation: String
 }
 
 /**
