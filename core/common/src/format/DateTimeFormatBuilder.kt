@@ -96,6 +96,110 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun date(format: DateTimeFormat<LocalDate>)
     }
+
+    /**
+     * Functions specific to the date-time format builders containing the local-time fields.
+     */
+    public sealed interface WithTime : DateTimeFormatBuilder {
+        /**
+         * The hour of the day, from 0 to 23.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         */
+        public fun hour(padding: Padding = Padding.ZERO)
+
+        /**
+         * The hour of the day in the 12-hour clock:
+         *
+         * * Midnight is 12,
+         * * Hours 1-11 are 1-11,
+         * * Noon is 12,
+         * * Hours 13-23 are 1-11.
+         *
+         * To disambiguate between the first and the second halves of the day, [amPmMarker] should be used.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         *
+         * @see [amPmMarker]
+         */
+        public fun amPmHour(padding: Padding = Padding.ZERO)
+
+        /**
+         * The AM/PM marker, using the specified strings.
+         *
+         * [am] is used for the AM marker (0-11 hours), [pm] is used for the PM marker (12-23 hours).
+         *
+         * @see [amPmHour]
+         */
+        public fun amPmMarker(am: String, pm: String)
+
+        /**
+         * The minute of hour.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         */
+        public fun minute(padding: Padding = Padding.ZERO)
+
+        /**
+         * The second of minute.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         */
+        public fun second(padding: Padding = Padding.ZERO)
+
+        /**
+         * The fractional part of the second without the leading dot.
+         *
+         * When formatting, the decimal fraction will be rounded to fit in the specified [maxLength] and will add
+         * trailing zeroes to the specified [minLength].
+         * Rounding is performed using the round-toward-zero rounding mode.
+         *
+         * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
+         * digits long.
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         *
+         * See also the [secondFraction] overload that accepts just one parameter, the exact length of the fractional
+         * part.
+         *
+         * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
+         */
+        public fun secondFraction(minLength: Int = 1, maxLength: Int = 9)
+
+        /**
+         * The fractional part of the second without the leading dot.
+         *
+         * When formatting, the decimal fraction will add trailing zeroes or be rounded as necessary to always output
+         * exactly the number of digits specified in [fixedLength].
+         * Rounding is performed using the round-toward-zero rounding mode.
+         *
+         * When parsing, exactly [fixedLength] digits will be consumed.
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         *
+         * See also the [secondFraction] overload that accepts two parameters, the minimum and maximum length of the
+         * fractional part.
+         *
+         * @throws IllegalArgumentException if [fixedLength] is not in the range 1..9.
+         *
+         * @see secondFraction that accepts two parameters.
+         */
+        public fun secondFraction(fixedLength: Int) {
+            secondFraction(fixedLength, fixedLength)
+        }
+
+        /**
+         * An existing [DateTimeFormat] for the time part.
+         *
+         * Example:
+         * ```
+         * time(LocalTime.Formats.ISO)
+         * ```
+         */
+        public fun time(format: DateTimeFormat<LocalTime>)
+    }
 }
 
 /**
