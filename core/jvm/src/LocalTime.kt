@@ -6,6 +6,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.serialization.Serializable
@@ -44,11 +45,16 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
     actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
-        public actual fun parse(isoString: String): LocalTime = try {
-            jtLocalTime.parse(isoString).let(::LocalTime)
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
+            if (format === Formats.ISO) {
+                try {
+                    jtLocalTime.parse(input).let(::LocalTime)
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                format.parse(input)
+            }
 
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jtLocalTime.ofSecondOfDay(secondOfDay.toLong()).let(::LocalTime)
@@ -70,5 +76,14 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
         internal actual val MIN: LocalTime = LocalTime(jtLocalTime.MIN)
         internal actual val MAX: LocalTime = LocalTime(jtLocalTime.MAX)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
+            LocalTimeFormat.build(builder)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
+
     }
 }

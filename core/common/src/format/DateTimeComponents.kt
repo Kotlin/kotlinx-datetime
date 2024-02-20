@@ -129,7 +129,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             alternativeParsing({
                 offsetHours()
             }) {
-                offset(ISO_OFFSET)
+                offset(UtcOffset.Formats.ISO)
             }
         }
 
@@ -170,7 +170,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 chars("Z")
             }) {
                 optional("GMT") {
-                    offset(FOUR_DIGIT_OFFSET)
+                    offset(UtcOffset.Formats.FOUR_DIGITS)
                 }
             }
         }

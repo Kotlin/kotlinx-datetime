@@ -25,7 +25,7 @@ class ThreeTenBpTimeZoneTest {
             val test = UtcOffset.parse(v)
             assertSame(test, UtcOffset.ZERO)
         }
-        assertSame(UtcOffsetFormat.build { offsetHours(padding = Padding.NONE) }.parse("-0"), UtcOffset.ZERO)
+        assertSame(UtcOffset.parse("-0", UtcOffset.Format { offsetHours(padding = Padding.NONE) }), UtcOffset.ZERO)
     }
 
     @Test

@@ -95,7 +95,8 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     override fun hashCode(): Int =
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
-    actual override fun toString(): String = toStringWithOffset(UtcOffset.ZERO)
+    // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
+    actual override fun toString(): String = format(ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS)
 
     public actual companion object {
         internal actual val MIN = Instant(MIN_SECOND, 0)
@@ -136,10 +137,10 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        public actual fun parse(isoString: String): Instant = try {
-            DateTimeComponents.parse(isoString, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingOffset()
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            format.parse(input).toInstantUsingOffset()
         } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
         }
 
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
@@ -240,11 +241,6 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
             check(timeZone); other.check(timeZone)
             until(other, unit)
         }
-    }
-
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS.format {
-        setDateTimeOffset(this@toStringWithOffset, offset)
     }
 
 private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {

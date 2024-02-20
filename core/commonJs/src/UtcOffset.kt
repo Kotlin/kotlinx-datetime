@@ -8,6 +8,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.JSJoda.ZoneOffset as jtZoneOffset
 import kotlinx.datetime.internal.JSJoda.ChronoField as jtChronoField
 import kotlinx.datetime.internal.JSJoda.DateTimeFormatterBuilder as jtDateTimeFormatterBuilder
+import kotlinx.datetime.internal.JSJoda.DateTimeFormatter as jtDateTimeFormatter
 import kotlinx.datetime.internal.JSJoda.ResolverStyle as jtResolverStyle
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
@@ -19,20 +20,27 @@ public actual class UtcOffset internal constructor(internal val zoneOffset: jtZo
 
     override fun hashCode(): Int = zoneOffset.hashCode()
     override fun equals(other: Any?): Boolean = other is UtcOffset && (this.zoneOffset === other.zoneOffset || this.zoneOffset.equals(other.zoneOffset))
-    override fun toString(): String = zoneOffset.toString()
+    actual override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {
-        private val format = jtDateTimeFormatterBuilder().appendOffsetId().toFormatter(jtResolverStyle.STRICT)
-
         public actual val ZERO: UtcOffset = UtcOffset(jtZoneOffset.UTC)
 
-        public actual fun parse(offsetString: String): UtcOffset = UtcOffset(seconds = try {
-            jsTry { format.parse(offsetString).get(jtChronoField.OFFSET_SECONDS) }
-        } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
-            throw e
-        })
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = when {
+            format === Formats.ISO -> parseWithFormat(input, isoFormat)
+            format === Formats.ISO_BASIC -> parseWithFormat(input, isoBasicFormat)
+            format === Formats.FOUR_DIGITS -> parseWithFormat(input, fourDigitsFormat)
+            else -> format.parse(input)
+        }
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
+            UtcOffsetFormat.build(block)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
+        public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
+        public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
 }
 
@@ -51,3 +59,21 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
     } catch (e: Throwable) {
         if (e.isJodaDateTimeException()) throw IllegalArgumentException(e) else throw e
     }
+
+private val isoFormat by lazy {
+    jtDateTimeFormatterBuilder().parseCaseInsensitive().appendOffsetId().toFormatter(jtResolverStyle.STRICT)
+}
+private val isoBasicFormat by lazy {
+    jtDateTimeFormatterBuilder().parseCaseInsensitive().appendOffset("+HHmmss", "Z").toFormatter(jtResolverStyle.STRICT)
+}
+private val fourDigitsFormat by lazy {
+    jtDateTimeFormatterBuilder().parseCaseInsensitive().appendOffset("+HHMM", "+0000").toFormatter(jtResolverStyle.STRICT)
+}
+
+private fun parseWithFormat(input: CharSequence, format: jtDateTimeFormatter) = UtcOffset(seconds = try {
+    jsTry { format.parse(input.toString()).get(jtChronoField.OFFSET_SECONDS) }
+} catch (e: Throwable) {
+    if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
+    if (e.isJodaDateTimeException()) throw DateTimeFormatException(e)
+    throw e
+})

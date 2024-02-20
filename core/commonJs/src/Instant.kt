@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
 import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
@@ -73,12 +74,21 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochMilliseconds > 0) MAX else MIN
         }
 
-        public actual fun parse(isoString: String): Instant = try {
-            Instant(jsTry { jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)) }.toInstant())
-        } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
+            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
+                try {
+                    Instant(jsTry { jtOffsetDateTime.parse(fixOffsetRepresentation(input.toString())) }.toInstant())
+                } catch (e: Throwable) {
+                    if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
+                    throw e
+                }
+            } else {
+                try {
+                    format.parse(input).toInstantUsingOffset()
+                } catch (e: IllegalArgumentException) {
+                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+                }
+            }
 
         /** A workaround for the string representations of Instant that have an offset of the form
          * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
@@ -219,6 +229,3 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
 } catch (e: Throwable) {
     if (e.isJodaDateTimeException()) throw DateTimeArithmeticException(e) else throw e
 }
-
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    jtOffsetDateTime.ofInstant(this.value, offset.zoneOffset).toString()
