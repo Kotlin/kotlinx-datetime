@@ -39,3 +39,8 @@ internal fun Int.monthLength(isLeapYear: Boolean): Int =
         4, 6, 9, 11 -> 30
         else -> 31
     }
+
+// days in a 400 year cycle = 146097
+// days in a 10,000 year cycle = 146097 * 25
+// seconds per day = 86400
+internal const val SECONDS_PER_10000_YEARS = 146097L * 25L * 86400L
