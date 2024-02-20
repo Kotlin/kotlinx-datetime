@@ -202,6 +202,21 @@ public sealed interface DateTimeFormatBuilder {
     }
 
     /**
+     * Functions specific to the date-time format builders containing the local-date and local-time fields.
+     */
+    public sealed interface WithDateTime : WithDate, WithTime {
+        /**
+         * An existing [DateTimeFormat] for the date-time part.
+         *
+         * Example:
+         * ```
+         * dateTime(LocalDateTime.Formats.ISO)
+         * ```
+         */
+        public fun dateTime(format: DateTimeFormat<LocalDateTime>)
+    }
+
+    /**
      * Functions specific to the date-time format builders containing the UTC-offset fields.
      */
     public sealed interface WithUtcOffset : DateTimeFormatBuilder {
