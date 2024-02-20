@@ -133,5 +133,12 @@ private val allFormatConstants: List<Pair<String, CachedFormatStructure<*>>> by 
             unwrap(DateTimeComponents.Formats.RFC_1123),
         "${DateTimeFormatBuilder.WithDateTimeComponents::dateTimeComponents.name}(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)" to
             unwrap(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET),
+        "${DateTimeFormatBuilder.WithDateTime::date.name}(LocalDateTime.Formats.ISO)" to unwrap(LocalDateTime.Formats.ISO),
+        "${DateTimeFormatBuilder.WithDate::date.name}(LocalDate.Formats.ISO)" to unwrap(LocalDate.Formats.ISO),
+        "${DateTimeFormatBuilder.WithDate::date.name}(LocalDate.Formats.ISO_BASIC)" to unwrap(LocalDate.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithTime::time.name}(LocalTime.Formats.ISO)" to unwrap(LocalTime.Formats.ISO),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO)" to unwrap(UtcOffset.Formats.ISO),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO_BASIC)" to unwrap(UtcOffset.Formats.ISO_BASIC),
+        "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.FOUR_DIGITS)" to unwrap(UtcOffset.Formats.FOUR_DIGITS),
     )
 }

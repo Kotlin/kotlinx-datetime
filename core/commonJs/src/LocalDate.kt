@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
@@ -13,11 +14,19 @@ import kotlinx.datetime.internal.JSJoda.ChronoUnit as jtChronoUnit
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDate = try {
-            jsTry { jtLocalDate.parse(isoString) }.let(::LocalDate)
-        } catch (e: Throwable) {
-            if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-            throw e
+
+        public actual fun parse(
+            input: CharSequence,
+            format: DateTimeFormat<LocalDate>
+        ): LocalDate = if (format === Formats.ISO) {
+            try {
+                jsTry { jtLocalDate.parse(input.toString()) }.let(::LocalDate)
+            } catch (e: Throwable) {
+                if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
+                throw e
+            }
+        } else {
+            format.parse(input)
         }
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
@@ -29,6 +38,16 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
             if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
             throw e
         }
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
+            LocalDateFormat.build(block)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDate> get() = ISO_DATE
+
+        public actual val ISO_BASIC: DateTimeFormat<LocalDate> = ISO_DATE_BASIC
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :

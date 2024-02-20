@@ -10,20 +10,19 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
-import kotlin.native.concurrent.ThreadLocal
 
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
 
     override fun hashCode(): Int = totalSeconds
     override fun equals(other: Any?): Boolean = other is UtcOffset && this.totalSeconds == other.totalSeconds
-    override fun toString(): String = ISO_OFFSET.format(this)
+    actual override fun toString(): String = format(Formats.ISO)
 
     public actual companion object {
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun parse(offsetString: String): UtcOffset = ISO_OFFSET.parse(offsetString)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
 
         private fun validateTotal(totalSeconds: Int) {
             if (totalSeconds !in -18 * SECONDS_PER_HOUR .. 18 * SECONDS_PER_HOUR) {
@@ -77,6 +76,16 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
                 UtcOffset(totalSeconds = seconds)
             }
         }
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
+            UtcOffsetFormat.build(block)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
+        public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
+        public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
 }
 

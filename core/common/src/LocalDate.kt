@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 
@@ -23,14 +24,18 @@ import kotlinx.serialization.Serializable
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
         /**
-         * Parses a string that represents a date in ISO-8601 format
-         * and returns the parsed [LocalDate] value.
+         * A shortcut for calling [DateTimeFormat.parse].
          *
-         * An example of a local date in ISO-8601 format: `2020-08-30`.
+         * Parses a string that represents a date and returns the parsed [LocalDate] value.
+         *
+         * If [format] is not specified, [Formats.ISO] is used.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
+         *
+         * @see LocalDate.toString for formatting using the default format.
+         * @see LocalDate.format for formatting using a custom format.
          */
-        public fun parse(isoString: String): LocalDate
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()): LocalDate
 
         /**
          * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
@@ -41,8 +46,65 @@ public expect class LocalDate : Comparable<LocalDate> {
          */
         public fun fromEpochDays(epochDays: Int): LocalDate
 
+        /**
+         * Creates a new format for parsing and formatting [LocalDate] values.
+         *
+         * Example:
+         * ```
+         * // 2020 Jan 05
+         * LocalDate.Format {
+         *   year()
+         *   char(' ')
+         *   monthName(MonthNames.ENGLISH_ABBREVIATED)
+         *   char(' ')
+         *   dayOfMonth()
+         * }
+         * ```
+         *
+         * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
+         * (for example, [dayOfMonth] is 31 for February), consider using [DateTimeComponents.Format] instead.
+         *
+         * There is a collection of predefined formats in [LocalDate.Formats].
+         */
+        @Suppress("FunctionName")
+        public fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate>
+
         internal val MIN: LocalDate
         internal val MAX: LocalDate
+    }
+
+    /**
+     * A collection of predefined formats for parsing and formatting [LocalDate] values.
+     *
+     * See [LocalDate.Formats.ISO] and [LocalDate.Formats.ISO_BASIC] for popular predefined formats.
+     * [LocalDate.parse] and [LocalDate.toString] can be used as convenient shortcuts for the
+     * [LocalDate.Formats.ISO] format.
+     *
+     * If predefined formats are not sufficient, use [LocalDate.Format] to create a custom
+     * [kotlinx.datetime.format.DateTimeFormat] for [LocalDate] values.
+     */
+    public object Formats {
+        /**
+         * ISO 8601 extended format, which is the format used by [LocalDate.toString] and [LocalDate.parse].
+         *
+         * Examples of dates in ISO 8601 format:
+         * - `2020-08-30`
+         * - `+12020-08-30`
+         * - `0000-08-30`
+         * - `-0001-08-30`
+         */
+        public val ISO: DateTimeFormat<LocalDate>
+
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples of dates in ISO 8601 basic format:
+         * - `20200830`
+         * - `+120200830`
+         * - `00000830`
+         * - `-00010830`
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalDate>
     }
 
     /**
@@ -77,14 +139,19 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     /** Returns the year component of the date. */
     public val year: Int
+
     /** Returns the number-of-month (1..12) component of the date. */
     public val monthNumber: Int
+
     /** Returns the month ([Month]) component of the date. */
     public val month: Month
+
     /** Returns the day-of-month component of the date. */
     public val dayOfMonth: Int
+
     /** Returns the day-of-week component of the date. */
     public val dayOfWeek: DayOfWeek
+
     /** Returns the day-of-year component of the date. */
     public val dayOfYear: Int
 
@@ -106,12 +173,20 @@ public expect class LocalDate : Comparable<LocalDate> {
     public override fun compareTo(other: LocalDate): Int
 
     /**
-     * Converts this date to the ISO-8601 string representation.
+     * Converts this date to the extended ISO-8601 string representation.
      *
-     * @see LocalDate.parse
+     * @see Formats.ISO for the format details.
+     * @see parse for the dual operation: obtaining [LocalDate] from a string.
+     * @see LocalDate.format for formatting using a custom format.
      */
     public override fun toString(): String
 }
+
+/**
+ * Formats this value using the given [format].
+ * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ */
+public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.format(this)
 
 /**
  * @suppress
@@ -159,9 +234,8 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
     if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
         plus(with(period) { DatePeriod(-years, -months, -days) })
     } else {
-        minus(period.years, DateTimeUnit.YEAR).
-        minus(period.months, DateTimeUnit.MONTH).
-        minus(period.days, DateTimeUnit.DAY)
+        minus(period.years, DateTimeUnit.YEAR).minus(period.months, DateTimeUnit.MONTH)
+            .minus(period.days, DateTimeUnit.DAY)
     }
 
 /**
@@ -299,3 +373,6 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+internal fun getIsoDateFormat() = LocalDate.Formats.ISO

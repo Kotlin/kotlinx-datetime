@@ -6,6 +6,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
@@ -66,15 +67,24 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        public actual fun parse(isoString: String): Instant = try {
-            Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(isoString)).toInstant())
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
+            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
+                try {
+                    Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(input)).toInstant())
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                try {
+                    format.parse(input).toInstantUsingOffset()
+                } catch (e: IllegalArgumentException) {
+                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+                }
+            }
 
         /** A workaround for a quirk of the JDKs older than 11 where the string representations of Instant that have an
          * offset of the form "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
-        private fun fixOffsetRepresentation(isoString: String): String {
+        private fun fixOffsetRepresentation(isoString: CharSequence): CharSequence {
             val time = isoString.indexOf('T', ignoreCase = true)
             if (time == -1) return isoString // the string is malformed
             val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
@@ -184,6 +194,3 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
 } catch (e: ArithmeticException) {
     if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
 }
-
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
-    jtOffsetDateTime.ofInstant(this.value, offset.zoneOffset).toString()
