@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.format
 
+import kotlinx.datetime.*
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
 /**
@@ -18,6 +20,82 @@ public sealed interface DateTimeFormatBuilder {
      * and when parsing, the string is expected to be present in the input verbatim.
      */
     public fun chars(value: String)
+
+    /**
+     * Functions specific to the date-time format builders containing the local-date fields.
+     */
+    public sealed interface WithDate : DateTimeFormatBuilder {
+        /**
+         * A year number.
+         *
+         * By default, for years [-9999..9999], it's formatted as a decimal number, zero-padded to four digits, though
+         * this padding can be disabled or changed to space padding by passing [padding].
+         * For years outside this range, it's formatted as a decimal number with a leading sign, so the year 12345
+         * is formatted as "+12345".
+         */
+        public fun year(padding: Padding = Padding.ZERO)
+
+        /**
+         * The last two digits of the ISO year.
+         *
+         * [baseYear] is the base year for the two-digit year.
+         * For example, if [baseYear] is 1960, then this format correctly works with years [1960..2059].
+         *
+         * On formatting, when given a year in the valid range, it returns the last two digits of the year,
+         * so 1993 becomes "93". When given a year outside the valid range, it returns the full year number
+         * with a leading sign, so 1850 becomes "+1850", and -200 becomes "-200".
+         *
+         * On parsing, it accepts either a two-digit year or a full year number with a leading sign.
+         * When given a two-digit year, it returns a year in the valid range, so "93" becomes 1993,
+         * and when given a full year number with a leading sign, it parses the full year number,
+         * so "+1850" becomes 1850.
+         */
+        public fun yearTwoDigits(baseYear: Int)
+
+        /**
+         * A month-of-year number, from 1 to 12.
+         *
+         * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
+         */
+        public fun monthNumber(padding: Padding = Padding.ZERO)
+
+        /**
+         * A month name (for example, "January").
+         *
+         * Example:
+         * ```
+         * monthName(MonthNames.ENGLISH_FULL)
+         * ```
+         */
+        public fun monthName(names: MonthNames)
+
+        /**
+         * A day-of-month number, from 1 to 31.
+         *
+         * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
+         */
+        public fun dayOfMonth(padding: Padding = Padding.ZERO)
+
+        /**
+         * A day-of-week name (for example, "Thursday").
+         *
+         * Example:
+         * ```
+         * dayOfWeek(DayOfWeekNames.ENGLISH_FULL)
+         * ```
+         */
+        public fun dayOfWeek(names: DayOfWeekNames)
+
+        /**
+         * An existing [DateTimeFormat] for the date part.
+         *
+         * Example:
+         * ```
+         * date(LocalDate.Formats.ISO)
+         * ```
+         */
+        public fun date(format: DateTimeFormat<LocalDate>)
+    }
 }
 
 /**
