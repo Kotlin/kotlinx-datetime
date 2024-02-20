@@ -3,39 +3,20 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:OptIn(kotlinx.cinterop.UnsafeNumber::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package kotlinx.datetime
 
+import kotlinx.cinterop.*
+import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
-private fun dateWithTimeIntervalSince1970Saturating(epochSeconds: Long): NSDate {
-    val date = NSDate.dateWithTimeIntervalSince1970(epochSeconds.toDouble())
-    return when {
-        date.timeIntervalSinceDate(NSDate.distantPast) < 0 -> NSDate.distantPast
-        date.timeIntervalSinceDate(NSDate.distantFuture) > 0 -> NSDate.distantFuture
-        else -> date
-    }
-}
-
-private fun systemDateByLocalDate(zone: NSTimeZone, localDate: NSDate): NSDate? {
-    val iso8601 = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)!!
-    val utc = NSTimeZone.timeZoneForSecondsFromGMT(0)
-    /* Now, we say that the date that we initially meant is `date`, only with
-       the context of being in a timezone `zone`. */
-    val dateComponents = iso8601.componentsInTimeZone(utc, localDate)
-    dateComponents.timeZone = zone
-    return iso8601.dateFromComponents(dateComponents)
-}
-
-internal actual class RegionTimeZone(private val value: NSTimeZone, actual override val id: String): TimeZone() {
+internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual override val id: String) : TimeZone() {
     actual companion object {
-        actual fun of(zoneId: String): RegionTimeZone {
-            val abbreviations = NSTimeZone.abbreviationDictionary
-            val trueZoneId = abbreviations[zoneId] as String? ?: zoneId
-            val zone = NSTimeZone.timeZoneWithName(trueZoneId)
-                ?: throw IllegalTimeZoneException("No timezone found with zone ID '$zoneId'")
-            return RegionTimeZone(zone, zoneId)
+        actual fun of(zoneId: String): RegionTimeZone = try {
+            RegionTimeZone(tzdbOnFilesystem.rulesForId(zoneId), zoneId)
+        } catch (e: Exception) {
+            throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
         }
 
         actual fun currentSystemDefault(): RegionTimeZone {
@@ -88,83 +69,44 @@ internal actual class RegionTimeZone(private val value: NSTimeZone, actual overr
             */
             NSTimeZone.resetSystemTimeZone()
             val zone = NSTimeZone.systemTimeZone
-            return RegionTimeZone(zone, zone.name)
+            val zoneId = zone.name
+            return RegionTimeZone(tzdbOnFilesystem.rulesForId(zoneId), zoneId)
         }
 
         actual val availableZoneIds: Set<String>
-            get() {
-                val set = mutableSetOf("UTC")
-                val zones = NSTimeZone.knownTimeZoneNames
-                for (zone in zones) {
-                    if (zone is NSString) {
-                        set.add(zone as String)
-                    } else throw RuntimeException("$zone is expected to be NSString")
-                }
-                val abbrevs = NSTimeZone.abbreviationDictionary
-                for ((key, value) in abbrevs) {
-                    if (key is NSString && value is NSString) {
-                        if (set.contains(value as String)) {
-                            set.add(key as String)
-                        }
-                    } else throw RuntimeException("$key and $value are expected to be NSString")
-                }
-                return set
-            }
+            get() = tzdbOnFilesystem.availableTimeZoneIds()
     }
 
-    actual override fun atStartOfDay(date: LocalDate): Instant {
+    actual override fun atStartOfDay(date: LocalDate): Instant = memScoped {
         val ldt = LocalDateTime(date, LocalTime.MIN)
-        val epochSeconds = ldt.toEpochSecond(UtcOffset.ZERO)
-        // timezone
-        val nsDate = NSDate.dateWithTimeIntervalSince1970(epochSeconds.toDouble())
-        val newDate = systemDateByLocalDate(value, nsDate)
-            ?: throw RuntimeException("Unable to acquire the time of start of day at $nsDate for zone $this")
-        val offset = value.secondsFromGMTForDate(newDate).toInt()
-        /* if `epoch_sec` is not in the range supported by Darwin, assume that it
-           is the correct local time for the midnight and just convert it to
-           the system time. */
-        if (nsDate.timeIntervalSinceDate(NSDate.distantPast) < 0 ||
-            nsDate.timeIntervalSinceDate(NSDate.distantFuture) > 0)
-            return Instant(epochSeconds - offset, 0)
-        // The ISO-8601 calendar.
-        val iso8601 = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)!!
-        iso8601.timeZone = value
-        // start of the day denoted by `newDate`
-        val midnight = iso8601.startOfDayForDate(newDate)
-        return Instant(midnight.timeIntervalSince1970.toLong(), 0)
-    }
-
-    actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
-        val epochSeconds = dateTime.toEpochSecond(UtcOffset.ZERO)
-        var offset = preferred?.totalSeconds ?: Int.MAX_VALUE
-        val transitionDuration = run {
-            /* a date in an unspecified timezone, defined by the number of seconds since
-               the start of the epoch in *that* unspecified timezone */
-            val date = dateWithTimeIntervalSince1970Saturating(epochSeconds)
-            val newDate = systemDateByLocalDate(value, date)
-                ?: throw RuntimeException("Unable to acquire the offset at $dateTime for zone ${this@RegionTimeZone}")
-            // we now know the offset of that timezone at this time.
-            offset = value.secondsFromGMTForDate(newDate).toInt()
-            /* `dateFromComponents` automatically corrects the date to avoid gaps. We
-               need to learn which adjustments it performed. */
-            (newDate.timeIntervalSince1970.toLong() +
-                offset.toLong() - date.timeIntervalSince1970.toLong()).toInt()
+        when (val info = tzid.infoAtDatetime(ldt)) {
+            is OffsetInfo.Regular -> ldt.toInstant(info.offset)
+            is OffsetInfo.Gap -> info.start
+            is OffsetInfo.Overlap -> ldt.toInstant(info.offsetBefore)
         }
-        val correctedDateTime = try {
-            dateTime.plusSeconds(transitionDuration)
-        } catch (e: IllegalArgumentException) {
-            throw DateTimeArithmeticException("Overflow whet correcting the date-time to not be in the transition gap", e)
-        } catch (e: ArithmeticException) {
-            throw RuntimeException("Anomalously long timezone transition gap reported", e)
+    }
+
+    actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime =
+        when (val info = tzid.infoAtDatetime(dateTime)) {
+            is OffsetInfo.Regular -> ZonedDateTime(dateTime, this, info.offset)
+            is OffsetInfo.Gap -> {
+                try {
+                    ZonedDateTime(dateTime.plusSeconds(info.transitionDurationSeconds), this, info.offsetAfter)
+                } catch (e: IllegalArgumentException) {
+                    throw DateTimeArithmeticException(
+                        "Overflow whet correcting the date-time to not be in the transition gap",
+                        e
+                    )
+                }
+            }
+
+            is OffsetInfo.Overlap -> ZonedDateTime(dateTime, this,
+                if (info.offsetAfter == preferred) info.offsetAfter else info.offsetBefore)
         }
-        return ZonedDateTime(correctedDateTime, this@RegionTimeZone, UtcOffset.ofSeconds(offset))
-    }
 
-    actual override fun offsetAtImpl(instant: Instant): UtcOffset {
-        val date = dateWithTimeIntervalSince1970Saturating(instant.epochSeconds)
-        return UtcOffset.ofSeconds(value.secondsFromGMTForDate(date).toInt())
-    }
-
+    actual override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 }
 
 internal actual fun currentTime(): Instant = NSDate.date().toKotlinInstant()
+
+private val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString(defaultTzdbPath()))

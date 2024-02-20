@@ -55,22 +55,28 @@ kotlin {
             target("androidNativeX64")
              */
             common("darwin") {
-                // Tier 1
-                target("macosX64")
-                target("macosArm64")
-                target("iosSimulatorArm64")
-                target("iosX64")
-                // Tier 2
-                target("watchosSimulatorArm64")
-                target("watchosX64")
-                target("watchosArm32")
-                target("watchosArm64")
-                target("tvosSimulatorArm64")
-                target("tvosX64")
-                target("tvosArm64")
-                target("iosArm64")
-                // Tier 3
-                target("watchosDeviceArm64")
+                common("darwinDevices") {
+                    // Tier 1
+                    target("macosX64")
+                    target("macosArm64")
+                    // Tier 2
+                    target("watchosX64")
+                    target("watchosArm32")
+                    target("watchosArm64")
+                    target("tvosX64")
+                    target("tvosArm64")
+                    target("iosArm64")
+                    // Tier 3
+                    target("watchosDeviceArm64")
+                }
+                common("darwinSimulator") {
+                    // Tier 1
+                    target("iosSimulatorArm64")
+                    target("iosX64")
+                    // Tier 2
+                    target("watchosSimulatorArm64")
+                    target("tvosSimulatorArm64")
+                }
             }
         }
         // Tier 3
