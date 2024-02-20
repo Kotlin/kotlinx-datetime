@@ -1,5 +1,5 @@
 // generated with gradle task `downloadWindowsZonesMapping`
-package kotlinx.datetime
+package kotlinx.datetime.internal
 internal val standardToWindows: Map<String, String> = mutableMapOf(
   "Africa/Abidjan" to "Greenwich Standard Time",
   "Africa/Accra" to "Greenwich Standard Time",
