@@ -51,7 +51,12 @@ class ConvertersTest {
             if (timeZone is FixedOffsetTimeZone) {
                 continue
             }
-            val nsTimeZone = timeZone.toNSTimeZone()
+            val nsTimeZone = try {
+                timeZone.toNSTimeZone()
+            } catch (e: IllegalArgumentException) {
+                assertEquals("America/Ciudad_Juarez", id)
+                continue
+            }
             assertEquals(normalizedId, nsTimeZone.name)
             assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
         }

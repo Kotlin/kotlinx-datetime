@@ -42,16 +42,20 @@ public fun NSDate.toKotlinInstant(): Instant {
  *
  * If the time zone is represented as a fixed number of seconds from UTC+0 (for example, if it is the result of a call
  * to [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
- * [DateTimeException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets to the
- * nearest minute.
+ * [IllegalArgumentException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets
+ * to the nearest minute.
+ *
+ * If the time zone is unknown to the Foundation framework, [IllegalArgumentException] will be thrown.
  */
 public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone) {
-    require (offset.totalSeconds % 60 == 0) {
+    require(offset.totalSeconds % 60 == 0) {
         "NSTimeZone cannot represent fixed-offset time zones with offsets not expressed in whole minutes: $this"
     }
     NSTimeZone.timeZoneForSecondsFromGMT(offset.totalSeconds.convert())
 } else {
-    NSTimeZone.timeZoneWithName(id) ?: NSTimeZone.timeZoneWithAbbreviation(id)!!
+    NSTimeZone.timeZoneWithName(id)
+        ?: NSTimeZone.timeZoneWithAbbreviation(id)
+        ?: throw IllegalArgumentException("The Foundation framework does not support the timezone '$id'")
 }
 
 /**
