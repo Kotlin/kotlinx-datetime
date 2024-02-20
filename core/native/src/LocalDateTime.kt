@@ -8,26 +8,16 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
-import kotlinx.serialization.Serializable
-
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
-internal val localDateTimeParser: Parser<LocalDateTime>
-    get() = localDateParser
-        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-        .chain(localTimeParser)
-        .map { (date, time) ->
-            LocalDateTime(date, time)
-        }
+import kotlinx.datetime.serializers.*
+import kotlinx.serialization.*
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime =
-            localDateTimeParser.parse(isoString)
+        public actual fun parse(isoString: String): LocalDateTime = ISO_DATETIME.parse(isoString)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
@@ -68,7 +58,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = date.toString() + 'T' + time.toString()
+    actual override fun toString(): String = ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS.format(this)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
@@ -126,4 +116,12 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
     val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
     return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
+}
+
+private val ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
+    LocalDateTimeFormat.build {
+        date(ISO_DATE)
+        alternativeParsing({ char('t') }) { char('T') }
+        time(ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
+    }
 }
