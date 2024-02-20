@@ -200,6 +200,48 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun time(format: DateTimeFormat<LocalTime>)
     }
+
+    /**
+     * Functions specific to the date-time format builders containing the UTC-offset fields.
+     */
+    public sealed interface WithUtcOffset : DateTimeFormatBuilder {
+        /**
+         * The total number of hours in the UTC offset, including the sign.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         */
+        public fun offsetHours(padding: Padding = Padding.ZERO)
+
+        /**
+         * The minute-of-hour of the UTC offset.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         */
+        public fun offsetMinutesOfHour(padding: Padding = Padding.ZERO)
+
+        /**
+         * The second-of-minute of the UTC offset.
+         *
+         * By default, it's zero-padded to two digits, but this can be changed with [padding].
+         *
+         * This field has the default value of 0. If you want to omit it, use [optional].
+         */
+        public fun offsetSecondsOfMinute(padding: Padding = Padding.ZERO)
+
+        /**
+         * An existing [DateTimeFormat] for the UTC offset part.
+         *
+         * Example:
+         * ```
+         * offset(UtcOffset.Formats.FOUR_DIGITS)
+         * ```
+         */
+        public fun offset(format: DateTimeFormat<UtcOffset>)
+    }
 }
 
 /**
