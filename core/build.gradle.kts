@@ -324,7 +324,7 @@ tasks {
 
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
-    val output = "$projectDir/windows/src/WindowsZoneNames.kt"
+    val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)
     doLast {
         val initialFileContents = try { File(output).readBytes() } catch(e: Throwable) { ByteArray(0) }
@@ -358,7 +358,7 @@ val downloadWindowsZonesMapping by tasks.registering {
         val bos = ByteArrayOutputStream()
         PrintWriter(bos).use { out ->
             out.println("""// generated with gradle task `$name`""")
-            out.println("""package kotlinx.datetime""")
+            out.println("""package kotlinx.datetime.internal""")
             out.println("""internal val standardToWindows: Map<String, String> = mutableMapOf(""")
             for ((usualName, windowsName) in sortedMapping) {
                 out.println("  \"$usualName\" to \"$windowsName\",")
