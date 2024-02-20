@@ -284,6 +284,35 @@ public sealed interface DateTimeFormatBuilder {
 }
 
 /**
+ * The fractional part of the second without the leading dot.
+ *
+ * When formatting, the decimal fraction will round the number to fit in the specified [maxLength] and will add
+ * trailing zeroes to the specified [minLength].
+ *
+ * Additionally, [grouping] is a list, where the i'th (1-based) element specifies how many trailing zeros to add during
+ * formatting when the number would have i digits.
+ *
+ * When parsing, the parser will require that the fraction is at least [minLength] and at most [maxLength]
+ * digits long.
+ *
+ * This field has the default value of 0. If you want to omit it, use [optional].
+ *
+ * @throws IllegalArgumentException if [minLength] is greater than [maxLength] or if either is not in the range 1..9.
+ */
+internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(
+    minLength: Int,
+    maxLength: Int,
+    grouping: List<Int>
+) {
+    @Suppress("NO_ELSE_IN_WHEN")
+    when (this) {
+        is AbstractWithTimeBuilder -> addFormatStructureForTime(
+            BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
+        )
+    }
+}
+
+/**
  * A format along with other ways to parse the same portion of the value.
  *
  * When parsing, first, [primaryFormat] is used; if parsing the whole string fails using that, the formats

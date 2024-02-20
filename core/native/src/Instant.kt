@@ -8,10 +8,10 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
-import kotlin.math.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -25,95 +25,6 @@ public actual enum class DayOfWeek {
     SATURDAY,
     SUNDAY;
 }
-
-/** A parser for the string representation of [ZoneOffset] as seen in `OffsetDateTime`.
- *
- * We can't just reuse the parsing logic of [ZoneOffset.of], as that version is more lenient: here, strings like
- * "0330" are not considered valid zone offsets, whereas [ZoneOffset.of] sees treats the example above as "03:30". */
-private val zoneOffsetParser: Parser<UtcOffset>
-    get() = (concreteCharParser('z').or(concreteCharParser('Z')).map { UtcOffset.ZERO })
-        .or(
-            concreteCharParser('+').or(concreteCharParser('-'))
-                .chain(intParser(2, 2))
-                .chain(
-                    optional(
-                        // minutes
-                        concreteCharParser(':').chainSkipping(intParser(2, 2))
-                            .chain(optional(
-                                    // seconds
-                                    concreteCharParser(':').chainSkipping(intParser(2, 2))
-                            ))))
-                .map {
-                    val (signHours, minutesSeconds) = it
-                    val (sign, hours) = signHours
-                    val minutes: Int
-                    val seconds: Int
-                    if (minutesSeconds == null) {
-                        minutes = 0
-                        seconds = 0
-                    } else {
-                        minutes = minutesSeconds.first
-                        seconds = minutesSeconds.second ?: 0
-                    }
-                    try {
-                        if (sign == '-')
-                            UtcOffset.ofHoursMinutesSeconds(-hours, -minutes, -seconds)
-                        else
-                            UtcOffset.ofHoursMinutesSeconds(hours, minutes, seconds)
-                    } catch (e: IllegalArgumentException) {
-                        throw DateTimeFormatException(e)
-                    }
-                }
-        )
-
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_OFFSET_DATE_TIME
-private val instantParser: Parser<Instant>
-    get() = localDateParser
-        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-        .chain(intParser(2, 2)) // hour
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // minute
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // second
-        .chain(optional(
-            concreteCharParser('.')
-                .chainSkipping(fractionParser(0, 9, 9)) // nanos
-        ))
-        .chain(zoneOffsetParser)
-        .map {
-            val (localDateTime, offset) = it
-            val (dateHourMinuteSecond, nanosVal) = localDateTime
-            val (dateHourMinute, secondsVal) = dateHourMinuteSecond
-            val (dateHour, minutesVal) = dateHourMinute
-            val (dateVal, hoursVal) = dateHour
-
-            val nano = nanosVal ?: 0
-            val (days, hours, min, seconds) = if (hoursVal == 24 && minutesVal == 0 && secondsVal == 0 && nano == 0) {
-                listOf(1, 0, 0, 0)
-            } else if (hoursVal == 23 && minutesVal == 59 && secondsVal == 60) {
-                // TODO: throw an error on leap seconds to match what the other platforms do
-                listOf(0, 23, 59, 59)
-            } else {
-                listOf(0, hoursVal, minutesVal, secondsVal)
-            }
-
-            // never fails: 9_999 years are always supported
-            val localDate = dateVal.withYear(dateVal.year % 10000).plus(days, DateTimeUnit.DAY)
-            val localTime = LocalTime.of(hours, min, seconds, 0)
-            val secDelta: Long = try {
-                safeMultiply((dateVal.year / 10000).toLong(), SECONDS_PER_10000_YEARS)
-            } catch (e: ArithmeticException) {
-                throw DateTimeFormatException(e)
-            }
-            val epochDay = localDate.toEpochDays().toLong()
-            val instantSecs = epochDay * 86400 - offset.totalSeconds + localTime.toSecondOfDay() + secDelta
-            try {
-                Instant(instantSecs, nano)
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException(e)
-            }
-        }
 
 /**
  * The minimum supported epoch second.
@@ -184,7 +95,6 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     override fun hashCode(): Int =
         (epochSeconds xor (epochSeconds ushr 32)).toInt() + 51 * nanosecondsOfSecond
 
-    // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
     actual override fun toString(): String = toStringWithOffset(UtcOffset.ZERO)
 
     public actual companion object {
@@ -226,8 +136,11 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant =
             fromEpochSeconds(epochSeconds, nanosecondAdjustment.toLong())
 
-        public actual fun parse(isoString: String): Instant =
-            instantParser.parse(isoString)
+        public actual fun parse(isoString: String): Instant = try {
+            DateTimeComponents.parse(isoString, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$isoString'", e)
+        }
 
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 
@@ -329,65 +242,31 @@ public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
         }
     }
 
-internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String {
-    val buf = StringBuilder()
-    val inNano: Int = nanosecondsOfSecond
-    val seconds = epochSeconds + offset.totalSeconds
-    if (seconds >= -SECONDS_0000_TO_1970) { // current era
-        val zeroSecs: Long = seconds - SECONDS_PER_10000_YEARS + SECONDS_0000_TO_1970
-        val hi: Long = zeroSecs.floorDiv(SECONDS_PER_10000_YEARS) + 1
-        val lo: Long = zeroSecs.mod(SECONDS_PER_10000_YEARS)
-        val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
-            .toLocalDateTime(TimeZone.UTC)
-        if (hi > 0) {
-            buf.append('+').append(hi)
-        }
-        buf.append(ldt)
-        if (ldt.second == 0) {
-            buf.append(":00")
-        }
-    } else { // before current era
-        val zeroSecs: Long = seconds + SECONDS_0000_TO_1970
-        val hi: Long = zeroSecs / SECONDS_PER_10000_YEARS
-        val lo: Long = zeroSecs % SECONDS_PER_10000_YEARS
-        val ldt: LocalDateTime = Instant(lo - SECONDS_0000_TO_1970, 0)
-            .toLocalDateTime(TimeZone.UTC)
-        val pos = buf.length
-        buf.append(ldt)
-        if (ldt.second == 0) {
-            buf.append(":00")
-        }
-        if (hi < 0) {
-            when {
-                ldt.year == -10000 -> {
-                    buf.deleteAt(pos)
-                    buf.deleteAt(pos)
-                    buf.insert(pos, (hi - 1).toString())
-                }
-                lo == 0L -> {
-                    buf.insert(pos, hi)
-                }
-                else -> {
-                    buf.insert(pos + 1, abs(hi))
-                }
-            }
-        }
+internal actual fun Instant.toStringWithOffset(offset: UtcOffset): String =
+    ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS.format {
+        setDateTimeOffset(this@toStringWithOffset, offset)
     }
-    //fraction
-    if (inNano != 0) {
-        buf.append('.')
-        when {
-            inNano % 1000000 == 0 -> {
-                buf.append((inNano / 1000000 + 1000).toString().substring(1))
-            }
-            inNano % 1000 == 0 -> {
-                buf.append((inNano / 1000 + 1000000).toString().substring(1))
-            }
-            else -> {
-                buf.append((inNano + 1000000000).toString().substring(1))
-            }
-        }
+
+private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {
+    date(ISO_DATE)
+    alternativeParsing({
+        char('t')
+    }) {
+        char('T')
     }
-    buf.append(offset)
-    return buf.toString()
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+    optional {
+        char('.')
+        secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+    }
+    isoOffset(
+        zOnZero = true,
+        useSeparator = true,
+        outputMinute = WhenToOutput.IF_NONZERO,
+        outputSecond = WhenToOutput.IF_NONZERO
+    )
 }
