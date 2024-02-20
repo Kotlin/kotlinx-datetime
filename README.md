@@ -172,21 +172,18 @@ val hourMinute = LocalTime(hour = 12, minute = 13)
 An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
 To convert back, use the companion object function `Instant.fromEpochMilliseconds(Long)`.
 
-### Converting instant and local date/time to and from string
+### Converting instant and local date/time to and from the ISO 8601 string
 
-Currently, `Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` only support ISO-8601 format.
+`Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` provide shortcuts for
+parsing and formatting them using the extended ISO-8601 format.
 The `toString()` function is used to convert the value to a string in that format, and 
 the `parse` function in companion object is used to parse a string representation back. 
-
 
 ```kotlin
 val instantNow = Clock.System.now()
 instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
 val instantBefore = Instant.parse("2010-06-01T22:19:44.475Z")
 ```
-
-Alternatively, the `String.to...()` extension functions can be used instead of `parse`, 
-where it feels more convenient:
 
 `LocalDateTime` uses a similar format, but without `Z` UTC time zone designator in the end.
 
@@ -195,11 +192,125 @@ where it feels more convenient:
 `LocalTime` uses a format with just hour, minute, second and (if non-zero) nanosecond components, e.g. `12:01:03`.
 
 ```kotlin
-"2010-06-01T22:19:44.475Z".toInstant()
-"2010-06-01T22:19:44".toLocalDateTime()
-"2010-06-01".toLocalDate()
-"12:01:03".toLocalTime()
-"12:0:03.999".toLocalTime()
+LocalDateTime.parse("2010-06-01T22:19:44")
+LocalDate.parse("2010-06-01")
+LocalTime.parse("12:01:03")
+LocalTime.parse("12:00:03.999")
+LocalTime.parse("12:0:03.999") // fails with an IllegalArgumentException
+```
+
+### Working with other string formats
+
+When some data needs to be formatted in some format other than ISO-8601, one
+can define their own format or use some of the predefined ones:
+
+```kotlin
+// import kotlinx.datetime.format.*
+
+val dateFormat = LocalDate.Format {
+    monthNumber(padding = Padding.SPACE)
+    char('/')
+    dayOfMonth()
+    char(' ')
+    year()
+}
+
+val date = dateFormat.parse("12/24 2023")
+println(date.format(LocalDate.Formats.ISO_BASIC)) // "20231224"
+```
+
+#### Using Unicode format strings (like `yyyy-MM-dd`)
+
+Given a constant format string like the ones used by Java's
+[DateTimeFormatter.ofPattern](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) can be
+converted to Kotlin code using the following invocation:
+
+```kotlin
+// import kotlinx.datetime.format.*
+
+println(DateTimeFormat.formatAsKotlinBuilderDsl(DateTimeComponents.Format {
+    byUnicodePattern("uuuu-MM-dd'T'HH:mm:ss[.SSS]Z")
+}))
+
+// will print:
+/*
+date(LocalDate.Formats.ISO)
+char('T')
+hour()
+char(':')
+minute()
+char(':')
+second()
+alternativeParsing({
+}) {
+    char('.')
+    secondFraction(3)
+}
+offset(UtcOffset.Formats.FOUR_DIGITS)
+ */
+```
+
+When your format string is not constant, with the `FormatStringsInDatetimeFormats` opt-in,
+you can use the format without converting it to Kotlin code beforehand:
+
+```kotlin
+val formatPattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]"
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+val dateTimeFormat = LocalDateTime.Format {
+    byUnicodePattern(formatPattern)
+}
+
+dateTimeFormat.parse("2023-12-24T23:59:59")
+```
+
+### Parsing and formatting partial, compound or out-of-bounds data
+
+Sometimes, the required string format doesn't fully correspond to any of the
+classes `kotlinx-datetime` provides. In these cases, `DateTimeComponents`, a
+collection of all date-time fields, can be used instead.
+
+```kotlin
+// import kotlinx.datetime.format.*
+
+val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
+    .parse("2024-01")
+println(yearMonth.year)
+println(yearMonth.monthNumber)
+
+val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
+    .parse("2023-01-07T23:16:15.53+02:00")
+println(dateTimeOffset.toUtcOffset()) // +02:00
+println(dateTimeOffset.toLocalDateTime()) // 2023-01-07T23:16:15.53
+```
+
+Occasionally, one can encounter strings where the values are slightly off:
+for example, `23:59:60`, where `60` is an invalid value for the second.
+`DateTimeComponents` allows parsing such values as well and then mutating them
+before conversion.
+
+```kotlin
+val time = DateTimeComponents.Format { time(LocalTime.Formats.ISO) }
+    .parse("23:59:60").apply {
+        if (second == 60) second = 59
+    }.toLocalTime()
+println(time) // 23:59:59
+```
+
+Because `DateTimeComponents` is provided specifically for parsing and
+formatting, there is no way to construct it normally. If one needs to format
+partial, complex or out-of-bounds data, the `format` function allows building
+`DateTimeComponents` specifically for formatting it:
+
+```kotlin
+DateTimeComponents.Formats.RFC_1123.format {
+    // the receiver of this lambda is DateTimeComponents
+    setDate(LocalDate(2023, 1, 7))
+    hour = 23
+    minute = 59
+    second = 60
+    setOffset(UtcOffset(hours = 2))
+} // Sat, 7 Jan 2023 23:59:60 +0200
 ```
 
 ### Instant arithmetic
@@ -388,3 +499,5 @@ For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 
 After that, the project can be opened in IDEA and built with Gradle.
+
+For building and running benchmarks, see [README.md](benchmarks/README.md)
