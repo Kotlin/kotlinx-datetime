@@ -17,9 +17,15 @@ public actual open class TimeZone internal constructor() {
 
     public actual companion object {
 
-        public actual fun currentSystemDefault(): TimeZone =
+        public actual fun currentSystemDefault(): TimeZone {
             // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            RegionTimeZone.currentSystemDefault()
+            val (name, rules) = TimeZoneDatabase.currentSystemDefault()
+            return if (rules == null) {
+                of(name)
+            } else {
+                RegionTimeZone(rules, name)
+            }
+        }
 
         public actual val UTC: FixedOffsetTimeZone = UtcOffset.ZERO.asTimeZone()
 
@@ -59,11 +65,15 @@ public actual open class TimeZone internal constructor() {
             } catch (e: DateTimeFormatException) {
                 throw IllegalTimeZoneException(e)
             }
-            return RegionTimeZone.of(zoneId)
+            return try {
+                RegionTimeZone(TimeZoneDatabase.rulesForId(zoneId), zoneId)
+            } catch (e: Exception) {
+                throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
+            }
         }
 
         public actual val availableZoneIds: Set<String>
-            get() = RegionTimeZone.availableZoneIds
+            get() = TimeZoneDatabase.availableZoneIds
     }
 
     public actual open val id: String
@@ -95,15 +105,10 @@ public actual open class TimeZone internal constructor() {
     override fun toString(): String = id
 }
 
-internal expect class RegionTimeZone : TimeZone {
-    override val id: String
-    override fun atStartOfDay(date: LocalDate): Instant
-    override fun offsetAtImpl(instant: Instant): UtcOffset
-    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime
-
+internal expect class TimeZoneDatabase {
     companion object {
-        fun of(zoneId: String): RegionTimeZone
-        fun currentSystemDefault(): RegionTimeZone
+        fun rulesForId(id: String): TimeZoneRules
+        fun currentSystemDefault(): Pair<String, TimeZoneRules?>
         val availableZoneIds: Set<String>
     }
 }
