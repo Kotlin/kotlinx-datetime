@@ -4,16 +4,17 @@
  */
 
 @file:OptIn(ExperimentalForeignApi::class)
+
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
 import kotlinx.datetime.Instant
 import platform.posix.*
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdbOnFilesystem
+internal actual val systemTzdb: TimeZoneDatabase = TzdbOnFilesystem()
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
-    val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second?.toString()
+    val zoneId = pathToSystemDefault()?.second?.toString()
         ?: throw IllegalStateException("Failed to get the system timezone")
     return zoneId to null
 }
@@ -35,5 +36,3 @@ internal actual fun currentTime(): Instant = memScoped {
         throw IllegalStateException("The readings from the system clock are not representable as an Instant")
     }
 }
-
-private val tzdbOnFilesystem: TzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))

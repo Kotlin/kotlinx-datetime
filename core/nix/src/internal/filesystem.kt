@@ -53,6 +53,16 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
     }
 }
 
+internal fun Path.chaseSymlinks(maxDepth: Int = 100): Path {
+    var realPath = this
+    var depth = maxDepth
+    while (true) {
+        realPath = realPath.readLink() ?: break
+        if (depth-- == 0) throw RuntimeException("Too many levels of symbolic links")
+    }
+    return realPath
+}
+
 // `stat(2)` lists the other available fields
 internal interface PathInfo {
     val isDirectory: Boolean

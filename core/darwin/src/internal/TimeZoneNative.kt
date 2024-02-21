@@ -12,7 +12,9 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdbOnFilesystem
+internal actual val systemTzdb: TimeZoneDatabase = TzdbOnFilesystem(Path.fromString(defaultTzdbPath()))
+
+internal expect fun defaultTzdbPath(): String
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
     /* The framework has its own cache of the system timezone. Calls to
@@ -69,7 +71,3 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
 }
 
 internal actual fun currentTime(): Instant = NSDate.date().toKotlinInstant()
-
-private val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString(defaultTzdbPath()))
-
-internal expect fun defaultTzdbPath(): String
