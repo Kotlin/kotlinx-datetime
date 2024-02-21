@@ -1,26 +1,18 @@
 /*
- * Copyright 2019-2023 JetBrains s.r.o. and contributors.
+ * Copyright 2019-2024 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+
 @file:OptIn(ExperimentalForeignApi::class)
-package kotlinx.datetime
+package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
-import kotlinx.datetime.internal.*
+import kotlinx.datetime.*
 import platform.posix.*
 
-internal actual class TimeZoneDatabase {
-    actual companion object {
-        actual fun rulesForId(id: String): TimeZoneRules = tzdbInRegistry.rulesForId(id)
+internal actual val systemTzdb: TimeZoneDatabase get() = tzdbInRegistry
 
-        actual fun currentSystemDefault(): Pair<String, TimeZoneRules?> = tzdbInRegistry.currentSystemDefault()
-
-        actual val availableZoneIds: Set<String>
-            get() = tzdbInRegistry.availableTimeZoneIds()
-    }
-}
-
-private val tzdbInRegistry = TzdbInRegistry()
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> = tzdbInRegistry.currentSystemDefault()
 
 internal actual fun currentTime(): Instant = memScoped {
     val tm = alloc<timespec>()
@@ -33,3 +25,5 @@ internal actual fun currentTime(): Instant = memScoped {
         throw IllegalStateException("The readings from the system clock (${tm.tv_sec} seconds, ${tm.tv_nsec} nanoseconds) are not representable as an Instant")
     }
 }
+
+private val tzdbInRegistry = TzdbInRegistry()

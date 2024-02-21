@@ -2,15 +2,15 @@
  * Copyright 2019-2023 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
-import kotlinx.datetime.internal.*
+import platform.posix.*
 import platform.windows.*
 
-internal class TzdbInRegistry {
+internal class TzdbInRegistry: TimeZoneDatabase {
 
     // TODO: starting version 1703 of Windows 10, the ICU library is also bundled, with more accurate/ timezone information.
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
@@ -45,13 +45,13 @@ internal class TzdbInRegistry {
         }
     }
 
-    internal fun rulesForId(id: String): TimeZoneRules {
+    override fun rulesForId(id: String): TimeZoneRules {
         val standardName = standardToWindows[id] ?: throw IllegalTimeZoneException("Unknown time zone $id")
         return windowsToRules[standardName]
                 ?: throw IllegalTimeZoneException("The rules for time zone $id are absent in the Windows registry")
     }
 
-    internal fun availableTimeZoneIds(): Set<String> = standardToWindows.filter {
+    override fun availableTimeZoneIds(): Set<String> = standardToWindows.filter {
         windowsToRules.containsKey(it.value)
     }.keys
 

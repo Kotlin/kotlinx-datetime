@@ -4,25 +4,18 @@
  */
 
 @file:OptIn(ExperimentalForeignApi::class)
-package kotlinx.datetime
+package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
-import kotlinx.datetime.internal.*
+import kotlinx.datetime.Instant
 import platform.posix.*
 
-internal actual class TimeZoneDatabase {
-    actual companion object {
-        actual fun rulesForId(id: String): TimeZoneRules = tzdbOnFilesystem.rulesForId(id)
+internal actual val systemTzdb: TimeZoneDatabase get() = tzdbOnFilesystem
 
-        actual fun currentSystemDefault(): Pair<String, TimeZoneRules?> {
-            val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second?.toString()
-                ?: throw IllegalStateException("Failed to get the system timezone")
-            return zoneId to null
-        }
-
-        actual val availableZoneIds: Set<String>
-            get() = tzdbOnFilesystem.availableTimeZoneIds()
-    }
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
+    val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second?.toString()
+        ?: throw IllegalStateException("Failed to get the system timezone")
+    return zoneId to null
 }
 
 @OptIn(UnsafeNumber::class)
@@ -43,4 +36,4 @@ internal actual fun currentTime(): Instant = memScoped {
     }
 }
 
-private val tzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))
+private val tzdbOnFilesystem: TzdbOnFilesystem = TzdbOnFilesystem(Path.fromString("/usr/share/zoneinfo"))
