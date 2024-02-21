@@ -19,7 +19,7 @@ public actual open class TimeZone internal constructor() {
 
         public actual fun currentSystemDefault(): TimeZone {
             // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            val (name, rules) = TimeZoneDatabase.currentSystemDefault()
+            val (name, rules) = currentSystemDefaultZone()
             return if (rules == null) {
                 of(name)
             } else {
@@ -66,14 +66,14 @@ public actual open class TimeZone internal constructor() {
                 throw IllegalTimeZoneException(e)
             }
             return try {
-                RegionTimeZone(TimeZoneDatabase.rulesForId(zoneId), zoneId)
+                RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
             } catch (e: Exception) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
             }
         }
 
         public actual val availableZoneIds: Set<String>
-            get() = TimeZoneDatabase.availableZoneIds
+            get() = systemTzdb.availableTimeZoneIds()
     }
 
     public actual open val id: String
@@ -104,15 +104,6 @@ public actual open class TimeZone internal constructor() {
 
     override fun toString(): String = id
 }
-
-internal expect class TimeZoneDatabase {
-    companion object {
-        fun rulesForId(id: String): TimeZoneRules
-        fun currentSystemDefault(): Pair<String, TimeZoneRules?>
-        val availableZoneIds: Set<String>
-    }
-}
-
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone internal constructor(public actual val offset: UtcOffset, override val id: String) : TimeZone() {

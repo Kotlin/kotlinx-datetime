@@ -127,8 +127,6 @@ private const val MAX_SECOND = 31494816403199L // +1000000-12-31T23:59:59
 
 private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
 
-internal expect fun currentTime(): Instant
-
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
