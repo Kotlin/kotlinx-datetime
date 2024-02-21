@@ -10,7 +10,9 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
-internal actual val systemTzdb: TimeZoneDatabase = TzdbOnFilesystem(Path.fromString(defaultTzdbPath()))
+internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
+
+private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 
 internal expect fun defaultTzdbPath(): String
 

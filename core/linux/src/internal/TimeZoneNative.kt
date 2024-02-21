@@ -5,7 +5,9 @@
 
 package kotlinx.datetime.internal
 
-internal actual val systemTzdb: TimeZoneDatabase = TzdbOnFilesystem()
+internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
+
+private val tzdb = runCatching { TzdbOnFilesystem() }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
     val zoneId = pathToSystemDefault()?.second?.toString()
