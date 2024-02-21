@@ -7,8 +7,6 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
@@ -65,9 +63,5 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
           that's hard to avoid.
     */
     NSTimeZone.resetSystemTimeZone()
-    val zone = NSTimeZone.systemTimeZone
-    val zoneId = zone.name
-    return zoneId to null
+    return NSTimeZone.systemTimeZone.name to null
 }
-
-internal actual fun currentTime(): Instant = NSDate.date().toKotlinInstant()
