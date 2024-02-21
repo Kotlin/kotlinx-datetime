@@ -10,52 +10,19 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.internal.*
 import platform.posix.*
 
-internal actual class RegionTimeZone(private val tzid: TimeZoneRules, actual override val id: String) : TimeZone() {
+internal actual class TimeZoneDatabase {
     actual companion object {
-        actual fun of(zoneId: String): RegionTimeZone = try {
-            RegionTimeZone(tzdbOnFilesystem.rulesForId(zoneId), zoneId)
-        } catch (e: Exception) {
-            throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
-        }
+        actual fun rulesForId(id: String): TimeZoneRules = tzdbOnFilesystem.rulesForId(id)
 
-        actual fun currentSystemDefault(): RegionTimeZone {
-            val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second
+        actual fun currentSystemDefault(): Pair<String, TimeZoneRules?> {
+            val zoneId = tzdbOnFilesystem.currentSystemDefault()?.second?.toString()
                 ?: throw IllegalStateException("Failed to get the system timezone")
-            return of(zoneId.toString())
+            return zoneId to null
         }
 
         actual val availableZoneIds: Set<String>
             get() = tzdbOnFilesystem.availableTimeZoneIds()
     }
-
-    actual override fun atStartOfDay(date: LocalDate): Instant = memScoped {
-        val ldt = LocalDateTime(date, LocalTime.MIN)
-        when (val info = tzid.infoAtDatetime(ldt)) {
-            is OffsetInfo.Regular -> ldt.toInstant(info.offset)
-            is OffsetInfo.Gap -> info.start
-            is OffsetInfo.Overlap -> ldt.toInstant(info.offsetBefore)
-        }
-    }
-
-    actual override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime =
-        when (val info = tzid.infoAtDatetime(dateTime)) {
-            is OffsetInfo.Regular -> ZonedDateTime(dateTime, this, info.offset)
-            is OffsetInfo.Gap -> {
-                try {
-                    ZonedDateTime(dateTime.plusSeconds(info.transitionDurationSeconds), this, info.offsetAfter)
-                } catch (e: IllegalArgumentException) {
-                    throw DateTimeArithmeticException(
-                        "Overflow whet correcting the date-time to not be in the transition gap",
-                        e
-                    )
-                }
-            }
-
-            is OffsetInfo.Overlap -> ZonedDateTime(dateTime, this,
-                if (info.offsetAfter == preferred) info.offsetAfter else info.offsetBefore)
-        }
-
-    actual override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 }
 
 @OptIn(UnsafeNumber::class)
