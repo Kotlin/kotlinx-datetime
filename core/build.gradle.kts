@@ -47,13 +47,12 @@ kotlin {
                 // Tier 4 (deprecated, but still in demand)
                 target("linuxArm32Hfp")
             }
-            // the following targets are not supported, as we don't have timezone database implementations for them:
-            /*
-            target("androidNativeArm32")
-            target("androidNativeArm64")
-            target("androidNativeX86")
-            target("androidNativeX64")
-             */
+            common("android") {
+                target("androidNativeArm32")
+                target("androidNativeArm64")
+                target("androidNativeX86")
+                target("androidNativeX64")
+            }
             common("darwin") {
                 common("darwinDevices") {
                     // Tier 1
@@ -157,10 +156,11 @@ kotlin {
                     }
                 }
             }
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
-                // do nothing special
-            }
-            konanTarget.family.isAppleFamily -> {
+
+            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX ||
+                konanTarget.family == org.jetbrains.kotlin.konan.target.Family.ANDROID ||
+                konanTarget.family.isAppleFamily ->
+            {
                 // do nothing special
             }
             else -> {

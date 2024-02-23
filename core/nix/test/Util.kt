@@ -5,6 +5,10 @@
 
 package kotlinx.datetime.test
 
+@OptIn(ExperimentalMultiplatform::class)
+@OptionalExpectation
+expect annotation class NoAndroid()
+
 // od --format=x1 --output-duplicates --address-radix=n --width=16 /usr/share/zoneinfo/Europe/Berlin |
 // sed -e 's/\b\(\w\)/0x\1/g' -e 's/\(\w\)\b/\1,/g'
 // Do not remove the type annotation, otherwise the compiler slows down to a crawl for this file even more.

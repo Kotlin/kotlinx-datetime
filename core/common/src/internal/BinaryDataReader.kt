@@ -42,8 +42,17 @@ internal class BinaryDataReader(private val bytes: ByteArray, private var positi
             (bytes[position + 6].toLong() and 0xFF shl 8) or
             (bytes[position + 7].toLong() and 0xFF).also { position += 8 }
 
-    fun readUtf8String(length: Int) =
-        bytes.decodeToString(position, position + length).also { position += length }
+    fun readUtf8String(exactLength: Int) =
+        bytes.decodeToString(position, position + exactLength).also { position += exactLength }
+
+    fun readNullTerminatedUtf8String(fieldSize: Int): String {
+        var exactLength = 0
+        while (position + exactLength < bytes.size && bytes[position + exactLength] != 0.toByte() && exactLength < fieldSize) {
+            ++exactLength
+        }
+        return bytes.decodeToString(position, position + exactLength)
+            .also { position += fieldSize }
+    }
 
     fun readAsciiChar(): Char = readByte().toInt().toChar()
 
