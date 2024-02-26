@@ -15,7 +15,6 @@ import kotlin.test.*
 class TimeZoneRulesCompleteTest {
     @OptIn(ExperimentalEncodingApi::class)
     @Test
-    @NoAndroid
     fun iterateOverAllTimezones() {
         val root = Path.fromString("/usr/share/zoneinfo")
         val tzdb = TzdbOnFilesystem(root)
