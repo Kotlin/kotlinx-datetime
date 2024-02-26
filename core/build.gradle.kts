@@ -47,7 +47,7 @@ kotlin {
                 // Tier 4 (deprecated, but still in demand)
                 target("linuxArm32Hfp")
             }
-            common("android") {
+            common("androidNative") {
                 target("androidNativeArm32")
                 target("androidNativeArm64")
                 target("androidNativeX86")
