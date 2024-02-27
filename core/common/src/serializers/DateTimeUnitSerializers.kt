@@ -101,7 +101,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
                 }
             }
         }
-        if (!seen) throw MissingFieldException(missingField = "days", serialName = TimeBasedDateTimeUnitSerializer.descriptor.serialName)
+        if (!seen) throw MissingFieldException(missingField = "days", serialName = descriptor.serialName)
         return DateTimeUnit.DayBased(days)
     }
 }
