@@ -23,7 +23,7 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("TimeBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.TimeBased") {
             element<Long>("nanoseconds")
         }
     }
@@ -69,7 +69,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("DayBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.DayBased") {
             element<Int>("days")
         }
     }
@@ -115,7 +115,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("MonthBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.MonthBased") {
             element<Int>("months")
         }
     }

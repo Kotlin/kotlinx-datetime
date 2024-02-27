@@ -19,7 +19,7 @@ import kotlinx.serialization.encoding.*
 public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("DateTimePeriod") {
+        buildClassSerialDescriptor("kotlinx.datetime.DateTimePeriod") {
             element<Int>("years", isOptional = true)
             element<Int>("months", isOptional = true)
             element<Int>("days", isOptional = true)
@@ -81,7 +81,7 @@ public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 public object DateTimePeriodIso8601Serializer: KSerializer<DateTimePeriod> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("DateTimePeriod", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.DateTimePeriod", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): DateTimePeriod =
         DateTimePeriod.parse(decoder.decodeString())
@@ -110,7 +110,7 @@ public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
     private fun unexpectedNonzero(fieldName: String, value: Int) = unexpectedNonzero(fieldName, value.toLong())
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("DatePeriod") {
+        buildClassSerialDescriptor("kotlinx.datetime.DatePeriod") {
             element<Int>("years", isOptional = true)
             element<Int>("months", isOptional = true)
             element<Int>("days", isOptional = true)
@@ -166,7 +166,7 @@ public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 public object DatePeriodIso8601Serializer: KSerializer<DatePeriod> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("DatePeriod", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.DatePeriod", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): DatePeriod =
         when (val period = DateTimePeriod.parse(decoder.decodeString())) {

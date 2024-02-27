@@ -16,8 +16,9 @@ import kotlinx.serialization.internal.*
  *
  * JSON example: `"JANUARY"`
  */
+@Suppress("EnumValuesSoftDeprecate") // createEnumSerializer requires an array
 public object MonthSerializer : KSerializer<Month> by createEnumSerializer<Month>(
-    "kotlinx.datetime.serializers.Month",
+    "kotlinx.datetime.Month",
     Month.values())
 
 // Until https://github.com/Kotlin/kotlinx.serialization/issues/2459 is resolved

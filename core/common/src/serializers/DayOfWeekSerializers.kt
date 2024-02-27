@@ -16,7 +16,8 @@ import kotlinx.serialization.internal.*
  *
  * JSON example: `"MONDAY"`
  */
+@Suppress("EnumValuesSoftDeprecate") // createEnumSerializer requires an array
 public object DayOfWeekSerializer : KSerializer<DayOfWeek> by createEnumSerializer<DayOfWeek>(
-    "kotlinx.datetime.serializers.DayOfWeek",
+    "kotlinx.datetime.DayOfWeek",
     DayOfWeek.values()
 )

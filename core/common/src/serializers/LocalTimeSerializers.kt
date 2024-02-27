@@ -21,7 +21,7 @@ import kotlinx.serialization.encoding.*
 public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalTime", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): LocalTime =
         LocalTime.parse(decoder.decodeString())
@@ -39,7 +39,7 @@ public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("LocalTime") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalTime") {
             element<Short>("hour")
             element<Short>("minute")
             element<Short>("second", isOptional = true)
