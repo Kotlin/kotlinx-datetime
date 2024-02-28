@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -21,7 +21,7 @@ import kotlinx.serialization.encoding.*
 public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDate", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): LocalDate =
         LocalDate.parse(decoder.decodeString())
@@ -40,14 +40,13 @@ public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
 public object LocalDateComponentSerializer: KSerializer<LocalDate> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("LocalDate") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalDate") {
             element<Int>("year")
             element<Short>("month")
             element<Short>("day")
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDate =
         decoder.decodeStructure(descriptor) {
             var year: Int? = null
@@ -59,12 +58,12 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
                     1 -> month = decodeShortElement(descriptor, 1)
                     2 -> day = decodeShortElement(descriptor, 2)
                     CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                    else -> throw SerializationException("Unexpected index: $index")
+                    else -> throwUnknownIndexException(index)
                 }
             }
-            if (year == null) throw MissingFieldException("year")
-            if (month == null) throw MissingFieldException("month")
-            if (day == null) throw MissingFieldException("day")
+            if (year == null) throw MissingFieldException(missingField = "year", serialName = descriptor.serialName)
+            if (month == null) throw MissingFieldException(missingField = "month", serialName = descriptor.serialName)
+            if (day == null) throw MissingFieldException(missingField = "day", serialName = descriptor.serialName)
             LocalDate(year, month.toInt(), day.toInt())
         }
 

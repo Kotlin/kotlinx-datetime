@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -21,7 +21,7 @@ import kotlinx.serialization.encoding.*
 public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDateTime", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): LocalDateTime =
         LocalDateTime.parse(decoder.decodeString())
@@ -40,7 +40,7 @@ public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
 public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("LocalDateTime") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalDateTime") {
             element<Int>("year")
             element<Short>("month")
             element<Short>("day")
@@ -51,7 +51,6 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): LocalDateTime =
         decoder.decodeStructure(descriptor) {
             var year: Int? = null
@@ -74,11 +73,11 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
                     else -> throw SerializationException("Unexpected index: $index")
                 }
             }
-            if (year == null) throw MissingFieldException("year")
-            if (month == null) throw MissingFieldException("month")
-            if (day == null) throw MissingFieldException("day")
-            if (hour == null) throw MissingFieldException("hour")
-            if (minute == null) throw MissingFieldException("minute")
+            if (year == null) throw MissingFieldException(missingField = "year", serialName = descriptor.serialName)
+            if (month == null) throw MissingFieldException(missingField = "month", serialName = descriptor.serialName)
+            if (day == null) throw MissingFieldException(missingField = "day", serialName = descriptor.serialName)
+            if (hour == null) throw MissingFieldException(missingField = "hour", serialName = descriptor.serialName)
+            if (minute == null) throw MissingFieldException(missingField = "minute", serialName = descriptor.serialName)
             LocalDateTime(year, month.toInt(), day.toInt(), hour.toInt(), minute.toInt(), second.toInt(), nanosecond)
         }
 

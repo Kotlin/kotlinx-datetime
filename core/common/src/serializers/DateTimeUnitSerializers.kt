@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -23,7 +23,7 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("TimeBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.TimeBased") {
             element<Long>("nanoseconds")
         }
     }
@@ -35,7 +35,6 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.TimeBased {
         var seen = false
         var nanoseconds = 0L
@@ -51,12 +50,12 @@ public object TimeBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.TimeBase
                             seen = true
                         }
                         CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                        else -> throw UnknownFieldException(elementIndex)
+                        else -> throwUnknownIndexException(elementIndex)
                     }
                 }
             }
         }
-        if (!seen) throw MissingFieldException("nanoseconds")
+        if (!seen) throw MissingFieldException(missingField = "nanoseconds", serialName = descriptor.serialName)
         return DateTimeUnit.TimeBased(nanoseconds)
     }
 }
@@ -70,7 +69,7 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("DayBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.DayBased") {
             element<Int>("days")
         }
     }
@@ -82,7 +81,6 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.DayBased {
         var seen = false
         var days = 0
@@ -98,12 +96,12 @@ public object DayBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.DayBased>
                             seen = true
                         }
                         CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                        else -> throw UnknownFieldException(elementIndex)
+                        else -> throwUnknownIndexException(elementIndex)
                     }
                 }
             }
         }
-        if (!seen) throw MissingFieldException("days")
+        if (!seen) throw MissingFieldException(missingField = "days", serialName = descriptor.serialName)
         return DateTimeUnit.DayBased(days)
     }
 }
@@ -117,7 +115,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     override val descriptor: SerialDescriptor by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        buildClassSerialDescriptor("MonthBased") {
+        buildClassSerialDescriptor("kotlinx.datetime.MonthBased") {
             element<Int>("months")
         }
     }
@@ -129,7 +127,6 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
     override fun deserialize(decoder: Decoder): DateTimeUnit.MonthBased {
         var seen = false
         var months = 0
@@ -145,12 +142,12 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
                             seen = true
                         }
                         CompositeDecoder.DECODE_DONE -> break@loop // https://youtrack.jetbrains.com/issue/KT-42262
-                        else -> throw UnknownFieldException(elementIndex)
+                        else -> throwUnknownIndexException(elementIndex)
                     }
                 }
             }
         }
-        if (!seen) throw MissingFieldException("months")
+        if (!seen) throw MissingFieldException(missingField = "months", serialName = descriptor.serialName)
         return DateTimeUnit.MonthBased(months)
     }
 }
@@ -160,7 +157,7 @@ public object MonthBasedDateTimeUnitSerializer: KSerializer<DateTimeUnit.MonthBa
  *
  * JSON example: `{"type":"DayBased","days":15}`
  */
-@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // https://github.com/Kotlin/kotlinx.serialization/issues/2460
 @OptIn(InternalSerializationApi::class)
 public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit.DateBased>() {
 
@@ -197,9 +194,9 @@ public object DateBasedDateTimeUnitSerializer: AbstractPolymorphicSerializer<Dat
  *
  * JSON example: `{"type":"MonthBased","days":15}`
  */
-@Suppress("EXPERIMENTAL_API_USAGE_ERROR", "INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE") // https://github.com/Kotlin/kotlinx.serialization/issues/2460
 @OptIn(InternalSerializationApi::class)
-public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit>() {
+public object DateTimeUnitSerializer : AbstractPolymorphicSerializer<DateTimeUnit>() {
 
     // https://youtrack.jetbrains.com/issue/KT-63939
     private val impl by lazy(LazyThreadSafetyMode.PUBLICATION) {
@@ -224,4 +221,8 @@ public object DateTimeUnitSerializer: AbstractPolymorphicSerializer<DateTimeUnit
     override val descriptor: SerialDescriptor
         get() = impl.descriptor
 
+}
+
+internal fun throwUnknownIndexException(index: Int): Nothing {
+    throw SerializationException("An unknown field for index $index")
 }
