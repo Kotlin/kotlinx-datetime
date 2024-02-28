@@ -31,6 +31,9 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
             else -> format.parse(input)
         }
 
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(offsetString: String): UtcOffset = parse(input = offsetString)
+
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
             UtcOffsetFormat.build(block)
