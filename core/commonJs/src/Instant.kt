@@ -90,6 +90,9 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
                 }
             }
 
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(isoString: String): Instant = parse(input = isoString)
+
         /** A workaround for the string representations of Instant that have an offset of the form
          * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
         private fun fixOffsetRepresentation(isoString: String): String {
