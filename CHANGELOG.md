@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.6.0-RC.2
+
+- Support Android NDK targets ([#344](https://github.com/Kotlin/kotlinx-datetime/pull/344))
+- Ensure ABI compatibility with v0.5.0 ([#357](https://github.com/Kotlin/kotlinx-datetime/pull/357))
+
 ## 0.6.0-RC
 
 - Introduce the widely requested API for locale-invariant parsing and formatting ([#343](https://github.com/Kotlin/kotlinx-datetime/pull/343))
