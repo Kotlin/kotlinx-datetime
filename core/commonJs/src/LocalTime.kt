@@ -56,6 +56,9 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
                 format.parse(input)
             }
 
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(isoString: String): LocalTime = parse(input = isoString)
+
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jsTry { jtLocalTime.ofSecondOfDay(secondOfDay, 0) }.let(::LocalTime)
         } catch (e: Throwable) {
