@@ -37,46 +37,47 @@ kotlin {
     explicitApi()
 
     infra {
-        common("nix") {
+        common("tzfile") {
             // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
-            common("linux") {
-                // Tier 1
-                target("linuxX64")
-                // Tier 2
-                target("linuxArm64")
-                // Tier 4 (deprecated, but still in demand)
-                target("linuxArm32Hfp")
+            common("tzdbOnFilesystem") {
+                common("linux") {
+                    // Tier 1
+                    target("linuxX64")
+                    // Tier 2
+                    target("linuxArm64")
+                    // Tier 4 (deprecated, but still in demand)
+                    target("linuxArm32Hfp")
+                }
+                common("darwin") {
+                    common("darwinDevices") {
+                        // Tier 1
+                        target("macosX64")
+                        target("macosArm64")
+                        // Tier 2
+                        target("watchosX64")
+                        target("watchosArm32")
+                        target("watchosArm64")
+                        target("tvosX64")
+                        target("tvosArm64")
+                        target("iosArm64")
+                        // Tier 3
+                        target("watchosDeviceArm64")
+                    }
+                    common("darwinSimulator") {
+                        // Tier 1
+                        target("iosSimulatorArm64")
+                        target("iosX64")
+                        // Tier 2
+                        target("watchosSimulatorArm64")
+                        target("tvosSimulatorArm64")
+                    }
+                }
             }
-            // the following targets are not supported, as we don't have timezone database implementations for them:
-            /*
-            target("androidNativeArm32")
-            target("androidNativeArm64")
-            target("androidNativeX86")
-            target("androidNativeX64")
-             */
-            common("darwin") {
-                common("darwinDevices") {
-                    // Tier 1
-                    target("macosX64")
-                    target("macosArm64")
-                    // Tier 2
-                    target("watchosX64")
-                    target("watchosArm32")
-                    target("watchosArm64")
-                    target("tvosX64")
-                    target("tvosArm64")
-                    target("iosArm64")
-                    // Tier 3
-                    target("watchosDeviceArm64")
-                }
-                common("darwinSimulator") {
-                    // Tier 1
-                    target("iosSimulatorArm64")
-                    target("iosX64")
-                    // Tier 2
-                    target("watchosSimulatorArm64")
-                    target("tvosSimulatorArm64")
-                }
+            common("androidNative") {
+                target("androidNativeArm32")
+                target("androidNativeArm64")
+                target("androidNativeX86")
+                target("androidNativeX64")
             }
         }
         // Tier 3
@@ -157,10 +158,11 @@ kotlin {
                     }
                 }
             }
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
-                // do nothing special
-            }
-            konanTarget.family.isAppleFamily -> {
+
+            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX ||
+                konanTarget.family == org.jetbrains.kotlin.konan.target.Family.ANDROID ||
+                konanTarget.family.isAppleFamily ->
+            {
                 // do nothing special
             }
             else -> {

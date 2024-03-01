@@ -27,5 +27,8 @@ may apply:
       https://raw.githubusercontent.com/unicode-org/cldr/master/common/supplemental/windowsZones.xml
     - License: Unicode ([license/thirdparty/unicode_license.txt](thirdparty/unicode_license.txt))
 
+- Path: `core/androidNative/src`
+    - Origin: implementation is based on the bionic project.
+    - License: BSD ([license/thirdparty/bionic_license.txt](thirdparty/bionic_license.txt))
 
 [threetenbp]: thirdparty/threetenbp_license.txt

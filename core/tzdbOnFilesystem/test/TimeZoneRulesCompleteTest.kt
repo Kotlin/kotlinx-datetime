@@ -67,7 +67,7 @@ private inline fun runUnixCommand(command: String): Sequence<String> = sequence 
             // read line by line
             while (true) {
                 val linePtr = alloc<CPointerVar<ByteVar>>()
-                val nPtr = alloc<ULongVar>()
+                val nPtr = alloc<size_tVar>()
                 try {
                     val result = getline(linePtr.ptr, nPtr.ptr, pipe)
                     if (result != (-1).convert<ssize_t>()) {
