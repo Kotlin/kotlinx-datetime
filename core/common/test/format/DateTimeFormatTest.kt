@@ -127,4 +127,14 @@ class DateTimeFormatTest {
             DateTimeComponents.Format { chars(format) }.parse(format)
         }
     }
+
+    @Test
+    fun testCreatingAmbiguousFormat() {
+        assertFailsWith< IllegalArgumentException> {
+            DateTimeComponents.Format {
+                monthNumber(Padding.NONE)
+                dayOfMonth(Padding.NONE)
+            }
+        }
+    }
 }

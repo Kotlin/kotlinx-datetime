@@ -231,8 +231,8 @@ internal open class ConcatenatedFormatStructure<in T>(
 
 internal class CachedFormatStructure<in T>(formats: List<NonConcatenatedFormatStructure<T>>) :
     ConcatenatedFormatStructure<T>(formats) {
-    private val cachedFormatter: FormatterStructure<T> by lazy { super.formatter() }
-    private val cachedParser: ParserStructure<T> by lazy { super.parser() }
+    private val cachedFormatter: FormatterStructure<T> = super.formatter()
+    private val cachedParser: ParserStructure<T> = super.parser()
 
     override fun formatter(): FormatterStructure<T> = cachedFormatter
 
