@@ -32,13 +32,13 @@ class DateTimeComponentsFormatTest {
                 setOffset(UtcOffset.ZERO)
             },
             format.parse("Tue, 40 Jun 2008 11:05:30 GMT"))
-        assertFailsWith<DateTimeFormatException> { format.parse("Bue, 3 Jun 2008 11:05:30 GMT") }
+        format.assertCanNotParse("Bue, 3 Jun 2008 11:05:30 GMT")
     }
 
     @Test
     fun testInconsistentLocalTime() {
         val formatTime = LocalTime.Format {
-            hour(); char(':'); minute();
+            hour(); char(':'); minute()
             chars(" ("); amPmHour(); char(':'); minute(); char(' '); amPmMarker("AM", "PM"); char(')')
         }
         val format = DateTimeComponents.Format { time(formatTime) }
@@ -53,16 +53,16 @@ class DateTimeComponentsFormatTest {
             DateTimeComponents().apply { hour = 23; hourOfAmPm = 11; minute = 15; amPm = AmPmMarker.AM },
             format.parse(time2)
         )
-        assertFailsWith<IllegalArgumentException> { formatTime.parse(time2) }
+        formatTime.assertCanNotParse(time2)
         val time3 = "23:15 (10:15 PM)" // a time with an inconsistent number of hours
         assertDateTimeComponentsEqual(
             DateTimeComponents().apply { hour = 23; hourOfAmPm = 10; minute = 15; amPm = AmPmMarker.PM },
             format.parse(time3)
         )
-        assertFailsWith<IllegalArgumentException> { formatTime.parse(time3) }
+        formatTime.assertCanNotParse(time3)
         val time4 = "23:15 (11:16 PM)" // a time with an inconsistently duplicated field
-        assertFailsWith<IllegalArgumentException> { format.parse(time4) }
-        assertFailsWith<IllegalArgumentException> { formatTime.parse(time4) }
+        format.assertCanNotParse(time4)
+        formatTime.assertCanNotParse(time4)
     }
 
     @Test
@@ -95,7 +95,7 @@ class DateTimeComponentsFormatTest {
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
         assertEquals(berlin, bag.timeZoneId)
-        assertFailsWith<DateTimeFormatException> { format.parse("2008-06-03T11:05:30.123456789+01:00[Mars/New_York]") }
+        format.assertCanNotParse("2008-06-03T11:05:30.123456789+01:00[Mars/New_York]")
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("2008-06-03T11:05:30.123456789+01:00[$zone]").timeZoneId)
         }

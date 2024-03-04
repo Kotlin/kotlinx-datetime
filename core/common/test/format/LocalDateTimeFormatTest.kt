@@ -15,11 +15,11 @@ class LocalDateTimeFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalDateTime.Formats.ISO
-        assertEquals(LocalDateTime(2023, 2, 28, 15, 36), format.parse("2023-02-28T15:36"))
-        val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40T15:36") }
-        assertContains(error.message!!, "40")
-        assertFailsWith<DateTimeFormatException> { format.parse("2023-02-XXT15:36") }
+        LocalDateTime.Formats.ISO.apply {
+            assertEquals(LocalDateTime(2023, 2, 28, 15, 36), parse("2023-02-28T15:36"))
+            assertCanNotParse("2023-02-40T15:36")
+            assertCanNotParse("2023-02-XXT15:36")
+        }
     }
 
     @Test
@@ -163,7 +163,7 @@ class LocalDateTimeFormatTest {
             put(LocalDateTime(123456, 1, 1, 13, 44, 0, 0), ("+123456- 1- 1 13:44: 0" to setOf()))
             put(LocalDateTime(-123456, 1, 1, 13, 44, 0, 0), ("-123456- 1- 1 13:44: 0" to setOf()))
         }
-        val format = LocalDateTime.Format {
+        LocalDateTime.Format {
             year(Padding.SPACE)
             char('-')
             monthNumber(Padding.SPACE)
@@ -175,17 +175,18 @@ class LocalDateTimeFormatTest {
             minute(Padding.SPACE)
             char(':')
             second(Padding.SPACE)
+        }.apply {
+            test(dateTimes, this)
+            parse(" 008- 7- 5  0: 0: 0")
+            assertCanNotParse("  008- 7- 5  0: 0: 0")
+            assertCanNotParse("  8- 7- 5  0: 0: 0")
+            assertCanNotParse(" 008-  7- 5  0: 0: 0")
+            assertCanNotParse(" 008-7- 5  0: 0: 0")
+            assertCanNotParse("+008- 7- 5  0: 0: 0")
+            assertCanNotParse("  -08- 7- 5  0: 0: 0")
+            assertCanNotParse("   -08- 7- 5  0: 0: 0")
+            assertCanNotParse("-8- 7- 5  0: 0: 0")
         }
-        test(dateTimes, format)
-        format.parse(" 008- 7- 5  0: 0: 0")
-        assertFailsWith<DateTimeFormatException> { format.parse("  008- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse("  8- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse(" 008-  7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse(" 008-7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse("+008- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse("  -08- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse("   -08- 7- 5  0: 0: 0") }
-        assertFailsWith<DateTimeFormatException> { format.parse("-8- 7- 5  0: 0: 0") }
     }
 
     @Test
