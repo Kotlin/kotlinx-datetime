@@ -108,7 +108,7 @@ internal abstract class NamedUnsignedIntFieldFormatDirective<in Target>(
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(
-                StringSetParserOperation(values, AssignableString(), "One of $values for $name")
+                StringSetParserOperation(values, AssignableString(), "one of $values for $name")
             ), emptyList()
         )
 }
@@ -142,7 +142,7 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
     override fun parser(): ParserStructure<Target> =
         ParserStructure(
             listOf(
-                StringSetParserOperation(mapping.values, AssignableString(), "One of ${mapping.values} for $name")
+                StringSetParserOperation(mapping.values, AssignableString(), "one of ${mapping.values} for $name")
             ), emptyList()
         )
 }

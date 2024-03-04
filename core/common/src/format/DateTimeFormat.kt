@@ -115,7 +115,10 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
         try {
             return valueFromIntermediate(matched)
         } catch (e: IllegalArgumentException) {
-            throw DateTimeFormatException(e.message!!)
+            throw DateTimeFormatException(when (val message = e.message) {
+                null -> "The value parsed from '$input' is invalid"
+                else -> "$message (when parsing '$input')"
+            }, e)
         }
     }
 
