@@ -12,6 +12,8 @@ import kotlinx.datetime.internal.format.parser.Copyable
 
 /**
  * A description of how month names are formatted.
+ *
+ * An empty string can not be a month name.
  */
 public class MonthNames(
     /**
@@ -21,6 +23,7 @@ public class MonthNames(
 ) {
     init {
         require(names.size == 12) { "Month names must contain exactly 12 elements" }
+        names.forEach { require(it.isNotEmpty()) { "A month name can not be empty" } }
     }
 
     /**
@@ -63,6 +66,8 @@ internal fun MonthNames.toKotlinCode(): String = when (this.names) {
 
 /**
  * A description of how day of week names are formatted.
+ *
+ * An empty string can not be a day-of-week name.
  */
 public class DayOfWeekNames(
     /**
@@ -72,6 +77,7 @@ public class DayOfWeekNames(
 ) {
     init {
         require(names.size == 7) { "Day of week names must contain exactly 7 elements" }
+        names.forEach { require(it.isNotEmpty()) { "A month name can not be empty" } }
     }
 
     /**
