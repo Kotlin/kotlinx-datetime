@@ -160,13 +160,17 @@ internal class OptionalFormatStructure<in T>(
             listOf(
                 ConstantFormatStructure<T>(onZero).parser(),
                 ParserStructure(
-                    listOf(
-                        UnconditionalModification {
-                            for (field in fields) {
-                                field.assignDefault(it)
+                    if (fields.isEmpty()) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            UnconditionalModification {
+                                for (field in fields) {
+                                    field.assignDefault(it)
+                                }
                             }
-                        }
-                    ),
+                        )
+                    },
                     emptyList()
                 )
             ).concat()
@@ -176,12 +180,16 @@ internal class OptionalFormatStructure<in T>(
     override fun formatter(): FormatterStructure<T> {
         val formatter = format.formatter()
         val predicate = conjunctionPredicate(fields.map { it.isDefaultComparisonPredicate() })
-        return ConditionalFormatter(
-            listOf(
-                predicate::test to ConstantStringFormatterStructure(onZero),
-                Truth::test to formatter
+        return if (predicate is Truth) {
+            ConstantStringFormatterStructure(onZero)
+        } else {
+            ConditionalFormatter(
+                listOf(
+                    predicate::test to ConstantStringFormatterStructure(onZero),
+                    Truth::test to formatter
+                )
             )
-        )
+        }
     }
 
     private class PropertyWithDefault<in T, E> private constructor(
