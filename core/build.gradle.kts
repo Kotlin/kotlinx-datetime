@@ -128,6 +128,10 @@ kotlin {
         }
     }
 
+    wasmWasi {
+        nodejs()
+    }
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -236,6 +240,14 @@ kotlin {
         }
 
         val nativeTest by getting {
+            dependsOn(nativeAndWasmWasiTest)
+        }
+
+        val wasmWasiMain by getting {
+            dependsOn(nativeAndWasmWasiMain)
+        }
+
+        val wasmWasiTest by getting {
             dependsOn(nativeAndWasmWasiTest)
         }
 

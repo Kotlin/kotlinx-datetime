@@ -7,10 +7,12 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlinx.datetime.test.WasmWasiIgnore
 import kotlin.test.*
 
 class DateTimeComponentsTest {
     @Test
+    @WasmWasiIgnore
     fun testAssigningIllegalValues() {
         val dateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
         for (field in twoDigitFields) {
@@ -30,6 +32,7 @@ class DateTimeComponentsTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testAssigningLegalValues() {
         val dateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
         for (field in twoDigitFields) {
@@ -41,6 +44,7 @@ class DateTimeComponentsTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testGettingInvalidMonth() {
         for (month in 1..12) {
             assertEquals(Month(month), DateTimeComponents().apply { monthNumber = month }.month)

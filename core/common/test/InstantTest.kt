@@ -52,6 +52,7 @@ class InstantTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun instantToLocalDTConversion() {
         val now = Clock.System.now()
         println(now.toLocalDateTime(TimeZone.UTC))
@@ -289,8 +290,8 @@ class InstantTest {
             val instant1 = Instant.fromEpochMilliseconds(millis1)
             val instant2 = Instant.fromEpochMilliseconds(millis2)
 
-            val diff = instant1.periodUntil(instant2, TimeZone.currentSystemDefault())
-            val instant3 = instant1.plus(diff, TimeZone.currentSystemDefault())
+            val diff = instant1.periodUntil(instant2, TimeZone.UTC)
+            val instant3 = instant1.plus(diff, TimeZone.UTC)
 
             if (instant2 != instant3)
                 println("start: $instant1, end: $instant2, start + diff: $instant3, diff: $diff")

@@ -23,6 +23,7 @@ class TimeZoneTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun system() {
         val tz = TimeZone.currentSystemDefault()
         println(tz)
@@ -33,6 +34,7 @@ class TimeZoneTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun available() {
         val allTzIds = TimeZone.availableZoneIds
         assertContains(allTzIds, "Europe/Berlin", "Europe/Berlin not in $allTzIds")
