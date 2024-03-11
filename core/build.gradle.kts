@@ -220,14 +220,23 @@ kotlin {
             dependsOn(commonJsTest)
         }
 
-        val nativeMain by getting {
+        val nativeAndWasmWasiMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
+        val nativeAndWasmWasiTest by creating {
+            dependsOn(commonTest.get())
+        }
+
+        val nativeMain by getting {
+            dependsOn(nativeAndWasmWasiMain)
+        }
+
         val nativeTest by getting {
+            dependsOn(nativeAndWasmWasiTest)
         }
 
         val darwinMain by getting {
