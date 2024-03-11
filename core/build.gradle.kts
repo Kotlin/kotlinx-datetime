@@ -249,6 +249,9 @@ kotlin {
 
         val wasmWasiTest by getting {
             dependsOn(nativeAndWasmWasiTest)
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-timezones-full"))
+            }
         }
 
         val darwinMain by getting {
