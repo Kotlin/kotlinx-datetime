@@ -18,6 +18,27 @@ import kotlinx.serialization.Serializable
  * - `-02`, minus two hours;
  * - `+03:30`, plus three hours and thirty minutes;
  * - `+01:23:45`, plus one hour, 23 minutes, and 45 seconds.
+ *
+ * **Pitfall**: the offset is not a time zone.
+ * It does not contain any information about the time zone's rules, such as daylight-saving-time transitions.
+ * It is just a fixed offset from UTC, something that may be in effect in a given location today but change
+ * tomorrow.
+ * Even if the offset is fixed currently, it may change in the future due to political decisions.
+ *
+ * See [TimeZone] for a type that represents a time zone.
+ *
+ * ### Construction, serialization, and deserialization
+ *
+ * To construct a [UtcOffset] value, use the [UtcOffset] constructor function.
+ * [totalSeconds] returns the number of seconds from UTC.
+ * There is also a [ZERO] constant for the offset of zero.
+ *
+ * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the
+ * ISO 8601 extended format (for example, `+01:30`).
+ *
+ * [parse] and [UtcOffset.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the [UtcOffsetSerializer].
  */
 @Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
@@ -28,7 +49,10 @@ public expect class UtcOffset {
      */
     public val totalSeconds: Int
 
-    // TODO: Declare and document toString/equals/hashCode
+    /**
+     * Returns `true` if [other] is a [UtcOffset] with the same [totalSeconds].
+     */
+    public override fun equals(other: Any?): Boolean
 
     public companion object {
         /**
@@ -46,7 +70,7 @@ public expect class UtcOffset {
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are
          * exceeded.
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffestFormat()): UtcOffset
+        public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()): UtcOffset
 
         /**
          * Creates a new format for parsing and formatting [UtcOffset] values.
@@ -132,7 +156,7 @@ public expect class UtcOffset {
     }
 
     /**
-     * Converts this UTC offset to the extended ISO-8601 string representation.
+     * Converts this UTC offset to the extended ISO-8601 string representation; for example, `+02:30` or `Z`.
      *
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [UtcOffset] from a string.
@@ -151,12 +175,14 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * Constructs a [UtcOffset] from hours, minutes, and seconds components.
  *
  * All components must have the same sign.
+ * Otherwise, [IllegalArgumentException] will be thrown.
  *
- * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes.
+ * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes;
+ * [IllegalArgumentException] will be thrown if this rule is violated.
  * For example, `UtcOffset(hours = 3, minutes = 61)` is invalid.
  *
  * However, the non-null component of the highest order can exceed these bounds,
- * for example, `UtcOffset(minutes = 241)` is valid.
+ * for example, `UtcOffset(minutes = 241)` and `UtcOffset(seconds = -3600)` are both valid.
  *
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.
  * @throws IllegalArgumentException if components have different signs.
@@ -169,8 +195,11 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
 
 /**
  * Returns the fixed-offset time zone with the given UTC offset.
+ *
+ * **Pitfall**: if the offset is not fixed, the returned time zone will not reflect the changes in the offset.
+ * Use [TimeZone.of] with a IANA timezone name to obtain a time zone that can handle changes in the offset.
  */
 public fun UtcOffset.asTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)
 
 // workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoUtcOffestFormat() = UtcOffset.Formats.ISO
+internal fun getIsoUtcOffsetFormat() = UtcOffset.Formats.ISO

@@ -7,6 +7,9 @@ package kotlinx.datetime
 
 /**
  * The enumeration class representing the days of the week.
+ *
+ * Usually acquired from [LocalDate.dayOfWeek], but can be constructed using the `DayOfWeek` factory function that
+ * accepts the ISO 8601 day number. This number can be obtained from the [isoDayNumber] property.
  */
 public expect enum class DayOfWeek {
     MONDAY,

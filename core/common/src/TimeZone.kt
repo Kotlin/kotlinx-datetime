@@ -14,6 +14,16 @@ import kotlinx.serialization.Serializable
 /**
  * A time zone, provides the conversion between [Instant] and [LocalDateTime] values
  * using a collection of rules specifying which [LocalDateTime] value corresponds to each [Instant].
+ *
+ * A time zone needs can be used in [Instant.toLocalDateTime] and [LocalDateTime.toInstant], and also in
+ * those arithmetic operations on [Instant] that require knowing the calendar.
+ *
+ * A [TimeZone] can be constructed using the [TimeZone.of] function, which accepts the string identifier, like
+ * `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers, see [TimeZone.availableZoneIds].
+ * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
+ *
+ * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
+ * identifier.
  */
 @Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
@@ -24,7 +34,15 @@ public expect open class TimeZone {
      */
     public val id: String
 
-    // TODO: Declare and document toString/equals/hashCode
+    /**
+     * Equivalent to [id].
+     */
+    public override fun toString(): String
+
+    /**
+     * Compares this time zone to the other one. Time zones are equal if their identifier is the same.
+     */
+    public override fun equals(other: Any?): Boolean
 
     public companion object {
         /**
@@ -50,6 +68,9 @@ public expect open class TimeZone {
          * In the IANA Time Zone Database (TZDB) which is used as the default source of time zones,
          * these ids are usually in the form `area/city`, for example, `Europe/Berlin` or `America/Los_Angeles`.
          *
+         * It is guaranteed that passing any value from [availableZoneIds] to this function will return
+         * a valid time zone.
+         *
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
          */
@@ -64,6 +85,13 @@ public expect open class TimeZone {
     /**
      * Return the civil date/time value that this instant has in the time zone provided as an implicit receiver.
      *
+     * The function can be used like this:
+     * ```
+     * with(TimeZone.currentSystemDefault()) {
+     *   Clock.System.now().toLocalDateTime()
+     * }
+     * ```
+     *
      * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
      * is not necessary so.
      *
@@ -76,14 +104,21 @@ public expect open class TimeZone {
     /**
      * Returns an instant that corresponds to this civil date/time value in the time zone provided as an implicit receiver.
      *
-     * Note that the conversion is not always unambiguous. There can be the following possible situations:
-     * - There's only one instant that has this date/time value in the time zone. In this case
-     * the conversion is unambiguous.
-     * - There's no instant that has this date/time value in the time zone. Such situation appears when
-     * the time zone experiences a transition from a lesser to a greater offset. In this case the conversion is performed with
-     * the lesser offset.
-     * - There are two possible instants that can have this date/time components in the time zone. In this case the earlier
-     * instant is returned.
+     * The function can be used like this:
+     * ```
+     * with(TimeZone.currentSystemDefault()) {
+     *   LocalDateTime(2021, 1, 1, 12, 0).toInstant()
+     * }
+     * ```
+     *
+     * Note that the conversion is not always well-defined. There can be the following possible situations:
+     * - There's only one instant that has this date/time value in the [timeZone].
+     *   In this case, the conversion is unambiguous.
+     * - There's no instant that has this date/time value in the [timeZone].
+     *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
+     *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
+     * - There are two possible instants that can have this date/time components in the [timeZone].
+     *   In this case, the earlier instant is returned.
      *
      * @see Instant.toLocalDateTime
      */
@@ -92,9 +127,26 @@ public expect open class TimeZone {
 
 /**
  * A time zone that is known to always have the same offset from UTC.
+ *
+ * [TimeZone.of] will return an instance of this class if the time zone rules are fixed.
+ * For example:
+ * ```
+ * val zone = TimeZone.of("UTC+3")
+ * if (zone is FixedOffsetTimeZone) {
+ *   // implement the more straightforward logic...
+ * } else {
+ *   // ...or handle the general case
+ * }
+ * ```
+ *
+ * Time zones that are [FixedOffsetTimeZone] at some point in time can become non-fixed in the future due to
+ * changes in legislation or other reasons.
  */
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public expect class FixedOffsetTimeZone : TimeZone {
+    /**
+     * Constructs a time zone with the fixed [offset] from UTC.
+     */
     public constructor(offset: UtcOffset)
 
     /**
@@ -106,11 +158,15 @@ public expect class FixedOffsetTimeZone : TimeZone {
     public val totalSeconds: Int
 }
 
-@Deprecated("Use FixedOffsetTimeZone of UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
+@Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
 public typealias ZoneOffset = FixedOffsetTimeZone
 
 /**
  * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
+ *
+ * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics,
+ * because the offset can change over time due to daylight-saving-time transitions and other reasons.
+ * Use [TimeZone] directly with arithmetic operations instead.
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
@@ -132,6 +188,10 @@ public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 /**
  * Returns a civil date/time value that this instant has in the specified [UTC offset][offset].
  *
+ * **Pitfall**: it is typically more robust to use [TimeZone] directly, because the offset can change over time due to
+ * daylight-saving-time transitions and other reasons, so [this] instant may actually correspond to a different offset
+ * in the implied time zone.
+ *
  * @see LocalDateTime.toInstant
  * @see Instant.offsetIn
  */
@@ -139,6 +199,10 @@ internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
 
 /**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
+ *
+ * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics,
+ * because the offset can change over time due to daylight-saving-time transitions and other reasons.
+ * Use [TimeZone] directly with arithmetic operations instead.
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
@@ -149,14 +213,14 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
 /**
  * Returns an instant that corresponds to this civil date/time value in the specified [timeZone].
  *
- * Note that the conversion is not always unambiguous. There can be the following possible situations:
- * - There's only one instant that has this date/time value in the [timeZone]. In this case
- * the conversion is unambiguous.
- * - There's no instant that has this date/time value in the [timeZone]. Such situation appears when
- * the time zone experiences a transition from a lesser to a greater offset. In this case the conversion is performed with
- * the lesser offset.
- * - There are two possible instants that can have this date/time components in the [timeZone]. In this case the earlier
- * instant is returned.
+ * Note that the conversion is not always well-defined. There can be the following possible situations:
+ * - There's only one instant that has this date/time value in the [timeZone].
+ *   In this case, the conversion is unambiguous.
+ * - There's no instant that has this date/time value in the [timeZone].
+ *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
+ *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
+ * - There are two possible instants that can have this date/time components in the [timeZone].
+ *   In this case, the earlier instant is returned.
  *
  * @see Instant.toLocalDateTime
  */
@@ -173,7 +237,7 @@ public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
  * Returns an instant that corresponds to the start of this date in the specified [timeZone].
  *
  * Note that it's not equivalent to `atTime(0, 0).toInstant(timeZone)`
- * because a day does not always start at the fixed time 0:00:00.
+ * because a day does not always start at the fixed time 00:00:00.
  * For example, if due do daylight saving time, clocks were shifted from 23:30
  * of one day directly to 00:30 of the next day, skipping the midnight, then
  * `atStartOfDayIn` would return the `Instant` corresponding to 00:30, whereas

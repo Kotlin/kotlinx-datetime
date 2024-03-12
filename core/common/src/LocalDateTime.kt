@@ -5,24 +5,85 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.LocalDate.Companion.parse
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.datetime.serializers.LocalDateTimeComponentSerializer
 import kotlinx.serialization.Serializable
 
 /**
  * The representation of a specific civil date and time without a reference to a particular time zone.
  *
  * This class does not describe specific *moments in time*, which are represented as [Instant] values.
- * Instead, its instances can be thought of as clock readings, something that an observer in a particular time zone
- * could witness.
+ * Instead, its instances can be thought of as clock readings, something that someone could observe in their time zone.
  * For example, `2020-08-30T18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
- * this on their clocks at different times.
+ * this on their clocks at different times, but it is a [LocalDateTime].
  *
  * The main purpose of this class is to provide human-readable representations of [Instant] values, or to transfer them
  * as data.
+ * Instances of [LocalDateTime] should not be stored when a specific time zone is known: in this case, it is recommended
+ * to use [Instant] instead.
  *
- * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it may give misleading results.
+ * ### Arithmetic operations
+ *
+ * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it
+ * may give misleading results.
+ *
+ * For example, in Berlin, naively adding one day to `2021-03-28T02:16:20` without accounting for the time zone would
+ * result in `2021-03-28T02:16:20`.
+ * However, this local date-time is invalid, because the clocks moved forward from `02:00` to `03:00` on that day.
+ * This is known as a "time gap", or a "spring forward" transition.
+ *
+ * Similarly, the local date-time `2021-10-31T02:16:20` is ambiguous,
+ * because the clocks moved back from `03:00` to `02:00`.
+ * This is known as a "time overlap", or a "fall back" transition.
+ *
+ * For these reasons, using [LocalDateTime] as an input to arithmetic operations is discouraged.
+ *
+ * When only arithmetic on the date component is needed, without touching the time, use [LocalDate] instead,
+ * as it provides well-defined date arithmetic.
+ *
+ * If the time component must be taken into account, [LocalDateTime]
+ * should be converted to [Instant] using a specific time zone, and the arithmetic on [Instant] should be used.
+ *
+ * ```
+ * val timeZone = TimeZone.of("Europe/Berlin")
+ * val localDateTime = LocalDateTime(2021, 3, 27, 2, 16, 20)
+ * val instant = localDateTime.toInstant(timeZone)
+ *
+ * val instantOneDayLater = instant.plus(1, DateTimeUnit.DAY, timeZone)
+ * val localDateTimeOneDayLater = instantOneDayLater.toLocalDateTime(timeZone)
+ * // 2021-03-28T03:16:20, as 02:16:20 that day is in a time gap
+ *
+ * val instantTwoDaysLater = instant.plus(2, DateTimeUnit.DAY, timeZone)
+ * val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
+ * // 2021-03-29T02:16:20
+ * ```
+ *
+ * ### Construction, serialization, and deserialization
+ *
+ * **Pitfall**: since [LocalDateTime] is always constructed without specifying the time zone, it cannot validate
+ * whether the given date and time components are valid in the implied time zone.
+ * For example, `2021-03-28T02:16:20` is invalid in Berlin, as it falls into a time gap, but nothing prevents one
+ * from constructing such a [LocalDateTime].
+ * Before constructing a [LocalDateTime] using any API, please ensure that the result is valid in the implied time zone.
+ * The recommended pattern is to convert a [LocalDateTime] to [Instant] as soon as possible (see
+ * [LocalDateTime.toInstant]) and work with [Instant] values instead.
+ *
+ * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
+ * Some additional constructors that accept the date's and time's fields directly are provided for convenience.
+ *
+ * [parse] and [toString] methods can be used to obtain a [LocalDateTime] from and convert it to a string in the
+ * ISO 8601 extended format (for example, `2023-01-02T22:35:01`).
+ *
+ * [parse] and [LocalDateTime.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * Additionally, there are several `kotlinx-serialization` serializers for [LocalDateTime]:
+ * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format,
+ * - [LocalDateTimeComponentSerializer] for an object with components.
+ *
+ * @see LocalDate for only the date part of the date/time value.
+ * @see LocalTime for only the time part of the date/time value.
+ * @see Instant for the representation of a specific moment in time independent of a time zone.
  */
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
@@ -102,7 +163,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * The components [monthNumber] and [dayOfMonth] are 1-based.
      *
      * The supported ranges of components:
-     * - [year] the range is platform dependent, but at least is enough to represent dates of all instants between
+     * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
@@ -111,8 +172,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [monthNumber] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range,
+     * or if [dayOfMonth] is invalid for the given [monthNumber] and [year].
      */
     public constructor(
         year: Int,
@@ -128,7 +189,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * Constructs a [LocalDateTime] instance from the given date and time components.
      *
      * The supported ranges of components:
-     * - [year] the range is platform dependent, but at least is enough to represent dates of all instants between
+     * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [month] all values of the [Month] enum
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
@@ -137,8 +198,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the given [month] and
-     * [year].
+     * @throws IllegalArgumentException if any parameter is out of range,
+     * or if [dayOfMonth] is invalid for the given [month] and [year].
      */
     public constructor(
         year: Int,
@@ -158,7 +219,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /** Returns the year component of the date. */
     public val year: Int
 
-    /** Returns the number-of-month (1..12) component of the date. */
+    /** Returns the number-of-the-month (1..12) component of the date. */
     public val monthNumber: Int
 
     /** Returns the month ([Month]) component of the date. */
@@ -170,7 +231,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /** Returns the day-of-week component of the date. */
     public val dayOfWeek: DayOfWeek
 
-    /** Returns the day-of-year component of the date. */
+    /** Returns the 1-based day-of-year component of the date. */
     public val dayOfYear: Int
 
     /** Returns the hour-of-day time component of this date/time value. */
@@ -196,8 +257,17 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * Returns zero if this value is equal to the other,
      * a negative number if this value represents earlier civil time than the other,
      * and a positive number if this value represents later civil time than the other.
+     *
+     * **Pitfall**: comparing [LocalDateTime] values is less robust than comparing [Instant] values.
+     * Consider the following situation, where a later moment in time corresponds to an earlier [LocalDateTime] value:
+     * ```
+     * val zone = TimeZone.of("Europe/Berlin")
+     * val ldt1 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:16:20
+     * // 45 minutes pass; clocks move back from 03:00 to 02:00 in the meantime
+     * val ldt2 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:01:20
+     * ldt2 > ldt1 // returns `false`
+     * ```
      */
-    // TODO: add a note about pitfalls of comparing localdatetimes falling in the Autumn transition
     public override operator fun compareTo(other: LocalDateTime): Int
 
     /**

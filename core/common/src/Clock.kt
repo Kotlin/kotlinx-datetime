@@ -15,11 +15,26 @@ import kotlin.time.*
 public interface Clock {
     /**
      * Returns the [Instant] corresponding to the current time, according to this clock.
+     *
+     * It is not guaranteed that calling [now] later will return a larger [Instant].
+     * In particular, for [System], violations of this are completely expected and must be taken into account.
+     * See the documentation of [System] for details.
      */
     public fun now(): Instant
 
     /**
-     * The [Clock] instance that queries the operating system as its source of knowledge of time.
+     * The [Clock] instance that queries the operating system as its source of time knowledge.
+     *
+     * Successive calls to [now] will not necessarily return increasing [Instant] values, and when they do,
+     * these increases will not necessarily correspond to the elapsed time.
+     *
+     * For example, when using [Clock.System], the following could happen:
+     * - [now] returns `2023-01-02T22:35:01Z`;
+     * - The system queries the Internet and recognizes that its clock needs adjusting;
+     * - [now] returns `2023-01-02T22:32:05Z`.
+     *
+     * When predictable intervals between successive measurements are needed, consider using
+     * [TimeSource.Monotonic].
      */
     public object System : Clock {
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
@@ -38,6 +53,10 @@ public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
 
 /**
  * Returns a [TimeSource] that uses this [Clock] to mark a time instant and to find the amount of time elapsed since that mark.
+ *
+ * **Pitfall**: using this function with [Clock.System] is error-prone,
+ * because [Clock.System] is not well suited for measuring time intervals.
+ * Please only use this conversion function on the [Clock] instances that are fully controlled programmatically.
  */
 @ExperimentalTime
 public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = object : TimeSource.WithComparableMarks {
