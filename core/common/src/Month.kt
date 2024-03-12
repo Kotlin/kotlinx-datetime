@@ -7,6 +7,10 @@ package kotlinx.datetime
 
 /**
  * The enumeration class representing the 12 months of the year.
+ *
+ * Can be acquired from [LocalDate.month] or constructed using the `Month` factory function that accepts
+ * the month number.
+ * This number can be obtained from the [number] property.
  */
 public expect enum class Month {
     /** January, month #01, with 31 days. */
@@ -44,8 +48,6 @@ public expect enum class Month {
 
     /** December, month #12, with 31 days. */
     DECEMBER;
-
-//    val value: Int // member missing in java.time.Month has to be an extension
 }
 
 /**
