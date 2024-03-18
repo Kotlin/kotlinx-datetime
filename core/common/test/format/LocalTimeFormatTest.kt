@@ -216,6 +216,24 @@ class LocalTimeFormatTest {
         }
     }
 
+    @Test
+    fun testEmptyAmPmMarkers() {
+        assertFailsWith<IllegalArgumentException> {
+            LocalTime.Format {
+                amPmMarker("", "pm")
+            }
+        }
+    }
+
+    @Test
+    fun testIdenticalAmPmMarkers() {
+        assertFailsWith<IllegalArgumentException> {
+            LocalTime.Format {
+                amPmMarker("pm", "pm")
+            }
+        }
+    }
+
     private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: DateTimeFormat<LocalTime>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate
