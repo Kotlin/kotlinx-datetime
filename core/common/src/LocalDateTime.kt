@@ -28,7 +28,7 @@ import kotlinx.serialization.Serializable
  * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it
  * may give misleading results.
  *
- * For example, in Berlin, naively adding one day to `2021-03-28T02:16:20` without accounting for the time zone would
+ * For example, in Berlin, naively adding one day to `2021-03-27T02:16:20` without accounting for the time zone would
  * result in `2021-03-28T02:16:20`.
  * However, this local date-time is invalid, because the clocks moved forward from `02:00` to `03:00` on that day.
  * This is known as a "time gap", or a "spring forward" transition.

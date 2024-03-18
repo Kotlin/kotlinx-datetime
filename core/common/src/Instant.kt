@@ -38,16 +38,16 @@ import kotlin.time.*
  * The [Clock.System] implementation uses the platform-specific system clock to obtain the current moment.
  * Note that this clock is not guaranteed to be monotonic, and it may be adjusted by the user or the system at any time,
  * so it should not be used for measuring time intervals.
- * For measuring time intervals, consider [TimeSource.Monotonic].
+ * For that, consider [TimeSource.Monotonic].
  *
  * ### Obtaining human-readable representations
  *
  * #### Date and time
  *
- * [Instant] is essentially the number of seconds and nanoseconds since a deesignated moment in time,
+ * [Instant] is essentially the number of seconds and nanoseconds since a designated moment in time,
  * stored as something like `1709898983.123456789`.
  * [Instant] contains no information about what day or time it is, as this depends on the time zone.
- * To obtain this information for a specific time zone, obtain a [LocalDateTime] using [Instant.toLocalDateTime]:
+ * To work with this information for a specific time zone, obtain a [LocalDateTime] using [Instant.toLocalDateTime]:
  *
  * ```
  * val instant = Instant.fromEpochSeconds(1709898983, 123456789)
@@ -57,11 +57,11 @@ import kotlin.time.*
  *
  * For values very far in the past or the future, this conversion may fail.
  * The specific range of values that can be converted to [LocalDateTime] is platform-specific, but at least
- * [DISTANT_PAST], [DISTANT_FUTURE], and all values between them can be converted to [LocalDateTime] without exceptions.
+ * [DISTANT_PAST], [DISTANT_FUTURE], and all values between them can be converted to [LocalDateTime].
  *
  * #### Date or time separately
  *
- * To obtain a [LocalDate] or [LocalTime], first, obtain a [LocalDateTime] and then use its [LocalDateTime.date]
+ * To obtain a [LocalDate] or [LocalTime], first, obtain a [LocalDateTime], and then use its [LocalDateTime.date]
  * and [LocalDateTime.time] properties:
  *
  * ```
@@ -73,7 +73,7 @@ import kotlin.time.*
  *
  * #### Elapsed-time-based
  *
- * The [plus] and [minus] operators can be used to add and subtract [Duration]s from an [Instant]:
+ * The [plus] and [minus] operators can be used to add [Duration]s to and subtract them from an [Instant]:
  *
  * ```
  * Clock.System.now() + Duration.seconds(5) // 5 seconds from now
@@ -85,7 +85,7 @@ import kotlin.time.*
  * Clock.System.now().plus(4, DateTimeUnit.HOUR) // 4 hours from now
  * ```
  *
- * Also, there is a [minus] operator that returns a [Duration] representing the difference between two instants:
+ * Also, there is a [minus] operator that returns the [Duration] representing the difference between two instants:
  *
  * ```
  * val start = Clock.System.now()
@@ -137,7 +137,7 @@ import kotlin.time.*
  * [toEpochMilliseconds] can be used to obtain the number of milliseconds since the epoch.
  * Note that [Instant] supports nanosecond precision, so converting to milliseconds is a lossy operation.
  *
- * [parse] and [toString] methods can be used to obtain a [Instant] from and convert it to a string in the
+ * [parse] and [toString] methods can be used to obtain an [Instant] from and convert it to a string in the
  * ISO 8601 extended format (for example, `2023-01-02T22:35:01+01:00`).
  * During parsing, the UTC offset is not returned separately.
  * If the UTC offset is important, use [DateTimeComponents] with [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] to
@@ -210,8 +210,7 @@ public expect class Instant : Comparable<Instant> {
      * **Pitfall**: do not use [Duration] values obtained via [Duration.Companion.days], as this is misleading:
      * in `kotlinx-datetime`, adding a day is a calendar-based operation, whereas [Duration] always considers
      * a day to be 24 hours.
-     * For an explanation of why this is error-prone, see the section about arithmetic operations in the [LocalDateTime]
-     * documentation.
+     * For an explanation of why this is error-prone, see [DateTimeUnit.DayBased].
      */
     public operator fun minus(duration: Duration): Instant
 

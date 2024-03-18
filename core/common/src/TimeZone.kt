@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  * A time zone, provides the conversion between [Instant] and [LocalDateTime] values
  * using a collection of rules specifying which [LocalDateTime] value corresponds to each [Instant].
  *
- * A time zone needs can be used in [Instant.toLocalDateTime] and [LocalDateTime.toInstant], and also in
+ * A time zone can be used in [Instant.toLocalDateTime] and [LocalDateTime.toInstant], and also in
  * those arithmetic operations on [Instant] that require knowing the calendar.
  *
  * A [TimeZone] can be constructed using the [TimeZone.of] function, which accepts the string identifier, like

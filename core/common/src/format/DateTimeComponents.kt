@@ -90,7 +90,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * ISO 8601 extended format for dates and times with UTC offset.
          *
          * For specifying the time zone offset, the format uses the [UtcOffset.Formats.ISO] format, except that during
-         * parsing, specifying the minutes is optional.
+         * parsing, specifying the minutes of the offset is optional.
          *
          * This format differs from [LocalTime.Formats.ISO] in its time part in that
          * specifying the seconds is *not* optional.
