@@ -221,6 +221,38 @@ class LocalDateFormatTest {
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
     }
 
+    @Test
+    fun testEmptyMonthNames() {
+        val names = MonthNames.ENGLISH_FULL.names
+        for (i in 0 until 12) {
+            val newNames = (0 until 12).map { if (it == i) "" else names[it] }
+            assertFailsWith<IllegalArgumentException> { MonthNames(newNames) }
+        }
+    }
+
+    @Test
+    fun testEmptyDayOfWeekNames() {
+        val names = DayOfWeekNames.ENGLISH_FULL.names
+        for (i in 0 until 7) {
+            val newNames = (0 until 7).map { if (it == i) "" else names[it] }
+            assertFailsWith<IllegalArgumentException> { DayOfWeekNames(newNames) }
+        }
+    }
+
+    @Test
+    fun testIdenticalMonthNames() {
+        assertFailsWith<IllegalArgumentException> {
+            MonthNames("Jan", "Jan", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        }
+    }
+
+    @Test
+    fun testIdenticalDayOfWeekNames() {
+        assertFailsWith<IllegalArgumentException> {
+            DayOfWeekNames("Mon", "Tue", "Tue", "Thu", "Fri", "Sat", "Sun")
+        }
+    }
+
     private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: DateTimeFormat<LocalDate>) {
         for ((date, stringsForDate) in strings) {
             val (canonicalString, otherStrings) = stringsForDate

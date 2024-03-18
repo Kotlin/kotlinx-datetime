@@ -167,6 +167,7 @@ internal class StringSetParserOperation<Output>(
                     node.children[searchResult].second
                 }
             }
+            require(!node.isTerminal) { "The string '$string' was passed several times" }
             node.isTerminal = true
         }
         fun reduceTrie(trie: TrieNode) {
