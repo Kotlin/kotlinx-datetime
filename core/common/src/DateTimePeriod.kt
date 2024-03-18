@@ -39,7 +39,7 @@ import kotlinx.serialization.Serializable
  * [parse] and [toString] methods can be used to obtain a [DateTimePeriod] from and convert it to a string in the
  * ISO 8601 extended format (for example, `P1Y2M6DT13H`).
  *
- * or returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
+ * `DateTimePeriod` can also be returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [DateTimePeriod]:
  * - [DateTimePeriodIso8601Serializer] for the ISO 8601 format;
@@ -54,7 +54,7 @@ public sealed class DateTimePeriod {
      * The number of calendar days.
      *
      * Note that a calendar day is not identical to 24 hours, see [DateTimeUnit.DayBased] for details.
-     * Also, this field does not overflow into months, so values larger than 30 can be present.
+     * Also, this field does not overflow into months, so values larger than 31 can be present.
      */
     public abstract val days: Int
     internal abstract val totalNanoseconds: Long
