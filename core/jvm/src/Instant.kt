@@ -12,8 +12,8 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
-import java.time.format.DateTimeParseException
-import java.time.temporal.ChronoUnit
+import java.time.format.*
+import java.time.temporal.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -67,20 +67,18 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
-            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
-                try {
-                    Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(input)).toInstant())
-                } catch (e: DateTimeParseException) {
-                    throw DateTimeFormatException(e)
-                }
-            } else {
-                try {
-                    format.parse(input).toInstantUsingOffset()
-                } catch (e: IllegalArgumentException) {
-                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
-                }
-            }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            /**
+             * Can't use built-in Java Time's handling of `Instant.parse` because it supports 24:00:00 and
+             * 23:59:60, and also doesn't support non-`Z` UTC offsets on older JDKs.
+             * Can't use custom Java Time's formats because Java 8 doesn't support the UTC offset format with
+             * optional minutes and seconds and `:` between them:
+             * https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatterBuilder.html#appendOffset-java.lang.String-java.lang.String-
+             */
+            format.parse(input).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+        }
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): Instant = parse(input = isoString)

@@ -12,7 +12,7 @@ import kotlin.test.*
 class JsConverterTest {
     @Test
     fun toJSDateTest() {
-        val releaseInstant = "2016-02-15T00:00Z".toInstant()
+        val releaseInstant = Instant.parse("2016-02-15T00:00:00Z")
         val releaseDate = releaseInstant.toJSDate()
         assertEquals(2016, releaseDate.getUTCFullYear())
         assertEquals(1, releaseDate.getUTCMonth())
@@ -23,7 +23,7 @@ class JsConverterTest {
     fun toInstantTest() {
         val kotlinReleaseEpochMilliseconds = 1455494400000
         val releaseDate = Date(milliseconds = kotlinReleaseEpochMilliseconds)
-        val releaseInstant = "2016-02-15T00:00Z".toInstant()
+        val releaseInstant = Instant.parse("2016-02-15T00:00:00Z")
         assertEquals(releaseInstant, releaseDate.toKotlinInstant())
     }
 }

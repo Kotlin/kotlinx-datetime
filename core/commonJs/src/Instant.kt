@@ -74,21 +74,12 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochMilliseconds > 0) MAX else MIN
         }
 
-        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
-            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
-                try {
-                    Instant(jsTry { jtOffsetDateTime.parse(fixOffsetRepresentation(input.toString())) }.toInstant())
-                } catch (e: Throwable) {
-                    if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-                    throw e
-                }
-            } else {
-                try {
-                    format.parse(input).toInstantUsingOffset()
-                } catch (e: IllegalArgumentException) {
-                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
-                }
-            }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            // This format is not supported properly by Joda-Time, so we can't delegate to it.
+            format.parse(input).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+        }
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): Instant = parse(input = isoString)
