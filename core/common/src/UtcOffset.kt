@@ -67,6 +67,8 @@ public expect class UtcOffset {
          * [DateTimeFormatBuilder.WithUtcOffset.offset] in a format builder for a larger data structure.
          *
          * There is a collection of predefined formats in [UtcOffset.Formats].
+         *
+         * @throws IllegalArgumentException if parsing using this format is ambiguous.
          */
         @Suppress("FunctionName")
         public fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset>

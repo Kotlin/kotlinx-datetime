@@ -97,6 +97,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * (for example, [second] is 60), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalTime.Formats].
+         *
+         * @throws IllegalArgumentException if parsing using this format is ambiguous.
          */
         @Suppress("FunctionName")
         public fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime>

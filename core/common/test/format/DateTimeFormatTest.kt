@@ -127,4 +127,25 @@ class DateTimeFormatTest {
             DateTimeComponents.Format { chars(format) }.parse(format)
         }
     }
+
+    @Test
+    fun testCreatingAmbiguousFormat() {
+        assertFailsWith<IllegalArgumentException> {
+            DateTimeComponents.Format {
+                monthNumber(Padding.NONE)
+                dayOfMonth(Padding.NONE)
+            }
+        }
+    }
+}
+
+fun <T> DateTimeFormat<T>.assertCanNotParse(input: String) {
+    val exception = assertFailsWith<DateTimeFormatException> { parse(input) }
+    try {
+        val message = exception.message ?: throw AssertionError("The parse exception didn't have a message")
+        assertContains(message, input)
+    } catch (e: AssertionError) {
+        e.addSuppressed(exception)
+        throw e
+    }
 }

@@ -15,11 +15,11 @@ class LocalTimeFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalTime.Formats.ISO
-        assertEquals(LocalTime(15, 36), format.parse("15:36"))
-        val error = assertFailsWith<DateTimeFormatException> { format.parse("40:36") }
-        assertContains(error.message!!, "40")
-        assertFailsWith<DateTimeFormatException> { format.parse("XX:36") }
+        LocalTime.Formats.ISO.apply {
+            assertEquals(LocalTime(15, 36), parse("15:36"))
+            assertCanNotParse("40:36")
+            assertCanNotParse("XX:36")
+        }
     }
 
     @Test
@@ -197,6 +197,23 @@ class LocalTimeFormatTest {
         }
         assertEquals("12:34:56", format.format(LocalTime(12, 34, 56)))
         assertEquals("12:34:56.123", format.format(LocalTime(12, 34, 56, 123000000)))
+    }
+
+    @Test
+    fun testParsingDisagreeingComponents() {
+        LocalTime.Format {
+            hour()
+            char(':')
+            minute()
+            char('(')
+            amPmHour()
+            char(' ')
+            amPmMarker("AM", "PM")
+            char(')')
+        }.apply {
+            assertEquals(LocalTime(23, 59), parse("23:59(11 PM)"))
+            assertCanNotParse("23:59(11 AM)")
+        }
     }
 
     private fun test(strings: Map<LocalTime, Pair<String, Set<String>>>, format: DateTimeFormat<LocalTime>) {

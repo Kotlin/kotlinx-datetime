@@ -65,6 +65,8 @@ public expect class LocalDate : Comparable<LocalDate> {
          * (for example, [dayOfMonth] is 31 for February), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalDate.Formats].
+         *
+         * @throws IllegalArgumentException if parsing using this format is ambiguous.
          */
         @Suppress("FunctionName")
         public fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate>

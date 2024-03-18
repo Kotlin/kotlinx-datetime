@@ -13,18 +13,18 @@ class UtcOffsetFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = UtcOffset.Format {
+        UtcOffset.Format {
             isoOffset(
                 zOnZero = true,
                 useSeparator = true,
                 outputMinute = WhenToOutput.ALWAYS,
                 outputSecond = WhenToOutput.IF_NONZERO
             )
+        }.apply {
+            assertEquals(UtcOffset(hours = -4, minutes = -30), parse("-04:30"))
+            assertCanNotParse("-04:60")
+            assertCanNotParse("-04:XX")
         }
-        assertEquals(UtcOffset(hours = -4, minutes = -30), format.parse("-04:30"))
-        val error = assertFailsWith<DateTimeFormatException> { format.parse("-04:60") }
-        assertContains(error.message!!, "60")
-        assertFailsWith<DateTimeFormatException> { format.parse("-04:XX") }
     }
 
     @Test

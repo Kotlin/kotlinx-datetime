@@ -50,7 +50,12 @@ internal class NumberSpanParserOperation<Output>(
 
     init {
         require(consumers.all { (it.length ?: Int.MAX_VALUE) > 0 })
-        require(consumers.count { it.length == null } <= 1)
+        require(consumers.count { it.length == null } <= 1) {
+            val fieldNames = consumers.filter { it.length == null }.map { it.whatThisExpects }
+            "At most one variable-length numeric field in a row is allowed, but got several: $fieldNames. " +
+                "Parsing is undefined: for example, with variable-length month number " +
+                "and variable-length day of month, '111' can be parsed as Jan 11th or Nov 1st."
+        }
     }
 
     private val whatThisExpects: String

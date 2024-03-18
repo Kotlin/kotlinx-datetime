@@ -15,11 +15,11 @@ class LocalDateFormatTest {
 
     @Test
     fun testErrorHandling() {
-        val format = LocalDate.Formats.ISO
-        assertEquals(LocalDate(2023, 2, 28), format.parse("2023-02-28"))
-        val error = assertFailsWith<DateTimeFormatException> { format.parse("2023-02-40") }
-        assertContains(error.message!!, "40")
-        assertFailsWith<DateTimeFormatException> { format.parse("2023-02-XX") }
+        LocalDate.Formats.ISO.apply {
+            assertEquals(LocalDate(2023, 2, 28), parse("2023-02-28"))
+            assertCanNotParse("2023-02-40")
+            assertCanNotParse("2023-02-XX")
+        }
     }
 
     @Test
