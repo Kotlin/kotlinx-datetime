@@ -8,6 +8,7 @@ import TzdbTasks.InstallTimeTzdb
 import TzdbTasks.TzdbDownloadAndCompile
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.npm.NpmResolverPlugin
+import java.util.*
 
 plugins {
     kotlin("multiplatform")
@@ -26,6 +27,14 @@ kotlin {
     wasmWasi {
         nodejs()
         NpmResolverPlugin.apply(project) //Workaround KT-66373
+    }
+
+    sourceSets.all {
+        val suffixIndex = name.indexOfLast { it.isUpperCase() }
+        val targetName = name.substring(0, suffixIndex)
+        val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
+        kotlin.srcDir("$targetName/${suffix ?: "src"}")
+        resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
     }
 
     sourceSets {
