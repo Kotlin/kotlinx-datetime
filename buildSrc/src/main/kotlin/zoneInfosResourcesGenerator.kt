@@ -86,7 +86,7 @@ fun generateZoneInfosResources(zoneInfoDir: File, outputDir: File, version: Stri
         appendLine("internal fun zoneDataByName(name: String): ByteArray = when(name) {")
         append(zoneDataByNameBody)
         appendLine()
-        append("    else -> error(\"Invalid timezone name\")")
+        append("    else -> throw kotlinx.datetime.IllegalTimeZoneException(\"Invalid timezone name\")")
         appendLine()
         append("}")
         appendLine()
