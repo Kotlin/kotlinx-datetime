@@ -51,7 +51,7 @@ kotlin {
 
 val timeTzdbInstall by tasks.creating(InstallTimeTzdb::class) { }
 
-val tzdbDownloadAndCompile = task<TzdbDownloadAndCompile>("tzdbDownloadAndCompile") {
+val tzdbDownloadAndCompile by tasks.creating(TzdbDownloadAndCompile::class) {
     dependsOn(timeTzdbInstall)
     timeTzdbDirectory.set(timeTzdbInstall.outputDirectory)
     outputDirectory.set(tzdbDirectory)
