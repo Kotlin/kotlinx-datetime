@@ -49,7 +49,7 @@ kotlin {
     }
 }
 
-val timeTzdbInstall = task<InstallTimeTzdb>("timeTzdbInstall") { }
+val timeTzdbInstall by tasks.creating(InstallTimeTzdb::class) { }
 
 val tzdbDownloadAndCompile = task<TzdbDownloadAndCompile>("tzdbDownloadAndCompile") {
     dependsOn(timeTzdbInstall)
