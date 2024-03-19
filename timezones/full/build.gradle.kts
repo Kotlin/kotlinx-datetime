@@ -59,7 +59,7 @@ val tzdbDownloadAndCompile by tasks.creating(TzdbDownloadAndCompile::class) {
     convertType.set(ConvertType.LARGE)
 }
 
-val generateWasmWasiZoneInfo = task("generateWasmWasiZoneInfo") {
+val generateWasmWasiZoneInfo by tasks.registering {
     inputs.dir(tzdbDirectory)
     outputs.dir(convertedKtFilesDir)
     doLast {
