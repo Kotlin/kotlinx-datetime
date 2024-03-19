@@ -35,7 +35,8 @@ private fun clockTimeGet(): Long = withScopedMemoryAllocator { allocator ->
 }
 
 internal actual fun currentTime(): Instant = clockTimeGet().let { time ->
-    Instant(time / NANOS_PER_ONE, (time % NANOS_PER_ONE).toInt())
+    // Instant.MAX and Instant.MIN are never going to be exceeded using just the Long number of nanoseconds
+    Instant(time.floorDiv(NANOS_PER_ONE.toLong()), time.mod(NANOS_PER_ONE.toLong()).toInt())
 }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
