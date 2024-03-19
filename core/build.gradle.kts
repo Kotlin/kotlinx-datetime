@@ -224,31 +224,31 @@ kotlin {
             dependsOn(commonJsTest)
         }
 
-        val nativeAndWasmWasiMain by creating {
+        val pureKotlinMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
-        val nativeAndWasmWasiTest by creating {
+        val pureKotlinTest by creating {
             dependsOn(commonTest.get())
         }
 
         val nativeMain by getting {
-            dependsOn(nativeAndWasmWasiMain)
+            dependsOn(pureKotlinMain)
         }
 
         val nativeTest by getting {
-            dependsOn(nativeAndWasmWasiTest)
+            dependsOn(pureKotlinTest)
         }
 
         val wasmWasiMain by getting {
-            dependsOn(nativeAndWasmWasiMain)
+            dependsOn(pureKotlinMain)
         }
 
         val wasmWasiTest by getting {
-            dependsOn(nativeAndWasmWasiTest)
+            dependsOn(pureKotlinTest)
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime-timezones-full"))
             }
