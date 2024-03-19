@@ -28,7 +28,7 @@ private fun clockTimeGet(): Long = withScopedMemoryAllocator { allocator ->
         resultPtr = rp0.address.toInt()
     )
     if (ret == 0) {
-        (Pointer(rp0.address.toInt().toUInt())).loadLong()
+        rp0.loadLong()
     } else {
         error("WASI call failed with $ret")
     }

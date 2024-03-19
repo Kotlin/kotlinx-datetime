@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.datetime.IllegalTimeZoneException
+
 @RequiresOptIn
 internal annotation class InternalDateTimeApi
 
@@ -29,17 +31,15 @@ public fun initializeTimeZonesProvider(provider: TimeZonesProvider) {
 @InternalDateTimeApi
 private var timeZonesProvider: TimeZonesProvider? = null
 
-@OptIn(InternalDateTimeApi::class)
-private fun zoneDataByName(name: String): ByteArray =
-    timeZonesProvider?.zoneDataByName(name) ?: error("TimeZones are not supported")
-
-@OptIn(InternalDateTimeApi::class)
-private fun getTimeZones(): Set<String> =
-    timeZonesProvider?.getTimeZones() ?: emptySet()
-
 internal class TzdbOnData: TimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRules =
-        readTzFile(zoneDataByName(id)).toTimeZoneRules()
+    override fun rulesForId(id: String): TimeZoneRules {
+        @OptIn(InternalDateTimeApi::class)
+        val data = timeZonesProvider?.zoneDataByName(id)
+            ?: throw IllegalTimeZoneException("TimeZones are not supported")
+        return readTzFile(data).toTimeZoneRules()
+    }
 
-    override fun availableTimeZoneIds(): Set<String> = getTimeZones()
+    override fun availableTimeZoneIds(): Set<String> =
+        @OptIn(InternalDateTimeApi::class)
+        timeZonesProvider?.getTimeZones() ?: emptySet()
 }
