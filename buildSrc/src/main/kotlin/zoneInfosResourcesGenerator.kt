@@ -89,11 +89,12 @@ fun generateZoneInfosResources(zoneInfoDir: File, outputDir: File, version: Stri
         append("}")
         appendLine()
         appendLine()
-        append("internal fun getTimeZones(): Set<String> = setOf(")
+        append("internal val timeZones: Set<String> by lazy { setOf(")
         appendLine()
         append(getTimeZonesBody)
         appendLine()
         append(")")
+        append("}")
     }
 
     File(outputDir, "tzData.kt").writeText(content)

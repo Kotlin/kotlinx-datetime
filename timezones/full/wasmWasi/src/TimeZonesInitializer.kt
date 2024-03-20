@@ -14,7 +14,7 @@ private val initializeTimeZones = run {
             override fun zoneDataByName(name: String): ByteArray =
                 kotlinx.datetime.timezones.tzData.zoneDataByName(name)
             override fun getTimeZones(): Set<String> =
-                kotlinx.datetime.timezones.tzData.getTimeZones()
+                kotlinx.datetime.timezones.tzData.timeZones
         }
     )
 }

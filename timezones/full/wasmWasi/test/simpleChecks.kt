@@ -7,7 +7,7 @@ import kotlin.test.assertContains
 class SimpleChecks {
     @Test
     fun getTimeZonesTest() {
-        val timezones = getTimeZones()
+        val timezones = timeZones
         assertContains(timezones, "UTC")
         assertContains(timezones, "GMT")
         assertContains(timezones, "Europe/Amsterdam")
