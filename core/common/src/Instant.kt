@@ -38,7 +38,7 @@ import kotlin.time.*
  * The [Clock.System] implementation uses the platform-specific system clock to obtain the current moment.
  * Note that this clock is not guaranteed to be monotonic, and it may be adjusted by the user or the system at any time,
  * so it should not be used for measuring time intervals.
- * For that, consider [TimeSource.Monotonic].
+ * For that, consider using [TimeSource.Monotonic] and [TimeMark] instead of [Clock.System] and [Instant].
  *
  * ### Obtaining human-readable representations
  *
@@ -104,7 +104,11 @@ import kotlin.time.*
  * requiring a [TimeZone]:
  *
  * ```
- * Clock.System.now().plus(1, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // one day from now in Berlin
+ * // one day from now in Berlin
+ * Clock.System.now().plus(1, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin"))
+ *
+ * // a day and two hours short from two months later in Berlin
+ * Clock.System.now().plus(DateTimePeriod(months = 2, days = -1, hours = -2), TimeZone.of("Europe/Berlin"))
  * ```
  *
  * The difference between [Instant] values in terms of calendar-based units can be obtained using the [periodUntil]
@@ -366,6 +370,13 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * Returns an instant that is the result of adding components of [DateTimePeriod] to this instant. The components are
  * added in the order from the largest units to the smallest, i.e. from years to nanoseconds.
  *
+ * - If the [DateTimePeriod] only contains time-based components, please consider adding a [Duration] instead,
+ *   as in `Clock.System.now() + 5.hours`.
+ *   Then, it will not be necessary to pass the [timeZone].
+ * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
+ *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], like in
+ *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
+ *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
  */
@@ -374,6 +385,13 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
  * are subtracted in the order from the largest units to the smallest, i.e. from years to nanoseconds.
+ *
+ * - If the [DateTimePeriod] only contains time-based components, please consider subtracting a [Duration] instead,
+ *   as in `Clock.System.now() - 5.hours`.
+ *   Then, it is not necessary to pass the [timeZone].
+ * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
+ *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], as in
+ *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
