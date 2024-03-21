@@ -156,7 +156,7 @@ public expect class UtcOffset {
     }
 
     /**
-     * Converts this UTC offset to the extended ISO-8601 string representation; for example, `+02:30` or `Z`.
+     * Converts this UTC offset to the extended ISO 8601 string representation; for example, `+02:30` or `Z`.
      *
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [UtcOffset] from a string.

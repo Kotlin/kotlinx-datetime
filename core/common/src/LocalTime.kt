@@ -262,7 +262,7 @@ public expect class LocalTime : Comparable<LocalTime> {
     public override operator fun compareTo(other: LocalTime): Int
 
     /**
-     * Converts this time value to the extended ISO-8601 string representation.
+     * Converts this time value to the extended ISO 8601 string representation.
      *
      * For readability, if the time represents a round minute (without seconds or fractional seconds),
      * the string representation will not include seconds. Also, fractions of seconds will add trailing zeros to

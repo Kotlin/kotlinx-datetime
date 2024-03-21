@@ -198,7 +198,7 @@ public expect class LocalDate : Comparable<LocalDate> {
     public override fun compareTo(other: LocalDate): Int
 
     /**
-     * Converts this date to the extended ISO-8601 string representation.
+     * Converts this date to the extended ISO 8601 string representation.
      *
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [LocalDate] from a string.

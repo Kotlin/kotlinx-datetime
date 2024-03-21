@@ -11,7 +11,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * A serializer for [LocalDate] that uses the ISO-8601 representation.
+ * A serializer for [LocalDate] that uses the ISO 8601 representation.
  *
  * JSON example: `"2020-01-01"`
  *
