@@ -175,7 +175,7 @@ To convert back, use the companion object function `Instant.fromEpochMillisecond
 ### Converting instant and local date/time to and from the ISO 8601 string
 
 `Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` provide shortcuts for
-parsing and formatting them using the extended ISO-8601 format.
+parsing and formatting them using the extended ISO 8601 format.
 The `toString()` function is used to convert the value to a string in that format, and 
 the `parse` function in companion object is used to parse a string representation back. 
 
@@ -201,7 +201,7 @@ LocalTime.parse("12:0:03.999") // fails with an IllegalArgumentException
 
 ### Working with other string formats
 
-When some data needs to be formatted in some format other than ISO-8601, one
+When some data needs to be formatted in some format other than ISO 8601, one
 can define their own format or use some of the predefined ones:
 
 ```kotlin

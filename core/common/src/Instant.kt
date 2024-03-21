@@ -240,7 +240,7 @@ public expect class Instant : Comparable<Instant> {
     public override operator fun compareTo(other: Instant): Int
 
     /**
-     * Converts this instant to the ISO-8601 string representation; for example, `2023-01-02T23:40:57.120Z`
+     * Converts this instant to the ISO 8601 string representation; for example, `2023-01-02T23:40:57.120Z`
      *
      * The representation uses the UTC-SLS time scale, instead of UTC.
      * In practice, this means that leap second handling will not be readjusted to the UTC.

@@ -54,7 +54,7 @@ public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
 }
 
 /**
- * A serializer for [UtcOffset] that uses the extended ISO-8601 representation.
+ * A serializer for [UtcOffset] that uses the extended ISO 8601 representation.
  *
  * JSON example: `"+02:00"`
  *

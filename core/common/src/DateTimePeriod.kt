@@ -96,7 +96,7 @@ public sealed class DateTimePeriod {
         totalMonths <= 0 && days <= 0 && totalNanoseconds <= 0 && (totalMonths or days != 0 || totalNanoseconds != 0L)
 
     /**
-     * Converts this period to the ISO-8601 string representation for durations, for example, `P2M1DT3H`.
+     * Converts this period to the ISO 8601 string representation for durations, for example, `P2M1DT3H`.
      *
      * @see DateTimePeriod.parse
      */
@@ -143,12 +143,12 @@ public sealed class DateTimePeriod {
 
     public companion object {
         /**
-         * Parses a ISO-8601 duration string as a [DateTimePeriod].
+         * Parses a ISO 8601 duration string as a [DateTimePeriod].
          * If the time components are absent or equal to zero, returns a [DatePeriod].
          *
          * Additionally, we support the `W` signifier to represent weeks.
          *
-         * Examples of durations in the ISO-8601 format:
+         * Examples of durations in the ISO 8601 format:
          * - `P1Y40D` is one year and 40 days
          * - `-P1DT1H` is minus (one day and one hour)
          * - `P1DT-1H` is one day minus one hour
@@ -372,7 +372,7 @@ public class DatePeriod internal constructor(
 
     public companion object {
         /**
-         * Parses the ISO-8601 duration representation as a [DatePeriod], for example, `P1Y2M30D`.
+         * Parses the ISO 8601 duration representation as a [DatePeriod], for example, `P1Y2M30D`.
          *
          * This function is equivalent to [DateTimePeriod.parse], but will fail if any of the time components are not
          * zero.
