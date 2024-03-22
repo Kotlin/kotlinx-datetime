@@ -31,12 +31,37 @@ import kotlinx.serialization.Serializable
  *
  * To construct a [UtcOffset] value, use the [UtcOffset] constructor function.
  * [totalSeconds] returns the number of seconds from UTC.
+ *
  * There is also a [ZERO] constant for the offset of zero.
+ *
+ * ```
+ * val offset = UtcOffset(hours = 3, minutes = 30)
+ * println(offset.totalSeconds) // 12600
+ * UtcOffset(seconds = 0) == UtcOffset.ZERO
+ * ```
  *
  * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the
  * ISO 8601 extended format (for example, `+01:30`).
  *
+ * ```
+ * val offset = UtcOffset.parse("+01:30")
+ * offset.toString() // +01:30
+ * ```
+ *
  * [parse] and [UtcOffset.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * ```
+ * val customFormat = UtcOffset.Format {
+ *   optional("GMT") {
+ *     offsetHours(Padding.NONE); char(':'); offsetMinutesOfHour()
+ *     optional { char(':'); offsetSecondsOfMinute() }
+ *   }
+ * }
+ *
+ * val offset = UtcOffset.parse("+01:30:15", customFormat)
+ * offset.format(customFormat) // +1:30:15
+ * offset.format(UtcOffset.Formats.FOUR_DIGITS) // +0130
+ * ```
  *
  * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the [UtcOffsetSerializer].
  */
@@ -66,6 +91,7 @@ public expect class UtcOffset {
          * Parses a string that represents a UTC offset and returns the parsed [UtcOffset] value.
          *
          * If [format] is not specified, [Formats.ISO] is used.
+         * `Z` or `+01:30` are examples of valid input.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are
          * exceeded.

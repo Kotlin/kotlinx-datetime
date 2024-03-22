@@ -69,13 +69,41 @@ import kotlinx.serialization.Serializable
  * The recommended pattern is to convert a [LocalDateTime] to [Instant] as soon as possible (see
  * [LocalDateTime.toInstant]) and work with [Instant] values instead.
  *
- * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
+ * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor:
+ *
+ * ```
+ * val date = LocalDate(2021, 3, 27)
+ * val time = LocalTime(hour = 2, minute = 16, second = 20)
+ * LocalDateTime(date, time)
+ * ```
+ *
  * Some additional constructors that accept the date's and time's fields directly are provided for convenience.
+ *
+ * ```
+ * LocalDateTime(year = 2021, monthNumber = 3, dayOfMonth = 27, hour = 2, minute = 16, second = 20)
+ * LocalDateTime(
+ *     year = 2021, month = Month.MARCH, dayOfMonth = 27,
+ *     hour = 2, minute = 16, second = 20, nanosecond = 999_999_999
+ * )
+ * ```
  *
  * [parse] and [toString] methods can be used to obtain a [LocalDateTime] from and convert it to a string in the
  * ISO 8601 extended format (for example, `2023-01-02T22:35:01`).
  *
+ * ```
+ * LocalDateTime.parse("2023-01-02T22:35:01").toString() // 2023-01-02T22:35:01
+ * ```
+ *
  * [parse] and [LocalDateTime.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * ```
+ * val customFormat = LocalDateTime.Format {
+ *    date(LocalDate.Formats.ISO)
+ *    char(' ')
+ *    time(LocalTime.Formats.ISO)
+ * }
+ * LocalDateTime.parse("2023-01-02 22:35:01", customFormat).format(customFormat) // 2023-01-02 22:35:01
+ * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDateTime]:
  * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format,
@@ -96,6 +124,9 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * but without any time zone component and returns the parsed [LocalDateTime] value.
          *
          * If [format] is not specified, [Formats.ISO] is used.
+         * `2023-01-02T23:40:57.120` is an example of a string in this format.
+         *
+         * See [Formats] and [Format] for predefined and custom formats.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are
          * exceeded.
@@ -295,6 +326,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 /**
  * Formats this value using the given [format].
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ *
+ * See [LocalDateTime.Formats] and [LocalDateTime.Format] for predefined and custom formats.
  */
 public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String = format.format(this)
 

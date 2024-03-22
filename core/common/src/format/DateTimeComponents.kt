@@ -109,6 +109,17 @@ public class DateTimeComponents internal constructor(internal val contents: Date
          * See ISO-8601-1:2019, 5.4.2.1b), excluding the format without the offset.
          *
          * Guaranteed to parse all strings that [Instant.toString] produces.
+         *
+         * Typically, to use this format, one can simply call [Instant.toString] and [Instant.parse],
+         * but accessing it directly allows one to obtain the UTC offset, which is not returned from [Instant.parse],
+         * or specifying the UTC offset to be formatted.
+         *
+         * ```
+         * val components = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse("2020-08-30T18:43:00.123456789+03:00")
+         * val instant = components.toInstantUsingOffset() // 2020-08-30T15:43:00.123456789Z
+         * val localDateTime = components.toLocalDateTime() // 2020-08-30T18:43:00.123456789
+         * val offset = components.toUtcOffset() // UtcOffset(hours = 3)
+         * ```
          */
         public val ISO_DATE_TIME_OFFSET: DateTimeFormat<DateTimeComponents> = Format {
             date(ISO_DATE)

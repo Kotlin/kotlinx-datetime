@@ -22,6 +22,10 @@ import kotlinx.serialization.Serializable
  * `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers, see [TimeZone.availableZoneIds].
  * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
  *
+ * ```
+ * TimeZone.of("Europe/Berlin")
+ * ```
+ *
  * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
  * identifier.
  */

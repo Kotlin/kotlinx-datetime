@@ -137,15 +137,49 @@ import kotlin.time.*
  * `1970-01-01T00:00:00Z` (the Unix epoch).
  * [epochSeconds] and [nanosecondsOfSecond] can be used to obtain the number of seconds and nanoseconds since the epoch.
  *
+ * ```
+ * val instant = Instant.fromEpochSeconds(1709898983, 123456789)
+ * instant.epochSeconds // 1709898983
+ * instant.nanosecondsOfSecond // 123456789
+ * ```
+ *
  * [fromEpochMilliseconds] allows constructing an instant from the number of milliseconds since the epoch.
  * [toEpochMilliseconds] can be used to obtain the number of milliseconds since the epoch.
  * Note that [Instant] supports nanosecond precision, so converting to milliseconds is a lossy operation.
  *
+ * ```
+ * val instant1 = Instant.fromEpochSeconds(1709898983, 123456789)
+ * instant1.nanosecondsOfSecond // 123456789
+ * val milliseconds = instant1.toEpochMilliseconds() // 1709898983123
+ * val instant2 = Instant.fromEpochMilliseconds(milliseconds)
+ * instant2.nanosecondsOfSecond // 123000000
+ * ```
+ *
  * [parse] and [toString] methods can be used to obtain an [Instant] from and convert it to a string in the
- * ISO 8601 extended format (for example, `2023-01-02T22:35:01+01:00`).
+ * ISO 8601 extended format.
+ *
+ * ```
+ * val instant = Instant.parse("2023-01-02T22:35:01+01:00")
+ * instant.toString() // 2023-01-02T21:35:01Z
+ * ```
+ *
  * During parsing, the UTC offset is not returned separately.
  * If the UTC offset is important, use [DateTimeComponents] with [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] to
  * parse the string instead.
+ *
+ * [Instant.parse] and [Instant.format] also accept custom formats:
+ *
+ * ```
+ * val customFormat = DateTimeComponents.Format {
+ *   date(LocalDate.Formats.ISO)
+ *   char(' ')
+ *   time(LocalTime.Formats.ISO)
+ *   char(' ')
+ *   offset(UtcOffset.Formats.ISO)
+ * }
+ * val instant = Instant.parse("2023-01-02 22:35:01.14 +01:00", customFormat)
+ * instant.format(customFormat, offset = UtcOffset(hours = 2)) // 2023-01-02 23:35:01.14 +02:00
+ * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [Instant]:
  * - [InstantIso8601Serializer] for the ISO 8601 extended format,
@@ -180,7 +214,7 @@ public expect class Instant : Comparable<Instant> {
     /**
      * Returns the number of milliseconds from the epoch instant `1970-01-01T00:00:00Z`.
      *
-     * Any fractional part of millisecond is rounded down to the whole number of milliseconds.
+     * Any fractional part of millisecond is rounded toward zero to the whole number of milliseconds.
      *
      * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
      *
@@ -316,6 +350,7 @@ public expect class Instant : Comparable<Instant> {
          * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
          *
          * If the format is not specified, [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is used.
+         * `2023-01-02T23:40:57.120Z` is an example of a string in this format.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
          *
@@ -368,7 +403,7 @@ public fun String.toInstant(): Instant = Instant.parse(this)
 
 /**
  * Returns an instant that is the result of adding components of [DateTimePeriod] to this instant. The components are
- * added in the order from the largest units to the smallest, i.e. from years to nanoseconds.
+ * added in the order from the largest units to the smallest, i.e., from years to nanoseconds.
  *
  * - If the [DateTimePeriod] only contains time-based components, please consider adding a [Duration] instead,
  *   as in `Clock.System.now() + 5.hours`.
@@ -376,6 +411,10 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], like in
  *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
+ *
+ * ```
+ * Clock.System.now().plus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month later
+ * ```
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
@@ -392,6 +431,10 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
  * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], as in
  *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
+ *
+ * ```
+ * Clock.System.now().minus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month earlier
+ * ```
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
@@ -434,6 +477,12 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
+ * ```
+ * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
+ * val currentMoment = Clock.System.now()
+ * val daysLived = momentOfBirth.until(currentMoment, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+ * ```
+ *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
@@ -447,6 +496,12 @@ public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
  * - zero if this instant is equal to the other.
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+ *
+ * ```
+ * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
+ * val currentMoment = Clock.System.now()
+ * val minutesLived = momentOfBirth.until(currentMoment, DateTimeUnit.MINUTE)
+ * ```
  */
 public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     try {
@@ -561,6 +616,13 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
+ * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * It is also not needed when adding date-based units to a [LocalDate].
+ *
+ * ```
+ * Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days from now in Berlin
+ * ```
+ *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
@@ -568,6 +630,16 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
  * in the specified [timeZone].
+ *
+ * If the [value] is positive, the returned instant is earlier than this instant.
+ * If the [value] is negative, the returned instant is later than this instant.
+ *
+ * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * It is also not needed when subtracting date-based units from a [LocalDate].
+ *
+ * ```
+ * Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days earlier than now in Berlin
+ * ```
  *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
@@ -582,6 +654,10 @@ public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
+ * ```
+ * Clock.System.now().plus(5, DateTimeUnit.HOUR) // 5 hours from now
+ * ```
+ *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
 public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
@@ -592,6 +668,10 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
+ *
+ * ```
+ * Clock.System.now().minus(5, DateTimeUnit.HOUR) // 5 hours earlier than now
+ * ```
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
@@ -605,6 +685,13 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
+ * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * It is also not needed when adding date-based units to a [LocalDate].
+ *
+ * ```
+ * Clock.System.now().plus(5L, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days from now in Berlin
+ * ```
+ *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
@@ -615,6 +702,13 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
  *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
+ *
+ * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * It is also not needed when subtracting date-based units from a [LocalDate].
+ *
+ * ```
+ * Clock.System.now().minus(5L, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days earlier than now in Berlin
+ * ```
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
@@ -631,6 +725,10 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
+ * ```
+ * Clock.System.now().plus(5L, DateTimeUnit.HOUR) // 5 hours from now
+ * ```
+ *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
@@ -640,6 +738,10 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
  *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
+ *
+ * ```
+ * Clock.System.now().minus(5L, DateTimeUnit.HOUR) // 5 hours earlier than now
+ * ```
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  */
@@ -657,10 +759,16 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
  *
+ * ```
+ * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
+ * val currentMoment = Clock.System.now()
+ * val daysLived = currentMoment.minus(momentOfBirth, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+ * ```
+ *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
- * @see Instant.until
+ * @see Instant.until for the same operation but with swapped arguments.
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
         other.until(this, unit, timeZone)
@@ -671,9 +779,15 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
  *
+ * ```
+ * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
+ * val currentMoment = Clock.System.now()
+ * val minutesLived = currentMoment.minus(momentOfBirth, DateTimeUnit.MINUTE)
+ * ```
+ *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
- * @see Instant.until
+ * @see Instant.until for the same operation but with swapped arguments.
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     other.until(this, unit)
