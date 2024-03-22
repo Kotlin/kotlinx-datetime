@@ -12,13 +12,11 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
-import java.time.format.*
 import java.time.temporal.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import java.time.Instant as jtInstant
-import java.time.OffsetDateTime as jtOffsetDateTime
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
@@ -82,17 +80,6 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): Instant = parse(input = isoString)
-
-        /** A workaround for a quirk of the JDKs older than 11 where the string representations of Instant that have an
-         * offset of the form "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
-        private fun fixOffsetRepresentation(isoString: CharSequence): CharSequence {
-            val time = isoString.indexOf('T', ignoreCase = true)
-            if (time == -1) return isoString // the string is malformed
-            val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
-            if (offset < time) return isoString // the offset is 'Z' and not +/- something else
-            val separator = isoString.indexOf(':', offset) // if there is a ':' in the offset, no changes needed
-            return if (separator != -1) isoString else "$isoString:00"
-        }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
