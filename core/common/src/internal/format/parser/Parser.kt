@@ -48,6 +48,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     } else {
         ParserStructure(operations, followedBy.map { it.append(other) })
     }
+
     fun <T> ParserStructure<T>.simplify(): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
@@ -122,7 +123,7 @@ internal interface Copyable<Self> {
 }
 
 @JvmInline
-internal value class Parser<Output: Copyable<Output>>(
+internal value class Parser<Output : Copyable<Output>>(
     private val commands: ParserStructure<Output>
 ) {
     /**
@@ -145,7 +146,7 @@ internal value class Parser<Output: Copyable<Output>>(
         onSuccess: (Int, Output) -> Unit
     ) {
         val parseOptions = mutableListOf(ParserState(initialContainer, commands, startIndex))
-        iterate_over_alternatives@while (true) {
+        iterate_over_alternatives@ while (true) {
             val state = parseOptions.removeLastOrNull() ?: break
             val output = state.output.copy()
             var inputPosition = state.inputPosition
@@ -180,12 +181,7 @@ internal value class Parser<Output: Copyable<Output>>(
         parse(input, startIndex, initialContainer, allowDanglingInput = false, { errors.add(it) }, { _, out -> return@match out })
         errors.sortByDescending { it.position }
         // `errors` can not be empty because each parser will have (successes + failures) >= 1, and here, successes == 0
-        ParseException(errors.first()).let {
-            for (error in errors.drop(1)) {
-                it.addSuppressed(ParseException(error))
-            }
-            throw it
-        }
+        throw ParseException(errors)
     }
 
     fun matchOrNull(input: CharSequence, initialContainer: Output, startIndex: Int = 0): Output? {
@@ -200,4 +196,18 @@ internal value class Parser<Output: Copyable<Output>>(
     )
 }
 
-internal class ParseException(error: ParseError) : Exception("Position ${error.position}: ${error.message()}")
+internal class ParseException(errors: List<ParseError>) : Exception(formatError(errors))
+
+private fun formatError(errors: List<ParseError>): String {
+    if (errors.size == 1) {
+        return "Position ${errors[0].position}: ${errors[0].message()}"
+    }
+    // 20 For average error string: "Expected X but got Y"
+    // 13 for static part "Position   :,"
+    val averageMessageLength = 20 + 13
+    return errors.joinTo(
+        StringBuilder(averageMessageLength * errors.size),
+        prefix = "Errors: ",
+        separator = ", "
+    ) { "position ${it.position}: '${it.message()}'" }.toString()
+}
