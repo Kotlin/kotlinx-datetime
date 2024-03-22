@@ -16,7 +16,10 @@ public actual typealias Month = java.time.Month
 public actual typealias DayOfWeek = java.time.DayOfWeek
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
-public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
+public actual class LocalDateTime internal constructor(
+    // only a `var` to allow Java deserialization
+    internal var value: jtLocalDateTime
+) : Comparable<LocalDateTime>, java.io.Serializable {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(try {
@@ -77,11 +80,29 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
         @Suppress("FunctionName")
         public actual fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime> =
             LocalDateTimeFormat.build(builder)
+
+        @JvmStatic
+        private val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
     }
 
+    private fun writeObject(oStream: java.io.ObjectOutputStream) {
+        oStream.defaultWriteObject()
+        oStream.writeObject(value.toString())
+    }
+
+    private fun readObject(iStream: java.io.ObjectInputStream) {
+        iStream.defaultReadObject()
+        val field = this::class.java.getDeclaredField(::value.name)
+        field.isAccessible = true
+        field.set(this, jtLocalDateTime.parse(iStream.readObject() as String))
+    }
+
+    private fun readObjectNoData() {
+        throw java.io.InvalidObjectException("Stream data required")
+    }
 }
 
