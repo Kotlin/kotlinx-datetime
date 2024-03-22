@@ -20,7 +20,9 @@ import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
-public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
+public actual class Instant internal constructor(
+    internal val value: jtInstant
+) : Comparable<Instant>, java.io.Serializable {
 
     public actual val epochSeconds: Long
         get() = value.epochSecond
@@ -97,6 +99,25 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
+
+        @JvmStatic
+        private val serialVersionUID: Long = 1L
+    }
+
+    private fun writeObject(oStream: java.io.ObjectOutputStream) {
+        oStream.defaultWriteObject()
+        oStream.writeObject(value.toString())
+    }
+
+    private fun readObject(iStream: java.io.ObjectInputStream) {
+        iStream.defaultReadObject()
+        val field = this::class.java.getDeclaredField(::value.name)
+        field.isAccessible = true
+        field.set(this, jtOffsetDateTime.parse(fixOffsetRepresentation(iStream.readObject() as String)).toInstant())
+    }
+
+    private fun readObjectNoData() {
+        throw java.io.InvalidObjectException("Stream data required")
     }
 }
 

@@ -14,7 +14,9 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.format.*
 
 @Serializable(with = UtcOffsetSerializer::class)
-public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
+public actual class UtcOffset(
+    internal val zoneOffset: ZoneOffset
+): java.io.Serializable {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 
     override fun hashCode(): Int = zoneOffset.hashCode()
@@ -43,6 +45,22 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
         public actual val ISO: DateTimeFormat<UtcOffset> get() = ISO_OFFSET
         public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
         public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
+    }
+
+    private fun writeObject(oStream: java.io.ObjectOutputStream) {
+        oStream.defaultWriteObject()
+        oStream.writeObject(zoneOffset.toString())
+    }
+
+    private fun readObject(iStream: java.io.ObjectInputStream) {
+        iStream.defaultReadObject()
+        val field = this::class.java.getDeclaredField(::zoneOffset.name)
+        field.isAccessible = true
+        field.set(this, ZoneOffset.of(iStream.readObject() as String))
+    }
+
+    private fun readObjectNoData() {
+        throw java.io.InvalidObjectException("Stream data required")
     }
 }
 

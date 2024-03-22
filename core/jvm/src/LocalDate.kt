@@ -18,7 +18,9 @@ import java.time.LocalDate as jtLocalDate
 import kotlin.internal.*
 
 @Serializable(with = LocalDateIso8601Serializer::class)
-public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
+public actual class LocalDate internal constructor(
+    internal val value: jtLocalDate
+) : Comparable<LocalDate>, java.io.Serializable {
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
             if (format === Formats.ISO) {
@@ -50,6 +52,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
+
+        @JvmStatic
+        private val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {
@@ -100,6 +105,22 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     @PublishedApi
     @JvmName("toEpochDays")
     internal fun toEpochDaysJvm(): Int = value.toEpochDay().clampToInt()
+
+    private fun writeObject(oStream: java.io.ObjectOutputStream) {
+        oStream.defaultWriteObject()
+        oStream.writeObject(value.toString())
+    }
+
+    private fun readObject(iStream: java.io.ObjectInputStream) {
+        iStream.defaultReadObject()
+        val field = this::class.java.getDeclaredField(::value.name)
+        field.isAccessible = true
+        field.set(this, jtLocalDate.parse(iStream.readObject() as String))
+    }
+
+    private fun readObjectNoData() {
+        throw java.io.InvalidObjectException("Stream data required")
+    }
 }
 
 /**
