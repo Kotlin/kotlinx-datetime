@@ -57,6 +57,8 @@ public val Month.number: Int get() = ordinal + 1
 
 /**
  * Returns the [Month] instance for the given month number. January is 1, December is 12.
+ *
+ * @throws IllegalArgumentException if the month number is not in the range 1..12
  */
 public fun Month(number: Int): Month {
     require(number in 1..12)

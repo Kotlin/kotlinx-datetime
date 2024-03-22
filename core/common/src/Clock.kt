@@ -24,6 +24,9 @@ public interface Clock {
      * It is not guaranteed that calling [now] later will return a larger [Instant].
      * In particular, for [System], violations of this are completely expected and must be taken into account.
      * See the documentation of [System] for details.
+     *
+     * Even though [Instant] is defined to be on the UTC-SLS time scale, which enforces a specific way of handling
+     * leap seconds, [now] is not guaranteed to handle leap seconds in any specific way.
      */
     public fun now(): Instant
 

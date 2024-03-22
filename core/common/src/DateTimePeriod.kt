@@ -53,8 +53,18 @@ import kotlinx.serialization.Serializable
  *
  * A `DateTimePeriod` can be constructed using the constructor function with the same name.
  *
+ * ```
+ * val dateTimePeriod = DateTimePeriod(months = 24, days = -3)
+ * val datePeriod = dateTimePeriod as DatePeriod // the same as DatePeriod(years = 2, days = -3)
+ * ```
+ *
  * [parse] and [toString] methods can be used to obtain a [DateTimePeriod] from and convert it to a string in the
- * ISO 8601 extended format (for example, `P1Y2M6DT13H`).
+ * ISO 8601 extended format.
+ *
+ * ```
+ * val dateTimePeriod = DateTimePeriod.parse("P1Y2M6DT13H1S") // 1 year, 2 months, 6 days, 13 hours, 1 second
+ * val string = dateTimePeriod.toString() // "P1Y2M6DT13H1S"
+ * ```
  *
  * `DateTimePeriod` can also be returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
  *
@@ -77,7 +87,7 @@ public sealed class DateTimePeriod {
     internal abstract val totalNanoseconds: Long
 
     /**
-     * The number of whole years.
+     * The number of whole years. Can be negative.
      */
     public val years: Int get() = totalMonths / 12
 
@@ -87,9 +97,9 @@ public sealed class DateTimePeriod {
     public val months: Int get() = totalMonths % 12
 
     /**
-     * The number of whole hours in this period.
+     * The number of whole hours in this period. Can be negative.
      *
-     * This field does not overflow into days, so values larger than 23 can be present.
+     * This field does not overflow into days, so values larger than 23 or smaller than -23 can be present.
      */
     public open val hours: Int get() = (totalNanoseconds / 3_600_000_000_000).toInt()
 
@@ -381,12 +391,23 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  *
  * A `DatePeriod` is automatically returned from all constructor functions for [DateTimePeriod] if it turns out that
  * the time components are zero.
+ *
+ * ```
+ * DateTimePeriod.parse("P1Y3D") as DatePeriod // 1 year and 3 days
+ * ```
+ *
  * Additionally, [DatePeriod] has its own constructor, the [parse] function that will fail if any of the time components
  * are not zero, and [DatePeriodIso8601Serializer] and [DatePeriodComponentSerializer], mirroring those of
  * [DateTimePeriod].
  *
- * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations on [LocalDates][LocalDate],
- * but they also can be passed anywhere a [DateTimePeriod] is expected.
+ * ```
+ * val datePeriod1 = DatePeriod(years = 1, days = 3)
+ * val string = datePeriod1.toString() // "P1Y3D"
+ * val datePeriod2 = DatePeriod.parse(string) // 1 year and 3 days
+ * ```
+ *
+ * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations
+ * on [LocalDates][LocalDate], but they also can be passed anywhere a [DateTimePeriod] is expected.
  */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(

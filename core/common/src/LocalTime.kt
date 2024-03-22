@@ -49,15 +49,40 @@ import kotlinx.serialization.Serializable
  *
  * [LocalTime] can be constructed directly from its components, using the constructor.
  *
+ * ```
+ * val night = LocalTime(hour = 23, minute = 13, second = 16, nanosecond = 153_200_001)
+ * val evening = LocalTime(hour = 18, minute = 31, second = 54)
+ * val noon = LocalTime(12, 0)
+ * ```
+ *
  * [fromSecondOfDay], [fromMillisecondOfDay], and [fromNanosecondOfDay] can be used to obtain a [LocalTime] from the
  * number of seconds, milliseconds, or nanoseconds since the start of the day, assuming there the offset from the UTC
  * does not change during the day.
  * [toSecondOfDay], [toMillisecondOfDay], and [toNanosecondOfDay] are the inverse operations.
  *
+ * ```
+ * val time = LocalTime.fromSecondOfDay(13 * 60 * 60) // 13:00, even if the clock was adjusted during the day
+ * time.toSecondOfDay() // 13 * 60 * 60
+ * ```
+ *
  * [parse] and [toString] methods can be used to obtain a [LocalTime] from and convert it to a string in the
- * ISO 8601 extended format (for example, `23:13:16.153200`).
+ * ISO 8601 extended format.
+ *
+ * ```
+ * val time = LocalTime.parse("23:13:16.1532")
+ * time.toString() // "23:13:16.153200"
+ * ```
  *
  * [parse] and [LocalTime.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * ```
+ * val customFormat = LocalTime.Format {
+ *   hour(); char(':'); minute(); char(':'); second()
+ *   optional { char(','); secondFraction() }
+ * }
+ * val time = LocalTime.parse("23:13:16,1532", customFormat)
+ * time.format(customFormat) // "23:13:16,1532"
+ * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalTime]:
  * - [LocalTimeIso8601Serializer] for the ISO 8601 extended format,
@@ -71,6 +96,9 @@ public expect class LocalTime : Comparable<LocalTime> {
          * A shortcut for calling [DateTimeFormat.parse].
          *
          * Parses a string that represents time-of-day and returns the parsed [LocalTime] value.
+         *
+         * If [format] is not specified, [Formats.ISO] is used.
+         * `23:40:57.120` is an example of a string in this format.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are
          * exceeded.

@@ -56,17 +56,17 @@ public sealed interface DateTimeFormat<T> {
  */
 public enum class Padding {
     /**
-     * No padding.
+     * No padding during formatting. Parsing does not require padding, but it is allowed.
      */
     NONE,
 
     /**
-     * Pad with zeros.
+     * Pad with zeros during formatting. During parsing, the padding is required, or parsing fails.
      */
     ZERO,
 
     /**
-     * Pad with spaces.
+     * Pad with spaces during formatting. During parsing, the padding is required, or parsing fails.
      */
     SPACE
 }

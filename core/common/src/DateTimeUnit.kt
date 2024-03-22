@@ -12,10 +12,11 @@ import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 
 /**
- * A unit for measuring time.
+ * A unit for measuring time; for example, a second, 20 seconds, a day, a month, or a quarter.
  *
  * This class is used to express arithmetic operations like addition and subtraction on date-time values:
- * for example, adding 10 days to a date-time value, or subtracting 5 hours from a date-time value.
+ * for example, adding 10 days to a date-time value, subtracting 5 hours from a date-time value, or finding the
+ * number of 30-second intervals between two date-time values.
  *
  * ### Interaction with other entities
  *
@@ -26,13 +27,20 @@ import kotlin.time.Duration.Companion.nanoseconds
  * [DateTimeUnit.TimeBased] can be used in the [Instant] operations without specifying the time zone, because
  * [DateTimeUnit.TimeBased] is defined in terms of passage of real time, and is independent of the time zone.
  * Note that a calendar day is not considered identical to 24 hours, so using it does require specifying the time zone.
- * See [DateTimeUnit.DayBased] for a discussion.
+ * See [DateTimeUnit.DayBased] for an explanation.
  *
  * [DateTimeUnit.DateBased] units can be used in the [LocalDate] operations: [LocalDate.plus], [LocalDate.minus], and
  * [LocalDate.until].
  *
  * Arithmetic operations on [LocalDateTime] are not provided.
  * Please see the [LocalDateTime] documentation for a discussion.
+ *
+ * [DateTimePeriod] is a combination of all [DateTimeUnit] values, used to express things like
+ * "two days and three hours."
+ * [DatePeriod] is specifically a combination of [DateTimeUnit.DateBased] values.
+ * [DateTimePeriod] is more flexible than [DateTimeUnit] because it can express a combination of different units or
+ * have the length of zero, but in exchange, the duration of time between two [Instant] or [LocalDate] values can be
+ * measured in terms of some [DateTimeUnit], but not [DateTimePeriod] or [DatePeriod].
  *
  * ### Construction, serialization, and deserialization
  *
@@ -42,7 +50,7 @@ import kotlin.time.Duration.Companion.nanoseconds
  * Two ways are provided to create custom [DateTimeUnit] instances:
  * - By multiplying an existing unit on the right by an integer scalar: for example, `DateTimeUnit.NANOSECOND * 10`.
  * - By constructing an instance manually with [TimeBased], [DayBased], or [MonthBased]: for example,
- *   `TimeBased(nanoseconds = 10)`.
+ *   `DateTimeUnit.TimeBased(nanoseconds = 10)`.
  *
  * Also, [DateTimeUnit] can be serialized and deserialized using `kotlinx.serialization`:
  * [DateTimeUnitSerializer], [DateBasedDateTimeUnitSerializer], [DayBasedDateTimeUnitSerializer],
@@ -55,6 +63,10 @@ public sealed class DateTimeUnit {
     /**
      * Produces a date-time unit that is a multiple of this unit times the specified integer [scalar] value.
      *
+     * ```
+     * val quarter = DateTimeUnit.MONTH * 3
+     * ```
+     *
      * @throws ArithmeticException if the result overflows.
      */
     public abstract operator fun times(scalar: Int): DateTimeUnit
@@ -65,7 +77,7 @@ public sealed class DateTimeUnit {
      * Such units are independent of the time zone.
      * Any such unit can be represented as some fixed number of nanoseconds.
      *
-     * @see DateTimeUnit for a discussion of date-time units in general.
+     * @see DateTimeUnit for a description of date-time units in general.
      */
     @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
     public class TimeBased(
@@ -131,7 +143,7 @@ public sealed class DateTimeUnit {
      * require a [TimeZone] to find the corresponding [LocalDateTimes][LocalDateTime] first to perform
      * the operation with the date component of these `LocalDateTime` values.
      *
-     * @see DateTimeUnit for a discussion of date-time units in general.
+     * @see DateTimeUnit for a description of date-time units in general.
      */
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     public sealed class DateBased : DateTimeUnit() {
@@ -146,14 +158,15 @@ public sealed class DateTimeUnit {
     /**
      * A [date-time unit][DateTimeUnit] equal to some number of calendar days.
      *
-     * A calendar day is not considered identical to 24 hours, thus a `DayBased`-unit cannot be expressed as a multiple of some [TimeBased]-unit.
+     * A calendar day is not considered identical to 24 hours,
+     * thus a `DayBased`-unit cannot be expressed as a multiple of some [TimeBased]-unit.
      *
      * The reason lies in time zone transitions, because of which some days can be 23 or 25 hours.
      * For example, we say that exactly a whole day has passed between `2019-10-27T02:59` and `2019-10-28T02:59`
      * in Berlin, despite the fact that the clocks were turned back one hour, so there are, in fact, 25 hours
      * between the two date-times.
      *
-     * @see DateTimeUnit for a discussion of date-time units in general.
+     * @see DateTimeUnit for a description of date-time units in general.
      */
     @Serializable(with = DayBasedDateTimeUnitSerializer::class)
     public class DayBased(
@@ -184,7 +197,7 @@ public sealed class DateTimeUnit {
      *
      * Since different months have different number of days, a `MonthBased`-unit cannot be expressed a multiple of some [DayBased]-unit.
      *
-     * @see DateTimeUnit for a discussion of date-time units in general.
+     * @see DateTimeUnit for a description of date-time units in general.
      */
     @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
     public class MonthBased(
