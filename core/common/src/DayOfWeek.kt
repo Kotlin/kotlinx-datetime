@@ -27,6 +27,6 @@ public val DayOfWeek.isoDayNumber: Int get() = ordinal + 1
  * Returns the [DayOfWeek] instance for the given ISO-8601 week day number. Monday is 1, Sunday is 7.
  */
 public fun DayOfWeek(isoDayNumber: Int): DayOfWeek {
-    require(isoDayNumber in 1..7)
+    require(isoDayNumber in 1..7) { "Expected ISO day-of-week number in 1..7, got $isoDayNumber" }
     return DayOfWeek.entries[isoDayNumber - 1]
 }
