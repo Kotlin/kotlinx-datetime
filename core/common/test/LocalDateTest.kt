@@ -117,6 +117,7 @@ class LocalDateTest {
     }
 
     @Test
+    @WasmWasiIgnore
     @Suppress("UNUSED_VARIABLE")
     fun tomorrow() {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())

@@ -66,6 +66,7 @@ class LocalDateTimeTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun getCurrentHMS() {
         with(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())) {
             println("${hour}h ${minute}m")

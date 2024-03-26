@@ -21,6 +21,7 @@ class ReadmeTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testConvertingAnInstantToLocalDateAndTimeComponents() {
         val currentMoment: Instant = Clock.System.now()
         val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
@@ -35,6 +36,7 @@ class ReadmeTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testGettingLocalDateComponents() {
         val now: Instant = Clock.System.now()
         val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -45,6 +47,7 @@ class ReadmeTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testGettingLocalTimeComponents() {
         val now: Instant = Clock.System.now()
         val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
@@ -144,6 +147,7 @@ class ReadmeTest {
     }
 
     @Test
+    @WasmWasiIgnore
     fun testInstantArithmetic() {
         run {
             val now = Clock.System.now()
