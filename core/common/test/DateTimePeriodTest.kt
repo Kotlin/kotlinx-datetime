@@ -149,9 +149,19 @@ class DateTimePeriodTest {
         assertEquals(DatePeriod(years = 2, months = 12), dp1 + dp1)
         assertEquals(DateTimePeriod(years = 1, months = 6, days = 3), p2 + dp1)
 
+        assertEquals(p1, DateTimePeriod(years=10, days=3, hours=2) - p2 -p3)
+        assertEquals(p1, DatePeriod(years = 11, months = 6) - dp1)
+        assertEquals(dp1, DatePeriod(years = 2, months = 12) - dp1)
+        assertEquals(p2, DateTimePeriod(years = 1, months = 6, days = 3) - dp1)
+
         val dp2 = dp1 + p3 + p4
+        val dp3 = dp2 - p3 -p4
         assertEquals(dp1, dp2)
+        assertEquals(dp1, dp3)
         assertTrue(dp2 is DatePeriod)
+        assertTrue(dp3 is DatePeriod)
+        assertEquals(DateTimePeriod(years = -10, days=-3, hours = -2), -(p1 + p2 + p3))
+        assertEquals(DatePeriod(years = -11, months = -6), -(dp1 + p1))
     }
 
     @Test
