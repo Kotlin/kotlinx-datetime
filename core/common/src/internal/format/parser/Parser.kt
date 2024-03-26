@@ -179,6 +179,12 @@ internal value class Parser<Output : Copyable<Output>>(
     fun match(input: CharSequence, initialContainer: Output, startIndex: Int = 0): Output {
         val errors = mutableListOf<ParseError>()
         parse(input, startIndex, initialContainer, allowDanglingInput = false, { errors.add(it) }, { _, out -> return@match out })
+        /*
+         * We do care about **all** parser errors and provide diagnostic information to make the error message approacheable
+         * for authors of non-trivial formatters with a multitude of potential parsing paths.
+         * For that, we sort errors so that the most successful parsing paths are at the top, and
+         * add them all to the parse exception message.
+         */
         errors.sortByDescending { it.position }
         // `errors` can not be empty because each parser will have (successes + failures) >= 1, and here, successes == 0
         throw ParseException(errors)
