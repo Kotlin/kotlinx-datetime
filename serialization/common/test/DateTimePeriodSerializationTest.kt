@@ -117,7 +117,7 @@ class DateTimePeriodSerializationTest {
 
     @Test
     fun testDefaultSerializers() {
-        // Check that they behave the same as the ISO-8601 serializers
+        // Check that they behave the same as the ISO 8601 serializers
         dateTimePeriodIso8601Serialization(Json.serializersModule.serializer())
         datePeriodIso8601Serialization(Json.serializersModule.serializer(), Json.serializersModule.serializer())
     }

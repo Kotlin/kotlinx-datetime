@@ -18,7 +18,7 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 
     override fun hashCode(): Int = zoneOffset.hashCode()
-    override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
+    actual override fun equals(other: Any?): Boolean = other is UtcOffset && this.zoneOffset == other.zoneOffset
     actual override fun toString(): String = zoneOffset.toString()
 
     public actual companion object {

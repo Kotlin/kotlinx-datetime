@@ -15,7 +15,7 @@ import kotlin.math.abs
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
 
     override fun hashCode(): Int = totalSeconds
-    override fun equals(other: Any?): Boolean = other is UtcOffset && this.totalSeconds == other.totalSeconds
+    actual override fun equals(other: Any?): Boolean = other is UtcOffset && this.totalSeconds == other.totalSeconds
     actual override fun toString(): String = format(Formats.ISO)
 
     public actual companion object {

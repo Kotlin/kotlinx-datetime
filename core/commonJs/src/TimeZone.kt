@@ -20,12 +20,12 @@ public actual open class TimeZone internal constructor(internal val zoneId: jtZo
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
     public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
 
-    override fun equals(other: Any?): Boolean =
+    actual override fun equals(other: Any?): Boolean =
         (this === other) || (other is TimeZone && (this.zoneId === other.zoneId || this.zoneId.equals(other.zoneId)))
 
     override fun hashCode(): Int = zoneId.hashCode()
 
-    override fun toString(): String = zoneId.toString()
+    actual override fun toString(): String = zoneId.toString()
 
     public actual companion object {
         public actual fun currentSystemDefault(): TimeZone = ofZone(jtZoneId.systemDefault())

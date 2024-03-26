@@ -98,12 +98,12 @@ public actual open class TimeZone internal constructor() {
     internal open fun atZone(dateTime: LocalDateTime, preferred: UtcOffset? = null): ZonedDateTime =
         error("Should be overridden")
 
-    override fun equals(other: Any?): Boolean =
+    actual override fun equals(other: Any?): Boolean =
         this === other || other is TimeZone && this.id == other.id
 
     override fun hashCode(): Int = id.hashCode()
 
-    override fun toString(): String = id
+    actual override fun toString(): String = id
 }
 
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)

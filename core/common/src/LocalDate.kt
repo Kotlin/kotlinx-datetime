@@ -6,7 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,6 +19,57 @@ import kotlinx.serialization.Serializable
  * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
  * is `2020-08-31` everywhere): see various [LocalDate.plus] and [LocalDate.minus] functions, as well
  * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
+ *
+ * ### Arithmetic operations
+ *
+ * Operations with [DateTimeUnit.DateBased] and [DatePeriod] are provided for [LocalDate]:
+ * - [LocalDate.plus] and [LocalDate.minus] allow expressing concepts like "two months later,"
+ * - [LocalDate.until] and its shortcuts [LocalDate.daysUntil], [LocalDate.monthsUntil], and [LocalDate.yearsUntil]
+ *   can be used to find the number of days, months, or years between two dates,
+ * - [LocalDate.periodUntil] (and [LocalDate.minus] that accepts a [LocalDate])
+ *   can be used to find the [DatePeriod] between two dates.
+ *
+ * ### Construction, serialization, and deserialization
+ *
+ * [LocalDate] can be constructed directly from its components, using the constructor.
+ *
+ * ```
+ * LocalDate(year = 2023, monthNumber = 1, dayOfMonth = 2) == LocalDate(2023, Month.JANUARY, 2)
+ * ```
+ *
+ * [fromEpochDays] can be used to obtain a [LocalDate] from the number of days since the epoch day `1970-01-01`;
+ * [toEpochDays] is the inverse operation.
+ *
+ * ```
+ * LocalDate.fromEpochDays(0) == LocalDate(1970, Month.JANUARY, 1)
+ * LocalDate(1970, Month.JANUARY, 31).toEpochDays() == 30
+ * ```
+ *
+ * [parse] and [toString] methods can be used to obtain a [LocalDate] from and convert it to a string in the
+ * ISO 8601 extended format.
+ *
+ * ```
+ * LocalDate.parse("2023-01-02") == LocalDate(2023, Month.JANUARY, 2)
+ * LocalDate(2023, Month.JANUARY, 2).toString() == "2023-01-02"
+ * ```
+ *
+ * [parse] and [LocalDate.format] both support custom formats created with [Format] or defined in [Formats].
+ *
+ * ```
+ * val customFormat = LocalDate.Format {
+ *   monthName(MonthNames.ENGLISH_ABBREVIATED)
+ *   char(' ')
+ *   dayOfMonth()
+ *   char(' ')
+ *   year()
+ * }
+ * LocalDate.parse("Jan 05 2020", customFormat) == LocalDate(2020, Month.JANUARY, 5)
+ * LocalDate(2020, Month.JANUARY, 5).format(customFormat) == "Jan 05 2020"
+ * ```
+ *
+ * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
+ * - [LocalDateIso8601Serializer] for the ISO 8601 extended format,
+ * - [LocalDateComponentSerializer] for an object with components.
  */
 @Serializable(with = LocalDateIso8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
@@ -29,6 +80,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          * Parses a string that represents a date and returns the parsed [LocalDate] value.
          *
          * If [format] is not specified, [Formats.ISO] is used.
+         * `2023-01-02` is an example of a string in this format.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          *
@@ -115,7 +167,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * The components [monthNumber] and [dayOfMonth] are 1-based.
      *
      * The supported ranges of components:
-     * - [year] the range is platform dependent, but at least is enough to represent dates of all instants between
+     * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
@@ -129,7 +181,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * Constructs a [LocalDate] instance from the given date components.
      *
      * The supported ranges of components:
-     * - [year] the range is platform dependent, but at least is enough to represent dates of all instants between
+     * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [month] all values of the [Month] enum
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
@@ -142,7 +194,7 @@ public expect class LocalDate : Comparable<LocalDate> {
     /** Returns the year component of the date. */
     public val year: Int
 
-    /** Returns the number-of-month (1..12) component of the date. */
+    /** Returns the number-of-the-month (1..12) component of the date. */
     public val monthNumber: Int
 
     /** Returns the month ([Month]) component of the date. */
@@ -168,14 +220,14 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     /**
      * Compares `this` date with the [other] date.
-     * Returns zero if this date represent the same day as the other (i.e. equal to other),
+     * Returns zero if this date represents the same day as the other (i.e., equal to other),
      * a negative number if this date is earlier than the other,
      * and a positive number if this date is later than the other.
      */
     public override fun compareTo(other: LocalDate): Int
 
     /**
-     * Converts this date to the extended ISO-8601 string representation.
+     * Converts this date to the extended ISO 8601 string representation.
      *
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [LocalDate] from a string.
@@ -210,13 +262,25 @@ public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond:
  *
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
+ *
+ * **Pitfall**: since [LocalDateTime] is not tied to a particular time zone, the resulting [LocalDateTime] may not
+ * exist in the implicit time zone.
+ * For example, `LocalDate(2021, 3, 28).atTime(LocalTime(2, 16, 20))` will successfully create a [LocalDateTime],
+ * even though in Berlin, times between 2:00 and 3:00 do not exist on March 28, 2021 due to the transition to DST.
  */
 public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this, time)
 
 
 /**
  * Returns a date that is the result of adding components of [DatePeriod] to this date. The components are
- * added in the order from the largest units to the smallest, i.e. from years to days.
+ * added in the order from the largest units to the smallest: first years and months, then days.
+ *
+ * ```
+ * LocalDate(2023, Month.JANUARY, 30) + DatePeriod(years = 1, months = 2, days = 2) == LocalDate(2024, Month.APRIL, 1)
+ * // 2023-01-30 + 1 year = 2024-01-30
+ * // 2024-01-30 + 2 months = 2024-03-30
+ * // 2024-03-30 + 2 days = 2024-04-01
+ * ```
  *
  * @see LocalDate.periodUntil
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
@@ -226,7 +290,14 @@ public expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
 
 /**
  * Returns a date that is the result of subtracting components of [DatePeriod] from this date. The components are
- * subtracted in the order from the largest units to the smallest, i.e. from years to days.
+ * subtracted in the order from the largest units to the smallest: first years and months, then days.
+ *
+ * ```
+ * LocalDate(2023, Month.JANUARY, 2) - DatePeriod(years = 1, months = 2, days = 3) == LocalDate(2021, Month.OCTOBER, 30)
+ * // 2023-01-02 - 1 year = 2022-01-02
+ * // 2022-01-02 - 2 months = 2021-11-02
+ * // 2021-11-02 - 3 days = 2021-10-30
+ * ```
  *
  * @see LocalDate.periodUntil
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
@@ -236,6 +307,7 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
     if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
         plus(with(period) { DatePeriod(-years, -months, -days) })
     } else {
+        // TODO: calendar operations are non-associative, check if subtracting years and months separately is correct
         minus(period.years, DateTimeUnit.YEAR).minus(period.months, DateTimeUnit.MONTH)
             .minus(period.days, DateTimeUnit.DAY)
     }
@@ -250,9 +322,13 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
  * - negative or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
+ * ```
+ * LocalDate(2023, Month.JANUARY, 2).periodUntil(LocalDate(2024, Month.APRIL, 1)) == DatePeriod(years = 1, months = 2, days = 30)
+ * ```
+ *
  * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
- * @see LocalDate.minus
+ * @see LocalDate.minus for the same operation with the order of arguments reversed.
  */
 public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
 
@@ -266,9 +342,13 @@ public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * - positive or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
+ * ```
+ * LocalDate(2024, Month.APRIL, 1) - LocalDate(2023, Month.JANUARY, 2) == DatePeriod(years = 1, months = 2, days = 30)
+ * ```
+ *
  * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
- * @see LocalDate.periodUntil
+ * @see LocalDate.periodUntil for the same operation with the order of arguments reversed.
  */
 public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(this)
 
@@ -279,6 +359,13 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - positive or zero if this date is earlier than the other,
  * - negative or zero if this date is later than the other,
  * - zero if this date is equal to the other.
+ *
+ * The value is rounded toward zero.
+ *
+ * ```
+ * LocalDate(2023, Month.JANUARY, 2).until(LocalDate(2024, Month.APRIL, 1), DateTimeUnit.MONTH) == 14
+ * // one year, two months, and 30 days, rounded toward zero.
+ * ```
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
@@ -292,6 +379,8 @@ public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
 /**
  * Returns the number of whole days between two dates.
  *
+ * The value is rounded toward zero.
+ *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.until
@@ -300,6 +389,8 @@ public expect fun LocalDate.daysUntil(other: LocalDate): Int
 
 /**
  * Returns the number of whole months between two dates.
+ *
+ * The value is rounded toward zero.
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
@@ -319,6 +410,8 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 /**
  * Returns a [LocalDate] that is the result of adding one [unit] to this date.
  *
+ * The value is rounded toward zero.
+ *
  * The returned date is later than this date.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
@@ -328,6 +421,8 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
  * Returns a [LocalDate] that is the result of subtracting one [unit] from this date.
+ *
+ * The value is rounded toward zero.
  *
  * The returned date is earlier than this date.
  *
@@ -342,6 +437,8 @@ public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, u
  * If the [value] is positive, the returned date is later than this date.
  * If the [value] is negative, the returned date is earlier than this date.
  *
+ * The value is rounded toward zero.
+ *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
@@ -351,6 +448,8 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  *
  * If the [value] is positive, the returned date is earlier than this date.
  * If the [value] is negative, the returned date is later than this date.
+ *
+ * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
@@ -362,6 +461,8 @@ public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): Loc
  * If the [value] is positive, the returned date is later than this date.
  * If the [value] is negative, the returned date is earlier than this date.
  *
+ * The value is rounded toward zero.
+ *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
@@ -371,6 +472,8 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  *
  * If the [value] is positive, the returned date is earlier than this date.
  * If the [value] is negative, the returned date is later than this date.
+ *
+ * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */

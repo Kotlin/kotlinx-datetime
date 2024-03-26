@@ -71,7 +71,7 @@ public object DateTimePeriodComponentSerializer: KSerializer<DateTimePeriod> {
 }
 
 /**
- * A serializer for [DateTimePeriod] that represents it as an ISO-8601 duration string.
+ * A serializer for [DateTimePeriod] that represents it as an ISO 8601 duration string.
  *
  * JSON example: `"P1DT-1H"`
  *
@@ -154,7 +154,7 @@ public object DatePeriodComponentSerializer: KSerializer<DatePeriod> {
 }
 
 /**
- * A serializer for [DatePeriod] that represents it as an ISO-8601 duration string.
+ * A serializer for [DatePeriod] that represents it as an ISO 8601 duration string.
  *
  * Deserializes the time components as well, as long as they are zero.
  *
