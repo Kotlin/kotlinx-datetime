@@ -15,8 +15,10 @@ import java.time.format.DateTimeParseException
 import java.time.LocalTime as jtLocalTime
 
 @Serializable(with = LocalTimeIso8601Serializer::class)
-public actual class LocalTime internal constructor(internal val value: jtLocalTime) :
-    Comparable<LocalTime> {
+public actual class LocalTime internal constructor(
+    // only a `var` to allow Java deserialization
+    internal var value: jtLocalTime
+) : Comparable<LocalTime>, java.io.Serializable {
 
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(
@@ -83,10 +85,29 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         @Suppress("FunctionName")
         public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
+
+        @JvmStatic
+        private val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
 
+    }
+
+    private fun writeObject(oStream: java.io.ObjectOutputStream) {
+        oStream.defaultWriteObject()
+        oStream.writeObject(value.toString())
+    }
+
+    private fun readObject(iStream: java.io.ObjectInputStream) {
+        iStream.defaultReadObject()
+        val field = this::class.java.getDeclaredField(::value.name)
+        field.isAccessible = true
+        field.set(this, jtLocalTime.parse(iStream.readObject() as String))
+    }
+
+    private fun readObjectNoData() {
+        throw java.io.InvalidObjectException("Stream data required")
     }
 }
