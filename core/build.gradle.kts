@@ -25,6 +25,8 @@ base {
 val mainJavaToolchainVersion: String by project
 val modularJavaToolchainVersion: String by project
 val serializationVersion: String by project
+val jodaCoreVersion: String by project
+val jodaTimezoneVersion: String by project
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
@@ -193,14 +195,14 @@ kotlin {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", "3.2.0"))
+                implementation(npm("@js-joda/core", jodaCoreVersion))
             }
         }
 
         val commonJsTest by creating {
             dependsOn(commonTest.get())
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", jodaTimezoneVersion))
             }
         }
 
