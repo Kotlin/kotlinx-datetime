@@ -22,12 +22,10 @@ import kotlinx.serialization.Serializable
  * `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers, see [TimeZone.availableZoneIds].
  * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
  *
- * ```
- * TimeZone.of("Europe/Berlin")
- * ```
- *
  * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
  * identifier.
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
 @Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
@@ -35,16 +33,22 @@ public expect open class TimeZone {
      * Returns the identifier string of the time zone.
      *
      * This identifier can be used later for finding this time zone with [TimeZone.of] function.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.id
      */
     public val id: String
 
     /**
      * Equivalent to [id].
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
     public override fun toString(): String
 
     /**
      * Compares this time zone to the other one. Time zones are equal if their identifier is the same.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
     public override fun equals(other: Any?): Boolean
 
@@ -53,11 +57,15 @@ public expect open class TimeZone {
          * Queries the current system time zone.
          *
          * If the current system time zone changes, this function can reflect this change on the next invocation.
+         *
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         public fun currentSystemDefault(): TimeZone
 
         /**
          * Returns the time zone with the fixed UTC+0 offset.
+         *
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.utc
          */
         public val UTC: FixedOffsetTimeZone
 
@@ -77,11 +85,14 @@ public expect open class TimeZone {
          *
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
          */
         public fun of(zoneId: String): TimeZone
 
         /**
          * Queries the set of identifiers of time zones available in the system.
+         *
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.availableZoneIds
          */
         public val availableZoneIds: Set<String>
     }
@@ -89,31 +100,18 @@ public expect open class TimeZone {
     /**
      * Return the civil date/time value that this instant has in the time zone provided as an implicit receiver.
      *
-     * The function can be used like this:
-     * ```
-     * with(TimeZone.currentSystemDefault()) {
-     *   Clock.System.now().toLocalDateTime()
-     * }
-     * ```
-     *
      * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
      * is not necessary so.
      *
      * @see LocalDateTime.toInstant
      * @see Instant.offsetIn
      * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toLocalDateTimeWithTwoReceivers
      */
     public fun Instant.toLocalDateTime(): LocalDateTime
 
     /**
      * Returns an instant that corresponds to this civil date/time value in the time zone provided as an implicit receiver.
-     *
-     * The function can be used like this:
-     * ```
-     * with(TimeZone.currentSystemDefault()) {
-     *   LocalDateTime(2021, 1, 1, 12, 0).toInstant()
-     * }
-     * ```
      *
      * Note that the conversion is not always well-defined. There can be the following possible situations:
      * - There's only one instant that has this date/time value in the [timeZone].
@@ -125,6 +123,7 @@ public expect open class TimeZone {
      *   In this case, the earlier instant is returned.
      *
      * @see Instant.toLocalDateTime
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
      */
     public fun LocalDateTime.toInstant(): Instant
 }
@@ -133,28 +132,25 @@ public expect open class TimeZone {
  * A time zone that is known to always have the same offset from UTC.
  *
  * [TimeZone.of] will return an instance of this class if the time zone rules are fixed.
- * For example:
- * ```
- * val zone = TimeZone.of("UTC+3")
- * if (zone is FixedOffsetTimeZone) {
- *   // implement the more straightforward logic...
- * } else {
- *   // ...or handle the general case
- * }
- * ```
  *
  * Time zones that are [FixedOffsetTimeZone] at some point in time can become non-fixed in the future due to
  * changes in legislation or other reasons.
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.casting
  */
 @Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public expect class FixedOffsetTimeZone : TimeZone {
     /**
      * Constructs a time zone with the fixed [offset] from UTC.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.constructorFunction
      */
     public constructor(offset: UtcOffset)
 
     /**
      * The constant offset from UTC that this time zone has.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.offset
      */
     public val offset: UtcOffset
 
@@ -174,6 +170,7 @@ public typealias ZoneOffset = FixedOffsetTimeZone
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetAt
  */
 public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 
@@ -186,6 +183,7 @@ public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
  * @see LocalDateTime.toInstant
  * @see Instant.offsetIn
  * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.instantToLocalDateTime
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
@@ -198,6 +196,7 @@ public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
  *
  * @see LocalDateTime.toInstant
  * @see Instant.offsetIn
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.instantToLocalDateTimeInOffset
  */
 internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
 
@@ -210,6 +209,7 @@ internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetIn
  */
 public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
         timeZone.offsetAt(this)
@@ -227,6 +227,7 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  *   In this case, the earlier instant is returned.
  *
  * @see Instant.toLocalDateTime
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInZone
  */
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
 
@@ -234,6 +235,7 @@ public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
  * Returns an instant that corresponds to this civil date/time value that happens at the specified [UTC offset][offset].
  *
  * @see Instant.toLocalDateTime
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInOffset
  */
 public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
 
@@ -247,5 +249,7 @@ public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
  * `atStartOfDayIn` would return the `Instant` corresponding to 00:30, whereas
  * `atTime(0, 0).toInstant(timeZone)` would return the `Instant` corresponding
  * to 01:00.
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
 public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant
