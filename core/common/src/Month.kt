@@ -14,7 +14,7 @@ package kotlinx.datetime
  *
  * @sample kotlinx.datetime.test.samples.MonthSamples.usage
  */
-public expect enum class Month {
+public enum class Month {
     /** January, month #01, with 31 days. */
     JANUARY,
 

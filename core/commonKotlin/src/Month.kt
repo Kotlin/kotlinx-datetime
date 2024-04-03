@@ -5,10 +5,6 @@
 
 package kotlinx.datetime
 
-public actual enum class Month {
-    JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER;
-}
-
 // From threetenbp
 internal fun Month.firstDayOfYear(leapYear: Boolean): Int {
     val leap = if (leapYear) 1 else 0

@@ -19,4 +19,19 @@ class DayOfWeekTest {
         assertFailsWith<IllegalArgumentException> { DayOfWeek(8) }
         assertFailsWith<IllegalArgumentException> { DayOfWeek(Int.MIN_VALUE) }
     }
+
+    @Test
+    fun testExhaustiveWhenDayOfWeek() {
+        for (dayOfWeek in DayOfWeek.entries) {
+            when (dayOfWeek) {
+                DayOfWeek.MONDAY -> assertEquals(1, dayOfWeek.isoDayNumber)
+                DayOfWeek.TUESDAY -> assertEquals(2, dayOfWeek.isoDayNumber)
+                DayOfWeek.WEDNESDAY -> assertEquals(3, dayOfWeek.isoDayNumber)
+                DayOfWeek.THURSDAY -> assertEquals(4, dayOfWeek.isoDayNumber)
+                DayOfWeek.FRIDAY -> assertEquals(5, dayOfWeek.isoDayNumber)
+                DayOfWeek.SATURDAY -> assertEquals(6, dayOfWeek.isoDayNumber)
+                DayOfWeek.SUNDAY -> assertEquals(7, dayOfWeek.isoDayNumber)
+            }
+        }
+    }
 }

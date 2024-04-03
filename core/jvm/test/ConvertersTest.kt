@@ -5,6 +5,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import org.junit.experimental.theories.suppliers.TestedOn
 import kotlin.random.Random
 import kotlin.test.*
 import java.time.Instant as JTInstant
@@ -26,7 +27,7 @@ class ConvertersTest {
             assertEquals(ktInstant, jtInstant.toKotlinInstant())
             assertEquals(jtInstant, ktInstant.toJavaInstant())
 
-            assertEquals(ktInstant, jtInstant.toString().toInstant())
+            assertEquals(ktInstant, jtInstant.toString().let(Instant::parse))
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 
@@ -37,10 +38,11 @@ class ConvertersTest {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
         val month = Month.entries.random()
-        val day = (1..java.time.YearMonth.of(year, month).lengthOfMonth()).random()
+        val day = (1..java.time.YearMonth.of(year, month.toJavaMonth()).lengthOfMonth()).random()
         return LocalDate(year, month.number, day)
     }
 
@@ -61,12 +63,14 @@ class ConvertersTest {
     @Test
     fun localDateTime() {
         fun test(ktDateTime: LocalDateTime) {
-            val jtDateTime = with(ktDateTime) { JTLocalDateTime.of(year, month, day, hour, minute, second, nanosecond) }
+            val jtDateTime = with(ktDateTime) {
+                JTLocalDateTime.of(year, month.toJavaMonth(), day, hour, minute, second, nanosecond)
+            }
 
             assertEquals(ktDateTime, jtDateTime.toKotlinLocalDateTime())
             assertEquals(jtDateTime, ktDateTime.toJavaLocalDateTime())
 
-            assertEquals(ktDateTime, jtDateTime.toString().toLocalDateTime())
+            assertEquals(ktDateTime, jtDateTime.toString().let(LocalDateTime::parse))
             assertEquals(jtDateTime, ktDateTime.toString().let(JTLocalDateTime::parse))
         }
 
@@ -83,7 +87,7 @@ class ConvertersTest {
             assertEquals(ktTime, jtTime.toKotlinLocalTime())
             assertEquals(jtTime, ktTime.toJavaLocalTime())
 
-            assertEquals(ktTime, jtTime.toString().toLocalTime())
+            assertEquals(ktTime, jtTime.toString().let(LocalTime::parse))
             assertEquals(jtTime, ktTime.toString().let(JTLocalTime::parse))
         }
 
@@ -95,12 +99,12 @@ class ConvertersTest {
     @Test
     fun localDate() {
         fun test(ktDate: LocalDate) {
-            val jtDate = with(ktDate) { JTLocalDate.of(year, month, day) }
+            val jtDate = with(ktDate) { JTLocalDate.of(year, month.toJavaMonth(), day) }
 
             assertEquals(ktDate, jtDate.toKotlinLocalDate())
             assertEquals(jtDate, ktDate.toJavaLocalDate())
 
-            assertEquals(ktDate, jtDate.toString().toLocalDate())
+            assertEquals(ktDate, jtDate.toString().let(LocalDate::parse))
             assertEquals(jtDate, ktDate.toString().let(JTLocalDate::parse))
         }
 
@@ -186,5 +190,25 @@ class ConvertersTest {
         test("+08")
         test("+08")
         test("-103030")
+    }
+
+    @Test
+    fun month() {
+        fun test(month: Month) {
+            val jtMonth = month.toJavaMonth()
+            assertEquals(month, jtMonth.toKotlinMonth())
+        }
+        Month.entries.forEach(::test)
+        assertEquals(Month.JANUARY, java.time.Month.JANUARY.toKotlinMonth())
+    }
+
+    @Test
+    fun dayOfWeek() {
+        fun test(dayOfWeek: DayOfWeek) {
+            val jtDayOfWeek = dayOfWeek.toJavaDayOfWeek()
+            assertEquals(dayOfWeek, jtDayOfWeek.toKotlinDayOfWeek())
+        }
+        DayOfWeek.entries.forEach(::test)
+        assertEquals(DayOfWeek.MONDAY, java.time.DayOfWeek.MONDAY.toKotlinDayOfWeek())
     }
 }

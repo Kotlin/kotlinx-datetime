@@ -13,7 +13,7 @@ package kotlinx.datetime
  *
  * @sample kotlinx.datetime.test.samples.DayOfWeekSamples.usage
  */
-public expect enum class DayOfWeek {
+public enum class DayOfWeek {
     MONDAY,
     TUESDAY,
     WEDNESDAY,
