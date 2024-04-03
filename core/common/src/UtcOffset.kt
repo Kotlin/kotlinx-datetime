@@ -31,39 +31,22 @@ import kotlinx.serialization.Serializable
  *
  * To construct a [UtcOffset] value, use the [UtcOffset] constructor function.
  * [totalSeconds] returns the number of seconds from UTC.
+ * See sample 1.
  *
  * There is also a [ZERO] constant for the offset of zero.
  *
- * ```
- * val offset = UtcOffset(hours = 3, minutes = 30)
- * println(offset.totalSeconds) // 12600
- * UtcOffset(seconds = 0) == UtcOffset.ZERO
- * ```
- *
  * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the
  * ISO 8601 extended format (for example, `+01:30`).
- *
- * ```
- * val offset = UtcOffset.parse("+01:30")
- * offset.toString() // +01:30
- * ```
+ * See sample 2.
  *
  * [parse] and [UtcOffset.format] both support custom formats created with [Format] or defined in [Formats].
- *
- * ```
- * val customFormat = UtcOffset.Format {
- *   optional("GMT") {
- *     offsetHours(Padding.NONE); char(':'); offsetMinutesOfHour()
- *     optional { char(':'); offsetSecondsOfMinute() }
- *   }
- * }
- *
- * val offset = UtcOffset.parse("+01:30:15", customFormat)
- * offset.format(customFormat) // +1:30:15
- * offset.format(UtcOffset.Formats.FOUR_DIGITS) // +0130
- * ```
+ * See sample 3.
  *
  * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the [UtcOffsetSerializer].
+ *
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.construction
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.simpleParsingAndFormatting
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.customFormat
  */
 @Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
@@ -76,6 +59,8 @@ public expect class UtcOffset {
 
     /**
      * Returns `true` if [other] is a [UtcOffset] with the same [totalSeconds].
+     *
+     * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.equalsSample
      */
     public override fun equals(other: Any?): Boolean
 
@@ -95,28 +80,20 @@ public expect class UtcOffset {
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are
          * exceeded.
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()): UtcOffset
 
         /**
          * Creates a new format for parsing and formatting [UtcOffset] values.
          *
-         * Example:
-         * ```
-         * // `GMT` on zero, `+4:30:15`, using a custom format:
-         * UtcOffset.Format {
-         *   optional("GMT") {
-         *     offsetHours(Padding.NONE); char(':'); offsetMinutesOfHour()
-         *     optional { char(':'); offsetSecondsOfMinute() }
-         *   }
-         * }
-         * ```
-         *
          * Since [UtcOffset] values are rarely formatted and parsed on their own,
          * instances of [DateTimeFormat] obtained here will likely need to be passed to
          * [DateTimeFormatBuilder.WithUtcOffset.offset] in a format builder for a larger data structure.
          *
          * There is a collection of predefined formats in [UtcOffset.Formats].
+         *
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.customFormat
          */
         @Suppress("FunctionName")
         public fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset>
@@ -145,6 +122,8 @@ public expect class UtcOffset {
          * - `-02:00`, minus two hours;
          * - `-17:16`
          * - `+10:36:30`
+         *
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<UtcOffset>
 
@@ -162,6 +141,7 @@ public expect class UtcOffset {
          * - `+103630`
          *
          * @see UtcOffset.Formats.FOUR_DIGITS
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.Formats.isoBasic
          */
         public val ISO_BASIC: DateTimeFormat<UtcOffset>
 
@@ -177,6 +157,7 @@ public expect class UtcOffset {
          * - `+1036`
          *
          * @see UtcOffset.Formats.ISO_BASIC
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.Formats.fourDigits
          */
         public val FOUR_DIGITS: DateTimeFormat<UtcOffset>
     }
@@ -187,6 +168,8 @@ public expect class UtcOffset {
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [UtcOffset] from a string.
      * @see UtcOffset.format for formatting using a custom format.
+     *
+     * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.toStringSample
      */
     public override fun toString(): String
 }
@@ -194,6 +177,8 @@ public expect class UtcOffset {
 /**
  * Formats this value using the given [format].
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ *
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.formatting
  */
 public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.format(this)
 
@@ -213,6 +198,7 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.
  * @throws IllegalArgumentException if components have different signs.
  * @throws IllegalArgumentException if the resulting `UtcOffset` value is outside of range `±18:00`.
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.constructorFunction
  */
 public expect fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset
 
@@ -224,6 +210,8 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
  *
  * **Pitfall**: if the offset is not fixed, the returned time zone will not reflect the changes in the offset.
  * Use [TimeZone.of] with a IANA timezone name to obtain a time zone that can handle changes in the offset.
+ *
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.asFixedOffsetTimeZone
  */
 public fun UtcOffset.asTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)
 
