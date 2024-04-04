@@ -90,3 +90,10 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
     }
 }
+
+@Deprecated(
+    "Use kotlinx.datetime.Month",
+    ReplaceWith("atDate(year, month.toKotlinMonth(), dayOfMonth)")
+)
+public fun LocalTime.atDate(year: Int, month: java.time.Month, dayOfMonth: Int = 0): LocalDateTime =
+    atDate(year, month.toKotlinMonth(), dayOfMonth)
