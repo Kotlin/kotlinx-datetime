@@ -47,46 +47,28 @@ import kotlinx.serialization.Serializable
  *
  * ### Construction, serialization, and deserialization
  *
- * [LocalTime] can be constructed directly from its components, using the constructor.
- *
- * ```
- * val night = LocalTime(hour = 23, minute = 13, second = 16, nanosecond = 153_200_001)
- * val evening = LocalTime(hour = 18, minute = 31, second = 54)
- * val noon = LocalTime(12, 0)
- * ```
+ * [LocalTime] can be constructed directly from its components, using the constructor. See sample 1.
  *
  * [fromSecondOfDay], [fromMillisecondOfDay], and [fromNanosecondOfDay] can be used to obtain a [LocalTime] from the
  * number of seconds, milliseconds, or nanoseconds since the start of the day, assuming there the offset from the UTC
  * does not change during the day.
  * [toSecondOfDay], [toMillisecondOfDay], and [toNanosecondOfDay] are the inverse operations.
- *
- * ```
- * val time = LocalTime.fromSecondOfDay(13 * 60 * 60) // 13:00, even if the clock was adjusted during the day
- * time.toSecondOfDay() // 13 * 60 * 60
- * ```
+ * See sample 2.
  *
  * [parse] and [toString] methods can be used to obtain a [LocalTime] from and convert it to a string in the
- * ISO 8601 extended format.
- *
- * ```
- * val time = LocalTime.parse("23:13:16.1532")
- * time.toString() // "23:13:16.153200"
- * ```
+ * ISO 8601 extended format. See sample 3.
  *
  * [parse] and [LocalTime.format] both support custom formats created with [Format] or defined in [Formats].
- *
- * ```
- * val customFormat = LocalTime.Format {
- *   hour(); char(':'); minute(); char(':'); second()
- *   optional { char(','); secondFraction() }
- * }
- * val time = LocalTime.parse("23:13:16,1532", customFormat)
- * time.format(customFormat) // "23:13:16,1532"
- * ```
+ * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalTime]:
  * - [LocalTimeIso8601Serializer] for the ISO 8601 extended format,
  * - [LocalTimeComponentSerializer] for an object with components.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.construction
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.representingAsNumbers
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.simpleParsingAndFormatting
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.customFormat
  */
 @Serializable(LocalTimeIso8601Serializer::class)
 public expect class LocalTime : Comparable<LocalTime> {
@@ -105,6 +87,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          *
          * @see LocalTime.toString for formatting using the default format.
          * @see LocalTime.format for formatting using a custom format.
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()): LocalTime
 
@@ -123,6 +106,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @see LocalTime.toSecondOfDay
          * @see LocalTime.fromMillisecondOfDay
          * @see LocalTime.fromNanosecondOfDay
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToSecondOfDay
          */
         public fun fromSecondOfDay(secondOfDay: Int): LocalTime
 
@@ -142,6 +126,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @see LocalTime.fromSecondOfDay
          * @see LocalTime.toMillisecondOfDay
          * @see LocalTime.fromNanosecondOfDay
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToMillisecondOfDay
          */
         public fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime
 
@@ -160,6 +145,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @see LocalTime.fromSecondOfDay
          * @see LocalTime.fromMillisecondOfDay
          * @see LocalTime.toNanosecondOfDay
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToNanosecondOfDay
          */
         public fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime
 
@@ -178,6 +164,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * (for example, [second] is 60), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalTime.Formats].
+         *
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.customFormat
          */
         @Suppress("FunctionName")
         public fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime>
@@ -204,6 +192,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * Fractional parts of the second are included if non-zero.
          *
          * Guaranteed to parse all strings that [LocalTime.toString] produces.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalTime>
     }
@@ -218,21 +208,36 @@ public expect class LocalTime : Comparable<LocalTime> {
      * - [nanosecond] `0..999_999_999`
      *
      * @throws IllegalArgumentException if any parameter is out of range.
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.constructorFunction
      */
     public constructor(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
 
     /**
      * Returns the hour-of-day (0..23) time component of this time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.hour
      */
     public val hour: Int
 
-    /** Returns the minute-of-hour (0..59) time component of this time value. */
+    /**
+     * Returns the minute-of-hour (0..59) time component of this time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.minute
+     */
     public val minute: Int
 
-    /** Returns the second-of-minute (0..59) time component of this time value. */
+    /**
+     * Returns the second-of-minute (0..59) time component of this time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.second
+     */
     public val second: Int
 
-    /** Returns the nanosecond-of-second (0..999_999_999) time component of this time value. */
+    /**
+     * Returns the nanosecond-of-second (0..999_999_999) time component of this time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.nanosecond
+     */
     public val nanosecond: Int
 
     /**
@@ -246,6 +251,8 @@ public expect class LocalTime : Comparable<LocalTime> {
      *
      * @see toMillisecondOfDay
      * @see toNanosecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.toSecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToSecondOfDay
      */
     public fun toSecondOfDay(): Int
 
@@ -260,6 +267,8 @@ public expect class LocalTime : Comparable<LocalTime> {
      *
      * @see toSecondOfDay
      * @see toNanosecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.toMillisecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToMillisecondOfDay
      */
     public fun toMillisecondOfDay(): Int
 
@@ -274,6 +283,8 @@ public expect class LocalTime : Comparable<LocalTime> {
      *
      * @see toMillisecondOfDay
      * @see toNanosecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.toNanosecondOfDay
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.fromAndToNanosecondOfDay
      */
     public fun toNanosecondOfDay(): Long
 
@@ -286,6 +297,8 @@ public expect class LocalTime : Comparable<LocalTime> {
      * Note that, on days when there is a time overlap (for example, due to the daylight saving time
      * transitions in autumn), a "lesser" wall-clock reading can, in fact, happen later than the
      * "greater" one.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.compareTo
      */
     public override operator fun compareTo(other: LocalTime): Int
 
@@ -306,6 +319,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
      * @see parse for the dual operation: obtaining [LocalTime] from a string.
      * @see LocalTime.format for formatting using a custom format.
+     * @sample kotlinx.datetime.test.samples.LocalTimeSamples.toStringSample
      */
     public override fun toString(): String
 }
@@ -313,6 +327,8 @@ public expect class LocalTime : Comparable<LocalTime> {
 /**
  * Formats this value using the given [format].
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.formatting
  */
 public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.format(this)
 
@@ -327,6 +343,8 @@ public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
  *
  * There is no check of whether the time is valid on the specified date, because that depends on a time zone, which
  * this method does not accept.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWiseMonthNumber
  */
 public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int = 0): LocalDateTime =
     LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
@@ -336,6 +354,8 @@ public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int = 0): L
  *
  * There is no check of whether the time is valid on the specified date, because that depends on a time zone, which
  * this method does not accept.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWise
  */
 public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): LocalDateTime =
     LocalDateTime(year, month, dayOfMonth, hour, minute, second, nanosecond)
@@ -345,6 +365,8 @@ public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): Local
  *
  * There is no check of whether the time is valid on the specified date, because that depends on a time zone, which
  * this method does not accept.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDate
  */
 public fun LocalTime.atDate(date: LocalDate): LocalDateTime = LocalDateTime(date, this)
 

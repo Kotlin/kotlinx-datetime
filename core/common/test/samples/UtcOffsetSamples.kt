@@ -67,7 +67,6 @@ class UtcOffsetSamples {
     fun formatting() {
         check(UtcOffset(hours = 1, minutes = 30).format(UtcOffset.Formats.FOUR_DIGITS) == "+0130")
         val customFormat = UtcOffset.Format { offsetHours(Padding.NONE); offsetMinutesOfHour() }
-        assertEquals("+130", UtcOffset(hours = 1, minutes = 30).format(customFormat))
         check(UtcOffset(hours = 1, minutes = 30).format(customFormat) == "+130")
     }
 
