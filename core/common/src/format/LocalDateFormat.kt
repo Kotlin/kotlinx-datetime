@@ -6,16 +6,28 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_ABBREVIATED
+import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_FULL
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
 
 /**
  * A description of how month names are formatted.
+ *
+ * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.monthName].
+ *
+ * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED], and custom instances can be created
+ * using the constructor.
+ *
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.usage
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.constructionFromList
  */
 public class MonthNames(
     /**
      * A list of month names, in order from January to December.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.names
      */
     public val names: List<String>
 ) {
@@ -25,6 +37,8 @@ public class MonthNames(
 
     /**
      * Create a [MonthNames] using the month names in order from January to December.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.constructionFromStrings
      */
     public constructor(
         january: String, february: String, march: String, april: String, may: String, june: String,
@@ -35,6 +49,8 @@ public class MonthNames(
     public companion object {
         /**
          * English month names, 'January' to 'December'.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishFull
          */
         public val ENGLISH_FULL: MonthNames = MonthNames(
             listOf(
@@ -45,6 +61,8 @@ public class MonthNames(
 
         /**
          * Shortened English month names, 'Jan' to 'Dec'.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishAbbreviated
          */
         public val ENGLISH_ABBREVIATED: MonthNames = MonthNames(
             listOf(
@@ -53,20 +71,40 @@ public class MonthNames(
             )
         )
     }
+
+    /** @suppress */
+    override fun toString(): String =
+        names.joinToString(", ", "MonthNames(", ")", transform = String::toString)
+
+    /** @suppress */
+    override fun equals(other: Any?): Boolean = other is MonthNames && names == other.names
+
+    /** @suppress */
+    override fun hashCode(): Int = names.hashCode()
 }
 
-internal fun MonthNames.toKotlinCode(): String = when (this.names) {
+private fun MonthNames.toKotlinCode(): String = when (this.names) {
     MonthNames.ENGLISH_FULL.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_FULL.name}"
     MonthNames.ENGLISH_ABBREVIATED.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_ABBREVIATED.name}"
     else -> names.joinToString(", ", "MonthNames(", ")", transform = String::toKotlinCode)
 }
 
 /**
- * A description of how day of week names are formatted.
+ * A description of how day-of-week names are formatted.
+ *
+ * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.dayOfWeek].
+ *
+ * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED], and custom instances can be created
+ * using the constructor.
+ *
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.usage
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.constructionFromList
  */
 public class DayOfWeekNames(
     /**
      * A list of day of week names, in order from Monday to Sunday.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.names
      */
     public val names: List<String>
 ) {
@@ -76,6 +114,8 @@ public class DayOfWeekNames(
 
     /**
      * A constructor that takes the day of week names, in order from Monday to Sunday.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.constructionFromStrings
      */
     public constructor(
         monday: String,
@@ -91,6 +131,8 @@ public class DayOfWeekNames(
     public companion object {
         /**
          * English day of week names, 'Monday' to 'Sunday'.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.englishFull
          */
         public val ENGLISH_FULL: DayOfWeekNames = DayOfWeekNames(
             listOf(
@@ -100,6 +142,8 @@ public class DayOfWeekNames(
 
         /**
          * Shortened English day of week names, 'Mon' to 'Sun'.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.englishAbbreviated
          */
         public val ENGLISH_ABBREVIATED: DayOfWeekNames = DayOfWeekNames(
             listOf(
@@ -107,9 +151,19 @@ public class DayOfWeekNames(
             )
         )
     }
+
+    /** @suppress */
+    override fun toString(): String =
+        names.joinToString(", ", "DayOfWeekNames(", ")", transform = String::toString)
+
+    /** @suppress */
+    override fun equals(other: Any?): Boolean = other is DayOfWeekNames && names == other.names
+
+    /** @suppress */
+    override fun hashCode(): Int = names.hashCode()
 }
 
-internal fun DayOfWeekNames.toKotlinCode(): String = when (this.names) {
+private fun DayOfWeekNames.toKotlinCode(): String = when (this.names) {
     DayOfWeekNames.ENGLISH_FULL.names -> "DayOfWeekNames.${DayOfWeekNames.Companion::ENGLISH_FULL.name}"
     DayOfWeekNames.ENGLISH_ABBREVIATED.names -> "DayOfWeekNames.${DayOfWeekNames.Companion::ENGLISH_ABBREVIATED.name}"
     else -> names.joinToString(", ", "DayOfWeekNames(", ")", transform = String::toKotlinCode)
