@@ -18,6 +18,8 @@ public sealed interface DateTimeFormatBuilder {
      *
      * When formatting, the string is appended to the result as is,
      * and when parsing, the string is expected to be present in the input verbatim.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatBuilderSamples.chars
      */
     public fun chars(value: String)
 
@@ -332,6 +334,8 @@ internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(
  * ```
  *
  * This will always format a date as `MM/DD`, but will also accept `DD-MM` and `MM DD`.
+ *
+ * @sample kotlinx.datetime.test.samples.format.DateTimeFormatBuilderSamples.alternativeParsing
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T : DateTimeFormatBuilder> T.alternativeParsing(
@@ -352,6 +356,7 @@ public fun <T : DateTimeFormatBuilder> T.alternativeParsing(
  *
  * When formatting, the section is formatted if the value of any field in the block is not equal to the default value.
  * Only [optional] calls where all the fields have default values are permitted.
+ * See [alternativeParsing] for a way to parse some fields optionally without introducing special formatting behavior.
  *
  * Example:
  * ```
@@ -368,6 +373,7 @@ public fun <T : DateTimeFormatBuilder> T.alternativeParsing(
  * [ifZero] defines the string that is used if values are the default ones.
  *
  * @throws IllegalArgumentException if not all fields used in [format] have a default value.
+ * @sample kotlinx.datetime.test.samples.format.DateTimeFormatBuilderSamples.optional
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T : DateTimeFormatBuilder> T.optional(ifZero: String = "", format: T.() -> Unit): Unit = when (this) {
@@ -383,6 +389,8 @@ public fun <T : DateTimeFormatBuilder> T.optional(ifZero: String = "", format: T
  * A literal character.
  *
  * This is a shorthand for `chars(value.toString())`.
+ *
+ * @sample kotlinx.datetime.test.samples.format.DateTimeFormatBuilderSamples.char
  */
 public fun DateTimeFormatBuilder.char(value: Char): Unit = chars(value.toString())
 

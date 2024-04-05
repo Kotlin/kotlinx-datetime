@@ -100,6 +100,7 @@ public annotation class FormatStringsInDatetimeFormats
  * @throws IllegalArgumentException if the pattern is invalid or contains unsupported directives.
  * @throws IllegalArgumentException if the builder is incompatible with the specified directives.
  * @throws UnsupportedOperationException if the kotlinx-datetime library does not support the specified directives.
+ * @sample kotlinx.datetime.test.samples.format.UnicodeSample.byUnicodePattern
  */
 @FormatStringsInDatetimeFormats
 public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {

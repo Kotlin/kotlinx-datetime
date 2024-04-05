@@ -15,11 +15,17 @@ import kotlinx.datetime.internal.format.parser.*
 public sealed interface DateTimeFormat<T> {
     /**
      * Formats the given [value] into a string, using this format.
+     *
+     * @throws IllegalArgumentException if the value does not contain all the information required by the format.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.format
      */
     public fun format(value: T): String
 
     /**
      * Formats the given [value] into the given [appendable] using this format.
+     *
+     * @throws IllegalArgumentException if the value does not contain all the information required by the format.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.formatTo
      */
     public fun <A : Appendable> formatTo(appendable: A, value: T): A
 
@@ -27,6 +33,7 @@ public sealed interface DateTimeFormat<T> {
      * Parses the given [input] string as [T] using this format.
      *
      * @throws IllegalArgumentException if the input string is not in the expected format or the value is invalid.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.parse
      */
     public fun parse(input: CharSequence): T
 
@@ -34,6 +41,7 @@ public sealed interface DateTimeFormat<T> {
      * Parses the given [input] string as [T] using this format.
      *
      * @return the parsed value, or `null` if the input string is not in the expected format or the value is invalid.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.parseOrNull
      */
     public fun parseOrNull(input: CharSequence): T?
 
@@ -44,6 +52,8 @@ public sealed interface DateTimeFormat<T> {
          *
          * The typical use case for this is to create a [DateTimeFormat] instance using a non-idiomatic approach and
          * then convert it to a builder DSL.
+         *
+         * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.formatAsKotlinBuilderDsl
          */
         public fun formatAsKotlinBuilderDsl(format: DateTimeFormat<*>): String = when (format) {
             is AbstractDateTimeFormat<*, *> -> format.actualFormat.builderString(allFormatConstants)
@@ -53,20 +63,28 @@ public sealed interface DateTimeFormat<T> {
 
 /**
  * The style of padding to use when formatting a value.
+ *
+ * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.usage
  */
 public enum class Padding {
     /**
      * No padding during formatting. Parsing does not require padding, but it is allowed.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.none
      */
     NONE,
 
     /**
      * Pad with zeros during formatting. During parsing, the padding is required, or parsing fails.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.zero
      */
     ZERO,
 
     /**
      * Pad with spaces during formatting. During parsing, the padding is required, or parsing fails.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.spaces
      */
     SPACE
 }
