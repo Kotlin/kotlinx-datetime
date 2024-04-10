@@ -1,6 +1,7 @@
 plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-81"
     kotlin("multiplatform") apply false
+    id("org.jetbrains.kotlinx.kover") version "0.8.0-Beta2"
 }
 
 infra {
@@ -39,4 +40,20 @@ allprojects {
 // Drop this when NodeJs version that supports latest Wasm become stable
 tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
     args.add("--ignore-engines")
+}
+
+kover {
+    reports {
+        verify {
+            rule {
+                // requirement for a minimum lines coverage of 85%
+                minBound(85)
+            }
+        }
+    }
+}
+
+dependencies {
+    kover(project(":kotlinx-datetime"))
+    kover(project(":kotlinx-datetime-serialization"))
 }

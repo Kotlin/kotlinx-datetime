@@ -3,6 +3,7 @@ import java.util.Locale
 plugins {
     id("kotlin-multiplatform")
     kotlin("plugin.serialization")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 val mainJavaToolchainVersion: String by project

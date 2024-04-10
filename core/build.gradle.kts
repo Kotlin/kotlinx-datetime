@@ -12,6 +12,7 @@ plugins {
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
     `maven-publish`
+    id("org.jetbrains.kotlinx.kover")
 }
 
 mavenPublicationsPom {
