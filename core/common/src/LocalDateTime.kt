@@ -14,8 +14,8 @@ import kotlinx.serialization.Serializable
  * The representation of a specific civil date and time without a reference to a particular time zone.
  *
  * This class does not describe specific *moments in time*, which are represented as [Instant] values.
- * Instead, its instances can be thought of as clock readings, something that someone could observe in their time zone.
- * For example, `2020-08-30T18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
+ * Instead, you can think of its instances as clock readings, which can be observed in a particular time zone.
+ * For example, `2020-08-30T18:43` is not a *moment in time* since someone in Berlin and Tokyo would witness
  * this on their clocks at different times, but it is a [LocalDateTime].
  *
  * The main purpose of this class is to provide human-readable representations of [Instant] values, to transfer them
@@ -25,18 +25,18 @@ import kotlinx.serialization.Serializable
  *
  * ### Arithmetic operations
  *
- * The arithmetic on [LocalDateTime] values is not provided, since without accounting for the time zone transitions it
- * may give misleading results.
+ * The arithmetic on [LocalDateTime] values is not provided since it may give misleading results
+ * without accounting for time zone transitions.
  *
  * For example, in Berlin, naively adding one day to `2021-03-27T02:16:20` without accounting for the time zone would
  * result in `2021-03-28T02:16:20`.
- * However, the resulting local date-time cannot be observed in that time zone,
+ * However, the resulting local date-time cannot be observed in that time zone
  * because the clocks moved forward from `02:00` to `03:00` on that day.
- * This is known as a "time gap", or a "spring forward" transition.
+ * This is known as a "time gap" or a "spring forward" transition.
  *
  * Similarly, the local date-time `2021-10-31T02:16:20` is ambiguous,
  * because the clocks moved back from `03:00` to `02:00`.
- * This is known as a "time overlap", or a "fall back" transition.
+ * This is known as a "time overlap" or a "fall back" transition.
  *
  * For these reasons, using [LocalDateTime] as an input to arithmetic operations is discouraged.
  *
@@ -94,7 +94,7 @@ import kotlinx.serialization.Serializable
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDateTime]:
- * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format,
+ * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateTimeComponentSerializer] for an object with components.
  *
  * @see LocalDate for only the date part of the date/time value.
@@ -350,7 +350,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * val ldt1 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:16:20
      * // 45 minutes pass; clocks move back from 03:00 to 02:00 in the meantime
      * val ldt2 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:01:20
-     * ldt2 > ldt1 // returns `false`
+     * ldt2 > ldt1 // Returns `false`
      * ```
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.compareToSample
@@ -396,5 +396,5 @@ public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String =
 @Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDateTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
 
-// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+// A workaround for https://youtrack.jetbrains.com/issue/KT-65484
 internal fun getIsoDateTimeFormat() = LocalDateTime.Formats.ISO

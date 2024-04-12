@@ -17,8 +17,8 @@ import kotlinx.datetime.internal.format.parser.Copyable
  *
  * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.monthName].
  *
- * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED], and custom instances can be created
- * using the constructor.
+ * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED].
+ * You can also create custom instances using the constructor.
  *
  * An [IllegalArgumentException] will be thrown if some month name is empty or there are duplicate names.
  *
@@ -100,12 +100,12 @@ private fun MonthNames.toKotlinCode(): String = when (this.names) {
 }
 
 /**
- * A description of how day-of-week names are formatted.
+ * A description of how the names of weekdays are formatted.
  *
  * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.dayOfWeek].
  *
- * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED], and custom instances can be created
- * using the constructor.
+ * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED].
+ * You can also create custom instances using the constructor.
  *
  * An [IllegalArgumentException] will be thrown if some day-of-week name is empty or there are duplicate names.
  *
