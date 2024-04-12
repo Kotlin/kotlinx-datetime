@@ -12,8 +12,8 @@ import kotlin.time.*
  *
  * See [Clock.System][Clock.System] for the clock instance that queries the operating system.
  *
- * It is recommended not to use [Clock.System] directly in the implementation; instead, one could pass a
- * [Clock] explicitly to the functions or classes that need it.
+ * It is not recommended to use [Clock.System] directly in the implementation. Instead, you can pass a
+ * [Clock] explicitly to the necessary functions or classes.
  * This way, tests can be written deterministically by providing custom [Clock] implementations
  * to the system under test.
  */
@@ -23,7 +23,7 @@ public interface Clock {
      *
      * It is not guaranteed that calling [now] later will return a larger [Instant].
      * In particular, for [System], violations of this are completely expected and must be taken into account.
-     * See the documentation of [System] for details.
+     * See the [System] documentation for details.
      *
      * Even though [Instant] is defined to be on the UTC-SLS time scale, which enforces a specific way of handling
      * leap seconds, [now] is not guaranteed to handle leap seconds in any specific way.
@@ -37,15 +37,14 @@ public interface Clock {
      * these increases will not necessarily correspond to the elapsed time.
      *
      * For example, when using [Clock.System], the following could happen:
-     * - [now] returns `2023-01-02T22:35:01Z`;
-     * - The system queries the Internet and recognizes that its clock needs adjusting;
+     * - [now] returns `2023-01-02T22:35:01Z`.
+     * - The system queries the Internet and recognizes that its clock needs adjusting.
      * - [now] returns `2023-01-02T22:32:05Z`.
      *
-     * When predictable intervals between successive measurements are needed, consider using
-     * [TimeSource.Monotonic].
+     * When you need predictable intervals between successive measurements, consider using [TimeSource.Monotonic].
      *
-     * For improved testability, one could avoid using [Clock.System] directly in the implementation,
-     * instead passing a [Clock] explicitly.
+     * For improved testability, you should avoid using [Clock.System] directly in the implementation
+     * and pass a [Clock] explicitly instead.
      */
     public object System : Clock {
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
@@ -59,7 +58,8 @@ public interface Clock {
 /**
  * Returns the current date at the given [time zone][timeZone], according to [this Clock][this].
  *
- * The time zone is important because the current date is not the same in all time zones at the same time.
+ * The time zone is important because the current date is not the same in all time zones at the same time:
+ *
  * ```
  * val clock = object : Clock {
  *    override fun now(): Instant = Instant.parse("2020-01-01T12:00:00Z")
@@ -74,7 +74,7 @@ public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
 /**
  * Returns a [TimeSource] that uses this [Clock] to mark a time instant and to find the amount of time elapsed since that mark.
  *
- * **Pitfall**: using this function with [Clock.System] is error-prone,
+ * **Pitfall**: using this function with [Clock.System] is error-prone
  * because [Clock.System] is not well suited for measuring time intervals.
  * Please only use this conversion function on the [Clock] instances that are fully controlled programmatically.
  */

@@ -353,7 +353,7 @@ public fun <T : DateTimeFormatBuilder> T.alternativeParsing(
  *
  * When formatting, the section is formatted if the value of any field in the block is not equal to the default value.
  * Only [optional] calls where all the fields have default values are permitted.
- * See [alternativeParsing] for a way to parse some fields optionally without introducing special formatting behavior.
+ * See [alternativeParsing] to parse some fields optionally without introducing a particular formatting behavior.
  *
  * Example:
  * ```

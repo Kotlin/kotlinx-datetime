@@ -14,7 +14,7 @@ import kotlinx.datetime.internal.format.parser.*
  */
 public sealed interface DateTimeFormat<T> {
     /**
-     * Formats the given [value] into a string, using this format.
+     * Formats the given [value] into a string using this format.
      *
      * @throws IllegalArgumentException if the value does not contain all the information required by the format.
      * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.format
@@ -75,14 +75,14 @@ public enum class Padding {
     NONE,
 
     /**
-     * Pad with zeros during formatting. During parsing, the padding is required, or parsing fails.
+     * Pad with zeros during formatting. During parsing, padding is required; otherwise, parsing fails.
      *
      * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.zero
      */
     ZERO,
 
     /**
-     * Pad with spaces during formatting. During parsing, the padding is required, or parsing fails.
+     * Pad with spaces during formatting. During parsing, padding is required; otherwise, parsing fails.
      *
      * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.PaddingSamples.spaces
      */

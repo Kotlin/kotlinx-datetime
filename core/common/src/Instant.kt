@@ -15,12 +15,12 @@ import kotlin.time.*
 /**
  * A moment in time.
  *
- * A point in time must be uniquely identified, so that it is independent of a time zone.
- * For example, `1970-01-01, 00:00:00` does not represent a moment in time, since this would happen at different times
- * in different time zones: someone in Tokyo would think its already `1970-01-01` several hours earlier than someone in
+ * A point in time must be uniquely identified so that it is independent of a time zone.
+ * For example, `1970-01-01, 00:00:00` does not represent a moment in time since this would happen at different times
+ * in different time zones: someone in Tokyo would think it is already `1970-01-01` several hours earlier than someone in
  * Berlin would. To represent such entities, use [LocalDateTime].
  * In contrast, "the moment the clocks in London first showed 00:00 on Jan 1, 2000" is a specific moment
- * in time, as is "1970-01-01, 00:00:00 UTC+0", and so it can be represented as an [Instant].
+ * in time, as is "1970-01-01, 00:00:00 UTC+0", so it can be represented as an [Instant].
  *
  * `Instant` uses the UTC-SLS (smeared leap second) time scale. This time scale doesn't contain instants
  * corresponding to leap seconds, but instead "smears" positive and negative leap seconds among the last 1000 seconds
@@ -46,7 +46,7 @@ import kotlin.time.*
  *
  * [Instant] is essentially the number of seconds and nanoseconds since a designated moment in time,
  * stored as something like `1709898983.123456789`.
- * [Instant] contains no information about what day or time it is, as this depends on the time zone.
+ * [Instant] does not contain information about the day or time, as this depends on the time zone.
  * To work with this information for a specific time zone, obtain a [LocalDateTime] using [Instant.toLocalDateTime]:
  *
  * ```
@@ -98,16 +98,16 @@ import kotlin.time.*
  * Since [Instant] represents a point in time, it is always well-defined what the result of arithmetic operations on it
  * is, including the cases when a calendar is used.
  * This is not the case for [LocalDateTime], where the result of arithmetic operations depends on the time zone.
- * See the documentation of [LocalDateTime] for more details.
+ * See the [LocalDateTime] documentation for more details.
  *
  * Adding and subtracting calendar-based units can be done using the [plus] and [minus] operators,
  * requiring a [TimeZone]:
  *
  * ```
- * // one day from now in Berlin
+ * // One day from now in Berlin
  * Clock.System.now().plus(1, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin"))
  *
- * // a day and two hours short from two months later in Berlin
+ * // A day and two hours short from two months later in Berlin
  * Clock.System.now().plus(DateTimePeriod(months = 2, days = -1, hours = -2), TimeZone.of("Europe/Berlin"))
  * ```
  *
@@ -118,7 +118,7 @@ import kotlin.time.*
  * val start = Clock.System.now()
  * val concertStart = LocalDateTime(2023, 1, 1, 20, 0, 0).toInstant(TimeZone.of("Europe/Berlin"))
  * val timeUntilConcert = start.periodUntil(concertStart, TimeZone.of("Europe/Berlin"))
- * // two months, three days, four hours, and five minutes until the concert
+ * // Two months, three days, four hours, and five minutes until the concert
  * ```
  *
  * or [Instant.until] method, as well as [Instant.daysUntil], [Instant.monthsUntil],
@@ -182,7 +182,7 @@ import kotlin.time.*
  * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [Instant]:
- * - [InstantIso8601Serializer] for the ISO 8601 extended format,
+ * - [InstantIso8601Serializer] for the ISO 8601 extended format.
  * - [InstantComponentSerializer] for an object with components.
  *
  * @see LocalDateTime for a user-visible representation of moments in time in an unspecified time zone.
@@ -271,16 +271,16 @@ public expect class Instant : Comparable<Instant> {
 
     /**
      * Compares `this` instant with the [other] instant.
-     * Returns zero if this instant represents the same moment as the other (i.e., equal to other),
+     * Returns zero if this instant represents the same moment as the other (for example, when it's equal to other),
      * a negative number if this instant is earlier than the other,
      * and a positive number if this instant is later than the other.
      */
     public override operator fun compareTo(other: Instant): Int
 
     /**
-     * Converts this instant to the ISO 8601 string representation; for example, `2023-01-02T23:40:57.120Z`
+     * Converts this instant to the ISO 8601 string representation, for example, `2023-01-02T23:40:57.120Z`.
      *
-     * The representation uses the UTC-SLS time scale, instead of UTC.
+     * The representation uses the UTC-SLS time scale instead of UTC.
      * In practice, this means that leap second handling will not be readjusted to the UTC.
      * Leap seconds will not be added or skipped, so it is impossible to acquire a string
      * where the component for seconds is 60, and for any day, it's possible to observe 23:59:59.
@@ -413,7 +413,7 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
  *
  * ```
- * Clock.System.now().plus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month later
+ * Clock.System.now().plus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // One day short from a month later
  * ```
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
@@ -433,7 +433,7 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
  *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
  *
  * ```
- * Clock.System.now().minus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month earlier
+ * Clock.System.now().minus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // One day short from a month earlier
  * ```
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
@@ -457,9 +457,9 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * The components of [DateTimePeriod] are calculated so that adding it to `this` instant results in the [other] instant.
  *
  * All components of the [DateTimePeriod] returned are:
- * - positive or zero if this instant is earlier than the other,
- * - negative or zero if this instant is later than the other,
- * - exactly zero if this instant is equal to the other.
+ * - Positive or zero if this instant is earlier than the other.
+ * - Negative or zero if this instant is later than the other.
+ * - Exactly zero if this instant is equal to the other.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  *     Or (only on the JVM) if the number of months between the two dates exceeds an Int.
@@ -471,9 +471,9 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
  * in the specified [timeZone].
  *
  * The value returned is:
- * - positive or zero if this instant is earlier than the other,
- * - negative or zero if this instant is later than the other,
- * - zero if this instant is equal to the other.
+ * - Positive or zero if this instant is earlier than the other.
+ * - Negative or zero if this instant is later than the other.
+ * - Zero if this instant is equal to the other.
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
@@ -491,9 +491,9 @@ public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
  * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
  *
  * The value returned is:
- * - positive or zero if this instant is earlier than the other,
- * - negative or zero if this instant is later than the other,
- * - zero if this instant is equal to the other.
+ * - Positive or zero if this instant is earlier than the other.
+ * - Negative or zero if this instant is later than the other.
+ * - Zero if this instant is equal to the other.
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
@@ -552,9 +552,9 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant results in this instant.
  *
  * All components of the [DateTimePeriod] returned are:
- * - negative or zero if this instant is earlier than the other,
- * - positive or zero if this instant is later than the other,
- * - exactly zero if this instant is equal to the other.
+ * - Negative or zero if this instant is earlier than the other.
+ * - Positive or zero if this instant is later than the other.
+ * - Exactly zero if this instant is equal to the other.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  *   Or (only on the JVM) if the number of months between the two dates exceeds an Int.

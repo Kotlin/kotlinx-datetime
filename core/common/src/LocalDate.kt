@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * The date part of [LocalDateTime].
  *
  * This class represents dates without a reference to a particular time zone.
- * As such, these objects may denote different spans of time in different time zones: for someone in Berlin,
+ * As such, these objects may denote different periods in different time zones: for someone in Berlin,
  * `2020-08-30` started and ended at different moments from those for someone in Tokyo.
  *
  * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
@@ -23,15 +23,15 @@ import kotlinx.serialization.Serializable
  * ### Arithmetic operations
  *
  * Operations with [DateTimeUnit.DateBased] and [DatePeriod] are provided for [LocalDate]:
- * - [LocalDate.plus] and [LocalDate.minus] allow expressing concepts like "two months later,"
+ * - [LocalDate.plus] and [LocalDate.minus] allow expressing concepts like "two months later".
  * - [LocalDate.until] and its shortcuts [LocalDate.daysUntil], [LocalDate.monthsUntil], and [LocalDate.yearsUntil]
- *   can be used to find the number of days, months, or years between two dates,
+ *   can be used to find the number of days, months, or years between two dates.
  * - [LocalDate.periodUntil] (and [LocalDate.minus] that accepts a [LocalDate])
  *   can be used to find the [DatePeriod] between two dates.
  *
  * ### Construction, serialization, and deserialization
  *
- * [LocalDate] can be constructed directly from its components, using the constructor.
+ * [LocalDate] can be constructed directly from its components using the constructor.
  *
  * ```
  * LocalDate(year = 2023, monthNumber = 1, dayOfMonth = 2) == LocalDate(2023, Month.JANUARY, 2)
@@ -68,7 +68,7 @@ import kotlinx.serialization.Serializable
  * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
- * - [LocalDateIso8601Serializer] for the ISO 8601 extended format,
+ * - [LocalDateIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateComponentSerializer] for an object with components.
  */
 @Serializable(with = LocalDateIso8601Serializer::class)
@@ -170,7 +170,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * @throws IllegalArgumentException if any parameter is out of range or if [dayOfMonth] is invalid for the
      * given [monthNumber] and [year].
      */
     public constructor(year: Int, monthNumber: Int, dayOfMonth: Int)
@@ -184,7 +184,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * - [month] all values of the [Month] enum
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
      *
-     * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
+     * @throws IllegalArgumentException if any parameter is out of range or if [dayOfMonth] is invalid for the
      * given [month] and [year].
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int)
@@ -218,7 +218,7 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     /**
      * Compares `this` date with the [other] date.
-     * Returns zero if this date represents the same day as the other (i.e., equal to other),
+     * Returns zero if this date represents the same day as the other (for example, equal to other),
      * a negative number if this date is earlier than the other,
      * and a positive number if this date is later than the other.
      */
@@ -249,7 +249,7 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 /**
  * Combines this date's components with the specified time components into a [LocalDateTime] value.
  *
- * For finding an instant that corresponds to the start of a date in a particular time zone consider using
+ * For finding an instant that corresponds to the start of a date in a particular time zone, consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
  */
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
@@ -264,13 +264,13 @@ public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond:
  * **Pitfall**: since [LocalDateTime] is not tied to a particular time zone, the resulting [LocalDateTime] may not
  * exist in the implicit time zone.
  * For example, `LocalDate(2021, 3, 28).atTime(LocalTime(2, 16, 20))` will successfully create a [LocalDateTime],
- * even though in Berlin, times between 2:00 and 3:00 do not exist on March 28, 2021 due to the transition to DST.
+ * even though in Berlin, times between 2:00 and 3:00 do not exist on March 28, 2021, due to the transition to DST.
  */
 public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this, time)
 
 
 /**
- * Returns a date that is the result of adding components of [DatePeriod] to this date. The components are
+ * Returns a date that results from adding components of [DatePeriod] to this date. The components are
  * added in the order from the largest units to the smallest: first years and months, then days.
  *
  * ```
@@ -287,7 +287,7 @@ public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this
 public expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
 
 /**
- * Returns a date that is the result of subtracting components of [DatePeriod] from this date. The components are
+ * Returns a date that results from subtracting components of [DatePeriod] from this date. The components are
  * subtracted in the order from the largest units to the smallest: first years and months, then days.
  *
  * ```
@@ -305,7 +305,7 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
     if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
         plus(with(period) { DatePeriod(-years, -months, -days) })
     } else {
-        // TODO: calendar operations are non-associative, check if subtracting years and months separately is correct
+        // TODO: calendar operations are non-associative; check if subtracting years and months separately is correct
         minus(period.years, DateTimeUnit.YEAR).minus(period.months, DateTimeUnit.MONTH)
             .minus(period.days, DateTimeUnit.DAY)
     }
@@ -316,9 +316,9 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
  * The components of [DatePeriod] are calculated so that adding it to `this` date results in the [other] date.
  *
  * All components of the [DatePeriod] returned are:
- * - positive or zero if this date is earlier than the other,
- * - negative or zero if this date is later than the other,
- * - exactly zero if this date is equal to the other.
+ * - Positive or zero if this date is earlier than the other.
+ * - Negative or zero if this date is later than the other.
+ * - Exactly zero if this date is equal to the other.
  *
  * ```
  * LocalDate(2023, Month.JANUARY, 2).periodUntil(LocalDate(2024, Month.APRIL, 1)) == DatePeriod(years = 1, months = 2, days = 30)
@@ -336,9 +336,9 @@ public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * The components of [DatePeriod] are calculated so that adding it back to the `other` date results in this date.
  *
  * All components of the [DatePeriod] returned are:
- * - negative or zero if this date is earlier than the other,
- * - positive or zero if this date is later than the other,
- * - exactly zero if this date is equal to the other.
+ * - Negative or zero if this date is earlier than the other.
+ * - Positive or zero if this date is later than the other.
+ * - Exactly zero if this date is equal to the other.
  *
  * ```
  * LocalDate(2024, Month.APRIL, 1) - LocalDate(2023, Month.JANUARY, 2) == DatePeriod(years = 1, months = 2, days = 30)
@@ -354,15 +354,15 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * Returns the whole number of the specified date [units][unit] between `this` and [other] dates.
  *
  * The value returned is:
- * - positive or zero if this date is earlier than the other,
- * - negative or zero if this date is later than the other,
- * - zero if this date is equal to the other.
+ * - Positive or zero if this date is earlier than the other.
+ * - Negative or zero if this date is later than the other.
+ * - Zero if this date is equal to the other.
  *
  * The value is rounded toward zero.
  *
  * ```
  * LocalDate(2023, Month.JANUARY, 2).until(LocalDate(2024, Month.APRIL, 1), DateTimeUnit.MONTH) == 14
- * // one year, two months, and 30 days, rounded toward zero.
+ * // One year, two months, and 30 days, rounded toward zero.
  * ```
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
@@ -406,7 +406,7 @@ public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 
 /**
- * Returns a [LocalDate] that is the result of adding one [unit] to this date.
+ * Returns a [LocalDate] that results from adding one [unit] to this date.
  *
  * The value is rounded toward zero.
  *
@@ -418,7 +418,7 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
- * Returns a [LocalDate] that is the result of subtracting one [unit] from this date.
+ * Returns a [LocalDate] that results from subtracting one [unit] from this date.
  *
  * The value is rounded toward zero.
  *
@@ -430,7 +430,7 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, unit)
 
 /**
- * Returns a [LocalDate] that is the result of adding the [value] number of the specified [unit] to this date.
+ * Returns a [LocalDate] that results from adding the [value] number of the specified [unit] to this date.
  *
  * If the [value] is positive, the returned date is later than this date.
  * If the [value] is negative, the returned date is earlier than this date.
@@ -442,7 +442,7 @@ public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, u
 public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
 /**
- * Returns a [LocalDate] that is the result of subtracting the [value] number of the specified [unit] from this date.
+ * Returns a [LocalDate] that results from subtracting the [value] number of the specified [unit] from this date.
  *
  * If the [value] is positive, the returned date is earlier than this date.
  * If the [value] is negative, the returned date is later than this date.
@@ -454,7 +454,7 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
 public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
 /**
- * Returns a [LocalDate] that is the result of adding the [value] number of the specified [unit] to this date.
+ * Returns a [LocalDate] that results from adding the [value] number of the specified [unit] to this date.
  *
  * If the [value] is positive, the returned date is later than this date.
  * If the [value] is negative, the returned date is earlier than this date.
@@ -466,7 +466,7 @@ public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): Loc
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 
 /**
- * Returns a [LocalDate] that is the result of subtracting the [value] number of the specified [unit] from this date.
+ * Returns a [LocalDate] that results from subtracting the [value] number of the specified [unit] from this date.
  *
  * If the [value] is positive, the returned date is earlier than this date.
  * If the [value] is negative, the returned date is later than this date.
@@ -477,5 +477,5 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
 
-// workaround for https://youtrack.jetbrains.com/issue/KT-65484
+// A workaround for https://youtrack.jetbrains.com/issue/KT-65484
 internal fun getIsoDateFormat() = LocalDate.Formats.ISO

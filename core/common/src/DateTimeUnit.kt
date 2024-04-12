@@ -20,12 +20,12 @@ import kotlin.time.Duration.Companion.nanoseconds
  *
  * ### Interaction with other entities
  *
- * Any [DateTimeUnit] can be used with [Instant.plus], [Instant.minus] to
+ * Any [DateTimeUnit] can be used with [Instant.plus] or [Instant.minus] to
  * find an instant that is some number of units away from the given instant.
  * Also, [Instant.until] can be used to find the number of the given units between two instants.
  *
- * [DateTimeUnit.TimeBased] can be used in the [Instant] operations without specifying the time zone, because
- * [DateTimeUnit.TimeBased] is defined in terms of passage of real time, and is independent of the time zone.
+ * [DateTimeUnit.TimeBased] can be used in the [Instant] operations without specifying the time zone because
+ * [DateTimeUnit.TimeBased] is defined in terms of the passage of real-time and is independent of the time zone.
  * Note that a calendar day is not considered identical to 24 hours, so using it does require specifying the time zone.
  * See [DateTimeUnit.DayBased] for an explanation.
  *
@@ -33,14 +33,14 @@ import kotlin.time.Duration.Companion.nanoseconds
  * [LocalDate.until].
  *
  * Arithmetic operations on [LocalDateTime] are not provided.
- * Please see the [LocalDateTime] documentation for a discussion.
+ * Please see the [LocalDateTime] documentation for details.
  *
- * [DateTimePeriod] is a combination of all [DateTimeUnit] values, used to express things like
- * "two days and three hours."
+ * [DateTimePeriod] is a combination of all [DateTimeUnit] values used to express periods like
+ * "two days and three hours".
  * [DatePeriod] is specifically a combination of [DateTimeUnit.DateBased] values.
  * [DateTimePeriod] is more flexible than [DateTimeUnit] because it can express a combination of different units or
- * have the length of zero, but in exchange, the duration of time between two [Instant] or [LocalDate] values can be
- * measured in terms of some [DateTimeUnit], but not [DateTimePeriod] or [DatePeriod].
+ * have a zero length. However, the duration of time between two [Instant] or [LocalDate] values can be
+ * measured in terms of some [DateTimeUnit] but not [DateTimePeriod] or [DatePeriod].
  *
  * ### Construction, serialization, and deserialization
  *
@@ -48,8 +48,8 @@ import kotlin.time.Duration.Companion.nanoseconds
  * [DateTimeUnit.MONTH], and others.
  *
  * Two ways are provided to create custom [DateTimeUnit] instances:
- * - By multiplying an existing unit on the right by an integer scalar: for example, `DateTimeUnit.NANOSECOND * 10`.
- * - By constructing an instance manually with [TimeBased], [DayBased], or [MonthBased]: for example,
+ * - By multiplying an existing unit on the right by an integer scalar, for example, `DateTimeUnit.NANOSECOND * 10`.
+ * - By constructing an instance manually with [TimeBased], [DayBased], or [MonthBased], for example,
  *   `DateTimeUnit.TimeBased(nanoseconds = 10)`.
  *
  * Also, [DateTimeUnit] can be serialized and deserialized using `kotlinx.serialization`:
@@ -158,8 +158,8 @@ public sealed class DateTimeUnit {
     /**
      * A [date-time unit][DateTimeUnit] equal to some number of calendar days.
      *
-     * A calendar day is not considered identical to 24 hours,
-     * thus a `DayBased`-unit cannot be expressed as a multiple of some [TimeBased]-unit.
+     * A calendar day is not considered identical to 24 hours.
+     * Thus, a `DayBased` unit cannot be expressed as a multiple of some [TimeBased] unit.
      *
      * The reason lies in time zone transitions, because of which some days can be 23 or 25 hours.
      * For example, we say that exactly a whole day has passed between `2019-10-27T02:59` and `2019-10-28T02:59`
@@ -195,7 +195,8 @@ public sealed class DateTimeUnit {
     /**
      * A [date-time unit][DateTimeUnit] equal to some number of months.
      *
-     * Since different months have different number of days, a `MonthBased`-unit cannot be expressed a multiple of some [DayBased]-unit.
+     * Since different months have a different number of days, a `MonthBased` unit cannot be expressed
+     * as a multiple of some [DayBased] unit.
      *
      * @see DateTimeUnit for a description of date-time units in general.
      */

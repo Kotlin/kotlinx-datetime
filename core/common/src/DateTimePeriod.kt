@@ -17,10 +17,10 @@ import kotlinx.serialization.Serializable
 /**
  * A difference between two [instants][Instant], decomposed into date and time components.
  *
- * The date components are: [years] ([DateTimeUnit.YEAR]), [months] ([DateTimeUnit.MONTH]), [days] ([DateTimeUnit.DAY]).
+ * The date components are: [years] ([DateTimeUnit.YEAR]), [months] ([DateTimeUnit.MONTH]), and [days] ([DateTimeUnit.DAY]).
  *
  * The time components are: [hours] ([DateTimeUnit.HOUR]), [minutes] ([DateTimeUnit.MINUTE]),
- * [seconds] ([DateTimeUnit.SECOND]), [nanoseconds] ([DateTimeUnit.NANOSECOND]).
+ * [seconds] ([DateTimeUnit.SECOND]), and [nanoseconds] ([DateTimeUnit.NANOSECOND]).
  *
  * The time components are not independent and always overflow into one another.
  * Likewise, months overflow into years.
@@ -417,7 +417,7 @@ public class DatePeriod internal constructor(
     /**
      * Constructs a new [DatePeriod].
      *
-     * It is recommended to always explicitly name the arguments when constructing this manually,
+     * It is always recommended to name the arguments explicitly when constructing this manually,
      * like `DatePeriod(years = 1, months = 12, days = 16)`.
      *
      * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,
