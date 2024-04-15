@@ -10,6 +10,87 @@ import kotlinx.datetime.format.*
 import kotlin.test.*
 
 class LocalDateFormatSamples {
+
+    @Test
+    fun year() {
+        val format = LocalDate.Format {
+            year(); char(' '); monthNumber(); char('/'); dayOfMonth()
+        }
+        check(format.format(LocalDate(2021, 1, 13)) == "2021 01/13")
+        check(format.format(LocalDate(13, 1, 13)) == "0013 01/13")
+        check(format.format(LocalDate(-2021, 1, 13)) == "-2021 01/13")
+        check(format.format(LocalDate(12021, 1, 13)) == "+12021 01/13")
+    }
+
+    @Test
+    fun yearTwoDigits() {
+        val format = LocalDate.Format {
+            yearTwoDigits(baseYear = 1960); char(' '); monthNumber(); char('/'); dayOfMonth()
+        }
+        check(format.format(LocalDate(1960, 1, 13)) == "60 01/13")
+        check(format.format(LocalDate(2000, 1, 13)) == "00 01/13")
+        check(format.format(LocalDate(2021, 1, 13)) == "21 01/13")
+        check(format.format(LocalDate(2059, 1, 13)) == "59 01/13")
+        check(format.format(LocalDate(2060, 1, 13)) == "+2060 01/13")
+        check(format.format(LocalDate(-13, 1, 13)) == "-13 01/13")
+    }
+    
+    @Test
+    fun monthNumber() {
+        val zeroPaddedMonths = LocalDate.Format {
+            monthNumber(); char('/'); dayOfMonth(); char('/'); year()
+        }
+        check(zeroPaddedMonths.format(LocalDate(2021, 1, 13)) == "01/13/2021")
+        check(zeroPaddedMonths.format(LocalDate(2021, 12, 13)) == "12/13/2021")
+        val spacePaddedMonths = LocalDate.Format {
+            monthNumber(padding = Padding.SPACE); char('/'); dayOfMonth(); char('/'); year()
+        }
+        check(spacePaddedMonths.format(LocalDate(2021, 1, 13)) == " 1/13/2021")
+        check(spacePaddedMonths.format(LocalDate(2021, 12, 13)) == "12/13/2021")
+    }
+
+    @Test
+    fun monthName() {
+        val format = LocalDate.Format {
+            monthName(MonthNames.ENGLISH_FULL); char(' '); dayOfMonth(); char('/'); year()
+        }
+        check(format.format(LocalDate(2021, 1, 13)) == "January 13/2021")
+        check(format.format(LocalDate(2021, 12, 13)) == "December 13/2021")
+    }
+
+    @Test
+    fun dayOfMonth() {
+        val zeroPaddedDays = LocalDate.Format {
+            dayOfMonth(); char('/'); monthNumber(); char('/'); year()
+        }
+        check(zeroPaddedDays.format(LocalDate(2021, 1, 6)) == "06/01/2021")
+        check(zeroPaddedDays.format(LocalDate(2021, 1, 31)) == "31/01/2021")
+        val spacePaddedDays = LocalDate.Format {
+            dayOfMonth(padding = Padding.SPACE); char('/'); monthNumber(); char('/'); year()
+        }
+        check(spacePaddedDays.format(LocalDate(2021, 1, 6)) == " 6/01/2021")
+        check(spacePaddedDays.format(LocalDate(2021, 1, 31)) == "31/01/2021")
+    }
+
+    @Test
+    fun dayOfWeek() {
+        val format = LocalDate.Format {
+            dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); char('/'); monthNumber(); char('/'); year()
+        }
+        check(format.format(LocalDate(2021, 1, 13)) == "Wed 13/01/2021")
+        check(format.format(LocalDate(2021, 12, 13)) == "Mon 13/12/2021")
+    }
+
+    @Test
+    fun date() {
+        val format = LocalDateTime.Format {
+            date(LocalDate.Formats.ISO)
+            alternativeParsing({ char('t') }) { char('T') }
+            hour(); char(':'); minute()
+        }
+        check(format.format(LocalDateTime(2021, 1, 13, 14, 30)) == "2021-01-13T14:30")
+    }
+
     class MonthNamesSamples {
         @Test
         fun usage() {

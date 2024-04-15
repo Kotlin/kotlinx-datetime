@@ -85,7 +85,8 @@ class TimeZoneSamples {
     fun availableZoneIds() {
         for (zoneId in TimeZone.availableZoneIds) {
             val zone = TimeZone.of(zoneId)
-            check(zone.id == zoneId)
+            // for fixed-offset time zones, normalization can happen, e.g. "UTC+01" -> "UTC+01:00"
+            check(zone.id == zoneId || zone is FixedOffsetTimeZone)
         }
     }
 
