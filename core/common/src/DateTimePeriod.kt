@@ -52,25 +52,20 @@ import kotlinx.serialization.Serializable
  * will be returned if all time components happen to be zero.
  *
  * A `DateTimePeriod` can be constructed using the constructor function with the same name.
- *
- * ```
- * val dateTimePeriod = DateTimePeriod(months = 24, days = -3)
- * val datePeriod = dateTimePeriod as DatePeriod // the same as DatePeriod(years = 2, days = -3)
- * ```
+ * See sample 1.
  *
  * [parse] and [toString] methods can be used to obtain a [DateTimePeriod] from and convert it to a string in the
  * ISO 8601 extended format.
- *
- * ```
- * val dateTimePeriod = DateTimePeriod.parse("P1Y2M6DT13H1S") // 1 year, 2 months, 6 days, 13 hours, 1 second
- * val string = dateTimePeriod.toString() // "P1Y2M6DT13H1S"
- * ```
+ * See sample 2.
  *
  * `DateTimePeriod` can also be returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [DateTimePeriod]:
  * - [DateTimePeriodIso8601Serializer] for the ISO 8601 format;
  * - [DateTimePeriodComponentSerializer]  for an object with components.
+ *
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.construction
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.simpleParsingAndFormatting
  */
 @Serializable(with = DateTimePeriodIso8601Serializer::class)
 // TODO: could be error-prone without explicitly named params
@@ -82,17 +77,23 @@ public sealed class DateTimePeriod {
      *
      * Note that a calendar day is not identical to 24 hours, see [DateTimeUnit.DayBased] for details.
      * Also, this field does not overflow into months, so values larger than 31 can be present.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public abstract val days: Int
     internal abstract val totalNanoseconds: Long
 
     /**
      * The number of whole years. Can be negative.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public val years: Int get() = totalMonths / 12
 
     /**
      * The number of months in this period that don't form a whole year, so this value is always in `(-11..11)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public val months: Int get() = totalMonths % 12
 
@@ -100,22 +101,30 @@ public sealed class DateTimePeriod {
      * The number of whole hours in this period. Can be negative.
      *
      * This field does not overflow into days, so values larger than 23 or smaller than -23 can be present.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val hours: Int get() = (totalNanoseconds / 3_600_000_000_000).toInt()
 
     /**
      * The number of whole minutes in this period that don't form a whole hour, so this value is always in `(-59..59)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val minutes: Int get() = ((totalNanoseconds % 3_600_000_000_000) / 60_000_000_000).toInt()
 
     /**
      * The number of whole seconds in this period that don't form a whole minute, so this value is always in `(-59..59)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val seconds: Int get() = ((totalNanoseconds % 60_000_000_000) / NANOS_PER_ONE).toInt()
 
     /**
      * The number of whole nanoseconds in this period that don't form a whole second, so this value is always in
      * `(-999_999_999..999_999_999)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val nanoseconds: Int get() = (totalNanoseconds % NANOS_PER_ONE).toInt()
 
@@ -136,6 +145,7 @@ public sealed class DateTimePeriod {
      *   minus four seconds, minus 123456789 nanoseconds;
      *
      * @see DateTimePeriod.parse for the detailed description of the format.
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.toStringSample
      */
     override fun toString(): String = buildString {
         val sign = if (allNonpositive()) { append('-'); -1 } else 1
@@ -215,6 +225,7 @@ public sealed class DateTimePeriod {
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are
          * exceeded.
+         * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.parsing
          */
         public fun parse(text: String): DateTimePeriod {
             fun parseException(message: String, position: Int): Nothing =
@@ -400,14 +411,10 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  * are not zero, and [DatePeriodIso8601Serializer] and [DatePeriodComponentSerializer], mirroring those of
  * [DateTimePeriod].
  *
- * ```
- * val datePeriod1 = DatePeriod(years = 1, days = 3)
- * val string = datePeriod1.toString() // "P1Y3D"
- * val datePeriod2 = DatePeriod.parse(string) // 1 year and 3 days
- * ```
- *
  * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations
  * on [LocalDates][LocalDate], but they also can be passed anywhere a [DateTimePeriod] is expected.
+ *
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.simpleParsingAndFormatting
  */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
@@ -428,6 +435,7 @@ public class DatePeriod internal constructor(
      * For example, instead of `DatePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
      *
      * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.construction
      */
     public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
@@ -455,6 +463,7 @@ public class DatePeriod internal constructor(
          * or any time components are not zero.
          *
          * @see DateTimePeriod.parse
+         * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.parsing
          */
         public fun parse(text: String): DatePeriod =
             when (val period = DateTimePeriod.parse(text)) {
@@ -521,6 +530,7 @@ internal fun buildDateTimePeriod(totalMonths: Int = 0, days: Int = 0, totalNanos
  * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
  * @throws IllegalArgumentException if the total number of months in [hours], [minutes], [seconds] and [nanoseconds]
  * overflows a [Long].
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.constructorFunction
  */
 public fun DateTimePeriod(
     years: Int = 0,
@@ -544,15 +554,16 @@ public fun DateTimePeriod(
  * whereas in `kotlinx-datetime`, a day is a calendar day, which can be different from 24 hours.
  * See [DateTimeUnit.DayBased] for details.
  *
- * ```
- * 2.days.toDateTimePeriod() // 0 days, 48 hours
- * ```
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.durationToDateTimePeriod
  */
 // TODO: maybe it's more consistent to throw here on overflow?
 public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = inWholeNanoseconds)
 
 /**
  * Adds two [DateTimePeriod] instances.
+ *
+ * **Pitfall**: given three instants, adding together the periods between the first and the second and between the
+ * second and the third *does not* necessarily equal the period between the first and the third.
  *
  * @throws DateTimeArithmeticException if arithmetic overflow happens.
  */
@@ -564,6 +575,9 @@ public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod =
 
 /**
  * Adds two [DatePeriod] instances.
+ *
+ * **Pitfall**: given three dates, adding together the periods between the first and the second and between the
+ * second and the third *does not* necessarily equal the period between the first and the third.
  *
  * @throws DateTimeArithmeticException if arithmetic overflow happens.
  */

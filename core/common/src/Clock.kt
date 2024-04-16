@@ -22,7 +22,8 @@ public interface Clock {
      * Returns the [Instant] corresponding to the current time, according to this clock.
      *
      * It is not guaranteed that calling [now] later will return a larger [Instant].
-     * In particular, for [System], violations of this are completely expected and must be taken into account.
+     * In particular, for [System] it is completely expected that the opposite will happen,
+     * and it must be taken into account.
      * See the documentation of [System] for details.
      *
      * Even though [Instant] is defined to be on the UTC-SLS time scale, which enforces a specific way of handling
@@ -46,6 +47,8 @@ public interface Clock {
      *
      * For improved testability, one could avoid using [Clock.System] directly in the implementation,
      * instead passing a [Clock] explicitly.
+     *
+     * @sample kotlinx.datetime.test.samples.ClockSamples.system
      */
     public object System : Clock {
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
@@ -59,14 +62,9 @@ public interface Clock {
 /**
  * Returns the current date at the given [time zone][timeZone], according to [this Clock][this].
  *
- * The time zone is important because the current date is not the same in all time zones at the same time.
- * ```
- * val clock = object : Clock {
- *    override fun now(): Instant = Instant.parse("2020-01-01T12:00:00Z")
- * }
- * val dateInUTC = clock.todayIn(TimeZone.UTC) // 2020-01-01
- * val dateInNewYork = clock.todayIn(TimeZone.of("America/New_York")) // 2019-12-31
- * ```
+ * The time zone is important because the current date is not the same in all time zones at the same instant.
+ *
+ * @sample kotlinx.datetime.test.samples.ClockSamples.todayIn
  */
 public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
     now().toLocalDateTime(timeZone).date
