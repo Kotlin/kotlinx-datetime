@@ -69,41 +69,18 @@ import kotlinx.serialization.Serializable
  * The recommended pattern is to convert a [LocalDateTime] to [Instant] as soon as possible (see
  * [LocalDateTime.toInstant]) and work with [Instant] values instead.
  *
- * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor:
- *
- * ```
- * val date = LocalDate(2021, 3, 27)
- * val time = LocalTime(hour = 2, minute = 16, second = 20)
- * LocalDateTime(date, time)
- * ```
+ * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
+ * See sample 1.
  *
  * Some additional constructors that accept the date's and time's fields directly are provided for convenience.
- *
- * ```
- * LocalDateTime(year = 2021, monthNumber = 3, dayOfMonth = 27, hour = 2, minute = 16, second = 20)
- * LocalDateTime(
- *     year = 2021, month = Month.MARCH, dayOfMonth = 27,
- *     hour = 2, minute = 16, second = 20, nanosecond = 999_999_999
- * )
- * ```
+ * See sample 2.
  *
  * [parse] and [toString] methods can be used to obtain a [LocalDateTime] from and convert it to a string in the
  * ISO 8601 extended format (for example, `2023-01-02T22:35:01`).
- *
- * ```
- * LocalDateTime.parse("2023-01-02T22:35:01").toString() // 2023-01-02T22:35:01
- * ```
+ * See sample 3.
  *
  * [parse] and [LocalDateTime.format] both support custom formats created with [Format] or defined in [Formats].
- *
- * ```
- * val customFormat = LocalDateTime.Format {
- *    date(LocalDate.Formats.ISO)
- *    char(' ')
- *    time(LocalTime.Formats.ISO)
- * }
- * LocalDateTime.parse("2023-01-02 22:35:01", customFormat).format(customFormat) // 2023-01-02 22:35:01
- * ```
+ * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDateTime]:
  * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format,
@@ -112,6 +89,10 @@ import kotlinx.serialization.Serializable
  * @see LocalDate for only the date part of the date/time value.
  * @see LocalTime for only the time part of the date/time value.
  * @see Instant for the representation of a specific moment in time independent of a time zone.
+ * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.fromDateAndTime
+ * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.alternativeConstruction
+ * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.simpleParsingAndFormatting
+ * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.customFormat
  */
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
@@ -130,6 +111,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDateTime] are
          * exceeded.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()): LocalDateTime
 
@@ -156,6 +139,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * There is a collection of predefined formats in [LocalDateTime.Formats].
          *
          * @throws IllegalArgumentException if parsing using this format is ambiguous.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.customFormat
          */
         @Suppress("FunctionName")
         public fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime>
@@ -186,6 +171,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * Fractional parts of the second are included if non-zero.
          *
          * Guaranteed to parse all strings that [LocalDateTime.toString] produces.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalDateTime>
     }
@@ -207,6 +194,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      *
      * @throws IllegalArgumentException if any parameter is out of range,
      * or if [dayOfMonth] is invalid for the given [monthNumber] and [year].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunctionWithMonthNumber
      */
     public constructor(
         year: Int,
@@ -233,6 +222,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      *
      * @throws IllegalArgumentException if any parameter is out of range,
      * or if [dayOfMonth] is invalid for the given [month] and [year].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunction
      */
     public constructor(
         year: Int,
@@ -246,43 +237,93 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
 
     /**
      * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.fromDateAndTime
      */
     public constructor(date: LocalDate, time: LocalTime)
 
-    /** Returns the year component of the date. */
+    /**
+     * Returns the year component of the [date]. Can be negative.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val year: Int
 
-    /** Returns the number-of-the-month (1..12) component of the date. */
+    /**
+     * Returns the number-of-the-month (1..12) component of the [date].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val monthNumber: Int
 
-    /** Returns the month ([Month]) component of the date. */
+    /**
+     * Returns the month ([Month]) component of the [date].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val month: Month
 
-    /** Returns the day-of-month component of the date. */
+    /**
+     * Returns the day-of-month (`1..31`) component of the [date].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val dayOfMonth: Int
 
-    /** Returns the day-of-week component of the date. */
+    /**
+     * Returns the day-of-week component of the [date].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val dayOfWeek: DayOfWeek
 
-    /** Returns the 1-based day-of-year component of the date. */
+    /**
+     * Returns the 1-based day-of-year component of the [date].
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
+     */
     public val dayOfYear: Int
 
-    /** Returns the hour-of-day time component of this date/time value. */
+    /**
+     * Returns the hour-of-day (`0..59`) [time] component of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
+     */
     public val hour: Int
 
-    /** Returns the minute-of-hour time component of this date/time value. */
+    /**
+     * Returns the minute-of-hour (`0..59`) [time] component of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
+     */
     public val minute: Int
 
-    /** Returns the second-of-minute time component of this date/time value. */
+    /**
+     * Returns the second-of-minute (`0..59`) [time] component of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
+     */
     public val second: Int
 
-    /** Returns the nanosecond-of-second time component of this date/time value. */
+    /**
+     * Returns the nanosecond-of-second (`0..999_999_999`) [time] component of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
+     */
     public val nanosecond: Int
 
-    /** Returns the date part of this date/time value. */
+    /**
+     * Returns the date part of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateAndTime
+     */
     public val date: LocalDate
 
-    /** Returns the time part of this date/time value. */
+    /**
+     * Returns the time part of this date/time value.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateAndTime
+     */
     public val time: LocalTime
 
     /**
@@ -300,6 +341,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * val ldt2 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:01:20
      * ldt2 > ldt1 // returns `false`
      * ```
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.compareToSample
      */
     public override operator fun compareTo(other: LocalDateTime): Int
 
@@ -321,6 +364,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * even if they are zero, and will not add trailing zeros to the fractional part of the second for readability.
      * @see parse for the dual operation: obtaining [LocalDateTime] from a string.
      * @see LocalDateTime.format for formatting using a custom format.
+     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.toStringSample
      */
     public override fun toString(): String
 }
@@ -330,6 +374,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  *
  * See [LocalDateTime.Formats] and [LocalDateTime.Format] for predefined and custom formats.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.formatting
  */
 public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String = format.format(this)
 

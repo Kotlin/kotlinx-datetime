@@ -56,6 +56,8 @@ import kotlin.time.Duration.Companion.nanoseconds
  * [DateTimeUnitSerializer], [DateBasedDateTimeUnitSerializer], [DayBasedDateTimeUnitSerializer],
  * [MonthBasedDateTimeUnitSerializer], and [TimeBasedDateTimeUnitSerializer] are provided, with varying levels of
  * specificity of the type they handle.
+ *
+ * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.construction
  */
 @Serializable(with = DateTimeUnitSerializer::class)
 public sealed class DateTimeUnit {
@@ -63,11 +65,8 @@ public sealed class DateTimeUnit {
     /**
      * Produces a date-time unit that is a multiple of this unit times the specified integer [scalar] value.
      *
-     * ```
-     * val quarter = DateTimeUnit.MONTH * 3
-     * ```
-     *
      * @throws ArithmeticException if the result overflows.
+     * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.multiplication
      */
     public abstract operator fun times(scalar: Int): DateTimeUnit
 
@@ -78,11 +77,14 @@ public sealed class DateTimeUnit {
      * Any such unit can be represented as some fixed number of nanoseconds.
      *
      * @see DateTimeUnit for a description of date-time units in general.
+     * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.timeBasedUnit
      */
     @Serializable(with = TimeBasedDateTimeUnitSerializer::class)
     public class TimeBased(
         /**
          * The length of this unit in nanoseconds.
+         *
+         * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.timeBasedUnit
          */
         public val nanoseconds: Long
     ) : DateTimeUnit() {
@@ -124,6 +126,8 @@ public sealed class DateTimeUnit {
 
         /**
          * The length of this unit as a [Duration].
+         *
+         * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.timeBasedUnit
          */
         public val duration: Duration
             get() = nanoseconds.nanoseconds
@@ -144,6 +148,8 @@ public sealed class DateTimeUnit {
      * the operation with the date component of these `LocalDateTime` values.
      *
      * @see DateTimeUnit for a description of date-time units in general.
+     * @see DateTimeUnit.DayBased for specifically day-based units.
+     * @see DateTimeUnit.MonthBased for specifically month-based units.
      */
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
     public sealed class DateBased : DateTimeUnit() {
@@ -167,11 +173,14 @@ public sealed class DateTimeUnit {
      * between the two date-times.
      *
      * @see DateTimeUnit for a description of date-time units in general.
+     * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.dayBasedUnit
      */
     @Serializable(with = DayBasedDateTimeUnitSerializer::class)
     public class DayBased(
         /**
          * The length of this unit in days.
+         *
+         * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.dayBasedUnit
          */
         public val days: Int
     ) : DateBased() {
@@ -198,11 +207,14 @@ public sealed class DateTimeUnit {
      * Since different months have different number of days, a `MonthBased`-unit cannot be expressed a multiple of some [DayBased]-unit.
      *
      * @see DateTimeUnit for a description of date-time units in general.
+     * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.monthBasedUnit
      */
     @Serializable(with = MonthBasedDateTimeUnitSerializer::class)
     public class MonthBased(
         /**
          * The length of this unit in months.
+         *
+         * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.monthBasedUnit
          */
         public val months: Int
     ) : DateBased() {

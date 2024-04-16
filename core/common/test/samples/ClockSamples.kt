@@ -20,7 +20,7 @@ class ClockSamples {
     @Test
     fun todayIn() {
         val clock = object : Clock {
-            override fun now(): Instant = Instant.parse("2020-01-01T12:00:00Z")
+            override fun now(): Instant = Instant.parse("2020-01-01T02:00:00Z")
         }
         check(clock.todayIn(TimeZone.UTC) == LocalDate(2020, 1, 1))
         check(clock.todayIn(TimeZone.of("America/New_York")) == LocalDate(2019, 12, 31))

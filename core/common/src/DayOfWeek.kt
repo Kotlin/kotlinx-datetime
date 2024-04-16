@@ -10,6 +10,8 @@ package kotlinx.datetime
  *
  * Usually acquired from [LocalDate.dayOfWeek], but can be constructed using the `DayOfWeek` factory function that
  * accepts the ISO 8601 day number. This number can be obtained from the [isoDayNumber] property.
+ *
+ * @sample kotlinx.datetime.test.samples.DayOfWeekSamples.usage
  */
 public expect enum class DayOfWeek {
     MONDAY,
@@ -23,6 +25,8 @@ public expect enum class DayOfWeek {
 
 /**
  * The ISO 8601 number of the given day of the week. Monday is 1, Sunday is 7.
+ *
+ * @sample kotlinx.datetime.test.samples.DayOfWeekSamples.isoDayNumber
  */
 public val DayOfWeek.isoDayNumber: Int get() = ordinal + 1
 
@@ -30,6 +34,7 @@ public val DayOfWeek.isoDayNumber: Int get() = ordinal + 1
  * Returns the [DayOfWeek] instance for the given ISO 8601 week day number. Monday is 1, Sunday is 7.
  *
  * @throws IllegalArgumentException if the day number is not in the range 1..7
+ * @sample kotlinx.datetime.test.samples.DayOfWeekSamples.constructorFunction
  */
 public fun DayOfWeek(isoDayNumber: Int): DayOfWeek {
     require(isoDayNumber in 1..7) { "Expected ISO day-of-week number in 1..7, got $isoDayNumber" }
