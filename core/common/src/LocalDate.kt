@@ -32,44 +32,27 @@ import kotlinx.serialization.Serializable
  * ### Construction, serialization, and deserialization
  *
  * [LocalDate] can be constructed directly from its components, using the constructor.
- *
- * ```
- * LocalDate(year = 2023, monthNumber = 1, dayOfMonth = 2) == LocalDate(2023, Month.JANUARY, 2)
- * ```
+ * See sample 1.
  *
  * [fromEpochDays] can be used to obtain a [LocalDate] from the number of days since the epoch day `1970-01-01`;
  * [toEpochDays] is the inverse operation.
- *
- * ```
- * LocalDate.fromEpochDays(0) == LocalDate(1970, Month.JANUARY, 1)
- * LocalDate(1970, Month.JANUARY, 31).toEpochDays() == 30
- * ```
+ * See sample 2.
  *
  * [parse] and [toString] methods can be used to obtain a [LocalDate] from and convert it to a string in the
  * ISO 8601 extended format.
- *
- * ```
- * LocalDate.parse("2023-01-02") == LocalDate(2023, Month.JANUARY, 2)
- * LocalDate(2023, Month.JANUARY, 2).toString() == "2023-01-02"
- * ```
+ * See sample 3.
  *
  * [parse] and [LocalDate.format] both support custom formats created with [Format] or defined in [Formats].
- *
- * ```
- * val customFormat = LocalDate.Format {
- *   monthName(MonthNames.ENGLISH_ABBREVIATED)
- *   char(' ')
- *   dayOfMonth()
- *   char(' ')
- *   year()
- * }
- * LocalDate.parse("Jan 05 2020", customFormat) == LocalDate(2020, Month.JANUARY, 5)
- * LocalDate(2020, Month.JANUARY, 5).format(customFormat) == "Jan 05 2020"
- * ```
+ * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
  * - [LocalDateIso8601Serializer] for the ISO 8601 extended format,
  * - [LocalDateComponentSerializer] for an object with components.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunctionMonthNumber
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.fromAndToEpochDays
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.simpleParsingAndFormatting
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.customFormat
  */
 @Serializable(with = LocalDateIso8601Serializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
@@ -86,6 +69,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          *
          * @see LocalDate.toString for formatting using the default format.
          * @see LocalDate.format for formatting using a custom format.
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()): LocalDate
 
@@ -93,25 +77,13 @@ public expect class LocalDate : Comparable<LocalDate> {
          * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
          *
          * @throws IllegalArgumentException if the result exceeds the platform-specific boundaries of [LocalDate].
-         *
          * @see LocalDate.toEpochDays
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.fromAndToEpochDays
          */
         public fun fromEpochDays(epochDays: Int): LocalDate
 
         /**
          * Creates a new format for parsing and formatting [LocalDate] values.
-         *
-         * Example:
-         * ```
-         * // 2020 Jan 05
-         * LocalDate.Format {
-         *   year()
-         *   char(' ')
-         *   monthName(MonthNames.ENGLISH_ABBREVIATED)
-         *   char(' ')
-         *   dayOfMonth()
-         * }
-         * ```
          *
          * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
          * (for example, [dayOfMonth] is 31 for February), consider using [DateTimeComponents.Format] instead.
@@ -119,6 +91,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          * There is a collection of predefined formats in [LocalDate.Formats].
          *
          * @throws IllegalArgumentException if parsing using this format is ambiguous.
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.customFormat
          */
         @Suppress("FunctionName")
         public fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate>
@@ -146,6 +119,8 @@ public expect class LocalDate : Comparable<LocalDate> {
          * - `+12020-08-30`
          * - `0000-08-30`
          * - `-0001-08-30`
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalDate>
 
@@ -157,6 +132,8 @@ public expect class LocalDate : Comparable<LocalDate> {
          * - `+120200830`
          * - `00000830`
          * - `-00010830`
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.Formats.isoBasic
          */
         public val ISO_BASIC: DateTimeFormat<LocalDate>
     }
@@ -174,6 +151,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
      * given [monthNumber] and [year].
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunctionMonthNumber
      */
     public constructor(year: Int, monthNumber: Int, dayOfMonth: Int)
 
@@ -188,25 +166,50 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range, or if [dayOfMonth] is invalid for the
      * given [month] and [year].
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunction
      */
     public constructor(year: Int, month: Month, dayOfMonth: Int)
 
-    /** Returns the year component of the date. */
+    /**
+     * Returns the year component of the date.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.year
+     */
     public val year: Int
 
-    /** Returns the number-of-the-month (1..12) component of the date. */
+    /**
+     * Returns the number-of-the-month (1..12) component of the date.
+     *
+     * Shortcut for `month.number`.
+     */
     public val monthNumber: Int
 
-    /** Returns the month ([Month]) component of the date. */
+    /**
+     * Returns the month ([Month]) component of the date.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.month
+     */
     public val month: Month
 
-    /** Returns the day-of-month component of the date. */
+    /**
+     * Returns the day-of-month (`1..31`) component of the date.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.dayOfMonth
+     */
     public val dayOfMonth: Int
 
-    /** Returns the day-of-week component of the date. */
+    /**
+     * Returns the day-of-week component of the date.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.dayOfWeek
+     */
     public val dayOfWeek: DayOfWeek
 
-    /** Returns the day-of-year component of the date. */
+    /**
+     * Returns the day-of-year (`1..366`) component of the date.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.dayOfYear
+     */
     public val dayOfYear: Int
 
     /**
@@ -215,6 +218,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
      *
      * @see LocalDate.fromEpochDays
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.toEpochDays
      */
     public fun toEpochDays(): Int
 
@@ -223,6 +227,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      * Returns zero if this date represents the same day as the other (i.e., equal to other),
      * a negative number if this date is earlier than the other,
      * and a positive number if this date is later than the other.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.compareToSample
      */
     public override fun compareTo(other: LocalDate): Int
 
@@ -232,6 +238,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [LocalDate] from a string.
      * @see LocalDate.format for formatting using a custom format.
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.toStringSample
      */
     public override fun toString(): String
 }
@@ -239,6 +246,8 @@ public expect class LocalDate : Comparable<LocalDate> {
 /**
  * Formats this value using the given [format].
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.formatting
  */
 public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.format(this)
 
@@ -253,6 +262,8 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
  *
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.atTimeInline
  */
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
     LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
@@ -267,6 +278,8 @@ public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond:
  * exist in the implicit time zone.
  * For example, `LocalDate(2021, 3, 28).atTime(LocalTime(2, 16, 20))` will successfully create a [LocalDateTime],
  * even though in Berlin, times between 2:00 and 3:00 do not exist on March 28, 2021 due to the transition to DST.
+ *
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.atTime
  */
 public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this, time)
 
@@ -275,16 +288,10 @@ public fun LocalDate.atTime(time: LocalTime): LocalDateTime = LocalDateTime(this
  * Returns a date that is the result of adding components of [DatePeriod] to this date. The components are
  * added in the order from the largest units to the smallest: first years and months, then days.
  *
- * ```
- * LocalDate(2023, Month.JANUARY, 30) + DatePeriod(years = 1, months = 2, days = 2) == LocalDate(2024, Month.APRIL, 1)
- * // 2023-01-30 + 1 year = 2024-01-30
- * // 2024-01-30 + 2 months = 2024-03-30
- * // 2024-03-30 + 2 days = 2024-04-01
- * ```
- *
  * @see LocalDate.periodUntil
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.plusPeriod
  */
 public expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
 
@@ -292,16 +299,10 @@ public expect operator fun LocalDate.plus(period: DatePeriod): LocalDate
  * Returns a date that is the result of subtracting components of [DatePeriod] from this date. The components are
  * subtracted in the order from the largest units to the smallest: first years and months, then days.
  *
- * ```
- * LocalDate(2023, Month.JANUARY, 2) - DatePeriod(years = 1, months = 2, days = 3) == LocalDate(2021, Month.OCTOBER, 30)
- * // 2023-01-02 - 1 year = 2022-01-02
- * // 2022-01-02 - 2 months = 2021-11-02
- * // 2021-11-02 - 3 days = 2021-10-30
- * ```
- *
  * @see LocalDate.periodUntil
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusPeriod
  */
 public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
     if (period.days != Int.MIN_VALUE && period.months != Int.MIN_VALUE) {
@@ -322,13 +323,10 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
  * - negative or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
- * ```
- * LocalDate(2023, Month.JANUARY, 2).periodUntil(LocalDate(2024, Month.APRIL, 1)) == DatePeriod(years = 1, months = 2, days = 30)
- * ```
- *
  * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
  * @see LocalDate.minus for the same operation with the order of arguments reversed.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.periodUntil
  */
 public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
 
@@ -342,13 +340,10 @@ public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * - positive or zero if this date is later than the other,
  * - exactly zero if this date is equal to the other.
  *
- * ```
- * LocalDate(2024, Month.APRIL, 1) - LocalDate(2023, Month.JANUARY, 2) == DatePeriod(years = 1, months = 2, days = 30)
- * ```
- *
  * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int (JVM only).
  *
  * @see LocalDate.periodUntil for the same operation with the order of arguments reversed.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusDate
  */
 public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(this)
 
@@ -361,18 +356,13 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - zero if this date is equal to the other.
  *
  * The value is rounded toward zero.
- *
- * ```
- * LocalDate(2023, Month.JANUARY, 2).until(LocalDate(2024, Month.APRIL, 1), DateTimeUnit.MONTH) == 14
- * // one year, two months, and 30 days, rounded toward zero.
- * ```
 
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.daysUntil
  * @see LocalDate.monthsUntil
  * @see LocalDate.yearsUntil
- *
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.until
  */
 public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int
 
@@ -384,6 +374,7 @@ public expect fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.until
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.daysUntil
  */
 public expect fun LocalDate.daysUntil(other: LocalDate): Int
 
@@ -395,6 +386,7 @@ public expect fun LocalDate.daysUntil(other: LocalDate): Int
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.until
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.monthsUntil
  */
 public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 
@@ -404,6 +396,7 @@ public expect fun LocalDate.monthsUntil(other: LocalDate): Int
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.until
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.yearsUntil
  */
 public expect fun LocalDate.yearsUntil(other: LocalDate): Int
 
@@ -440,6 +433,7 @@ public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, u
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.plusInt
  */
 public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -452,6 +446,7 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusInt
  */
 public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -464,6 +459,7 @@ public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): Loc
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.plusLong
  */
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -476,6 +472,7 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusLong
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
 
