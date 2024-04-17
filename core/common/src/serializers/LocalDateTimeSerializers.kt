@@ -27,7 +27,7 @@ public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
         LocalDateTime.parse(decoder.decodeString())
 
     override fun serialize(encoder: Encoder, value: LocalDateTime) {
-        encoder.encodeString(value.toString())
+        encoder.encodeString(LocalDateTime.Formats.ISO.format(value))
     }
 
 }
