@@ -241,7 +241,6 @@ class LocalDateSamples {
     fun plusLong() {
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenTrillionDaysLater = today.plus(10_000_000_000L, DateTimeUnit.DAY)
-        assertEquals(LocalDate(2024, Month.APRIL, 16).plus(10_000_000_000L, DateTimeUnit.DAY), LocalDate(27_381_094, Month.MAY, 12))
         check(tenTrillionDaysLater == LocalDate(27_381_094, Month.MAY, 12))
     }
 
@@ -250,7 +249,6 @@ class LocalDateSamples {
     fun minusLong() {
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenTrillionDaysAgo = today.minus(10_000_000_000L, DateTimeUnit.DAY)
-        assertEquals(LocalDate(2024, Month.APRIL, 16).minus(10_000_000_000L, DateTimeUnit.DAY), LocalDate(-27_377_046, Month.MARCH, 22))
         check(tenTrillionDaysAgo == LocalDate(-27_377_046, Month.MARCH, 22))
     }
 

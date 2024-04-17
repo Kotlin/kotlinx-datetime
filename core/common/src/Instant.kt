@@ -199,6 +199,7 @@ public expect class Instant : Comparable<Instant> {
      * Note that this number doesn't include leap seconds added or removed since the epoch.
      *
      * @see fromEpochSeconds
+     * @sample kotlinx.datetime.test.samples.InstantSamples.epochSeconds
      */
     public val epochSeconds: Long
 
@@ -208,6 +209,7 @@ public expect class Instant : Comparable<Instant> {
      * The value is always positive and lies in the range `0..999_999_999`.
      *
      * @see fromEpochSeconds
+     * @sample kotlinx.datetime.test.samples.InstantSamples.nanosecondsOfSecond
      */
     public val nanosecondsOfSecond: Int
 
@@ -219,6 +221,7 @@ public expect class Instant : Comparable<Instant> {
      * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
      *
      * @see fromEpochMilliseconds
+     * @sample kotlinx.datetime.test.samples.InstantSamples.toEpochMilliseconds
      */
     public fun toEpochMilliseconds(): Long
 
@@ -234,6 +237,8 @@ public expect class Instant : Comparable<Instant> {
      * in `kotlinx-datetime`, adding a day is a calendar-based operation, whereas [Duration] always considers
      * a day to be 24 hours.
      * For an explanation of why this is error-prone, see [DateTimeUnit.DayBased].
+     *
+     * @sample kotlinx.datetime.test.samples.InstantSamples.plusDuration
      */
     public operator fun plus(duration: Duration): Instant
 
@@ -249,6 +254,8 @@ public expect class Instant : Comparable<Instant> {
      * in `kotlinx-datetime`, adding a day is a calendar-based operation, whereas [Duration] always considers
      * a day to be 24 hours.
      * For an explanation of why this is error-prone, see [DateTimeUnit.DayBased].
+     *
+     * @sample kotlinx.datetime.test.samples.InstantSamples.minusDuration
      */
     public operator fun minus(duration: Duration): Instant
 
@@ -266,6 +273,8 @@ public expect class Instant : Comparable<Instant> {
      * or even monotonic, so the result of this operation may be negative even if the other instant was observed later
      * than this one, or vice versa.
      * For measuring time intervals, consider using [TimeSource.Monotonic].
+     *
+     * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstant
      */
     public operator fun minus(other: Instant): Duration
 
@@ -274,6 +283,8 @@ public expect class Instant : Comparable<Instant> {
      * Returns zero if this instant represents the same moment as the other (i.e., equal to other),
      * a negative number if this instant is earlier than the other,
      * and a positive number if this instant is later than the other.
+     *
+     * @sample kotlinx.datetime.test.samples.InstantSamples.compareToSample
      */
     public override operator fun compareTo(other: Instant): Int
 
@@ -289,6 +300,7 @@ public expect class Instant : Comparable<Instant> {
      * @see DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET for a very similar format. The difference is that
      * [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] will not add trailing zeros for readability to the
      * fractional part of the second.
+     * @sample kotlinx.datetime.test.samples.InstantSamples.toStringSample
      */
     public override fun toString(): String
 
@@ -306,6 +318,7 @@ public expect class Instant : Comparable<Instant> {
          * Note that [Instant] also supports nanosecond precision via [fromEpochSeconds].
          *
          * @see Instant.toEpochMilliseconds
+         * @sample kotlinx.datetime.test.samples.InstantSamples.fromEpochMilliseconds
          */
         public fun fromEpochMilliseconds(epochMilliseconds: Long): Instant
 
@@ -320,6 +333,7 @@ public expect class Instant : Comparable<Instant> {
          *
          * @see Instant.epochSeconds
          * @see Instant.nanosecondsOfSecond
+         * @sample kotlinx.datetime.test.samples.InstantSamples.fromEpochSeconds
          */
         public fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long = 0): Instant
 
@@ -334,6 +348,7 @@ public expect class Instant : Comparable<Instant> {
          *
          * @see Instant.epochSeconds
          * @see Instant.nanosecondsOfSecond
+         * @sample kotlinx.datetime.test.samples.InstantSamples.fromEpochSecondsIntNanos
          */
         public fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant
 
@@ -356,6 +371,7 @@ public expect class Instant : Comparable<Instant> {
          *
          * @see Instant.toString for formatting using the default format.
          * @see Instant.format for formatting using a custom format.
+         * @sample kotlinx.datetime.test.samples.InstantSamples.parsing
          */
         public fun parse(
             input: CharSequence,
@@ -387,11 +403,19 @@ public expect class Instant : Comparable<Instant> {
     }
 }
 
-/** Returns true if the instant is [Instant.DISTANT_PAST] or earlier. */
+/**
+ * Returns true if the instant is [Instant.DISTANT_PAST] or earlier.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.isDistantPast
+ */
 public val Instant.isDistantPast: Boolean
     get() = this <= Instant.DISTANT_PAST
 
-/** Returns true if the instant is [Instant.DISTANT_FUTURE] or later. */
+/**
+ * Returns true if the instant is [Instant.DISTANT_FUTURE] or later.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.isDistantFuture
+ */
 public val Instant.isDistantFuture: Boolean
     get() = this >= Instant.DISTANT_FUTURE
 
@@ -412,12 +436,9 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], like in
  *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
  *
- * ```
- * Clock.System.now().plus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month later
- * ```
- *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusPeriod
  */
 public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant
 
@@ -432,12 +453,9 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], as in
  *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
  *
- * ```
- * Clock.System.now().minus(DateTimePeriod(months = 1, days = -1), TimeZone.UTC) // one day short from a month earlier
- * ```
- *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusPeriod
  */
 public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
     /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
@@ -463,6 +481,7 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  *     Or (only on the JVM) if the number of months between the two dates exceeds an Int.
+ * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntil
  */
 public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
 
@@ -477,13 +496,8 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
- * ```
- * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
- * val currentMoment = Clock.System.now()
- * val daysLived = momentOfBirth.until(currentMoment, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
- * ```
- *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnit
  */
 public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
 
@@ -497,11 +511,7 @@ public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: Ti
  *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
- * ```
- * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
- * val currentMoment = Clock.System.now()
- * val minutesLived = momentOfBirth.until(currentMoment, DateTimeUnit.MINUTE)
- * ```
+ * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsTimeBasedUnit
  */
 public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     try {
@@ -520,6 +530,7 @@ public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  *
  * @see Instant.until
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.daysUntil
  */
 public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
         until(other, DateTimeUnit.DAY, timeZone).clampToInt()
@@ -531,6 +542,7 @@ public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
  *
  * @see Instant.until
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.monthsUntil
  */
 public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
         until(other, DateTimeUnit.MONTH, timeZone).clampToInt()
@@ -542,6 +554,7 @@ public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
  *
  * @see Instant.until
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.yearsUntil
  */
 public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
         until(other, DateTimeUnit.YEAR, timeZone).clampToInt()
@@ -559,6 +572,7 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  *   Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  * @see Instant.periodUntil
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstantInZone
  */
 public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
         other.periodUntil(this, timeZone)
@@ -619,11 +633,8 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when adding date-based units to a [LocalDate].
  *
- * ```
- * Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days from now in Berlin
- * ```
- *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
 public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
@@ -637,14 +648,11 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
  * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when subtracting date-based units from a [LocalDate].
  *
- * ```
- * Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days earlier than now in Berlin
- * ```
- *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
 public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
@@ -654,11 +662,9 @@ public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * ```
- * Clock.System.now().plus(5, DateTimeUnit.HOUR) // 5 hours from now
- * ```
- *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
 public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
     plus(value.toLong(), unit)
@@ -669,11 +675,9 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * ```
- * Clock.System.now().minus(5, DateTimeUnit.HOUR) // 5 hours earlier than now
- * ```
- *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */
 public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
     minus(value.toLong(), unit)
@@ -688,11 +692,8 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when adding date-based units to a [LocalDate].
  *
- * ```
- * Clock.System.now().plus(5L, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days from now in Berlin
- * ```
- *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnitLong
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
@@ -706,11 +707,8 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
  * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when subtracting date-based units from a [LocalDate].
  *
- * ```
- * Clock.System.now().minus(5L, DateTimeUnit.DAY, TimeZone.of("Europe/Berlin")) // 5 days earlier than now in Berlin
- * ```
- *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnitLong
  */
 public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
     if (value != Long.MIN_VALUE) {
@@ -725,11 +723,9 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * ```
- * Clock.System.now().plus(5L, DateTimeUnit.HOUR) // 5 hours from now
- * ```
- *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnitLong
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
 
@@ -739,11 +735,9 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * ```
- * Clock.System.now().minus(5L, DateTimeUnit.HOUR) // 5 hours earlier than now
- * ```
- *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnitLong
  */
 public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     if (value != Long.MIN_VALUE) {
@@ -759,16 +753,11 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
  *
- * ```
- * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
- * val currentMoment = Clock.System.now()
- * val daysLived = currentMoment.minus(momentOfBirth, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
- * ```
- *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @see Instant.until for the same operation but with swapped arguments.
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusAsDateTimeUnit
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
         other.until(this, unit, timeZone)
@@ -779,15 +768,10 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
  *
- * ```
- * val momentOfBirth = LocalDateTime.parse("1990-02-20T12:03:53Z").toInstant(TimeZone.of("Europe/Berlin"))
- * val currentMoment = Clock.System.now()
- * val minutesLived = currentMoment.minus(momentOfBirth, DateTimeUnit.MINUTE)
- * ```
- *
  * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
  *
  * @see Instant.until for the same operation but with swapped arguments.
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusAsTimeBasedUnit
  */
 public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
     other.until(this, unit)
@@ -801,6 +785,8 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  * [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is a format very similar to the one used by [toString].
  * The only difference is that [Instant.toString] adds trailing zeros to the fraction-of-second component so that the
  * number of digits after a dot is a multiple of three.
+ *
+ * @sample kotlinx.datetime.test.samples.InstantSamples.formatting
  */
 public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: UtcOffset = UtcOffset.ZERO): String {
     val instant = this
