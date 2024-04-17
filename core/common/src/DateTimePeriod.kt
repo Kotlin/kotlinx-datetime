@@ -219,8 +219,8 @@ public sealed class DateTimePeriod {
          *   Seconds can optionally have a fractional part with up to nine digits.
          *   The fractional part is separated with a `.`.
          *
-         * All numbers can be negative, in which case, `-` is prepended to them.
-         * Otherwise, a number can have `+` prepended to it, which does not have an effect.
+         * An explicit `+` or `-` sign can be prepended to any number.
+         * `-` means that the number is negative, and `+` has no effect.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are
          * exceeded.
