@@ -234,11 +234,11 @@ class InstantSamples {
 
     @Test
     fun minusDateTimeUnit() {
-        val startInstant = Instant.parse("2024-05-02T08:55:40.322Z")
+        val startInstant = Instant.parse("2024-03-28T02:04:56.256Z")
         val twoYearsEarlierInBerlin = startInstant.minus(2, DateTimeUnit.YEAR, TimeZone.of("Europe/Berlin"))
-        check(twoYearsEarlierInBerlin == Instant.parse("2022-05-02T08:55:40.322Z"))
+        check(twoYearsEarlierInBerlin == Instant.parse("2022-03-28T01:04:56.256Z"))
         val twoYearsEarlierInCairo = startInstant.minus(2, DateTimeUnit.YEAR, TimeZone.of("Africa/Cairo"))
-        check(twoYearsEarlierInCairo == Instant.parse("2022-05-02T09:55:40.322Z"))
+        check(twoYearsEarlierInCairo == Instant.parse("2022-03-28T02:04:56.256Z"))
     }
 
     @Test
