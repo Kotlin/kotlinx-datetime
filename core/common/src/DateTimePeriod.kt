@@ -22,8 +22,8 @@ import kotlinx.serialization.Serializable
  * The time components are: [hours] ([DateTimeUnit.HOUR]), [minutes] ([DateTimeUnit.MINUTE]),
  * [seconds] ([DateTimeUnit.SECOND]), [nanoseconds] ([DateTimeUnit.NANOSECOND]).
  *
- * The time components are not independent and always overflow into one another.
- * Likewise, months overflow into years.
+ * The time components are not independent and are always normalized together.
+ * Likewise, months are normalized together with years.
  * For example, there is no difference between `DateTimePeriod(months = 24, hours = 2, minutes = 63)` and
  * `DateTimePeriod(years = 2, hours = 3, minutes = 3)`.
  *
@@ -73,10 +73,10 @@ public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
 
     /**
-     * The number of calendar days.
+     * The number of calendar days. Can be negative.
      *
      * Note that a calendar day is not identical to 24 hours, see [DateTimeUnit.DayBased] for details.
-     * Also, this field does not overflow into months, so values larger than 31 can be present.
+     * Also, this field does not get normalized together with months, so values larger than 31 can be present.
      *
      * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
@@ -100,7 +100,7 @@ public sealed class DateTimePeriod {
     /**
      * The number of whole hours in this period. Can be negative.
      *
-     * This field does not overflow into days, so values larger than 23 or smaller than -23 can be present.
+     * This field does not get normalized together with days, so values larger than 23 or smaller than -23 can be present.
      *
      * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
@@ -210,7 +210,6 @@ public sealed class DateTimePeriod {
          * - Optionally, the number of years, followed by `Y`.
          * - Optionally, the number of months, followed by `M`.
          * - Optionally, the number of weeks, followed by `W`.
-         *   This is not a part of the ISO 8601 format but an extension.
          * - Optionally, the number of days, followed by `D`.
          * - The string can end here if there are no more time components.
          *   If there are time components, the letter `T` is required.

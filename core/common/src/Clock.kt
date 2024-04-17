@@ -22,9 +22,9 @@ public interface Clock {
      * Returns the [Instant] corresponding to the current time, according to this clock.
      *
      * It is not guaranteed that calling [now] later will return a larger [Instant].
-     * In particular, for [System] it is completely expected that the opposite will happen,
+     * In particular, for [Clock.System] it is completely expected that the opposite will happen,
      * and it must be taken into account.
-     * See the documentation of [System] for details.
+     * See the documentation of [Clock.System] for details.
      *
      * Even though [Instant] is defined to be on the UTC-SLS time scale, which enforces a specific way of handling
      * leap seconds, [now] is not guaranteed to handle leap seconds in any specific way.
@@ -54,6 +54,7 @@ public interface Clock {
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()
     }
 
+    /** A companion object used purely for namespacing. */
     public companion object {
 
     }

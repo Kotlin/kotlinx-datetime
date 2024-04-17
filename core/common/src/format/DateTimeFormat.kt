@@ -11,6 +11,11 @@ import kotlinx.datetime.internal.format.parser.*
 
 /**
  * A format for parsing and formatting date-time-related values.
+ *
+ * By convention, predefined formats for each applicable class can be found in the `Formats` object of the class, and
+ * custom formats can be created using the `Format` function in the companion object of that class.
+ * For example, [LocalDate.Formats] contains predefined formats for [LocalDate], and [LocalDate.Format] can be used
+ * to define new ones.
  */
 public sealed interface DateTimeFormat<T> {
     /**

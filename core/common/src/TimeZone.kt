@@ -65,6 +65,8 @@ public expect open class TimeZone {
         /**
          * Returns the time zone with the fixed UTC+0 offset.
          *
+         * The [id] of this time zone is `"UTC"`.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.utc
          */
         public val UTC: FixedOffsetTimeZone
