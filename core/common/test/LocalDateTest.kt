@@ -288,6 +288,14 @@ class LocalDateTest {
         assertEquals(0, LocalDate(1970, 1, 1).toEpochDays())
         assertEquals(-678942 - 40587, LocalDate(-1, 12, 31).toEpochDays())
     }
+
+    @Test
+    fun isLeapYear() {
+        assertEquals(true, LocalDate(1904, 1, 1).isLeapYear())
+        assertEquals(false, LocalDate(1900, 1, 1).isLeapYear())
+        assertEquals(true, LocalDate(2000, 1, 1).isLeapYear())
+    }
+
 }
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {

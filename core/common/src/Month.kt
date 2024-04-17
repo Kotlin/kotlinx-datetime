@@ -61,5 +61,52 @@ public fun Month(number: Int): Month {
     return Month.entries[number - 1]
 }
 
+/**
+ * Gets the length of this month in days.
+ * <p>
+ * This takes a flag to determine whether to return the length for a leap year or not.
+ * <p>
+ * February has 28 days in a standard year and 29 days in a leap year.
+ * April, June, September and November have 30 days.
+ * All other months have 31 days.
+ *
+ * @param leapYear  true if the length is required for a leap year
+ * @return the length of this month in days, from 28 to 31
+ */
+public fun Month.length(leapYear: Boolean): Int = when (this) {
+    Month.FEBRUARY -> if (leapYear) 29 else 28
+    Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
+    else -> 31
+}
+
+/**
+ * Gets the minimum length of this month in days.
+ * <p>
+ * February has a minimum length of 28 days.
+ * April, June, September and November have 30 days.
+ * All other months have 31 days.
+ *
+ * @return the minimum length of this month in days, from 28 to 31
+ */
+public fun Month.minLength(): Int = when (this) {
+    Month.FEBRUARY -> 28
+    Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
+    else -> 31
+}
+
+/**
+ * Gets the maximum length of this month in days.
+ * <p>
+ * February has a maximum length of 29 days.
+ * April, June, September and November have 30 days.
+ * All other months have 31 days.
+ *
+ * @return the maximum length of this month in days, from 29 to 31
+ */
+public fun Month.maxLength(): Int = when (this) {
+    Month.FEBRUARY -> 29
+    Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> 30
+    else -> 31
+}
 
 // companion object members vs type aliasing to java.time.Month?
