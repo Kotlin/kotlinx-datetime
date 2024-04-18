@@ -7,18 +7,27 @@ package kotlinx.datetime.internal
 
 internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase {
 
-    private val tzdbPath = tzdbPaths(defaultTzdbPath).find {
-        it.chaseSymlinks().check()?.isDirectory == true
+    internal val tzdbPath = tzdbPaths(defaultTzdbPath).find { path ->
+        tabPaths.any { path.containsFile(it) }
     } ?: throw IllegalStateException("Could not find the path to the timezone database")
 
-    override fun rulesForId(id: String): TimeZoneRules =
-        readTzFile(tzdbPath.resolve(Path.fromString(id)).readBytes()).toTimeZoneRules()
+    override fun rulesForId(id: String): TimeZoneRules {
+        val idAsPath = Path.fromString(id)
+        require(!idAsPath.isAbsolute) { "Timezone ID '$idAsPath' must not begin with a '/'" }
+        require(idAsPath.components.none { it == ".." }) { "'$idAsPath' must not contain '..' as a component" }
+        val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
+        val contents = file.readBytes() ?: throw RuntimeException("File '$file' not found")
+        return readTzFile(contents).toTimeZoneRules()
+    }
 
     override fun availableTimeZoneIds(): Set<String> = buildSet {
-        tzdbPath.traverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
+        tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 
 }
+
+// taken from https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L354
+private val tabPaths = listOf("zone1970.tab", "zone.tab", "tab/zone_sun.tab")
 
 /** The files that sometimes lie in the `zoneinfo` directory but aren't actually time zones. */
 private val tzdbUnneededFiles = setOf(
@@ -51,7 +60,7 @@ internal fun tzdbPaths(defaultTzdbPath: Path?) = sequence {
 
 // taken from https://github.com/HowardHinnant/date/blob/ab37c362e35267d6dee02cb47760f9e9c669d3be/src/tz.cpp#L3951-L3952
 internal fun pathToSystemDefault(): Pair<Path, Path>? {
-    val info = Path(true, listOf("etc", "localtime")).chaseSymlinks()
+    val info = chaseSymlinks("/etc/localtime") ?: return null
     val i = info.components.indexOf("zoneinfo")
     if (!info.isAbsolute || i == -1 || i == info.components.size - 1) return null
     return Pair(
