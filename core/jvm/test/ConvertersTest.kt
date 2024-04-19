@@ -5,7 +5,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import org.junit.experimental.theories.suppliers.TestedOn
 import kotlin.random.Random
 import kotlin.test.*
 import java.time.Instant as JTInstant
@@ -38,7 +37,6 @@ class ConvertersTest {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
         val month = Month.entries.random()
@@ -197,6 +195,7 @@ class ConvertersTest {
         fun test(month: Month) {
             val jtMonth = month.toJavaMonth()
             assertEquals(month, jtMonth.toKotlinMonth())
+            assertEquals(month.name, jtMonth.name)
         }
         Month.entries.forEach(::test)
         assertEquals(Month.JANUARY, java.time.Month.JANUARY.toKotlinMonth())
@@ -207,6 +206,7 @@ class ConvertersTest {
         fun test(dayOfWeek: DayOfWeek) {
             val jtDayOfWeek = dayOfWeek.toJavaDayOfWeek()
             assertEquals(dayOfWeek, jtDayOfWeek.toKotlinDayOfWeek())
+            assertEquals(dayOfWeek.name, jtDayOfWeek.name)
         }
         DayOfWeek.entries.forEach(::test)
         assertEquals(DayOfWeek.MONDAY, java.time.DayOfWeek.MONDAY.toKotlinDayOfWeek())
