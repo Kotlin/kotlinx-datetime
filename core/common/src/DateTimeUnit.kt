@@ -204,7 +204,7 @@ public sealed class DateTimeUnit {
     /**
      * A [date-time unit][DateTimeUnit] equal to some number of months.
      *
-     * Since different months have different number of days, a `MonthBased`-unit cannot be expressed a multiple of some [DayBased]-unit.
+     * Since different months have different number of days, a `MonthBased`-unit cannot be expressed as a multiple of some [DayBased]-unit.
      *
      * @see DateTimeUnit for a description of date-time units in general.
      * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.monthBasedUnit
