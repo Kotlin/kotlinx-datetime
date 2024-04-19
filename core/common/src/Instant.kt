@@ -76,7 +76,7 @@ import kotlin.time.*
  * The [plus] and [minus] operators can be used to add [Duration]s to and subtract them from an [Instant]:
  *
  * ```
- * Clock.System.now() + Duration.seconds(5) // 5 seconds from now
+ * Clock.System.now() + 5.seconds // 5 seconds from now
  * ```
  *
  * Durations can also be represented as multiples of some [time-based date-time unit][DateTimeUnit.TimeBased]:
@@ -631,7 +631,7 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
  * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
- * It is also not needed when adding date-based units to a [LocalDate].
+ * It is also not needed when adding date-based units to a [LocalDate][LocalDate.plus].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit

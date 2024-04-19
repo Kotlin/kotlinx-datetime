@@ -263,6 +263,11 @@ public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
  * For finding an instant that corresponds to the start of a date in a particular time zone consider using
  * [LocalDate.atStartOfDayIn] function because a day does not always start at the fixed time 0:00:00.
  *
+ * **Pitfall**: since [LocalDateTime] is not tied to a particular time zone, the resulting [LocalDateTime] may not
+ * exist in the implicit time zone.
+ * For example, `LocalDate(2021, 3, 28).atTime(2, 16, 20)` will successfully create a [LocalDateTime],
+ * even though in Berlin, times between 2:00 and 3:00 do not exist on March 28, 2021 due to the transition to DST.
+ *
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.atTimeInline
  */
 public fun LocalDate.atTime(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalDateTime =
@@ -356,7 +361,7 @@ public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.period
  * - zero if this date is equal to the other.
  *
  * The value is rounded toward zero.
-
+ *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *
  * @see LocalDate.daysUntil
@@ -392,6 +397,8 @@ public expect fun LocalDate.monthsUntil(other: LocalDate): Int
 
 /**
  * Returns the number of whole years between two dates.
+ *
+ * The value is rounded toward zero.
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
  *

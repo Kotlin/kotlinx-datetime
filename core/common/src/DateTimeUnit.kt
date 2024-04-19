@@ -35,11 +35,11 @@ import kotlin.time.Duration.Companion.nanoseconds
  * Arithmetic operations on [LocalDateTime] are not provided.
  * Please see the [LocalDateTime] documentation for a discussion.
  *
- * [DateTimePeriod] is a combination of all [DateTimeUnit] values, used to express things like
+ * [DateTimePeriod] is a combination of [DateTimeUnit] values of every kind, used to express things like
  * "two days and three hours."
  * [DatePeriod] is specifically a combination of [DateTimeUnit.DateBased] values.
- * [DateTimePeriod] is more flexible than [DateTimeUnit] because it can express a combination of different units or
- * have the length of zero, but in exchange, the duration of time between two [Instant] or [LocalDate] values can be
+ * [DateTimePeriod] is more flexible than [DateTimeUnit] because it can express a combination of values with different
+ * kinds of units, but in exchange, the duration of time between two [Instant] or [LocalDate] values can be
  * measured in terms of some [DateTimeUnit], but not [DateTimePeriod] or [DatePeriod].
  *
  * ### Construction, serialization, and deserialization
@@ -48,9 +48,9 @@ import kotlin.time.Duration.Companion.nanoseconds
  * [DateTimeUnit.MONTH], and others.
  *
  * Two ways are provided to create custom [DateTimeUnit] instances:
- * - By multiplying an existing unit on the right by an integer scalar: for example, `DateTimeUnit.NANOSECOND * 10`.
+ * - By multiplying an existing unit on the right by an integer scalar: for example, `DateTimeUnit.MICROSECOND * 10`.
  * - By constructing an instance manually with [TimeBased], [DayBased], or [MonthBased]: for example,
- *   `DateTimeUnit.TimeBased(nanoseconds = 10)`.
+ *   `DateTimeUnit.TimeBased(nanoseconds = 10_000)`.
  *
  * Also, [DateTimeUnit] can be serialized and deserialized using `kotlinx.serialization`:
  * [DateTimeUnitSerializer], [DateBasedDateTimeUnitSerializer], [DayBasedDateTimeUnitSerializer],

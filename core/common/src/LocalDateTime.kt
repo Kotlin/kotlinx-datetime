@@ -18,10 +18,10 @@ import kotlinx.serialization.Serializable
  * For example, `2020-08-30T18:43` is not a *moment in time*, since someone in Berlin and someone in Tokyo would witness
  * this on their clocks at different times, but it is a [LocalDateTime].
  *
- * The main purpose of this class is to provide human-readable representations of [Instant] values, or to transfer them
- * as data.
- * Instances of [LocalDateTime] should not be stored when a specific time zone is known: in this case, it is recommended
- * to use [Instant] instead.
+ * The main purpose of this class is to provide human-readable representations of [Instant] values, to transfer them
+ * as data, or to define future planned events that will have the same local date-time even if the time zone rules
+ * change.
+ * In all other cases when a specific time zone is known, it is recommended to use [Instant] instead.
  *
  * ### Arithmetic operations
  *
@@ -30,7 +30,8 @@ import kotlinx.serialization.Serializable
  *
  * For example, in Berlin, naively adding one day to `2021-03-27T02:16:20` without accounting for the time zone would
  * result in `2021-03-28T02:16:20`.
- * However, this local date-time is invalid, because the clocks moved forward from `02:00` to `03:00` on that day.
+ * However, the resulting local date-time cannot be observed in that time zone,
+ * because the clocks moved forward from `02:00` to `03:00` on that day.
  * This is known as a "time gap", or a "spring forward" transition.
  *
  * Similarly, the local date-time `2021-10-31T02:16:20` is ambiguous,
@@ -39,8 +40,8 @@ import kotlinx.serialization.Serializable
  *
  * For these reasons, using [LocalDateTime] as an input to arithmetic operations is discouraged.
  *
- * When only arithmetic on the date component is needed, without touching the time, use [LocalDate] instead,
- * as it provides well-defined date arithmetic.
+ * When only the date component is needed, without the time, use [LocalDate] instead.
+ * It provides well-defined date arithmetic.
  *
  * If the time component must be taken into account, [LocalDateTime]
  * should be converted to [Instant] using a specific time zone, and the arithmetic on [Instant] should be used.
@@ -65,7 +66,8 @@ import kotlinx.serialization.Serializable
  * whether the given date and time components are valid in the implied time zone.
  * For example, `2021-03-28T02:16:20` is invalid in Berlin, as it falls into a time gap, but nothing prevents one
  * from constructing such a [LocalDateTime].
- * Before constructing a [LocalDateTime] using any API, please ensure that the result is valid in the implied time zone.
+ * Before using a [LocalDateTime] constructed using any API,
+ * please ensure that the result is valid in the implied time zone.
  * The recommended pattern is to convert a [LocalDateTime] to [Instant] as soon as possible (see
  * [LocalDateTime.toInstant]) and work with [Instant] values instead.
  *
