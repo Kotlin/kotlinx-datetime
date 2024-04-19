@@ -242,7 +242,7 @@ class LocalTimeSamples {
         val firstMorningOfEveryMonth = (1..12).map { month ->
             morning.atDate(2021, month, 1)
         }
-        check(firstMorningOfEveryMonth.all { it.time == morning && it.dayOfMonth == 1 })
+        check(firstMorningOfEveryMonth.all { it.time == morning && it.day == 1 })
     }
 
     /**
@@ -255,7 +255,7 @@ class LocalTimeSamples {
         val firstMorningOfEveryMonth = Month.entries.map { month ->
             morning.atDate(2021, month, 1)
         }
-        check(firstMorningOfEveryMonth.all { it.time == morning && it.dayOfMonth == 1 })
+        check(firstMorningOfEveryMonth.all { it.time == morning && it.day == 1 })
     }
 
     @Test

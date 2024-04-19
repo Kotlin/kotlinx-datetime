@@ -45,7 +45,7 @@ class LocalDateTimeFormatTest {
             char('-')
             monthNumber()
             char('-')
-            dayOfMonth()
+            day()
             char(' ')
             hour()
             char(':')
@@ -78,7 +78,7 @@ class LocalDateTimeFormatTest {
             char('-')
             monthNumber()
             char('-')
-            dayOfMonth()
+            day()
             char(' ')
             hour()
             char(':')
@@ -107,7 +107,7 @@ class LocalDateTimeFormatTest {
         test(dateTimes, LocalDateTime.Format {
             year()
             monthNumber()
-            dayOfMonth()
+            day()
             hour()
             minute()
             second()
@@ -137,7 +137,7 @@ class LocalDateTimeFormatTest {
             char('-')
             monthNumber(Padding.NONE)
             char('-')
-            dayOfMonth(Padding.NONE)
+            day(Padding.NONE)
             char(' ')
             hour(Padding.NONE)
             char(':')
@@ -168,7 +168,7 @@ class LocalDateTimeFormatTest {
             char('-')
             monthNumber(Padding.SPACE)
             char('-')
-            dayOfMonth(Padding.SPACE)
+            day(Padding.SPACE)
             char(' ')
             hour(Padding.SPACE)
             char(':')
@@ -230,7 +230,7 @@ class LocalDateTimeFormatTest {
         val format1 = LocalDateTime.Format { date(LocalDate.Formats.ISO); char(' ');  time(LocalTime.Formats.ISO) }
         assertEquals("2020-08-30 18:43:13", dateTime.format(format1))
         val format2 = LocalDateTime.Format {
-          monthNumber(); char('/'); dayOfMonth()
+          monthNumber(); char('/'); day()
           char(' ')
           hour(); char(':'); minute()
           optional { char(':'); second() }

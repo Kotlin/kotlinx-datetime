@@ -53,7 +53,7 @@ class DateTimeComponentsTest {
 
     val twoDigitFields = listOf(
         DateTimeComponents::monthNumber,
-        DateTimeComponents::dayOfMonth,
+        DateTimeComponents::day,
         DateTimeComponents::hour,
         DateTimeComponents::minute,
         DateTimeComponents::second,

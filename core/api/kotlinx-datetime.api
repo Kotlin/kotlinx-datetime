@@ -260,6 +260,7 @@ public final class kotlinx/datetime/LocalDate : java/lang/Comparable {
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun compareTo (Lkotlinx/datetime/LocalDate;)I
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDay ()I
 	public final fun getDayOfMonth ()I
 	public final fun getDayOfWeek ()Ljava/time/DayOfWeek;
 	public final fun getDayOfYear ()I
@@ -303,6 +304,8 @@ public final class kotlinx/datetime/LocalDateJvmKt {
 }
 
 public final class kotlinx/datetime/LocalDateKt {
+	public static final fun LocalDate (III)Lkotlinx/datetime/LocalDate;
+	public static final fun LocalDate (ILjava/time/Month;I)Lkotlinx/datetime/LocalDate;
 	public static final fun atTime (Lkotlinx/datetime/LocalDate;IIII)Lkotlinx/datetime/LocalDateTime;
 	public static final fun atTime (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalTime;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atTime$default (Lkotlinx/datetime/LocalDate;IIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
@@ -327,6 +330,7 @@ public final class kotlinx/datetime/LocalDateTime : java/lang/Comparable {
 	public fun compareTo (Lkotlinx/datetime/LocalDateTime;)I
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDate ()Lkotlinx/datetime/LocalDate;
+	public final fun getDay ()I
 	public final fun getDayOfMonth ()I
 	public final fun getDayOfWeek ()Ljava/time/DayOfWeek;
 	public final fun getDayOfYear ()I
@@ -356,6 +360,10 @@ public final class kotlinx/datetime/LocalDateTime$Formats {
 }
 
 public final class kotlinx/datetime/LocalDateTimeKt {
+	public static final fun LocalDateTime (IIIIIII)Lkotlinx/datetime/LocalDateTime;
+	public static final fun LocalDateTime (ILjava/time/Month;IIIII)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun LocalDateTime$default (IIIIIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun LocalDateTime$default (ILjava/time/Month;IIIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun format (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 	public static final fun toLocalDateTime (Ljava/lang/String;)Lkotlinx/datetime/LocalDateTime;
 }
@@ -396,10 +404,14 @@ public final class kotlinx/datetime/LocalTime$Formats {
 
 public final class kotlinx/datetime/LocalTimeKt {
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;III)Lkotlinx/datetime/LocalDateTime;
+	public static final fun atDate (Lkotlinx/datetime/LocalTime;IIILkotlin/Unit;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;ILjava/time/Month;I)Lkotlinx/datetime/LocalDateTime;
+	public static final fun atDate (Lkotlinx/datetime/LocalTime;ILjava/time/Month;ILkotlin/Unit;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;IIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;IIILkotlin/Unit;ILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;ILjava/time/Month;IILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;ILjava/time/Month;ILkotlin/Unit;ILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun format (Lkotlinx/datetime/LocalTime;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 	public static final fun toLocalTime (Ljava/lang/String;)Lkotlinx/datetime/LocalTime;
 }
@@ -484,6 +496,7 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public static final field Companion Lkotlinx/datetime/format/DateTimeComponents$Companion;
 	public fun <init> ()V
 	public final fun getAmPm ()Lkotlinx/datetime/format/AmPmMarker;
+	public final fun getDay ()Ljava/lang/Integer;
 	public final fun getDayOfMonth ()Ljava/lang/Integer;
 	public final fun getDayOfWeek ()Ljava/time/DayOfWeek;
 	public final fun getDayOfYear ()Ljava/lang/Integer;
@@ -505,6 +518,7 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public final fun setDateTime (Lkotlinx/datetime/LocalDateTime;)V
 	public final fun setDateTimeOffset (Lkotlinx/datetime/Instant;Lkotlinx/datetime/UtcOffset;)V
 	public final fun setDateTimeOffset (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/UtcOffset;)V
+	public final fun setDay (Ljava/lang/Integer;)V
 	public final fun setDayOfMonth (Ljava/lang/Integer;)V
 	public final fun setDayOfWeek (Ljava/time/DayOfWeek;)V
 	public final fun setDayOfYear (Ljava/lang/Integer;)V
@@ -563,6 +577,7 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder {
 
 public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate : kotlinx/datetime/format/DateTimeFormatBuilder {
 	public abstract fun date (Lkotlinx/datetime/format/DateTimeFormat;)V
+	public abstract fun day (Lkotlinx/datetime/format/Padding;)V
 	public abstract fun dayOfMonth (Lkotlinx/datetime/format/Padding;)V
 	public abstract fun dayOfWeek (Lkotlinx/datetime/format/DayOfWeekNames;)V
 	public abstract fun dayOfYear (Lkotlinx/datetime/format/Padding;)V
@@ -573,6 +588,8 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$Wi
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate$DefaultImpls {
+	public static synthetic fun day$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+	public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;)V
 	public static synthetic fun dayOfMonth$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun dayOfYear$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun monthNumber$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
@@ -584,6 +601,7 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$Wi
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime$DefaultImpls {
+	public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime;Lkotlinx/datetime/format/Padding;)V
 	public static fun secondFraction (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime;I)V
 }
 
@@ -593,6 +611,7 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$Wi
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents$DefaultImpls {
+	public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents;Lkotlinx/datetime/format/Padding;)V
 	public static fun secondFraction (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents;I)V
 }
 

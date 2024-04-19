@@ -19,7 +19,7 @@ class DateTimeFormatTest {
                 dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            dayOfMonth(Padding.NONE)
+            day(Padding.NONE)
             char(' ')
             monthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
             char(' ')
@@ -50,7 +50,7 @@ class DateTimeFormatTest {
                 dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            dayOfMonth(Padding.NONE)
+            day(Padding.NONE)
             char(' ')
             monthName(MonthNames("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
             char(' ')
@@ -133,7 +133,7 @@ class DateTimeFormatTest {
         assertFailsWith<IllegalArgumentException> {
             DateTimeComponents.Format {
                 monthNumber(Padding.NONE)
-                dayOfMonth(Padding.NONE)
+                day(Padding.NONE)
             }
         }
     }

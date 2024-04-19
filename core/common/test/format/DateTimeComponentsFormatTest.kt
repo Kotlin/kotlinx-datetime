@@ -21,14 +21,14 @@ class DateTimeComponentsFormatTest {
         // the same date, but with an incorrect day-of-week:
         assertDateTimeComponentsEqual(
             DateTimeComponents().apply {
-                year = 2008; monthNumber = 6; dayOfMonth = 3; dayOfWeek = DayOfWeek.MONDAY
+                year = 2008; monthNumber = 6; day = 3; dayOfWeek = DayOfWeek.MONDAY
                 setTime(LocalTime(11, 5, 30))
                 setOffset(UtcOffset.ZERO)
             },
             format.parse("Mon, 3 Jun 2008 11:05:30 GMT"))
         assertDateTimeComponentsEqual(
             DateTimeComponents().apply {
-                year = 2008; monthNumber = 6; dayOfMonth = 40; dayOfWeek = DayOfWeek.TUESDAY
+                year = 2008; monthNumber = 6; day = 40; dayOfWeek = DayOfWeek.TUESDAY
                 setTime(LocalTime(11, 5, 30))
                 setOffset(UtcOffset.ZERO)
             },
@@ -125,7 +125,7 @@ class DateTimeComponentsFormatTest {
     private fun assertDateTimeComponentsEqual(a: DateTimeComponents, b: DateTimeComponents, message: String? = null) {
         assertEquals(a.year, b.year, message)
         assertEquals(a.monthNumber, b.monthNumber, message)
-        assertEquals(a.dayOfMonth, b.dayOfMonth, message)
+        assertEquals(a.day, b.day, message)
         if (a.dayOfWeek != null && b.dayOfWeek != null)
             assertEquals(a.dayOfWeek, b.dayOfWeek, message)
         assertEquals(a.hour, b.hour, message)
@@ -210,7 +210,7 @@ class DateTimeComponentsFormatTest {
             PropertyAndItsValue(DateTimeComponents::timeZoneId, "Europe/Berlin"),
             PropertyAndItsValue(DateTimeComponents::year, 2020),
             PropertyAndItsValue(DateTimeComponents::monthNumber, 3),
-            PropertyAndItsValue(DateTimeComponents::dayOfMonth, 16),
+            PropertyAndItsValue(DateTimeComponents::day, 16),
             PropertyAndItsValue(DateTimeComponents::dayOfWeek, DayOfWeek.MONDAY),
             PropertyAndItsValue(DateTimeComponents::dayOfYear, 76),
             PropertyAndItsValue(DateTimeComponents::hour, 23),

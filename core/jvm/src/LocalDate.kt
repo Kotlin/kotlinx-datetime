@@ -58,19 +58,22 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         public actual val ISO_BASIC: DateTimeFormat<LocalDate> = ISO_DATE_BASIC
     }
 
-    public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
+    public actual constructor(year: Int, month: Int, day: Int) :
             this(try {
-                jtLocalDate.of(year, monthNumber, dayOfMonth)
+                jtLocalDate.of(year, month, day)
             } catch (e: DateTimeException) {
                 throw IllegalArgumentException(e)
             })
 
-    public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
+    public actual constructor(year: Int, month: Month, day: Int) : this(year, month.number, day)
 
     public actual val year: Int get() = value.year
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
     public actual val dayOfMonth: Int get() = value.dayOfMonth
+    public actual val day: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
 

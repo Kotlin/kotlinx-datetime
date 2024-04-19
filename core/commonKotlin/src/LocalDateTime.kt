@@ -35,16 +35,19 @@ public actual constructor(public actual val date: LocalDate, public actual val t
         public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
     }
 
-    public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-        this(LocalDate(year, monthNumber, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
+    public actual constructor(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+        this(LocalDate(year, month, day), LocalTime.of(hour, minute, second, nanosecond))
 
-    public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-        this(LocalDate(year, month, dayOfMonth), LocalTime.of(hour, minute, second, nanosecond))
+    public actual constructor(year: Int, month: Month, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+        this(LocalDate(year, month, day), LocalTime.of(hour, minute, second, nanosecond))
 
     public actual val year: Int get() = date.year
-    public actual val monthNumber: Int get() = date.monthNumber
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    public actual val monthNumber: Int get() = date.month.number
     public actual val month: Month get() = date.month
-    public actual val dayOfMonth: Int get() = date.dayOfMonth
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    public actual val dayOfMonth: Int get() = date.day
+    public actual val day: Int get() = date.day
     public actual val dayOfWeek: DayOfWeek get() = date.dayOfWeek
     public actual val dayOfYear: Int get() = date.dayOfYear
     public actual val hour: Int get() = time.hour
