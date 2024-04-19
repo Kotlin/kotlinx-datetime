@@ -156,6 +156,17 @@ class DateTimeComponentsSamples {
     }
 
     @Test
+    fun setMonth() {
+        val input = "Mon, 30 Jul 2008 11:05:30 GMT"
+        val parsed = DateTimeComponents.Formats.RFC_1123.parse(input)
+        check(parsed.monthNumber == 7)
+        check(parsed.month == Month.JULY)
+        parsed.month = Month.JUNE
+        check(parsed.monthNumber == 6)
+        check(parsed.month == Month.JUNE)
+    }
+
+    @Test
     fun timeAmPm() {
         val format = DateTimeComponents.Format {
             amPmHour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(1, 9)

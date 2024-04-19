@@ -274,8 +274,14 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * The month ([Month]) component of the date.
+     *
+     * This is a view of [monthNumber].
+     * Setting it will set [monthNumber], and getting it will return a [Month] instance if [monthNumber] is a valid
+     * month.
+     *
      * @throws IllegalArgumentException during getting if [monthNumber] is outside the `1..12` range.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.date
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.setMonth
      */
     public var month: Month?
         get() = monthNumber?.let { Month(it) }
