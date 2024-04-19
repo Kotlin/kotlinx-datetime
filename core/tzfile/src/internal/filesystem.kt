@@ -10,29 +10,6 @@ import kotlinx.cinterop.*
 import platform.posix.*
 
 internal class Path(val isAbsolute: Boolean, val components: List<String>) {
-    fun check(): PathInfo? = memScoped {
-        val stat = alloc<stat>()
-        val err = stat(this@Path.toString(), stat.ptr)
-        if (err != 0) return null
-        object : PathInfo {
-            override val isDirectory: Boolean = stat.st_mode.toInt() and S_IFMT == S_IFDIR // `inode(7)`, S_ISDIR
-            override val isSymlink: Boolean = stat.st_mode.toInt() and S_IFMT == S_IFLNK // `inode(7)`, S_ISLNK
-        }
-    }
-
-    fun readLink(): Path? = memScoped {
-        val buffer = allocArray<ByteVar>(PATH_MAX)
-        val err = readlink(this@Path.toString(), buffer, PATH_MAX.convert<size_t>())
-        if (err == (-1).convert<ssize_t>()) return null
-        buffer[err] = 0
-        fromString(buffer.toKString())
-    }
-
-    fun resolve(other: Path): Path = when {
-        other.isAbsolute -> other
-        else -> Path(isAbsolute, components + other.components)
-    }
-
     override fun toString(): String = buildString {
         if (isAbsolute) append("/")
         if (components.isNotEmpty()) {
@@ -53,14 +30,8 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
     }
 }
 
-// `stat(2)` lists the other available fields
-internal interface PathInfo {
-    val isDirectory: Boolean
-    val isSymlink: Boolean
-}
-
-internal fun Path.readBytes(): ByteArray {
-    val handler = fopen(this.toString(), "rb") ?: throw RuntimeException("Cannot open file $this")
+internal fun Path.readBytes(): ByteArray? {
+    val handler = fopen(this.toString(), "rb") ?: return null
     try {
         var err = fseek(handler, 0, SEEK_END)
         if (err == -1) throw RuntimeException("Cannot jump to the end of $this: $errnoString")

@@ -9,18 +9,21 @@ package kotlinx.datetime.internal
 import kotlinx.cinterop.*
 import platform.posix.*
 
-internal fun Path.chaseSymlinks(maxDepth: Int = 100): Path {
-    var realPath = this
-    var depth = maxDepth
-    while (true) {
-        realPath = realPath.readLink() ?: break
-        if (depth-- == 0) throw RuntimeException("Too many levels of symbolic links")
-    }
-    return realPath
+internal fun chaseSymlinks(name: String): Path? = memScoped {
+    val buffer = allocArray<ByteVar>(PATH_MAX)
+    realpath(name, buffer)?.let { Path.fromString(it.toKString()) }
 }
 
-internal fun Path.traverseDirectory(exclude: Set<String> = emptySet(), stripLeadingComponents: Int = this.components.size, actionOnFile: (Path) -> Unit) {
-    val handler = opendir(this.toString()) ?: return
+internal fun Path.containsFile(file: String): Boolean = access("$this/$file", F_OK) == 0
+
+internal fun Path.tryTraverseDirectory(
+    exclude: Set<String> = emptySet(),
+    stripLeadingComponents: Int = this.components.size,
+    maxDepth: Int = 100,
+    actionOnFile: (Path) -> Unit
+): Boolean {
+    if (maxDepth <= 0) throw IllegalStateException("Max depth reached: $this")
+    val handler = opendir(this.toString()) ?: return false
     try {
         while (true) {
             val entry = readdir(handler) ?: break
@@ -28,16 +31,15 @@ internal fun Path.traverseDirectory(exclude: Set<String> = emptySet(), stripLead
             if (name == "." || name == "..") continue
             if (name in exclude) continue
             val path = Path(isAbsolute, components + name)
-            val info = path.check() ?: continue // skip broken symlinks
-            if (info.isDirectory) {
-                if (!info.isSymlink) {
-                    path.traverseDirectory(exclude, stripLeadingComponents, actionOnFile)
-                }
-            } else {
+            val isDirectory = path.tryTraverseDirectory(
+                exclude, stripLeadingComponents, maxDepth = maxDepth - 1, actionOnFile
+            )
+            if (!isDirectory) {
                 actionOnFile(Path(false, path.components.drop(stripLeadingComponents)))
             }
         }
     } finally {
         closedir(handler)
     }
+    return true
 }

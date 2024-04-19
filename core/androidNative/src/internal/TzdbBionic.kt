@@ -26,9 +26,8 @@ internal fun TzdbBionic(): TimeZoneDatabase = TzdbBionic(buildMap<String, TzdbBi
         Path.fromString("/system/usr/share/zoneinfo/tzdata"), // immutable fallback tzdb
         Path.fromString("/apex/com.android.tzdata/etc/tz/tzdata"), // an up-to-date tzdb, may not exist
     )) {
-        if (path.check() == null) continue // the file does not exist
         // be careful to only read each file a single time and keep many references to the same ByteArray in memory.
-        val content = path.readBytes()
+        val content = path.readBytes() ?: continue // this file does not exist
         val header = BionicTzdbHeader.parse(content)
         val indexSize = header.data_offset - header.index_offset
         check(indexSize % 52 == 0) { "Invalid index size: $indexSize (must be a multiple of 52)" }
