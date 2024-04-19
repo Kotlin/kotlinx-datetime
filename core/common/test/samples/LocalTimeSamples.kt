@@ -14,6 +14,7 @@ class LocalTimeSamples {
 
     @Test
     fun construction() {
+        // Constructing a LocalTime using its constructor
         val night = LocalTime(hour = 23, minute = 13, second = 16, nanosecond = 153_200_001)
         check(night.hour == 23)
         check(night.minute == 13)
@@ -32,6 +33,7 @@ class LocalTimeSamples {
 
     @Test
     fun representingAsNumbers() {
+        // Representing a LocalTime as the number of seconds, milliseconds, or nanoseconds since the start of the day
         val time = LocalTime(hour = 8, minute = 30, second = 15, nanosecond = 123_456_789)
         // The number of whole seconds since the start of the day:
         val timeAsSecondOfDay = time.toSecondOfDay()
@@ -49,6 +51,7 @@ class LocalTimeSamples {
 
     @Test
     fun simpleParsingAndFormatting() {
+        // Parsing a LocalTime from a string and formatting it back
         val time = LocalTime.parse("08:30:15.1234567")
         check(time == LocalTime(8, 30, 15, 123_456_700))
         val formatted = time.toString()
@@ -57,6 +60,7 @@ class LocalTimeSamples {
 
     @Test
     fun parsing() {
+        // Parsing a LocalTime from a string using predefined and custom formats
         check(LocalTime.parse("08:30:15.123456789") == LocalTime(8, 30, 15, 123_456_789))
         check(LocalTime.parse("08:30:15") == LocalTime(8, 30, 15))
         check(LocalTime.parse("08:30") == LocalTime(8, 30))
@@ -70,6 +74,7 @@ class LocalTimeSamples {
 
     @Test
     fun fromAndToSecondOfDay() {
+        // Converting a LocalTime to the number of seconds since the start of the day and back
         val secondsInDay = 24 * 60 * 60
         val randomNumberOfSeconds = Random.nextInt(secondsInDay)
         val time = LocalTime.fromSecondOfDay(randomNumberOfSeconds)
@@ -79,6 +84,7 @@ class LocalTimeSamples {
 
     @Test
     fun fromAndToMillisecondOfDay() {
+        // Converting a LocalTime to the number of milliseconds since the start of the day and back
         val millisecondsInDay = 24 * 60 * 60 * 1_000
         val randomNumberOfMilliseconds = Random.nextInt(millisecondsInDay)
         val time = LocalTime.fromMillisecondOfDay(randomNumberOfMilliseconds)
@@ -88,6 +94,7 @@ class LocalTimeSamples {
 
     @Test
     fun fromAndToNanosecondOfDay() {
+        // Converting a LocalTime to the number of nanoseconds since the start of the day and back
         val originalTime = LocalTime(
             hour = Random.nextInt(24),
             minute = Random.nextInt(60),
@@ -101,6 +108,7 @@ class LocalTimeSamples {
 
     @Test
     fun customFormat() {
+        // Parsing and formatting LocalTime values using a custom format
         val customFormat = LocalTime.Format {
             hour(); char(':'); minute(); char(':'); second()
             char(','); secondFraction(fixedLength = 3)
@@ -112,6 +120,7 @@ class LocalTimeSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a LocalTime using its constructor
         val time = LocalTime(8, 30, 15, 123_456_789)
         check(time.hour == 8)
         check(time.minute == 30)
@@ -126,22 +135,26 @@ class LocalTimeSamples {
 
     @Test
     fun hour() {
+        // Getting the number of whole hours shown on the clock
         check(LocalTime(8, 30, 15, 123_456_789).hour == 8)
     }
 
     @Test
     fun minute() {
+        // Getting the number of whole minutes that don't form a whole hour
         check(LocalTime(8, 30, 15, 123_456_789).minute == 30)
     }
 
     @Test
     fun second() {
+        // Getting the number of whole seconds that don't form a whole minute
         check(LocalTime(8, 30).second == 0)
         check(LocalTime(8, 30, 15, 123_456_789).second == 15)
     }
 
     @Test
     fun nanosecond() {
+        // Getting the sub-second part of a LocalTime
         check(LocalTime(8, 30).nanosecond == 0)
         check(LocalTime(8, 30, 15).nanosecond == 0)
         check(LocalTime(8, 30, 15, 123_456_789).nanosecond == 123_456_789)
@@ -149,6 +162,7 @@ class LocalTimeSamples {
 
     @Test
     fun toSecondOfDay() {
+        // Obtaining the number of seconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toSecondOfDay() == 0)
         check(LocalTime(0, 0, 0, 1).toSecondOfDay() == 0)
         check(LocalTime(0, 0, 1, 0).toSecondOfDay() == 1)
@@ -160,6 +174,7 @@ class LocalTimeSamples {
 
     @Test
     fun toMillisecondOfDay() {
+        // Obtaining the number of milliseconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toMillisecondOfDay() == 0)
         check(LocalTime(0, 0, 0, 1).toMillisecondOfDay() == 0)
         check(LocalTime(0, 0, 1, 0).toMillisecondOfDay() == 1000)
@@ -171,6 +186,7 @@ class LocalTimeSamples {
 
     @Test
     fun toNanosecondOfDay() {
+        // Obtaining the number of nanoseconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toNanosecondOfDay() == 0L)
         check(LocalTime(0, 0, 0, 1).toNanosecondOfDay() == 1L)
         check(LocalTime(0, 0, 1, 0).toNanosecondOfDay() == 1_000_000_000L)
@@ -181,6 +197,7 @@ class LocalTimeSamples {
 
     @Test
     fun compareTo() {
+        // Comparing LocalTime values
         check(LocalTime(hour = 8, minute = 30) < LocalTime(hour = 17, minute = 10))
         check(LocalTime(hour = 8, minute = 30) < LocalTime(hour = 8, minute = 31))
         check(LocalTime(hour = 8, minute = 30) < LocalTime(hour = 8, minute = 30, second = 1))
@@ -189,6 +206,7 @@ class LocalTimeSamples {
 
     @Test
     fun toStringSample() {
+        // Converting a LocalTime to a human-readable string
         check(LocalTime(hour = 8, minute = 30).toString() == "08:30")
         check(LocalTime(hour = 8, minute = 30, second = 15).toString() == "08:30:15")
         check(LocalTime(hour = 8, minute = 30, second = 0, nanosecond = 120000000).toString() == "08:30:00.120")
@@ -196,6 +214,8 @@ class LocalTimeSamples {
 
     @Test
     fun formatting() {
+        // Formatting LocalTime values using predefined and custom formats
+        check(LocalTime(hour = 8, minute = 30).toString() == "08:30")
         check(LocalTime(hour = 8, minute = 30).format(LocalTime.Formats.ISO) == "08:30:00")
         val customFormat = LocalTime.Format {
             hour(); char(':'); minute()
@@ -217,6 +237,7 @@ class LocalTimeSamples {
      */
     @Test
     fun atDateComponentWiseMonthNumber() {
+        // Using the `atDate` function to covert a sequence of `LocalDate` values to `LocalDateTime`
         val morning = LocalTime(8, 30)
         val firstMorningOfEveryMonth = (1..12).map { month ->
             morning.atDate(2021, month, 1)
@@ -229,6 +250,7 @@ class LocalTimeSamples {
      */
     @Test
     fun atDateComponentWise() {
+        // Using the `atDate` function to covert a sequence of `LocalDate` values to `LocalDateTime`
         val morning = LocalTime(8, 30)
         val firstMorningOfEveryMonth = Month.entries.map { month ->
             morning.atDate(2021, month, 1)
@@ -238,6 +260,7 @@ class LocalTimeSamples {
 
     @Test
     fun atDate() {
+        // Using the `atDate` function to covert a sequence of `LocalDate` values to `LocalDateTime`
         val workdayStart = LocalTime(8, 30)
         val startDate = LocalDate(2021, Month.JANUARY, 1)
         val endDate = LocalDate(2021, Month.DECEMBER, 31)
@@ -259,6 +282,7 @@ class LocalTimeSamples {
     class Formats {
         @Test
         fun iso() {
+            // Parsing and formatting LocalTime values using the ISO format
             val timeWithNanoseconds = LocalTime(hour = 8, minute = 30, second = 15, nanosecond = 160_000_000)
             val timeWithSeconds = LocalTime(hour = 8, minute = 30, second = 15)
             val timeWithoutSeconds = LocalTime(hour = 8, minute = 30)

@@ -14,12 +14,14 @@ class LocalDateSamples {
 
     @Test
     fun simpleParsingAndFormatting() {
+        // Parsing and formatting LocalDate values
         check(LocalDate.parse("2023-01-02") == LocalDate(2023, Month.JANUARY, 2))
         check(LocalDate(2023, Month.JANUARY, 2).toString() == "2023-01-02")
     }
 
     @Test
     fun parsing() {
+        // Parsing LocalDate values using predefined and custom formats
         check(LocalDate.parse("2024-04-16") == LocalDate(2024, Month.APRIL, 16))
         val customFormat = LocalDate.Format {
             monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
@@ -29,6 +31,7 @@ class LocalDateSamples {
 
     @Test
     fun fromAndToEpochDays() {
+        // Converting LocalDate values to the number of days since 1970-01-01 and back
         check(LocalDate.fromEpochDays(0) == LocalDate(1970, Month.JANUARY, 1))
         val randomEpochDay = Random.nextInt(-50_000..50_000)
         val randomDate = LocalDate.fromEpochDays(randomEpochDay)
@@ -37,6 +40,7 @@ class LocalDateSamples {
 
     @Test
     fun customFormat() {
+        // Parsing and formatting LocalDate values using a custom format
         val customFormat = LocalDate.Format {
             monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
         }
@@ -48,6 +52,7 @@ class LocalDateSamples {
 
     @Test
     fun constructorFunctionMonthNumber() {
+        // Constructing a LocalDate value using its constructor
         val date = LocalDate(2024, 4, 16)
         check(date.year == 2024)
         check(date.monthNumber == 4)
@@ -57,6 +62,7 @@ class LocalDateSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a LocalDate value using its constructor
         val date = LocalDate(2024, Month.APRIL, 16)
         check(date.year == 2024)
         check(date.month == Month.APRIL)
@@ -65,6 +71,7 @@ class LocalDateSamples {
 
     @Test
     fun year() {
+        // Getting the year
         check(LocalDate(2024, Month.APRIL, 16).year == 2024)
         check(LocalDate(0, Month.APRIL, 16).year == 0)
         check(LocalDate(-2024, Month.APRIL, 16).year == -2024)
@@ -72,6 +79,7 @@ class LocalDateSamples {
 
     @Test
     fun month() {
+        // Getting the month
         for (month in Month.entries) {
             check(LocalDate(2024, month, 16).month == month)
         }
@@ -79,6 +87,7 @@ class LocalDateSamples {
 
     @Test
     fun dayOfMonth() {
+        // Getting the day of the month
         repeat(30) {
             val dayOfMonth = it + 1
             check(LocalDate(2024, Month.APRIL, dayOfMonth).dayOfMonth == dayOfMonth)
@@ -87,6 +96,7 @@ class LocalDateSamples {
 
     @Test
     fun dayOfWeek() {
+        // Getting the day of the week
         check(LocalDate(2024, Month.APRIL, 16).dayOfWeek == DayOfWeek.TUESDAY)
         check(LocalDate(2024, Month.APRIL, 17).dayOfWeek == DayOfWeek.WEDNESDAY)
         check(LocalDate(2024, Month.APRIL, 18).dayOfWeek == DayOfWeek.THURSDAY)
@@ -94,6 +104,7 @@ class LocalDateSamples {
 
     @Test
     fun dayOfYear() {
+        // Getting the 1-based day of the year
         check(LocalDate(2024, Month.APRIL, 16).dayOfYear == 107)
         check(LocalDate(2024, Month.JANUARY, 1).dayOfYear == 1)
         check(LocalDate(2024, Month.DECEMBER, 31).dayOfYear == 366)
@@ -101,6 +112,7 @@ class LocalDateSamples {
 
     @Test
     fun toEpochDays() {
+        // Converting LocalDate values to the number of days since 1970-01-01
         check(LocalDate(2024, Month.APRIL, 16).toEpochDays() == 19829)
         check(LocalDate(1970, Month.JANUARY, 1).toEpochDays() == 0)
         check(LocalDate(1969, Month.DECEMBER, 25).toEpochDays() == -7)
@@ -108,6 +120,7 @@ class LocalDateSamples {
 
     @Test
     fun compareToSample() {
+        // Comparing LocalDate values
         check(LocalDate(2023, 4, 16) < LocalDate(2024, 3, 15))
         check(LocalDate(2023, 4, 16) < LocalDate(2023, 5, 15))
         check(LocalDate(2023, 4, 16) < LocalDate(2023, 4, 17))
@@ -116,6 +129,7 @@ class LocalDateSamples {
 
     @Test
     fun toStringSample() {
+        // Converting LocalDate values to strings
         check(LocalDate(2024, 4, 16).toString() == "2024-04-16")
         check(LocalDate(12024, 4, 16).toString() == "+12024-04-16")
         check(LocalDate(-2024, 4, 16).toString() == "-2024-04-16")
@@ -123,6 +137,8 @@ class LocalDateSamples {
 
     @Test
     fun formatting() {
+        // Formatting a LocalDate value using predefined and custom formats
+        check(LocalDate(2024, 4, 16).toString() == "2024-04-16")
         check(LocalDate(2024, 4, 16).format(LocalDate.Formats.ISO) == "2024-04-16")
         val customFormat = LocalDate.Format {
             monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
@@ -132,6 +148,7 @@ class LocalDateSamples {
 
     @Test
     fun atTimeInline() {
+        // Constructing a LocalDateTime value from a LocalDate and a LocalTime
         val date = LocalDate(2024, Month.APRIL, 16)
         val dateTime = date.atTime(13, 30)
         check(dateTime == LocalDateTime(2024, Month.APRIL, 16, 13, 30))
@@ -139,6 +156,7 @@ class LocalDateSamples {
 
     @Test
     fun atTime() {
+        // Constructing a LocalDateTime value from a LocalDate and a LocalTime
         val date = LocalDate(2024, Month.APRIL, 16)
         val time = LocalTime(13, 30)
         val dateTime = date.atTime(time)
@@ -147,6 +165,7 @@ class LocalDateSamples {
 
     @Test
     fun plusPeriod() {
+        // Finding a date that's a given period after another date
         val startDate = LocalDate(2021, Month.OCTOBER, 30)
         check(startDate + DatePeriod(years = 1, months = 2, days = 3) == LocalDate(2023, Month.JANUARY, 2))
         // Step by step explanation:
@@ -159,6 +178,7 @@ class LocalDateSamples {
 
     @Test
     fun minusPeriod() {
+        // Finding a date that's a given period before another date
         val startDate = LocalDate(2023, Month.JANUARY, 2)
         check(startDate - DatePeriod(years = 1, months = 2, days = 3) == LocalDate(2021, Month.OCTOBER, 30))
         // Step by step explanation:
@@ -171,6 +191,7 @@ class LocalDateSamples {
 
     @Test
     fun periodUntil() {
+        // Finding the period between two dates
         val startDate = LocalDate(2023, Month.JANUARY, 2)
         val endDate = LocalDate(2024, Month.APRIL, 1)
         val period = startDate.periodUntil(endDate)
@@ -179,6 +200,7 @@ class LocalDateSamples {
 
     @Test
     fun minusDate() {
+        // Finding the period between two dates
         val startDate = LocalDate(2023, Month.JANUARY, 2)
         val endDate = LocalDate(2024, Month.APRIL, 1)
         val period = endDate - startDate
@@ -187,6 +209,7 @@ class LocalDateSamples {
 
     @Test
     fun until() {
+        // Measuring the difference between two dates in terms of the given unit
         val startDate = LocalDate(2023, Month.JANUARY, 2)
         val endDate = LocalDate(2024, Month.APRIL, 1)
         val differenceInMonths = startDate.until(endDate, DateTimeUnit.MONTH)
@@ -196,6 +219,7 @@ class LocalDateSamples {
 
     @Test
     fun daysUntil() {
+        // Finding how many days have passed between two dates
         val dateOfConcert = LocalDate(2024, Month.SEPTEMBER, 26)
         val today = LocalDate(2024, Month.APRIL, 16)
         val daysUntilConcert = today.daysUntil(dateOfConcert)
@@ -204,6 +228,7 @@ class LocalDateSamples {
 
     @Test
     fun monthsUntil() {
+        // Finding how many months have passed between two dates
         val babyDateOfBirth = LocalDate(2023, Month.DECEMBER, 14)
         val today = LocalDate(2024, Month.APRIL, 16)
         val ageInMonths = babyDateOfBirth.monthsUntil(today)
@@ -212,6 +237,7 @@ class LocalDateSamples {
 
     @Test
     fun yearsUntil() {
+        // Finding how many years have passed between two dates
         val dateOfBirth = LocalDate(2016, Month.JANUARY, 14)
         val today = LocalDate(2024, Month.APRIL, 16)
         val age = dateOfBirth.yearsUntil(today)
@@ -220,6 +246,7 @@ class LocalDateSamples {
 
     @Test
     fun plusInt() {
+        // Adding a number of days or months to a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenDaysLater = today.plus(10, DateTimeUnit.DAY)
         check(tenDaysLater == LocalDate(2024, Month.APRIL, 26))
@@ -229,6 +256,7 @@ class LocalDateSamples {
 
     @Test
     fun minusInt() {
+        // Subtracting a number of days or months from a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenDaysAgo = today.minus(10, DateTimeUnit.DAY)
         check(tenDaysAgo == LocalDate(2024, Month.APRIL, 6))
@@ -239,6 +267,7 @@ class LocalDateSamples {
     @Test
     @Ignore // only the JVM has the range wide enough
     fun plusLong() {
+        // Adding a large number of days to a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenTrillionDaysLater = today.plus(10_000_000_000L, DateTimeUnit.DAY)
         check(tenTrillionDaysLater == LocalDate(27_381_094, Month.MAY, 12))
@@ -247,6 +276,7 @@ class LocalDateSamples {
     @Test
     @Ignore // only the JVM has the range wide enough
     fun minusLong() {
+        // Subtracting a large number of days from a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenTrillionDaysAgo = today.minus(10_000_000_000L, DateTimeUnit.DAY)
         check(tenTrillionDaysAgo == LocalDate(-27_377_046, Month.MARCH, 22))
@@ -255,6 +285,7 @@ class LocalDateSamples {
     class Formats {
         @Test
         fun iso() {
+            // Using the extended ISO format for parsing and formatting LocalDate values
             val date = LocalDate.Formats.ISO.parse("2024-04-16")
             check(date == LocalDate(2024, Month.APRIL, 16))
             val formatted = LocalDate.Formats.ISO.format(date)
@@ -263,6 +294,7 @@ class LocalDateSamples {
 
         @Test
         fun isoBasic() {
+            // Using the basic ISO format for parsing and formatting LocalDate values
             val date = LocalDate.Formats.ISO_BASIC.parse("20240416")
             check(date == LocalDate(2024, Month.APRIL, 16))
             val formatted = LocalDate.Formats.ISO_BASIC.format(date)

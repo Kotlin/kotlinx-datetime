@@ -13,6 +13,7 @@ class DateTimeFormatBuilderSamples {
 
     @Test
     fun chars() {
+        // Defining a custom format that includes verbatim strings
         val format = LocalDate.Format {
             monthNumber()
             char('/')
@@ -25,6 +26,7 @@ class DateTimeFormatBuilderSamples {
 
     @Test
     fun alternativeParsing() {
+        // Defining a custom format that allows parsing one of several alternatives
         val format = DateTimeComponents.Format {
             // optionally, date:
             alternativeParsing({
@@ -49,6 +51,7 @@ class DateTimeFormatBuilderSamples {
 
     @Test
     fun optional() {
+        // Defining a custom format that includes parts that will be omitted if they are zero
         val format = UtcOffset.Format {
             optional(ifZero = "Z") {
                 offsetHours()
@@ -87,6 +90,7 @@ class DateTimeFormatBuilderSamples {
 
     @Test
     fun char() {
+        // Defining a custom format that includes a verbatim character
         val format = LocalDate.Format {
             year()
             char('-')

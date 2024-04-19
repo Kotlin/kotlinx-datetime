@@ -14,6 +14,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun construction() {
+        // Constructing a DateTimePeriod using its constructor function
         val period = DateTimePeriod(years = 5, months = 21, days = 36, seconds = 3601)
         check(period.years == 6) // 5 years + (21 months / 12)
         check(period.months == 9) // 21 months % 12
@@ -27,6 +28,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun simpleParsingAndFormatting() {
+        // Parsing and formatting a DateTimePeriod
         val string = "-P2M-3DT-4H"
         val period = DateTimePeriod.parse(string)
         check(period.toString() == "P-2M3DT4H")
@@ -34,6 +36,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun valueNormalization() {
+        // Reading the normalized values that make up a DateTimePeriod
         val period = DateTimePeriod(
             years = -12, months = 122, days = -1440,
             hours = 400, minutes = -80, seconds = 123, nanoseconds = -123456789
@@ -52,6 +55,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun toStringSample() {
+        // Formatting a DateTimePeriod to a string
         check(DateTimePeriod(years = 1, months = 2, days = 3, hours = 4, minutes = 5, seconds = 6, nanoseconds = 7).toString() == "P1Y2M3DT4H5M6.000000007S")
         check(DateTimePeriod(months = 14, days = -16, hours = 5).toString() == "P1Y2M-16DT5H")
         check(DateTimePeriod(months = -2, days = -16, hours = -5).toString() == "-P2M16DT5H")
@@ -59,6 +63,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun parsing() {
+        // Parsing a string representation of a DateTimePeriod
         DateTimePeriod.parse("P1Y2M3DT4H5M6.000000007S").apply {
             check(years == 1)
             check(months == 2)
@@ -84,6 +89,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a DateTimePeriod using its constructor function
         val dateTimePeriod = DateTimePeriod(months = 16, days = -60, hours = 16, minutes = -61)
         check(dateTimePeriod.years == 1) // months overflowed to years
         check(dateTimePeriod.months == 4) // 16 months % 12
@@ -96,6 +102,7 @@ class DateTimePeriodSamples {
 
     @Test
     fun durationToDateTimePeriod() {
+        // Converting a Duration to a DateTimePeriod that only has time-based components
         check(130.minutes.toDateTimePeriod() == DateTimePeriod(minutes = 130))
         check(2.days.toDateTimePeriod() == DateTimePeriod(days = 0, hours = 48))
     }
@@ -104,6 +111,7 @@ class DateTimePeriodSamples {
 
         @Test
         fun simpleParsingAndFormatting() {
+            // Parsing and formatting a DatePeriod
             val datePeriod1 = DatePeriod(years = 1, days = 3)
             val string = datePeriod1.toString()
             check(string == "P1Y3D")
@@ -113,6 +121,7 @@ class DateTimePeriodSamples {
 
         @Test
         fun construction() {
+            // Constructing a DatePeriod using its constructor
             val datePeriod = DatePeriod(years = 1, months = 16, days = 60)
             check(datePeriod.years == 2) // 1 year + (16 months / 12)
             check(datePeriod.months == 4) // 16 months % 12
@@ -126,6 +135,7 @@ class DateTimePeriodSamples {
 
         @Test
         fun parsing() {
+            // Parsing a string representation of a DatePeriod
             // ISO duration strings are supported:
             val datePeriod = DatePeriod.parse("P1Y16M60D")
             check(datePeriod == DatePeriod(years = 2, months = 4, days = 60))

@@ -13,6 +13,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun alternativeConstruction() {
+        // Constructing a LocalDateTime value by specifying its components
         val dateTime1 = LocalDateTime(year = 2021, monthNumber = 3, dayOfMonth = 27, hour = 2, minute = 16, second = 20)
         val dateTime2 = LocalDateTime(
             year = 2021, month = Month.MARCH, dayOfMonth = 27,
@@ -23,6 +24,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun simpleParsingAndFormatting() {
+        // Parsing and formatting LocalDateTime values
         val dateTime = LocalDateTime.parse("2024-02-15T08:30:15.1234567")
         check(dateTime == LocalDate(2024, 2, 15).atTime(8, 30, 15, 123_456_700))
         val formatted = dateTime.toString()
@@ -31,6 +33,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun parsing() {
+        // Parsing LocalDateTime values using predefined and custom formats
         check(LocalDateTime.parse("2024-02-15T08:30:15.123456789") ==
             LocalDate(2024, 2, 15).atTime(8, 30, 15, 123_456_789))
         check(LocalDateTime.parse("2024-02-15T08:30") ==
@@ -47,6 +50,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun customFormat() {
+        // Parsing and formatting LocalDateTime values using a custom format
         val customFormat = LocalDateTime.Format {
             date(LocalDate.Formats.ISO)
             char(' ')
@@ -56,11 +60,15 @@ class LocalDateTimeSamples {
         val dateTime = LocalDate(2024, 2, 15)
             .atTime(8, 30, 15, 123_456_789)
         check(dateTime.format(customFormat) == "2024-02-15 08:30:15,123")
+        check(customFormat.parse("2024-02-15 08:30:15,123") ==
+            LocalDate(2024, 2, 15).atTime(8, 30, 15, 123_000_000)
+        )
         check(dateTime.format(LocalDateTime.Formats.ISO) == "2024-02-15T08:30:15.123456789")
     }
 
     @Test
     fun constructorFunctionWithMonthNumber() {
+        // Constructing a LocalDateTime value using its constructor
         val dateTime = LocalDateTime(
             year = 2024,
             monthNumber = 2,
@@ -85,6 +93,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a LocalDateTime value using its constructor
         val dateTime = LocalDateTime(
             year = 2024,
             month = Month.FEBRUARY,
@@ -109,6 +118,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun fromDateAndTime() {
+        // Converting a LocalDate and a LocalTime to a LocalDateTime value and getting them back
         val date = LocalDate(2024, 2, 15)
         val time = LocalTime(16, 48)
         val dateTime = LocalDateTime(date, time)
@@ -120,6 +130,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun dateComponents() {
+        // Accessing the date components of a LocalDateTime value
         val date = LocalDate(2024, 2, 15)
         val time = LocalTime(hour = 16, minute = 48, second = 59, nanosecond = 999_999_999)
         val dateTime = LocalDateTime(date, time)
@@ -133,6 +144,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun timeComponents() {
+        // Accessing the time components of a LocalDateTime value
         val date = LocalDate(2024, 2, 15)
         val time = LocalTime(hour = 16, minute = 48, second = 59, nanosecond = 999_999_999)
         val dateTime = LocalDateTime(date, time)
@@ -144,6 +156,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun dateAndTime() {
+        // Constructing a LocalDateTime value from a LocalDate and a LocalTime
         val date = LocalDate(2024, 2, 15)
         val time = LocalTime(16, 48)
         val dateTime = LocalDateTime(date, time)
@@ -153,6 +166,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun compareToSample() {
+        // Comparing LocalDateTime values
         val date = LocalDate(2024, 2, 15)
         val laterDate = LocalDate(2024, 2, 16)
         check(date.atTime(hour = 23, minute = 59) < laterDate.atTime(hour = 0, minute = 0))
@@ -164,6 +178,7 @@ class LocalDateTimeSamples {
 
     @Test
     fun toStringSample() {
+        // Converting LocalDateTime values to strings
         check(LocalDate(2024, 2, 15).atTime(16, 48).toString() == "2024-02-15T16:48")
         check(LocalDate(2024, 2, 15).atTime(16, 48, 15).toString() == "2024-02-15T16:48:15")
         check(LocalDate(2024, 2, 15).atTime(16, 48, 15, 120_000_000).toString() == "2024-02-15T16:48:15.120")
@@ -171,6 +186,8 @@ class LocalDateTimeSamples {
 
     @Test
     fun formatting() {
+        // Formatting LocalDateTime values using predefined and custom formats
+        check(LocalDate(2024, 2, 15).atTime(16, 48).toString() == "2024-02-15T16:48")
         check(LocalDate(2024, 2, 15).atTime(16, 48).format(LocalDateTime.Formats.ISO) == "2024-02-15T16:48:00")
         val customFormat = LocalDateTime.Format {
             date(LocalDate.Formats.ISO)
@@ -192,6 +209,7 @@ class LocalDateTimeSamples {
     class Formats {
         @Test
         fun iso() {
+            // Parsing and formatting LocalDateTime values using the ISO format
             val dateTime1 = LocalDate(2024, 2, 15)
                 .atTime(hour = 8, minute = 30, second = 15, nanosecond = 160_000_000)
             val dateTime2 = LocalDate(2024, 2, 15)

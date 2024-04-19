@@ -12,6 +12,7 @@ class DayOfWeekSamples {
 
     @Test
     fun usage() {
+        // Providing different behavior based on what day of the week it is today
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         when (today.dayOfWeek) {
             DayOfWeek.MONDAY -> check(today.dayOfWeek.isoDayNumber == 1)
@@ -27,6 +28,7 @@ class DayOfWeekSamples {
 
     @Test
     fun isoDayNumber() {
+        // Getting the ISO day-of-week number
         check(DayOfWeek.MONDAY.isoDayNumber == 1)
         check(DayOfWeek.TUESDAY.isoDayNumber == 2)
         // ...
@@ -35,6 +37,7 @@ class DayOfWeekSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a DayOfWeek from the ISO day-of-week number
         check(DayOfWeek(isoDayNumber = 1) == DayOfWeek.MONDAY)
         check(DayOfWeek(isoDayNumber = 2) == DayOfWeek.TUESDAY)
         // ...

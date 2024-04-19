@@ -12,6 +12,7 @@ import kotlin.test.*
 class DateTimeComponentsFormatSamples {
     @Test
     fun timeZoneId() {
+        // Defining a custom format that includes a time zone ID
         val format = DateTimeComponents.Format {
             dateTime(LocalDateTime.Formats.ISO)
             char('[')
@@ -30,6 +31,7 @@ class DateTimeComponentsFormatSamples {
 
     @Test
     fun dateTimeComponents() {
+        // Using a predefined DateTimeComponents format in a larger format
         val format = DateTimeComponents.Format {
             char('{')
             dateTimeComponents(DateTimeComponents.Formats.RFC_1123)

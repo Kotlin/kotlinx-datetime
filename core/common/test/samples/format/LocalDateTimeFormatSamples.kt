@@ -12,6 +12,7 @@ import kotlin.test.*
 class LocalDateTimeFormatSamples {
     @Test
     fun dateTime() {
+        // Using a predefined LocalDateTime format in a larger format
         val format = DateTimeComponents.Format {
             dateTime(LocalDateTime.Formats.ISO)
             offset(UtcOffset.Formats.FOUR_DIGITS)

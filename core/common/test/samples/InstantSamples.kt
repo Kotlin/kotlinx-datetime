@@ -15,6 +15,7 @@ class InstantSamples {
 
     @Test
     fun epochSeconds() {
+        // Getting the number of whole seconds that passed since the Unix epoch
         val instant1 = Instant.fromEpochSeconds(999_999, nanosecondAdjustment = 123_456_789)
         check(instant1.epochSeconds == 999_999L)
         val instant2 = Instant.fromEpochSeconds(1_000_000, nanosecondAdjustment = 100_123_456_789)
@@ -25,6 +26,7 @@ class InstantSamples {
 
     @Test
     fun nanosecondsOfSecond() {
+        // Getting the number of nanoseconds that passed since the start of the second
         val instant1 = Instant.fromEpochSeconds(999_999, nanosecondAdjustment = 123_456_789)
         check(instant1.nanosecondsOfSecond == 123_456_789)
         val instant2 = Instant.fromEpochSeconds(1_000_000, nanosecondAdjustment = 100_123_456_789)
@@ -35,6 +37,7 @@ class InstantSamples {
 
     @Test
     fun toEpochMilliseconds() {
+        // Converting an Instant to the number of milliseconds since the Unix epoch
         check(Instant.fromEpochMilliseconds(0).toEpochMilliseconds() == 0L)
         check(Instant.fromEpochMilliseconds(1_000_000_000_123).toEpochMilliseconds() == 1_000_000_000_123L)
         check(Instant.fromEpochSeconds(1_000_000_000, nanosecondAdjustment = 123_999_999)
@@ -43,6 +46,7 @@ class InstantSamples {
 
     @Test
     fun plusDuration() {
+        // Finding a moment that's later than the starting point by the given amount of real time
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val fiveHoursLater = instant + 5.hours
         check(fiveHoursLater.toEpochMilliseconds() == 12 * 60 * 60 * 1000L)
@@ -50,6 +54,7 @@ class InstantSamples {
 
     @Test
     fun minusDuration() {
+        // Finding a moment that's earlier than the starting point by the given amount of real time
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val fiveHoursEarlier = instant - 5.hours
         check(fiveHoursEarlier.toEpochMilliseconds() == 2 * 60 * 60 * 1000L)
@@ -57,11 +62,13 @@ class InstantSamples {
 
     @Test
     fun minusInstant() {
+        // Finding the difference between two instants in terms of elapsed time
         check(Instant.fromEpochSeconds(0) - Instant.fromEpochSeconds(epochSeconds = 7 * 60 * 60) == (-7).hours)
     }
 
     @Test
     fun compareToSample() {
+        // Finding out which of two instants is earlier
         fun randomInstant() = Instant.fromEpochMilliseconds(
             Random.nextLong(Instant.DISTANT_PAST.toEpochMilliseconds(), Instant.DISTANT_FUTURE.toEpochMilliseconds())
         )
@@ -74,11 +81,13 @@ class InstantSamples {
 
     @Test
     fun toStringSample() {
+        // Converting an Instant to a string
         check(Instant.fromEpochMilliseconds(0).toString() == "1970-01-01T00:00:00Z")
     }
 
     @Test
     fun fromEpochMilliseconds() {
+        // Constructing an Instant from the number of milliseconds since the Unix epoch
         check(Instant.fromEpochMilliseconds(epochMilliseconds = 0) == Instant.parse("1970-01-01T00:00:00Z"))
         check(Instant.fromEpochMilliseconds(epochMilliseconds = 1_000_000_000_123)
             == Instant.parse("2001-09-09T01:46:40.123Z"))
@@ -86,6 +95,7 @@ class InstantSamples {
 
     @Test
     fun fromEpochSeconds() {
+        // Constructing an Instant from the number of seconds and nanoseconds since the Unix epoch
         check(Instant.fromEpochSeconds(epochSeconds = 0) == Instant.parse("1970-01-01T00:00:00Z"))
         check(Instant.fromEpochSeconds(epochSeconds = 1_000_001_234, nanosecondAdjustment = -1_234_000_000_001)
             == Instant.parse("2001-09-09T01:46:39.999999999Z"))
@@ -93,18 +103,21 @@ class InstantSamples {
 
     @Test
     fun fromEpochSecondsIntNanos() {
+        // Constructing an Instant from the number of seconds and nanoseconds since the Unix epoch
         check(Instant.fromEpochSeconds(epochSeconds = 0) == Instant.parse("1970-01-01T00:00:00Z"))
         check(Instant.fromEpochSeconds(epochSeconds = 1_000_000_000, nanosecondAdjustment = -1) == Instant.parse("2001-09-09T01:46:39.999999999Z"))
     }
 
     @Test
     fun parsing() {
+        // Parsing an Instant from a string using predefined and custom formats
         check(Instant.parse("1970-01-01T00:00:00Z") == Instant.fromEpochMilliseconds(0))
         check(Instant.parse("Thu, 01 Jan 1970 03:30:00 +0330", DateTimeComponents.Formats.RFC_1123) == Instant.fromEpochMilliseconds(0))
     }
 
     @Test
     fun isDistantPast() {
+        // Checking if an instant is so far in the past that it's probably irrelevant
         val currentInstant = Clock.System.now()
         val tenThousandYearsAgo = currentInstant.minus(1_000, DateTimeUnit.YEAR, TimeZone.UTC)
         check(!tenThousandYearsAgo.isDistantPast)
@@ -113,6 +126,7 @@ class InstantSamples {
 
     @Test
     fun isDistantFuture() {
+        // Checking if an instant is so far in the future that it's probably irrelevant
         val currentInstant = Clock.System.now()
         val tenThousandYearsLater = currentInstant.plus(10_000, DateTimeUnit.YEAR, TimeZone.UTC)
         check(!tenThousandYearsLater.isDistantFuture)
@@ -121,6 +135,7 @@ class InstantSamples {
 
     @Test
     fun plusPeriod() {
+        // Finding a moment that's later than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-03-09T07:16:39.688Z")
         val period = DateTimePeriod(months = 1, days = -1) // one day short from a month later
         val afterPeriodInBerlin = startInstant.plus(period, TimeZone.of("Europe/Berlin"))
@@ -131,6 +146,7 @@ class InstantSamples {
 
     @Test
     fun minusPeriod() {
+        // Finding a moment that's earlier than the starting point by the given length of calendar time
         val period = DateTimePeriod(months = 1, days = -1) // one day short from a month earlier
         val startInstant = Instant.parse("2024-03-23T16:50:41.926Z")
         val afterPeriodInBerlin = startInstant.minus(period, TimeZone.of("Europe/Berlin"))
@@ -142,6 +158,7 @@ class InstantSamples {
     /** copy of [minusInstantInZone] */
     @Test
     fun periodUntil() {
+        // Finding a period that it would take to get from the starting instant to the ending instant
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T03:15:03Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
@@ -155,6 +172,7 @@ class InstantSamples {
     /** copy of [minusAsDateTimeUnit] */
     @Test
     fun untilAsDateTimeUnit() {
+        // Finding the difference between two instants in terms of the given calendar-based measurement unit
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
@@ -168,6 +186,7 @@ class InstantSamples {
     /** copy of [minusAsTimeBasedUnit] */
     @Test
     fun untilAsTimeBasedUnit() {
+        // Finding the difference between two instants in terms of the given measurement unit
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
         val otherInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val hoursBetweenInstants = instant.until(otherInstant, DateTimeUnit.HOUR)
@@ -176,6 +195,7 @@ class InstantSamples {
 
     @Test
     fun daysUntil() {
+        // Finding the number of full days between two instants in the given time zone
         val startInstant = Instant.parse("2023-03-26T00:30:00Z")
         val endInstant = Instant.parse("2023-03-28T00:15:00Z")
         // In New York, these days are both 24 hour long, so the difference is 15 minutes short of 2 days
@@ -188,6 +208,7 @@ class InstantSamples {
 
     @Test
     fun monthsUntil() {
+        // Finding the number of months between two instants in the given time zone
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
@@ -200,6 +221,7 @@ class InstantSamples {
 
     @Test
     fun yearsUntil() {
+        // Finding the number of full years between two instants in the given time zone
         val startInstant = Instant.parse("2024-03-01T02:01:00Z")
         val endInstant = Instant.parse("2025-03-01T02:01:00Z")
         // In New York, we find the difference between 2024-02-29 and 2025-02-28, which is just short of a year
@@ -213,6 +235,7 @@ class InstantSamples {
     /** copy of [periodUntil] */
     @Test
     fun minusInstantInZone() {
+        // Finding a period that it would take to get from the starting instant to the ending instant
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T03:15:03Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
@@ -225,6 +248,7 @@ class InstantSamples {
 
     @Test
     fun plusDateTimeUnit() {
+        // Finding a moment that's later than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-04-05T22:51:45.586Z")
         val twoYearsLaterInBerlin = startInstant.plus(2, DateTimeUnit.YEAR, TimeZone.of("Europe/Berlin"))
         check(twoYearsLaterInBerlin == Instant.parse("2026-04-05T22:51:45.586Z"))
@@ -234,6 +258,7 @@ class InstantSamples {
 
     @Test
     fun minusDateTimeUnit() {
+        // Finding a moment that's earlier than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-03-28T02:04:56.256Z")
         val twoYearsEarlierInBerlin = startInstant.minus(2, DateTimeUnit.YEAR, TimeZone.of("Europe/Berlin"))
         check(twoYearsEarlierInBerlin == Instant.parse("2022-03-28T01:04:56.256Z"))
@@ -243,6 +268,7 @@ class InstantSamples {
 
     @Test
     fun plusTimeBasedUnit() {
+        // Finding a moment that's later than the starting point by the given amount of real time
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val fiveHoursLater = instant.plus(5, DateTimeUnit.HOUR)
         check(fiveHoursLater.toEpochMilliseconds() == 12 * 60 * 60 * 1000L)
@@ -250,6 +276,7 @@ class InstantSamples {
 
     @Test
     fun minusTimeBasedUnit() {
+        // Finding a moment that's earlier than the starting point by the given amount of real time
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val fiveHoursEarlier = instant.minus(5, DateTimeUnit.HOUR)
         check(fiveHoursEarlier.toEpochMilliseconds() == 2 * 60 * 60 * 1000L)
@@ -258,6 +285,7 @@ class InstantSamples {
     @Test
     @Ignore // only the JVM has the range wide enough
     fun plusDateTimeUnitLong() {
+        // Finding a moment that's later than the starting point by the given large length of calendar time
         val zone = TimeZone.of("Europe/Berlin")
         val now = LocalDate(2024, Month.APRIL, 16).atTime(13, 30).toInstant(zone)
         val tenTrillionDaysLater = now.plus(10_000_000_000L, DateTimeUnit.DAY, zone)
@@ -267,6 +295,7 @@ class InstantSamples {
     @Test
     @Ignore // only the JVM has the range wide enough
     fun minusDateTimeUnitLong() {
+        // Finding a moment that's earlier than the starting point by the given large length of calendar time
         val zone = TimeZone.of("Europe/Berlin")
         val now = LocalDate(2024, Month.APRIL, 16).atTime(13, 30).toInstant(zone)
         val tenTrillionDaysAgo = now.minus(10_000_000_000L, DateTimeUnit.DAY, zone)
@@ -275,6 +304,7 @@ class InstantSamples {
 
     @Test
     fun plusTimeBasedUnitLong() {
+        // Finding a moment that's later than the starting point by the given amount of real time
         val startInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
         val quadrillion = 1_000_000_000_000L
         val quadrillionSecondsLater = startInstant.plus(quadrillion, DateTimeUnit.SECOND)
@@ -283,6 +313,7 @@ class InstantSamples {
 
     @Test
     fun minusTimeBasedUnitLong() {
+        // Finding a moment that's earlier than the starting point by the given amount of real time
         val startInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
         val quadrillion = 1_000_000_000_000L
         val quadrillionSecondsEarlier = startInstant.minus(quadrillion, DateTimeUnit.SECOND)
@@ -292,6 +323,7 @@ class InstantSamples {
     /** copy of [untilAsDateTimeUnit] */
     @Test
     fun minusAsDateTimeUnit() {
+        // Finding a moment that's earlier than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
@@ -305,6 +337,7 @@ class InstantSamples {
     /** copy of [untilAsTimeBasedUnit] */
     @Test
     fun minusAsTimeBasedUnit() {
+        // Finding a moment that's earlier than the starting point by a given amount of real time
         val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
         val otherInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
         val hoursBetweenInstants = otherInstant.minus(instant, DateTimeUnit.HOUR)
@@ -313,7 +346,9 @@ class InstantSamples {
 
     @Test
     fun formatting() {
+        // Formatting an Instant to a string using predefined and custom formats
         val epochStart = Instant.fromEpochMilliseconds(0)
+        check(epochStart.toString() == "1970-01-01T00:00:00Z")
         check(epochStart.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) == "1970-01-01T00:00:00Z")
         val customFormat = DateTimeComponents.Format {
             date(LocalDate.Formats.ISO_BASIC)

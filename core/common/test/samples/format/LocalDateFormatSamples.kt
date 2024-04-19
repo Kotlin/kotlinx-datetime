@@ -13,6 +13,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun year() {
+        // Using the year number in a custom format
         val format = LocalDate.Format {
             year(); char(' '); monthNumber(); char('/'); dayOfMonth()
         }
@@ -24,6 +25,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun yearTwoDigits() {
+        // Using two-digit years in a custom format
         val format = LocalDate.Format {
             yearTwoDigits(baseYear = 1960); char(' '); monthNumber(); char('/'); dayOfMonth()
         }
@@ -37,6 +39,7 @@ class LocalDateFormatSamples {
     
     @Test
     fun monthNumber() {
+        // Using month number with various paddings in a custom format
         val zeroPaddedMonths = LocalDate.Format {
             monthNumber(); char('/'); dayOfMonth(); char('/'); year()
         }
@@ -51,6 +54,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun monthName() {
+        // Using strings for month names in a custom format
         val format = LocalDate.Format {
             monthName(MonthNames.ENGLISH_FULL); char(' '); dayOfMonth(); char('/'); year()
         }
@@ -60,6 +64,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun dayOfMonth() {
+        // Using day-of-month with various paddings in a custom format
         val zeroPaddedDays = LocalDate.Format {
             dayOfMonth(); char('/'); monthNumber(); char('/'); year()
         }
@@ -74,6 +79,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun dayOfWeek() {
+        // Using strings for day-of-week names in a custom format
         val format = LocalDate.Format {
             dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); char('/'); monthNumber(); char('/'); year()
         }
@@ -83,6 +89,7 @@ class LocalDateFormatSamples {
 
     @Test
     fun date() {
+        // Using a predefined format for a date in a larger custom format
         val format = LocalDateTime.Format {
             date(LocalDate.Formats.ISO)
             alternativeParsing({ char('t') }) { char('T') }
@@ -94,6 +101,7 @@ class LocalDateFormatSamples {
     class MonthNamesSamples {
         @Test
         fun usage() {
+            // Using strings for month names in a custom format
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_ABBREVIATED) // "Jan", "Feb", ...
                 char(' ')
@@ -106,7 +114,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun constructionFromStrings() {
-            // constructing by passing 12 strings
+            // Constructing a custom set of month names for parsing and formatting by passing 12 strings
             val myMonthNames = MonthNames(
                 "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -116,6 +124,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun constructionFromList() {
+            // Constructing a custom set of month names for parsing and formatting
             val germanMonthNames = listOf(
                 "Januar", "Februar", "März", "April", "Mai", "Juni",
                 "Juli", "August", "September", "Oktober", "November", "Dezember"
@@ -127,6 +136,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun names() {
+            // Obtaining the list of month names
             check(MonthNames.ENGLISH_ABBREVIATED.names == listOf(
                 "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -135,6 +145,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun englishFull() {
+            // Using the built-in English month names in a custom format
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_FULL)
                 char(' ')
@@ -147,6 +158,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun englishAbbreviated() {
+            // Using the built-in English abbreviated month names in a custom format
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_ABBREVIATED)
                 char(' ')
@@ -161,6 +173,7 @@ class LocalDateFormatSamples {
     class DayOfWeekNamesSamples {
         @Test
         fun usage() {
+            // Using strings for day-of-week names in a custom format
             val format = LocalDate.Format {
                 date(LocalDate.Formats.ISO)
                 chars(", ")
@@ -171,7 +184,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun constructionFromStrings() {
-            // constructing by passing 7 strings
+            // Constructing a custom set of day of week names for parsing and formatting by passing 7 strings
             val myMonthNames = DayOfWeekNames(
                 "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
             )
@@ -180,6 +193,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun constructionFromList() {
+            // Constructing a custom set of day of week names for parsing and formatting
             val germanDayOfWeekNames = listOf(
                 "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"
             )
@@ -190,6 +204,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun names() {
+            // Obtaining the list of day of week names
             check(DayOfWeekNames.ENGLISH_ABBREVIATED.names == listOf(
                 "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
             ))
@@ -197,6 +212,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun englishFull() {
+            // Using the built-in English day of week names in a custom format
             val format = LocalDate.Format {
                 date(LocalDate.Formats.ISO)
                 chars(", ")
@@ -207,6 +223,7 @@ class LocalDateFormatSamples {
 
         @Test
         fun englishAbbreviated() {
+            // Using the built-in English abbreviated day of week names in a custom format
             val format = LocalDate.Format {
                 date(LocalDate.Formats.ISO)
                 chars(", ")

@@ -12,6 +12,7 @@ class MonthSamples {
 
     @Test
     fun usage() {
+        // Providing different behavior based on what month it is today
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         when (today.month) {
             Month.JANUARY -> check(today.month.number == 1)
@@ -32,6 +33,7 @@ class MonthSamples {
 
     @Test
     fun number() {
+        // Getting the number of a month
         check(Month.JANUARY.number == 1)
         check(Month.FEBRUARY.number == 2)
         // ...
@@ -40,6 +42,7 @@ class MonthSamples {
 
     @Test
     fun constructorFunction() {
+        // Constructing a Month using the constructor function
         check(Month(1) == Month.JANUARY)
         check(Month(2) == Month.FEBRUARY)
         // ...

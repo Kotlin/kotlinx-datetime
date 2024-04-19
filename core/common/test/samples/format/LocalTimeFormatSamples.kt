@@ -12,6 +12,7 @@ import kotlin.test.*
 class LocalTimeFormatSamples {
     @Test
     fun hhmmss() {
+        // Defining a custom format for the local time
         // format the local time as a single number
         val format = LocalTime.Format {
             hour(); minute(); second()
@@ -23,6 +24,7 @@ class LocalTimeFormatSamples {
 
     @Test
     fun amPm() {
+        // Defining a custom format for the local time that uses AM/PM markers
         val format = LocalTime.Format {
             amPmHour(); char(':'); minute(); char(':'); second()
             char(' '); amPmMarker("AM", "PM")
@@ -33,6 +35,7 @@ class LocalTimeFormatSamples {
 
     @Test
     fun fixedLengthSecondFraction() {
+        // Defining a custom format for the local time with a fixed-length second fraction
         val format = LocalTime.Format {
             hour(); char(':'); minute(); char(':'); second()
             char('.'); secondFraction(fixedLength = 3)
@@ -43,6 +46,7 @@ class LocalTimeFormatSamples {
 
     @Test
     fun time() {
+        // Using a predefined format for the local time
         val format = LocalDateTime.Format {
             date(LocalDate.Formats.ISO)
             char(' ')

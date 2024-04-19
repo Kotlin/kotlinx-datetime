@@ -11,6 +11,7 @@ import kotlin.test.*
 class ClockSamples {
     @Test
     fun system() {
+        // Getting the current date and time
         val zone = TimeZone.of("Europe/Berlin")
         val currentInstant = Clock.System.now()
         val currentLocalDateTime = currentInstant.toLocalDateTime(zone)
@@ -19,6 +20,7 @@ class ClockSamples {
 
     @Test
     fun todayIn() {
+        // Getting the current date in different time zones
         val clock = object : Clock {
             override fun now(): Instant = Instant.parse("2020-01-01T02:00:00Z")
         }

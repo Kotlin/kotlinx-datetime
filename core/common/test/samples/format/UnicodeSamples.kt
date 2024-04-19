@@ -12,6 +12,7 @@ import kotlin.test.*
 class UnicodeSamples {
     @Test
     fun byUnicodePattern() {
+        // Using the Unicode pattern to define a custom format and obtain the corresponding Kotlin code
         val customFormat = LocalDate.Format {
             @OptIn(FormatStringsInDatetimeFormats::class)
             byUnicodePattern("MM/dd uuuu")

@@ -13,21 +13,26 @@ class UtcOffsetSamples {
 
     @Test
     fun construction() {
+        // Constructing a UtcOffset using the constructor function
         val offset = UtcOffset(hours = 3, minutes = 30)
         check(offset.totalSeconds == 12600)
+        // UtcOffset.ZERO is a constant representing the zero offset
         check(UtcOffset(seconds = 0) == UtcOffset.ZERO)
     }
 
     @Test
     fun simpleParsingAndFormatting() {
+        // Parsing a UtcOffset from a string
         val offset = UtcOffset.parse("+01:30")
         check(offset.totalSeconds == 90 * 60)
+        // Formatting a UtcOffset to a string
         val formatted = offset.toString()
         check(formatted == "+01:30")
     }
 
     @Test
     fun customFormat() {
+        // Parsing a UtcOffset using a custom format
         val customFormat = UtcOffset.Format {
             optional("GMT") {
                 offsetHours(Padding.NONE); char(':'); offsetMinutesOfHour()
@@ -35,12 +40,14 @@ class UtcOffsetSamples {
             }
         }
         val offset = customFormat.parse("+01:30:15")
+        // Formatting a UtcOffset using both a custom format and a predefined one
         check(offset.format(customFormat) == "+1:30:15")
         check(offset.format(UtcOffset.Formats.FOUR_DIGITS) == "+0130")
     }
 
     @Test
     fun equalsSample() {
+        // Comparing UtcOffset values for equality
         val offset1 = UtcOffset.parse("+01:30")
         val offset2 = UtcOffset(minutes = 90)
         check(offset1 == offset2)
@@ -50,6 +57,7 @@ class UtcOffsetSamples {
 
     @Test
     fun parsing() {
+        // Parsing a UtcOffset from a string using predefined and custom formats
         check(UtcOffset.parse("+01:30").totalSeconds == 5400)
         check(UtcOffset.parse("+0130", UtcOffset.Formats.FOUR_DIGITS).totalSeconds == 5400)
         val customFormat = UtcOffset.Format { offsetHours(Padding.NONE); offsetMinutesOfHour() }
@@ -58,6 +66,7 @@ class UtcOffsetSamples {
 
     @Test
     fun toStringSample() {
+        // Converting a UtcOffset to a string
         check(UtcOffset.parse("+01:30:00").toString() == "+01:30")
         check(UtcOffset(hours = 1, minutes = 30).toString() == "+01:30")
         check(UtcOffset(seconds = 5400).toString() == "+01:30")
@@ -65,6 +74,7 @@ class UtcOffsetSamples {
 
     @Test
     fun formatting() {
+        // Formatting a UtcOffset to a string using predefined and custom formats
         check(UtcOffset(hours = 1, minutes = 30).format(UtcOffset.Formats.FOUR_DIGITS) == "+0130")
         val customFormat = UtcOffset.Format { offsetHours(Padding.NONE); offsetMinutesOfHour() }
         check(UtcOffset(hours = 1, minutes = 30).format(customFormat) == "+130")
@@ -72,6 +82,7 @@ class UtcOffsetSamples {
 
     @Test
     fun constructorFunction() {
+        // Using the constructor function to create UtcOffset values
         check(UtcOffset(hours = 3, minutes = 30).totalSeconds == 12600)
         check(UtcOffset(seconds = -3600) == UtcOffset(hours = -1))
         try {
@@ -90,6 +101,7 @@ class UtcOffsetSamples {
 
     @Test
     fun asFixedOffsetTimeZone() {
+        // Converting a UtcOffset to a fixed-offset TimeZone
         UtcOffset(hours = 3, minutes = 30).asTimeZone().let { timeZone ->
             check(timeZone.id == "+03:30")
             check(timeZone.offset == UtcOffset(hours = 3, minutes = 30))
@@ -99,6 +111,7 @@ class UtcOffsetSamples {
     class Formats {
         @Test
         fun isoBasic() {
+            // Using the basic ISO format for parsing and formatting UtcOffset values
             val offset = UtcOffset.Formats.ISO_BASIC.parse("+103622")
             check(offset == UtcOffset(hours = 10, minutes = 36, seconds = 22))
             val formatted = UtcOffset.Formats.ISO_BASIC.format(offset)
@@ -107,6 +120,7 @@ class UtcOffsetSamples {
 
         @Test
         fun iso() {
+            // Using the extended ISO format for parsing and formatting UtcOffset values
             val offset = UtcOffset.Formats.ISO.parse("+10:36:22")
             check(offset == UtcOffset(hours = 10, minutes = 36, seconds = 22))
             val formatted = UtcOffset.Formats.ISO.format(offset)
@@ -115,6 +129,7 @@ class UtcOffsetSamples {
 
         @Test
         fun fourDigits() {
+            // Using the constant-width compact format for parsing and formatting UtcOffset values
             val offset = UtcOffset.Formats.FOUR_DIGITS.parse("+1036")
             check(offset == UtcOffset(hours = 10, minutes = 36))
             val offsetWithSeconds = UtcOffset(hours = 10, minutes = 36, seconds = 59)

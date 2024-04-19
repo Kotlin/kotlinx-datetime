@@ -13,11 +13,13 @@ class DateTimeFormatSamples {
 
     @Test
     fun format() {
+        // Formatting a date using a predefined format
         check(LocalDate.Formats.ISO.format(LocalDate(2021, 2, 7)) == "2021-02-07")
     }
 
     @Test
     fun formatTo() {
+        // Appending a formatted date to an `Appendable` (e.g. a `StringBuilder`)
         val sb = StringBuilder()
         sb.append("Today is ")
         LocalDate.Formats.ISO.formatTo(sb, LocalDate(2024, 4, 5))
@@ -26,6 +28,7 @@ class DateTimeFormatSamples {
 
     @Test
     fun parse() {
+        // Parsing a string that is expected to be in the given format
         check(LocalDate.Formats.ISO.parse("2021-02-07") == LocalDate(2021, 2, 7))
         try {
             LocalDate.Formats.ISO.parse("2021-02-07T")
@@ -45,6 +48,7 @@ class DateTimeFormatSamples {
 
     @Test
     fun parseOrNull() {
+        // Attempting to parse a string that may not be in the expected format
         check(LocalDate.Formats.ISO.parseOrNull("2021-02-07") == LocalDate(2021, 2, 7))
         check(LocalDate.Formats.ISO.parseOrNull("2021-02-07T") == null)
         check(LocalDate.Formats.ISO.parseOrNull("2021-02-40") == null)
@@ -56,6 +60,7 @@ class DateTimeFormatSamples {
 
     @Test
     fun formatAsKotlinBuilderDsl() {
+        // Printing a given date-time format as a Kotlin code snippet that creates the same format
         val customFormat = LocalDate.Format {
             @OptIn(FormatStringsInDatetimeFormats::class)
             byUnicodePattern("MM/dd uuuu")
@@ -75,6 +80,7 @@ class DateTimeFormatSamples {
     class PaddingSamples {
         @Test
         fun usage() {
+            // Defining a custom format that uses various padding rules
             val format = LocalDate.Format {
                 year(Padding.SPACE)
                 chars(", ")
@@ -88,6 +94,7 @@ class DateTimeFormatSamples {
 
         @Test
         fun zero() {
+            // Defining a custom format that uses '0' for padding
             val format = LocalDate.Format {
                 monthNumber(Padding.ZERO) // padding with zeros is the default, but can be explicitly specified
                 char('/')
@@ -108,6 +115,7 @@ class DateTimeFormatSamples {
 
         @Test
         fun none() {
+            // Defining a custom format that removes padding requirements
             val format = LocalDate.Format {
                 monthNumber(Padding.NONE)
                 char('/')
@@ -124,6 +132,7 @@ class DateTimeFormatSamples {
 
         @Test
         fun spaces() {
+            // Defining a custom format that uses spaces for padding
             val format = LocalDate.Format {
                 monthNumber(Padding.SPACE)
                 char('/')

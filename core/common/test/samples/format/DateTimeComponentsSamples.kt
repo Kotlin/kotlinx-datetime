@@ -13,6 +13,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun parsingComplexInput() {
+        // Parsing a complex date-time string and extracting all its components
         val input = "2020-03-16T23:59:59.999999999+03:00"
         val components = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.parse(input)
         check(components.toLocalDateTime() == LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999))
@@ -22,6 +23,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun parsingInvalidInput() {
+        // Parsing an invalid input and handling the error
         val input = "23:59:60"
         val extraDay: Boolean
         val time = DateTimeComponents.Format {
@@ -39,6 +41,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun simpleFormatting() {
+        // Formatting a multi-component date-time entity
         val formatted = DateTimeComponents.Formats.RFC_1123.format {
             setDateTimeOffset(
                 LocalDateTime(2020, 3, 16, 23, 59, 59, 999_999_999),
@@ -50,6 +53,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun customFormat() {
+        // Formatting and parsing a complex entity with a custom format
         val customFormat = DateTimeComponents.Format {
             date(LocalDate.Formats.ISO)
             char(' ')
@@ -77,6 +81,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun setDateTime() {
+        // Setting the date-time components for formatting
         val dateTime = LocalDate(2021, 3, 28).atTime(2, 16, 20)
         val customFormat = DateTimeComponents.Format {
             dateTime(LocalDateTime.Formats.ISO)
@@ -93,6 +98,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun setDateTimeOffsetInstant() {
+        // Setting the Instant and UTC offset components for formatting
         val instant = Instant.parse("2021-03-28T02:16:20+03:00")
         val offset = UtcOffset(3, 0)
         val formatted = DateTimeComponents.Formats.RFC_1123.format {
@@ -103,6 +109,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun setDateTimeOffset() {
+        // Setting the date-time and UTC offset components for parsing
         val localDateTime = LocalDate(2021, 3, 28).atTime(2, 16, 20)
         val offset = UtcOffset(3, 0)
         val formatted = DateTimeComponents.Formats.RFC_1123.format {
@@ -113,6 +120,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun dayOfWeek() {
+        // Formatting and parsing a date with the day of the week in complex scenarios
         val formatWithDayOfWeek = DateTimeComponents.Format {
             dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             char(' ')
@@ -136,6 +144,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun date() {
+        // Formatting and parsing a date in complex scenarios
         val format = DateTimeComponents.Format {
             year(); char('-'); monthNumber(); char('-'); dayOfMonth()
         }
@@ -157,6 +166,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun setMonth() {
+        // Setting the month using the `month` property
         val input = "Mon, 30 Jul 2008 11:05:30 GMT"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(input)
         check(parsed.monthNumber == 7)
@@ -168,6 +178,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun timeAmPm() {
+        // Formatting and parsing a time with AM/PM marker in complex scenarios
         val format = DateTimeComponents.Format {
             amPmHour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(1, 9)
             char(' '); amPmMarker("AM", "PM")
@@ -194,6 +205,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun time() {
+        // Formatting and parsing a time in complex scenarios
         val format = DateTimeComponents.Format {
             hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(1, 9)
         }
@@ -219,6 +231,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun offset() {
+        // Formatting and parsing a UTC offset in complex scenarios
         val format = DateTimeComponents.Format { offset(UtcOffset.Formats.ISO) }
         val formattedOffset = format.format {
             setOffset(UtcOffset(-3, -30, -15))
@@ -238,6 +251,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun timeZoneId() {
+        // Formatting and parsing a time zone ID as part of a complex format
         val formatWithTimeZone = DateTimeComponents.Format {
             dateTime(LocalDateTime.Formats.ISO)
             char('[')
@@ -261,6 +275,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toUtcOffset() {
+        // Obtaining a UTC offset from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val offset = parsed.toUtcOffset()
@@ -269,6 +284,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalDate() {
+        // Obtaining a LocalDate from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localDate = parsed.toLocalDate()
@@ -277,6 +293,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalTime() {
+        // Obtaining a LocalTime from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localTime = parsed.toLocalTime()
@@ -285,6 +302,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalDateTime() {
+        // Obtaining a LocalDateTime from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localDateTime = parsed.toLocalDateTime()
@@ -293,6 +311,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toInstantUsingOffset() {
+        // Obtaining an Instant from the parsed data using the given UTC offset
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val instant = parsed.toInstantUsingOffset()
@@ -304,6 +323,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun formatting() {
+        // Formatting partial, complex, or broken data
         // DateTimeComponents can be used to format complex data that consists of multiple components
         val compoundFormat = DateTimeComponents.Format {
             date(LocalDate.Formats.ISO)
@@ -331,6 +351,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun parsing() {
+        // Parsing partial, complex, or broken data
         // DateTimeComponents can be used to parse complex data that consists of multiple components
         val compoundFormat = DateTimeComponents.Format {
             date(LocalDate.Formats.ISO)
@@ -362,6 +383,7 @@ class DateTimeComponentsSamples {
     class Formats {
         @Test
         fun rfc1123parsing() {
+            // Parsing a date-time string in the RFC 1123 format and extracting all its components
             val rfc1123string = "Mon, 30 Jun 2008 11:05:30 -0300"
             val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123string)
             check(parsed.toLocalDate() == LocalDate(2008, 6, 30))
@@ -371,6 +393,7 @@ class DateTimeComponentsSamples {
 
         @Test
         fun rfc1123formatting() {
+            // Formatting a date-time using the given UTC offset in the RFC 1123 format
             val today = Instant.fromEpochSeconds(1713182461)
             val offset = today.offsetIn(TimeZone.of("Europe/Berlin"))
             val formatted = DateTimeComponents.Formats.RFC_1123.format {
@@ -381,6 +404,7 @@ class DateTimeComponentsSamples {
 
         @Test
         fun iso() {
+            // Using the ISO format for dates, times, and offsets combined
             val formatted = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET.format {
                 setDate(LocalDate(2023, 1, 2))
                 setTime(LocalTime(3, 46, 58, 530_000_000))

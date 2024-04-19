@@ -12,6 +12,7 @@ import kotlin.test.*
 class UtcOffsetFormatSamples {
     @Test
     fun isoOrGmt() {
+        // Defining a custom format for the UTC offset
         val format = UtcOffset.Format {
             // if the offset is zero, `GMT` is printed
             optional("GMT") {
@@ -28,6 +29,7 @@ class UtcOffsetFormatSamples {
 
     @Test
     fun offset() {
+        // Using a predefined format for the UTC offset
         val format = DateTimeComponents.Format {
             dateTime(LocalDateTime.Formats.ISO)
             offset(UtcOffset.Formats.FOUR_DIGITS)
