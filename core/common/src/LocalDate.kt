@@ -29,6 +29,15 @@ import kotlinx.serialization.Serializable
  * - [LocalDate.periodUntil] (and [LocalDate.minus] that accepts a [LocalDate])
  *   can be used to find the [DatePeriod] between two dates.
  *
+ * ### Platform specifics
+ *
+ * The range of supported years is platform-dependent, but at least is enough to represent dates of all instants between
+ * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
+ *
+ * On the JVM,
+ * there are `LocalDate.toJavaLocalDate()` and `java.time.LocalDate.toKotlinLocalDate()` extension functions.
+ * On the Darwin platforms, there is a `LocalDate.toNSDateComponents()` extension function.
+ *
  * ### Construction, serialization, and deserialization
  *
  * [LocalDate] can be constructed directly from its components, using the constructor.

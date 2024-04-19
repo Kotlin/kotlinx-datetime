@@ -131,6 +131,11 @@ import kotlin.time.*
  * // 63 days until the concert, rounded down
  * ```
  *
+ * ### Platform specifics
+ *
+ * On the JVM, there are `Instant.toJavaInstant()` and `java.time.Instant.toKotlinInstant()` extension functions.
+ * On the Darwin platforms, there are `Instant.toNSDate()` and `NSDate.toKotlinInstant()` extension functions.
+ *
  * ### Construction, serialization, and deserialization
  *
  * [fromEpochSeconds] can be used to construct an instant from the number of seconds since

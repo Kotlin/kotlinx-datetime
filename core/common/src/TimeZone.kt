@@ -25,6 +25,9 @@ import kotlinx.serialization.Serializable
  * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
  * identifier.
  *
+ * On the JVM, there are `TimeZone.toJavaZoneId()` and `java.time.ZoneId.toKotlinTimeZone()` extension functions.
+ * On the Darwin platforms, there are `TimeZone.toNSTimeZone()` and `NSTimeZone.toKotlinTimeZone()` extension functions.
+ *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
 @Serializable(with = TimeZoneSerializer::class)
@@ -137,6 +140,10 @@ public expect open class TimeZone {
  *
  * Time zones that are [FixedOffsetTimeZone] at some point in time can become non-fixed in the future due to
  * changes in legislation or other reasons.
+ *
+ * On the JVM, there are `FixedOffsetTimeZone.toJavaZoneOffset()` and
+ * `java.time.ZoneOffset.toKotlinFixedOffsetTimeZone()` extension functions.
+ * Note also the functions available for [TimeZone] in general.
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.casting
  */

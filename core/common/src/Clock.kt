@@ -46,9 +46,10 @@ public interface Clock {
      * [TimeSource.Monotonic].
      *
      * For improved testability, one could avoid using [Clock.System] directly in the implementation,
-     * instead passing a [Clock] explicitly.
+     * instead passing a [Clock] explicitly. For example:
      *
      * @sample kotlinx.datetime.test.samples.ClockSamples.system
+     * @sample kotlinx.datetime.test.samples.ClockSamples.dependencyInjection
      */
     public object System : Clock {
         override fun now(): Instant = @Suppress("DEPRECATION_ERROR") Instant.now()

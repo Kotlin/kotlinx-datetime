@@ -27,6 +27,11 @@ import kotlinx.serialization.Serializable
  *
  * See [TimeZone] for a type that represents a time zone.
  *
+ * ### Platform specifics
+ *
+ * On the JVM, there are `UtcOffset.toJavaZoneOffset()` and `java.time.ZoneOffset.toKotlinUtcOffset()`
+ * extension functions.
+ *
  * ### Construction, serialization, and deserialization
  *
  * To construct a [UtcOffset] value, use the [UtcOffset] constructor function.

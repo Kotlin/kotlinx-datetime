@@ -45,6 +45,11 @@ import kotlinx.serialization.Serializable
  * Because this pattern is extremely verbose and difficult to get right, it is recommended to work exclusively
  * with [Instant] and only obtain a [LocalTime] when it is necessary to display the time to the user.
  *
+ * ### Platform specifics
+ *
+ * On the JVM,
+ * there are `LocalTime.toJavaLocalTime()` and `java.time.LocalTime.toKotlinLocalTime()` extension functions.
+ *
  * ### Construction, serialization, and deserialization
  *
  * [LocalTime] can be constructed directly from its components, using the constructor. See sample 1.

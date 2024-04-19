@@ -19,6 +19,24 @@ class ClockSamples {
     }
 
     @Test
+    fun dependencyInjection() {
+        fun formatCurrentTime(clock: Clock, timeZone: TimeZone): String =
+            clock.now().toLocalDateTime(timeZone).toString()
+
+        // In the production code:
+        val currentTimeInProduction = formatCurrentTime(Clock.System, TimeZone.currentSystemDefault())
+        // Testing this value is tricky because it changes all the time.
+
+        // In the test code:
+        val testClock = object: Clock {
+            override fun now(): Instant = Instant.parse("2023-01-02T22:35:01Z")
+        }
+        // Then, one can write a completely deterministic test:
+        val currentTimeForTests = formatCurrentTime(testClock, TimeZone.of("Europe/Paris"))
+        check(currentTimeForTests == "2023-01-02T23:35:01")
+    }
+
+    @Test
     fun todayIn() {
         // Getting the current date in different time zones
         val clock = object : Clock {

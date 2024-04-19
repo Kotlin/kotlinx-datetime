@@ -30,9 +30,11 @@ import kotlinx.serialization.Serializable
  * All components can also be negative: for example, `DateTimePeriod(months = -5, days = 6, hours = -3)`.
  * Whereas `months = 5` means "5 months after," `months = -5` means "5 months earlier."
  *
- * Since, semantically, a [DateTimePeriod] is a combination of [DateTimeUnit] values, in cases when the period is a
- * fixed time interval (like "yearly" or "quarterly"), please consider using [DateTimeUnit] directly instead:
+ * A constant time interval that consists of a single non-zero component (like "yearly" or "quarterly") should be
+ * represented by a [DateTimeUnit] directly instead of a [DateTimePeriod]:
  * for example, instead of `DateTimePeriod(months = 6)`, one could use `DateTimeUnit.MONTH * 6`.
+ * This provides a wider variety of operations: for example, finding how many such intervals fit between two instants
+ * or dates or adding a multiple of such intervals at once.
  *
  * ### Interaction with other entities
  *
@@ -412,6 +414,9 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  *
  * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations
  * on [LocalDates][LocalDate], but they also can be passed anywhere a [DateTimePeriod] is expected.
+ *
+ * On the JVM, there are `DatePeriod.toJavaPeriod()` and `java.time.Period.toKotlinDatePeriod()`
+ * extension functions.
  *
  * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.simpleParsingAndFormatting
  */

@@ -60,6 +60,15 @@ import kotlinx.serialization.Serializable
  * // 2021-03-29T02:16:20
  * ```
  *
+ * ### Platform specifics
+ *
+ * The range of supported years is platform-dependent, but at least is enough to represent dates of all instants between
+ * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
+ *
+ * On the JVM, there are `LocalDateTime.toJavaLocalDateTime()` and `java.time.LocalDateTime.toKotlinLocalDateTime()`
+ * extension functions.
+ * On the Darwin platforms, there is a `LocalDateTime.toNSDateComponents()` extension function.
+ *
  * ### Construction, serialization, and deserialization
  *
  * **Pitfall**: since [LocalDateTime] is always constructed without specifying the time zone, it cannot validate
