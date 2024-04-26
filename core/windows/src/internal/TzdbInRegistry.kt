@@ -7,7 +7,6 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
-import platform.posix.*
 import platform.windows.*
 
 internal class TzdbInRegistry: TimeZoneDatabase {
@@ -77,31 +76,38 @@ internal class TzdbInRegistry: TimeZoneDatabase {
    https://docs.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-dynamic_time_zone_information
    */
 private const val MAX_KEY_LENGTH = 128
+private const val KEY_BUFFER_SIZE = MAX_KEY_LENGTH + 1
 
 internal fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData, List<Pair<Int, PerYearZoneRulesData>>) -> Unit) {
     memScoped {
-        withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones", { err ->
+        alloc<HKEYVar>().withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones", { err ->
             throw IllegalStateException("Error while opening the registry to fetch the time zones (err = $err): ${getLastWindowsError()}")
         }) { hKey ->
             var index = 0u
+            val cbDataBuffer = alloc<DWORDVar>()
+            val zoneInfoBuffer = RegistryTimeZoneInfoBuffer.allocate(this, cbDataBuffer)
+            val dwordBuffer = RegistryDwordBuffer.allocate(this, cbDataBuffer)
+            val tzHkeyBuffer = alloc<HKEYVar>()
+            val dynamicDstHkeyBuffer = alloc<HKEYVar>()
+            val windowsTzNameBuffer = allocArray<WCHARVar>(KEY_BUFFER_SIZE)
+            val windowsTzNameSizeBuffer = alloc<UIntVar>()
             while (true) {
-                val windowsTzName = allocArray<WCHARVar>(MAX_KEY_LENGTH + 1)
-                val bufSize = alloc<UIntVar>().apply { value = MAX_KEY_LENGTH.toUInt() + 1u }
-                when (RegEnumKeyExW(hKey, index++, windowsTzName, bufSize.ptr, null, null, null, null)) {
+                windowsTzNameSizeBuffer.value = KEY_BUFFER_SIZE.convert()
+                when (RegEnumKeyExW(hKey, index++, windowsTzNameBuffer, windowsTzNameSizeBuffer.ptr, null, null, null, null)) {
                     ERROR_SUCCESS -> {
-                        withRegistryKey(hKey, windowsTzName.toKString(), { err ->
+                        tzHkeyBuffer.withRegistryKey(hKey, windowsTzNameBuffer.toKString(), { err ->
                             throw IllegalStateException(
-                                    "Error while opening the registry to fetch the time zone '${windowsTzName.toKString()} (err = $err)': ${getLastWindowsError()}"
+                                "Error while opening the registry to fetch the time zone '${windowsTzNameBuffer.toKString()} (err = $err)': ${getLastWindowsError()}"
                             )
                         }) { tzHKey ->
                             // first, read the current data from the TZI value
-                            val tziRecord = getRegistryValue<REG_TZI_FORMAT>(tzHKey, "TZI")
+                            val tziRecord = zoneInfoBuffer.readZoneRules(tzHKey, "TZI")
                             val historicData = try {
-                                readHistoricDataFromRegistry(tzHKey)
+                                dynamicDstHkeyBuffer.readHistoricDataFromRegistry(tzHKey, dwordBuffer, zoneInfoBuffer)
                             } catch (e: IllegalStateException) {
                                 emptyList()
                             }
-                            onTimeZone(windowsTzName.toKString(), tziRecord.toZoneRules(), historicData)
+                            onTimeZone(windowsTzNameBuffer.toKString(), tziRecord, historicData)
                         }
                     }
                     ERROR_MORE_DATA -> throw IllegalStateException("The name of a time zone in the registry was too long")
@@ -122,46 +128,78 @@ internal fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesDat
  *
  * @throws IllegalStateException if the 'Dynamic DST' key is present but malformed.
  */
-private fun MemScope.readHistoricDataFromRegistry(tzHKey: HKEY): List<Pair<Int, PerYearZoneRulesData>> {
-    return withRegistryKey(tzHKey, "Dynamic DST", { emptyList() }) { dynDstHKey ->
-        val firstEntry = getRegistryValue<DWORDVar>(dynDstHKey, "FirstEntry").value.toInt()
-        val lastEntry = getRegistryValue<DWORDVar>(dynDstHKey, "LastEntry").value.toInt()
+private fun HKEYVar.readHistoricDataFromRegistry(
+    tzHKey: HKEY, dwordBuffer: RegistryDwordBuffer, zoneRulesBuffer: RegistryTimeZoneInfoBuffer
+): List<Pair<Int, PerYearZoneRulesData>> =
+    withRegistryKey(tzHKey, "Dynamic DST", { emptyList() }) { dynDstHKey ->
+        val firstEntry = dwordBuffer.readValue(dynDstHKey, "FirstEntry")
+        val lastEntry = dwordBuffer.readValue(dynDstHKey, "LastEntry")
         (firstEntry..lastEntry).map { year ->
-            year to getRegistryValue<REG_TZI_FORMAT>(dynDstHKey, year.toString()).toZoneRules()
+            year to zoneRulesBuffer.readZoneRules(dynDstHKey, year.toString())
         }
     }
-}
 
-private inline fun<T> MemScope.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
-    val subHKey: HKEYVar = alloc()
-    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), subHKey.ptr)
+private inline fun<T> HKEYVar.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
+    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), ptr)
     return if (err != ERROR_SUCCESS) { onError(err) } else {
         try {
-            block(subHKey.value!!)
+            block(value!!)
         } finally {
-            RegCloseKey(subHKey.value)
+            RegCloseKey(value)
         }
     }
 }
 
-private inline fun<reified T: CVariable> MemScope.getRegistryValue(hKey: HKEY, valueName: String): T {
-    val buffer = alloc<T>()
-    val cbData = alloc<DWORDVar>().apply { value = sizeOf<T>().convert() }
-    val err = RegQueryValueExW(hKey, valueName, null, null, buffer.reinterpret<BYTEVar>().ptr, cbData.ptr)
-    check(err == ERROR_SUCCESS) { "The expected Windows registry value '$valueName' could not be accessed (err = $err)': ${getLastWindowsError()}" }
-    check(cbData.value.toLong() == sizeOf<T>()) { "Expected '$valueName' to have size ${sizeOf<T>()}, but got ${cbData.value}" }
-    return buffer
+private fun getRegistryValue(
+    cbDataBuffer: DWORDVar, buffer: CPointer<BYTEVar>, bufferSize: UInt, hKey: HKEY, valueName: String
+) {
+    cbDataBuffer.value = bufferSize
+    val err = RegQueryValueExW(hKey, valueName, null, null, buffer, cbDataBuffer.ptr)
+    check(err == ERROR_SUCCESS) {
+        "The expected Windows registry value '$valueName' could not be accessed (err = $err)': ${getLastWindowsError()}"
+    }
+    check(cbDataBuffer.value.convert<UInt>() == bufferSize) {
+        "Expected '$valueName' to have size $bufferSize, but got ${cbDataBuffer.value}"
+    }
 }
 
-private fun _REG_TZI_FORMAT.toZoneRules(): PerYearZoneRulesData {
-    val standardOffset = UtcOffset(minutes = -(StandardBias + Bias))
-    val daylightOffset = UtcOffset(minutes = -(DaylightBias + Bias))
-    if (DaylightDate.wMonth == 0.convert<WORD>()) {
-        return PerYearZoneRulesData(standardOffset, null)
+private class RegistryTimeZoneInfoBuffer private constructor(
+    private val buffer: CPointer<BYTEVar>,
+    private val cbData: DWORDVar,
+) {
+    companion object {
+        fun allocate(scope: MemScope, cbData: DWORDVar): RegistryTimeZoneInfoBuffer =
+            RegistryTimeZoneInfoBuffer(scope.allocArray<BYTEVar>(sizeOf<REG_TZI_FORMAT>().convert()), cbData)
     }
-    val changeToDst = RecurringZoneRules.Rule(DaylightDate.toMonthDayTime(), standardOffset, daylightOffset)
-    val changeToStd = RecurringZoneRules.Rule(StandardDate.toMonthDayTime(), daylightOffset, standardOffset)
-    return PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
+
+    fun readZoneRules(tzHKey: HKEY, name: String): PerYearZoneRulesData {
+        getRegistryValue(cbData, buffer, sizeOf<REG_TZI_FORMAT>().convert(), tzHKey, name)
+        return with(buffer.reinterpret<REG_TZI_FORMAT>().pointed) {
+            val standardOffset = UtcOffset(minutes = -(StandardBias + Bias))
+            val daylightOffset = UtcOffset(minutes = -(DaylightBias + Bias))
+            if (DaylightDate.wMonth == 0.convert<WORD>()) {
+                return PerYearZoneRulesData(standardOffset, null)
+            }
+            val changeToDst = RecurringZoneRules.Rule(DaylightDate.toMonthDayTime(), standardOffset, daylightOffset)
+            val changeToStd = RecurringZoneRules.Rule(StandardDate.toMonthDayTime(), daylightOffset, standardOffset)
+            PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
+        }
+    }
+}
+
+private class RegistryDwordBuffer private constructor(
+    private val buffer: CPointer<DWORDVar>,
+    private val cbData: DWORDVar,
+) {
+    companion object {
+        fun allocate(scope: MemScope, cbData: DWORDVar): RegistryDwordBuffer =
+            RegistryDwordBuffer(scope.alloc<DWORDVar>().ptr, cbData)
+    }
+
+    fun readValue(hKey: HKEY, valueName: String): Int {
+        getRegistryValue(cbData, buffer.reinterpret(), sizeOf<DWORDVar>().convert(), hKey, valueName)
+        return buffer.pointed.value.toInt()
+    }
 }
 
 /* this code is explained at
