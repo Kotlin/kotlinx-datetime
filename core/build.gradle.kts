@@ -150,26 +150,6 @@ kotlin {
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
         }
-        when {
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
-                compilations["main"].cinterops {
-                    create("declarations") {
-                        defFile("$projectDir/windows/cinterop/definitions.def")
-                        headers("$projectDir/windows/cinterop/definitions.h")
-                    }
-                }
-            }
-
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX ||
-                konanTarget.family == org.jetbrains.kotlin.konan.target.Family.ANDROID ||
-                konanTarget.family.isAppleFamily ->
-            {
-                // do nothing special
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown native target ${this@withType}")
-            }
-        }
     }
     sourceSets {
         commonMain {

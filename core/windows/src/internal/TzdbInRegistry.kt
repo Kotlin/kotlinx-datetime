@@ -8,6 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
 import platform.windows.*
+import kotlin.experimental.*
 
 internal class TzdbInRegistry: TimeZoneDatabase {
 
@@ -78,7 +79,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
 private const val MAX_KEY_LENGTH = 128
 private const val KEY_BUFFER_SIZE = MAX_KEY_LENGTH + 1
 
-internal fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData, List<Pair<Int, PerYearZoneRulesData>>) -> Unit) {
+private fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData, List<Pair<Int, PerYearZoneRulesData>>) -> Unit) {
     memScoped {
         alloc<HKEYVar>().withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones", { err ->
             throw IllegalStateException("Error while opening the registry to fetch the time zones (err = $err): ${getLastWindowsError()}")
@@ -167,23 +168,62 @@ private class RegistryTimeZoneInfoBuffer private constructor(
     private val buffer: CPointer<BYTEVar>,
     private val cbData: DWORDVar,
 ) {
+    /**
+     * The data structure is described at
+     * https://learn.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-time_zone_information, as
+     * `_REG_TZI_FORMAT`:
+     *
+     * ```
+     * // 16 bytes
+     * typedef struct {
+     *     uint16_t wYear;
+     *     uint16_t wMonth;
+     *     uint16_t wDayOfWeek;
+     *     uint16_t wDay;
+     *     uint16_t wHour;
+     *     uint16_t wMinute;
+     *     uint16_t wSecond;
+     *     uint16_t wMilliseconds;
+     * } SYSTEMTIME;
+     *
+     * // 44 bytes
+     * typedef struct _REG_TZI_FORMAT
+     * {
+     *     int32_t Bias;
+     *     int32_t StandardBias;
+     *     int32_t DaylightBias;
+     *     SYSTEMTIME StandardDate;
+     *     SYSTEMTIME DaylightDate;
+     * } REG_TZI_FORMAT;
+     * ```
+     */
     companion object {
         fun allocate(scope: MemScope, cbData: DWORDVar): RegistryTimeZoneInfoBuffer =
-            RegistryTimeZoneInfoBuffer(scope.allocArray<BYTEVar>(sizeOf<REG_TZI_FORMAT>().convert()), cbData)
+            RegistryTimeZoneInfoBuffer(scope.allocArray<BYTEVar>(SIZE_BYTES), cbData)
+
+        private val SIZE_BYTES = 44
     }
 
+    @OptIn(ExperimentalNativeApi::class)
     fun readZoneRules(tzHKey: HKEY, name: String): PerYearZoneRulesData {
-        getRegistryValue(cbData, buffer, sizeOf<REG_TZI_FORMAT>().convert(), tzHKey, name)
-        return with(buffer.reinterpret<REG_TZI_FORMAT>().pointed) {
-            val standardOffset = UtcOffset(minutes = -(StandardBias + Bias))
-            val daylightOffset = UtcOffset(minutes = -(DaylightBias + Bias))
-            if (DaylightDate.wMonth == 0.convert<WORD>()) {
-                return PerYearZoneRulesData(standardOffset, null)
-            }
-            val changeToDst = RecurringZoneRules.Rule(DaylightDate.toMonthDayTime(), standardOffset, daylightOffset)
-            val changeToStd = RecurringZoneRules.Rule(StandardDate.toMonthDayTime(), daylightOffset, standardOffset)
-            PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
+        getRegistryValue(cbData, buffer, SIZE_BYTES.convert(), tzHKey, name)
+        // convert the buffer to a byte array
+        val byteArray = buffer.readBytes(SIZE_BYTES)
+        // obtaining raw data
+        val bias = byteArray.getIntAt(0)
+        val standardBias = byteArray.getIntAt(4)
+        val daylightBias = byteArray.getIntAt(8)
+        val standardDate = (buffer + 12)!!.reinterpret<SYSTEMTIME>().pointed
+        val daylightDate = (buffer + 28)!!.reinterpret<SYSTEMTIME>().pointed
+        // calculating the things we're interested in
+        val standardOffset = UtcOffset(minutes = -(standardBias + bias))
+        val daylightOffset = UtcOffset(minutes = -(daylightBias + bias))
+        if (daylightDate.wMonth == 0.convert<WORD>()) {
+            return PerYearZoneRulesData(standardOffset, null)
         }
+        val changeToDst = RecurringZoneRules.Rule(daylightDate.toMonthDayTime(), standardOffset, daylightOffset)
+        val changeToStd = RecurringZoneRules.Rule(standardDate.toMonthDayTime(), daylightOffset, standardOffset)
+        return PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
     }
 }
 
@@ -230,9 +270,9 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
     return MonthDayTime(MonthDayOfYear(month, transitionDay), localTime, MonthDayTime.OffsetResolver.WallClockOffset)
 }
 
-internal class PerYearZoneRulesData(
-        val standardOffset: UtcOffset,
-        val transitions: Pair<RecurringZoneRules.Rule<MonthDayTime>, RecurringZoneRules.Rule<MonthDayTime>>?,
+private class PerYearZoneRulesData(
+    val standardOffset: UtcOffset,
+    val transitions: Pair<RecurringZoneRules.Rule<MonthDayTime>, RecurringZoneRules.Rule<MonthDayTime>>?,
 ) {
     override fun toString(): String = "standard offset is $standardOffset" + (transitions?.let {
         ", the transitions: ${it.first}, ${it.second}"
