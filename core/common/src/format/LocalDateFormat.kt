@@ -12,6 +12,8 @@ import kotlinx.datetime.internal.format.parser.Copyable
 
 /**
  * A description of how month names are formatted.
+ *
+ * An [IllegalArgumentException] will be thrown if some month name is empty or there are duplicate names.
  */
 public class MonthNames(
     /**
@@ -21,6 +23,14 @@ public class MonthNames(
 ) {
     init {
         require(names.size == 12) { "Month names must contain exactly 12 elements" }
+        names.indices.forEach { ix ->
+            require(names[ix].isNotEmpty()) { "A month name can not be empty" }
+            for (ix2 in 0 until ix) {
+                require(names[ix] != names[ix2]) {
+                    "Month names must be unique, but '${names[ix]}' was repeated"
+                }
+            }
+        }
     }
 
     /**
@@ -63,6 +73,8 @@ internal fun MonthNames.toKotlinCode(): String = when (this.names) {
 
 /**
  * A description of how day of week names are formatted.
+ *
+ * An [IllegalArgumentException] will be thrown if some day-of-week name is empty or there are duplicate names.
  */
 public class DayOfWeekNames(
     /**
@@ -72,6 +84,14 @@ public class DayOfWeekNames(
 ) {
     init {
         require(names.size == 7) { "Day of week names must contain exactly 7 elements" }
+        names.indices.forEach { ix ->
+            require(names[ix].isNotEmpty()) { "A day-of-week name can not be empty" }
+            for (ix2 in 0 until ix) {
+                require(names[ix] != names[ix2]) {
+                    "Day-of-week names must be unique, but '${names[ix]}' was repeated"
+                }
+            }
+        }
     }
 
     /**

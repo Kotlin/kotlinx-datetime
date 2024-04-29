@@ -137,6 +137,18 @@ class DateTimeFormatTest {
             }
         }
     }
+
+    @Test
+    fun testOptionalBetweenConsecutiveNumbers() {
+        val format = UtcOffset.Format {
+            offsetHours(Padding.NONE)
+            optional {
+                optional { offsetSecondsOfMinute() }
+                offsetMinutesOfHour()
+            }
+        }
+        assertEquals(UtcOffset(-7, -30), format.parse("-730"))
+    }
 }
 
 fun <T> DateTimeFormat<T>.assertCanNotParse(input: String) {

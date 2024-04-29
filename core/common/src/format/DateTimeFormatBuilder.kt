@@ -129,6 +129,9 @@ public sealed interface DateTimeFormatBuilder {
          *
          * [am] is used for the AM marker (0-11 hours), [pm] is used for the PM marker (12-23 hours).
          *
+         * Empty strings can not be used as markers.
+         * [IllegalArgumentException] is thrown if either [am] or [pm] is empty or if they are equal.
+         *
          * @see [amPmHour]
          */
         public fun amPmMarker(am: String, pm: String)

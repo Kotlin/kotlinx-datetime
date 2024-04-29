@@ -157,6 +157,7 @@ internal class StringSetParserOperation<Output>(
 
     init {
         for (string in strings) {
+            require(string.isNotEmpty()) { "Found an empty string in $whatThisExpects" }
             var node = trie
             for (char in string) {
                 val searchResult = node.children.binarySearchBy(char.toString()) { it.first }
@@ -166,6 +167,7 @@ internal class StringSetParserOperation<Output>(
                     node.children[searchResult].second
                 }
             }
+            require(!node.isTerminal) { "The string '$string' was passed several times" }
             node.isTerminal = true
         }
         fun reduceTrie(trie: TrieNode) {
