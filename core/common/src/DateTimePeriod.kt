@@ -146,6 +146,8 @@ public sealed class DateTimePeriod {
      * - `P1DT-3H-2M-4.123456789S`: one day, minus three hours, minus two minutes,
      *   minus four seconds, minus 123456789 nanoseconds;
      *
+     * See ISO-8601-1:2019, 5.5.2.2a)
+     *
      * @see DateTimePeriod.parse for the detailed description of the format.
      * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.toStringSample
      */
@@ -223,6 +225,10 @@ public sealed class DateTimePeriod {
          *
          * An explicit `+` or `-` sign can be prepended to any number.
          * `-` means that the number is negative, and `+` has no effect.
+         *
+         * See ISO-8601-1:2019, 5.5.2.2a) and 5.5.2.2b).
+         * We combine the two formats into one by allowing the number of weeks to go after the number of months
+         * and before the number of days.
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are
          * exceeded.

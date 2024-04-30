@@ -199,6 +199,14 @@ public expect class LocalTime : Comparable<LocalTime> {
          *
          * Guaranteed to parse all strings that [LocalTime.toString] produces.
          *
+         * See ISO-8601-1:2019.
+         * Any of the extended formats in 5.3.1.2b), 5.3.1.4a), and 5.3.1.3a) can be used, depending on whether
+         * seconds and fractional seconds are non-zero.
+         * The length of the fractional part is flexible between one and nine digits.
+         * The only allowed separator between seconds and fractional seconds is the dot `.`.
+         * We *forbid* using the time designator `T` to allow for a predictable composition of formats:
+         * see the note at the end of rule 5.3.5.
+         *
          * @sample kotlinx.datetime.test.samples.LocalTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalTime>

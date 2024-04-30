@@ -129,6 +129,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * - `0000-08-30`
          * - `-0001-08-30`
          *
+         * See ISO-8601-1:2019, 5.2.2.1b), using the "expanded calendar year" extension from 5.2.2.3a), generalized
+         * to any number of digits in the year for years that fit in an [Int].
+         *
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalDate>
@@ -141,6 +144,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * - `+120200830`
          * - `00000830`
          * - `-00010830`
+         *
+         * See ISO-8601-1:2019, 5.2.2.1a), using the "expanded calendar year" extension from 5.2.2.3a), generalized
+         * to any number of digits in the year for years that fit in an [Int].
          *
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.Formats.isoBasic
          */

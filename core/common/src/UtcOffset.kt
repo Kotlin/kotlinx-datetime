@@ -129,6 +129,8 @@ public expect class UtcOffset {
          * - `-17:16`
          * - `+10:36:30`
          *
+         * See ISO-8601-1:2019, 4.3.13c), extended to support seconds-of-minute when they are non-zero.
+         *
          * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<UtcOffset>
@@ -145,6 +147,8 @@ public expect class UtcOffset {
          * - `+05`
          * - `-1716`
          * - `+103630`
+         *
+         * See ISO-8601-1:2019, 4.3.13a) and b), extended to support seconds-of-minute when they are non-zero.
          *
          * @see UtcOffset.Formats.FOUR_DIGITS
          * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.Formats.isoBasic

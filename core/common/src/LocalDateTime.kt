@@ -183,6 +183,9 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          *
          * Guaranteed to parse all strings that [LocalDateTime.toString] produces.
          *
+         * See ISO-8601-1:2019, 5.4.2.1b), the version without the offset, together with
+         * [LocalDate.Formats.ISO] and [LocalTime.Formats.ISO].
+         *
          * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalDateTime>
