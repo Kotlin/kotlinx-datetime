@@ -285,7 +285,7 @@ public expect class Instant : Comparable<Instant> {
 
     /**
      * Compares `this` instant with the [other] instant.
-     * Returns zero if this instant represents the same moment as the other (i.e., when it's equal to other),
+     * Returns zero if this instant represents the same moment as the other (meaning they are equal to one another),
      * a negative number if this instant is earlier than the other,
      * and a positive number if this instant is later than the other.
      *
@@ -449,7 +449,7 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
- * are subtracted in the order from the largest units to the smallest, i.e. from years to nanoseconds.
+ * are subtracted in the order from the largest units to the smallest, i.e., from years to nanoseconds.
  *
  * - If the [DateTimePeriod] only contains time-based components, please consider subtracting a [Duration] instead,
  *   as in `Clock.System.now() - 5.hours`.

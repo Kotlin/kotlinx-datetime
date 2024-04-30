@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * The date part of [LocalDateTime].
  *
  * This class represents dates without a reference to a particular time zone.
- * As such, these objects may denote different spans of time in different time zones: for someone in Berlin,
+ * As such, these objects may denote different time intervals in different time zones: for someone in Berlin,
  * `2020-08-30` started and ended at different moments from those for someone in Tokyo.
  *
  * The arithmetic on [LocalDate] values is defined independently of the time zone (so `2020-08-30` plus one day
@@ -239,7 +239,7 @@ public expect class LocalDate : Comparable<LocalDate> {
 
     /**
      * Compares `this` date with the [other] date.
-     * Returns zero if this date represents the same day as the other (i.e., equal to other),
+     * Returns zero if this date represents the same day as the other (meaning they are equal to one other),
      * a negative number if this date is earlier than the other,
      * and a positive number if this date is later than the other.
      *

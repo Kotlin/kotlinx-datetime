@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 /**
  * The representation of a specific civil date and time without a reference to a particular time zone.
  *
- * This class does not describe specific *moments in time*, which are represented as [Instant] values.
+ * This class does not describe specific *moments in time*. For that, use [Instant] values instead.
  * Instead, you can think of its instances as clock readings, which can be observed in a particular time zone.
  * For example, `2020-08-30T18:43` is not a *moment in time* since someone in Berlin and Tokyo would witness
  * this on their clocks at different times, but it is a [LocalDateTime].
@@ -83,7 +83,7 @@ import kotlinx.serialization.Serializable
  * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
  * See sample 1.
  *
- * Some additional constructors that accept the date's and time's fields directly are provided for convenience.
+ * Some additional constructors that directly accept the values from date and time fields are provided for convenience.
  * See sample 2.
  *
  * [parse] and [toString] methods can be used to obtain a [LocalDateTime] from and convert it to a string in the
