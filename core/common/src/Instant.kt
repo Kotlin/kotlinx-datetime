@@ -133,8 +133,10 @@ import kotlin.time.*
  *
  * ### Platform specifics
  *
- * On the JVM, there are `Instant.toJavaInstant()` and `java.time.Instant.toKotlinInstant()` extension functions.
- * On the Darwin platforms, there are `Instant.toNSDate()` and `NSDate.toKotlinInstant()` extension functions.
+ * On the JVM, there are `Instant.toJavaInstant()` and `java.time.Instant.toKotlinInstant()`
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
+ * Similarly, on the Darwin platforms, there are `Instant.toNSDate()` and `NSDate.toKotlinInstant()`
+ * extension functions.
  *
  * ### Construction, serialization, and deserialization
  *

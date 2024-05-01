@@ -111,7 +111,6 @@ private fun MonthNames.toKotlinCode(): String = when (this.names) {
  *
  * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.usage
  * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.constructionFromList
->>>>>>> 585441e (WIP: add samples for some formatting APIs)
  */
 public class DayOfWeekNames(
     /**

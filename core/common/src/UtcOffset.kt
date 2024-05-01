@@ -30,7 +30,7 @@ import kotlinx.serialization.Serializable
  * ### Platform specifics
  *
  * On the JVM, there are `UtcOffset.toJavaZoneOffset()` and `java.time.ZoneOffset.toKotlinUtcOffset()`
- * extension functions.
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  *
  * ### Construction, serialization, and deserialization
  *
@@ -218,8 +218,10 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
 /**
  * Returns the fixed-offset time zone with the given UTC offset.
  *
- * **Pitfall**: if the offset is not fixed, the returned time zone will not reflect the changes in the offset.
- * Use [TimeZone.of] with a IANA timezone name to obtain a time zone that can handle changes in the offset.
+ * **Pitfall**: UTC offsets are static values and do not change with time.
+ * If the logic requires that the offset changes with time, for example, to account for daylight-saving-time
+ * transitions, use [TimeZone.of] with a IANA time zone name to obtain a time zone that can handle
+ * changes in the offset.
  *
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.asFixedOffsetTimeZone
  */

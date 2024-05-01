@@ -48,7 +48,8 @@ import kotlinx.serialization.Serializable
  * ### Platform specifics
  *
  * On the JVM,
- * there are `LocalTime.toJavaLocalTime()` and `java.time.LocalTime.toKotlinLocalTime()` extension functions.
+ * there are `LocalTime.toJavaLocalTime()` and `java.time.LocalTime.toKotlinLocalTime()`
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  *
  * ### Construction, serialization, and deserialization
  *
@@ -103,7 +104,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @throws IllegalArgumentException if [secondOfDay] is outside the `0 until 86400` range,
          * with 86400 being the number of seconds in a calendar day.
          *
-         * It is incorrect to pass the number of seconds since the start of the day to this function.
+         * It is incorrect to pass to this function
+         * the number of seconds that have physically elapsed since the start of the day.
          * The reason is that, due to the daylight-saving-time transitions, the number of seconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
          * Use [Instant] to perform reliable time arithmetic.
@@ -123,7 +125,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @throws IllegalArgumentException if [millisecondOfDay] is outside the `0 until 86400 * 1_000` range,
          * with 86400 being the number of seconds in a calendar day.
          *
-         * It is incorrect to pass the number of milliseconds since the start of the day to this function.
+         * It is incorrect to pass to this function
+         * the number of milliseconds that have physically elapsed since the start of the day.
          * The reason is that, due to the daylight-saving-time transitions, the number of milliseconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
          * Use [Instant] to perform reliable time arithmetic.
@@ -142,7 +145,8 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @throws IllegalArgumentException if [nanosecondOfDay] is outside the `0 until 86400 * 1_000_000_000` range,
          * with 86400 being the number of seconds in a calendar day.
          *
-         * It is incorrect to pass the number of nanoseconds since the start of the day to this function.
+         * It is incorrect to pass to this function
+         * the number of nanoseconds that have physically elapsed since the start of the day.
          * The reason is that, due to the daylight-saving-time transitions, the number of nanoseconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
          * Use [Instant] to perform reliable time arithmetic.

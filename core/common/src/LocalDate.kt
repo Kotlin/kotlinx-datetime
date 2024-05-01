@@ -35,8 +35,9 @@ import kotlinx.serialization.Serializable
  * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
  *
  * On the JVM,
- * there are `LocalDate.toJavaLocalDate()` and `java.time.LocalDate.toKotlinLocalDate()` extension functions.
- * On the Darwin platforms, there is a `LocalDate.toNSDateComponents()` extension function.
+ * there are `LocalDate.toJavaLocalDate()` and `java.time.LocalDate.toKotlinLocalDate()`
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
+ * Similarly, on the Darwin platforms, there is a `LocalDate.toNSDateComponents()` extension function.
  *
  * ### Construction, serialization, and deserialization
  *

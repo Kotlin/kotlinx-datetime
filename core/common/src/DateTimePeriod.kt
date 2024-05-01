@@ -422,7 +422,7 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  * on [LocalDates][LocalDate], but they also can be passed anywhere a [DateTimePeriod] is expected.
  *
  * On the JVM, there are `DatePeriod.toJavaPeriod()` and `java.time.Period.toKotlinDatePeriod()`
- * extension functions.
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  *
  * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.simpleParsingAndFormatting
  */
