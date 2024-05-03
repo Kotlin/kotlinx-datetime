@@ -29,9 +29,9 @@ class DateTimePeriodSamples {
     @Test
     fun simpleParsingAndFormatting() {
         // Parsing and formatting a DateTimePeriod
-        val string = "-P2M-3DT-4H"
+        val string = "P-2M-3DT-4H60M"
         val period = DateTimePeriod.parse(string)
-        check(period.toString() == "P-2M3DT4H")
+        check(period.toString() == "-P2M3DT3H")
     }
 
     @Test
@@ -64,7 +64,7 @@ class DateTimePeriodSamples {
     @Test
     fun parsing() {
         // Parsing a string representation of a DateTimePeriod
-        DateTimePeriod.parse("P1Y2M3DT4H5M6.000000007S").apply {
+        with(DateTimePeriod.parse("P1Y2M3DT4H5M6.000000007S")) {
             check(years == 1)
             check(months == 2)
             check(days == 3)
@@ -73,13 +73,13 @@ class DateTimePeriodSamples {
             check(seconds == 6)
             check(nanoseconds == 7)
         }
-        DateTimePeriod.parse("P14M-16DT5H").apply {
+        with(DateTimePeriod.parse("P14M-16DT5H")) {
             check(years == 1)
             check(months == 2)
             check(days == -16)
             check(hours == 5)
         }
-        DateTimePeriod.parse("-P2M16DT5H").apply {
+        with(DateTimePeriod.parse("-P2M16DT5H")) {
             check(years == 0)
             check(months == -2)
             check(days == -16)
@@ -96,6 +96,7 @@ class DateTimePeriodSamples {
         check(dateTimePeriod.days == -60) // days are separate from months and are not normalized
         check(dateTimePeriod.hours == 14) // the negative minutes overflowed to hours
         check(dateTimePeriod.minutes == 59) // (-61 minutes) + (2 hours) * (60 minutes / hour)
+
         val datePeriod = DateTimePeriod(months = 15, days = 3, hours = 2, minutes = -120)
         check(datePeriod is DatePeriod) // the time components are zero
     }
@@ -106,42 +107,42 @@ class DateTimePeriodSamples {
         check(130.minutes.toDateTimePeriod() == DateTimePeriod(minutes = 130))
         check(2.days.toDateTimePeriod() == DateTimePeriod(days = 0, hours = 48))
     }
+}
 
-    class DatePeriodSamples {
+class DatePeriodSamples {
 
-        @Test
-        fun simpleParsingAndFormatting() {
-            // Parsing and formatting a DatePeriod
-            val datePeriod1 = DatePeriod(years = 1, days = 3)
-            val string = datePeriod1.toString()
-            check(string == "P1Y3D")
-            val datePeriod2 = DatePeriod.parse(string)
-            check(datePeriod1 == datePeriod2)
-        }
+    @Test
+    fun simpleParsingAndFormatting() {
+        // Parsing and formatting a DatePeriod
+        val datePeriod1 = DatePeriod(years = 1, days = 3)
+        val string = datePeriod1.toString()
+        check(string == "P1Y3D")
+        val datePeriod2 = DatePeriod.parse(string)
+        check(datePeriod1 == datePeriod2)
+    }
 
-        @Test
-        fun construction() {
-            // Constructing a DatePeriod using its constructor
-            val datePeriod = DatePeriod(years = 1, months = 16, days = 60)
-            check(datePeriod.years == 2) // 1 year + (16 months / 12)
-            check(datePeriod.months == 4) // 16 months % 12
-            check(datePeriod.days == 60)
-            // the time components are always zero:
-            check(datePeriod.hours == 0)
-            check(datePeriod.minutes == 0)
-            check(datePeriod.seconds == 0)
-            check(datePeriod.nanoseconds == 0)
-        }
+    @Test
+    fun construction() {
+        // Constructing a DatePeriod using its constructor
+        val datePeriod = DatePeriod(years = 1, months = 16, days = 60)
+        check(datePeriod.years == 2) // 1 year + (16 months / 12)
+        check(datePeriod.months == 4) // 16 months % 12
+        check(datePeriod.days == 60)
+        // the time components are always zero:
+        check(datePeriod.hours == 0)
+        check(datePeriod.minutes == 0)
+        check(datePeriod.seconds == 0)
+        check(datePeriod.nanoseconds == 0)
+    }
 
-        @Test
-        fun parsing() {
-            // Parsing a string representation of a DatePeriod
-            // ISO duration strings are supported:
-            val datePeriod = DatePeriod.parse("P1Y16M60D")
-            check(datePeriod == DatePeriod(years = 2, months = 4, days = 60))
-            // it's okay to have time components as long as they amount to zero in total:
-            val datePeriodWithTimeComponents = DatePeriod.parse("P1Y2M3DT1H-60M")
-            check(datePeriodWithTimeComponents == DatePeriod(years = 1, months = 2, days = 3))
-        }
+    @Test
+    fun parsing() {
+        // Parsing a string representation of a DatePeriod
+        // ISO duration strings are supported:
+        val datePeriod = DatePeriod.parse("P1Y16M60D")
+        check(datePeriod == DatePeriod(years = 2, months = 4, days = 60))
+        // it's okay to have time components as long as they amount to zero in total:
+        val datePeriodWithTimeComponents = DatePeriod.parse("P1Y2M3DT1H-60M")
+        check(datePeriodWithTimeComponents == DatePeriod(years = 1, months = 2, days = 3))
     }
 }

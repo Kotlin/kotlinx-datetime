@@ -213,7 +213,7 @@ public expect class Instant : Comparable<Instant> {
     /**
      * The number of nanoseconds by which this instant is later than [epochSeconds] from the epoch instant.
      *
-     * The value is always positive and lies in the range `0..999_999_999`.
+     * The value is always non-negative and lies in the range `0..999_999_999`.
      *
      * @see fromEpochSeconds
      * @sample kotlinx.datetime.test.samples.InstantSamples.nanosecondsOfSecond
@@ -240,10 +240,10 @@ public expect class Instant : Comparable<Instant> {
      *
      * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
      *
-     * **Pitfall**: do not use [Duration] values obtained via [Duration.Companion.days], as this is misleading:
-     * in `kotlinx-datetime`, adding a day is a calendar-based operation, whereas [Duration] always considers
-     * a day to be 24 hours.
-     * For an explanation of why this is error-prone, see [DateTimeUnit.DayBased].
+     * **Pitfall**: [Duration.Companion.days] are multiples of 24 hours and are not calendar-based.
+     * Consider using the [plus] overload that accepts a multiple of a [DateTimeUnit] instead for calendar-based
+     * operations instead of using [Duration].
+     * For an explanation of why some days are not 24 hours, see [DateTimeUnit.DayBased].
      *
      * @sample kotlinx.datetime.test.samples.InstantSamples.plusDuration
      */
@@ -257,10 +257,10 @@ public expect class Instant : Comparable<Instant> {
      *
      * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
      *
-     * **Pitfall**: do not use [Duration] values obtained via [Duration.Companion.days], as this is misleading:
-     * in `kotlinx-datetime`, adding a day is a calendar-based operation, whereas [Duration] always considers
-     * a day to be 24 hours.
-     * For an explanation of why this is error-prone, see [DateTimeUnit.DayBased].
+     * **Pitfall**: [Duration.Companion.days] are multiples of 24 hours and are not calendar-based.
+     * Consider using the [minus] overload that accepts a multiple of a [DateTimeUnit] instead for calendar-based
+     * operations instead of using [Duration].
+     * For an explanation of why some days are not 24 hours, see [DateTimeUnit.DayBased].
      *
      * @sample kotlinx.datetime.test.samples.InstantSamples.minusDuration
      */

@@ -75,7 +75,9 @@ class InstantSamples {
         repeat(100) {
             val instant1 = randomInstant()
             val instant2 = randomInstant()
-            check((instant1 < instant2) == (instant1.toEpochMilliseconds() < instant2.toEpochMilliseconds()))
+            // in the UTC time zone, earlier instants are represented as earlier datetimes
+            check((instant1 < instant2) ==
+                (instant1.toLocalDateTime(TimeZone.UTC) < instant2.toLocalDateTime(TimeZone.UTC)))
         }
     }
 
