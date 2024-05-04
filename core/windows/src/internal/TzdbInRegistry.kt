@@ -60,7 +60,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                         }
                     }
                 }
-                if (offsets.isEmpty()) { offsets.add(recurring.offsetAtYearStart(2020)) }
+                if (offsets.isEmpty()) { offsets.add(recurring.offsetAtYearStart()) }
                 TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
@@ -294,7 +294,7 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
 
 private sealed interface PerYearZoneRulesData {
     val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
-    fun offsetAtYearStart(year: Int): UtcOffset
+    fun offsetAtYearStart(): UtcOffset
 }
 
 private class PerYearZoneRulesDataWithoutTransitions(
@@ -303,7 +303,7 @@ private class PerYearZoneRulesDataWithoutTransitions(
     override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
         get() = emptyList()
 
-    override fun offsetAtYearStart(year: Int): UtcOffset = standardOffset
+    override fun offsetAtYearStart(): UtcOffset = standardOffset
 
     override fun toString(): String = "standard offset is $standardOffset"
 }
@@ -323,7 +323,7 @@ private class PerYearZoneRulesDataWithTransitions(
     val standardTransition get() =
         RecurringZoneRules.Rule(standardTransitionTime, offsetBefore = daylightOffset, offsetAfter = standardOffset)
 
-    override fun offsetAtYearStart(year: Int): UtcOffset = standardOffset
+    override fun offsetAtYearStart(): UtcOffset = standardOffset // TODO: not true in all years + all zones
 
     override fun toString(): String = "standard offset is $standardOffset" +
             ", daylight offset is $daylightOffset" +

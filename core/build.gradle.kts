@@ -30,9 +30,6 @@ val serializationVersion: String by project
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
-    with(javaToolchains.launcherFor(toolchain).get().metadata) {
-        logger.info("Using JDK $languageVersion toolchain installed in $installationPath")
-    }
 }
 
 kotlin {
