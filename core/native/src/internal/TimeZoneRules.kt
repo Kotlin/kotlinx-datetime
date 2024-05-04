@@ -128,12 +128,12 @@ internal class RecurringZoneRules(
         val offsetBefore: UtcOffset,
         val offsetAfter: UtcOffset,
     ) {
-        override fun toString(): String = "transitioning to $offsetAfter on $transitionDateTime"
+        override fun toString(): String = "transitioning from $offsetBefore to $offsetAfter on $transitionDateTime"
     }
 
     // see `tzparse` in https://data.iana.org/time-zones/tzdb/localtime.c: looks like there's no guarantees about
     // a way to pre-sort the transitions, so we have to do it for each query separately.
-    private fun rulesForYear(year: Int): List<Rule<Instant>> {
+    fun rulesForYear(year: Int): List<Rule<Instant>> {
         return rules.map { rule ->
             val transitionInstant = rule.transitionDateTime.toInstant(year, rule.offsetBefore)
             Rule(transitionInstant, rule.offsetBefore, rule.offsetAfter)

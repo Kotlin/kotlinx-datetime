@@ -16,30 +16,52 @@ internal class TzdbInRegistry: TimeZoneDatabase {
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
     private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
-            val transitions = recurring.transitions?.let { listOf(it.first, it.second) } ?: emptyList()
-            val rules = if (historic.isEmpty()) {
-                TimeZoneRules(recurring.standardOffset, RecurringZoneRules(transitions))
-            } else {
+            val recurringRules = RecurringZoneRules(recurring.transitions)
+            val rules = run {
+                val offsets = mutableListOf<UtcOffset>()
                 val transitionEpochSeconds = mutableListOf<Long>()
-                val offsets = mutableListOf(historic[0].second.standardOffset)
                 for ((year, record) in historic) {
-                    if (record.transitions == null) continue
-                    val (trans1, trans2) = record.transitions
-                    val transTime1 = trans1.transitionDateTime.toInstant(year, trans1.offsetBefore)
-                    val transTime2 = trans2.transitionDateTime.toInstant(year, trans2.offsetBefore)
-                    if (transTime2 >= transTime1) {
-                        transitionEpochSeconds.add(transTime1.epochSeconds)
-                        offsets.add(trans1.offsetAfter)
-                        transitionEpochSeconds.add(transTime2.epochSeconds)
-                        offsets.add(trans2.offsetAfter)
-                    } else {
-                        transitionEpochSeconds.add(transTime2.epochSeconds)
-                        offsets.add(trans2.offsetAfter)
-                        transitionEpochSeconds.add(transTime1.epochSeconds)
-                        offsets.add(trans1.offsetAfter)
+                    when (record) {
+                        is PerYearZoneRulesDataWithoutTransitions -> {
+                            val lastOffset = offsets.lastOrNull()
+                            if (lastOffset != record.standardOffset) {
+                                lastOffset?.let {
+                                    transitionEpochSeconds.add(START_OF_YEAR.toInstant(year, it).epochSeconds)
+                                }
+                                offsets.add(record.standardOffset)
+                            }
+                        }
+                        is PerYearZoneRulesDataWithTransitions -> {
+                            val toDstTime = record.daylightTransitionTime.toLocalDateTime(year)
+                            val toStdTime = record.standardTransitionTime.toLocalDateTime(year)
+                            val initialOffset =
+                                if (toDstTime < toStdTime) record.standardOffset else record.daylightOffset
+                            if (offsets.isEmpty()) { offsets.add(initialOffset) }
+                            val newYearTransition: RecurringZoneRules.Rule<MonthDayTime> =
+                                RecurringZoneRules.Rule(
+                                    transitionDateTime = START_OF_YEAR,
+                                    offsetBefore = offsets.last(),
+                                    offsetAfter = initialOffset,
+                                )
+                            // The order is important: newYearTransition must be overwritten by the explicit Jan 1st transition
+                            mapOf(
+                                LocalDate(year, Month.JANUARY, 1).atTime(0, 0) to newYearTransition,
+                                toDstTime to record.daylightTransition,
+                                toStdTime to record.standardTransition
+                            ).toList().sortedBy(Pair<LocalDateTime, *>::first).forEach { (time, transition) ->
+                                // occasionally, there are transitions that have no effect at all, whose purpose is
+                                // just to fulfill the contract that there are either two or zero transitions per year.
+                                // We skip such transitions entirely to simplify handling.
+                                if (offsets.last() != transition.offsetAfter) {
+                                    transitionEpochSeconds.add(time.toInstant(transition.offsetBefore).epochSeconds)
+                                    offsets.add(transition.offsetAfter)
+                                }
+                            }
+                        }
                     }
                 }
-                TimeZoneRules(transitionEpochSeconds, offsets, RecurringZoneRules(transitions))
+                if (offsets.isEmpty()) { offsets.add(recurring.offsetAtYearStart(2020)) }
+                TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
         }
@@ -216,14 +238,14 @@ private class RegistryTimeZoneInfoBuffer private constructor(
         val standardDate = (buffer + 12)!!.reinterpret<SYSTEMTIME>().pointed
         val daylightDate = (buffer + 28)!!.reinterpret<SYSTEMTIME>().pointed
         // calculating the things we're interested in
+        if (daylightDate.wMonth == 0.convert<WORD>()) {
+            return PerYearZoneRulesDataWithoutTransitions(UtcOffset(minutes = -bias))
+        }
         val standardOffset = UtcOffset(minutes = -(standardBias + bias))
         val daylightOffset = UtcOffset(minutes = -(daylightBias + bias))
-        if (daylightDate.wMonth == 0.convert<WORD>()) {
-            return PerYearZoneRulesData(standardOffset, null)
-        }
-        val changeToDst = RecurringZoneRules.Rule(daylightDate.toMonthDayTime(), standardOffset, daylightOffset)
-        val changeToStd = RecurringZoneRules.Rule(standardDate.toMonthDayTime(), daylightOffset, standardOffset)
-        return PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
+        val changeToDst = daylightDate.toMonthDayTime()
+        val changeToStd = standardDate.toMonthDayTime()
+        return PerYearZoneRulesDataWithTransitions(standardOffset, daylightOffset, changeToDst, changeToStd)
     }
 }
 
@@ -270,13 +292,42 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
     return MonthDayTime(MonthDayOfYear(month, transitionDay), localTime, MonthDayTime.OffsetResolver.WallClockOffset)
 }
 
-private class PerYearZoneRulesData(
+private sealed interface PerYearZoneRulesData {
+    val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+    fun offsetAtYearStart(year: Int): UtcOffset
+}
+
+private class PerYearZoneRulesDataWithoutTransitions(
+    val standardOffset: UtcOffset
+) : PerYearZoneRulesData {
+    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+        get() = emptyList()
+
+    override fun offsetAtYearStart(year: Int): UtcOffset = standardOffset
+
+    override fun toString(): String = "standard offset is $standardOffset"
+}
+
+private class PerYearZoneRulesDataWithTransitions(
     val standardOffset: UtcOffset,
-    val transitions: Pair<RecurringZoneRules.Rule<MonthDayTime>, RecurringZoneRules.Rule<MonthDayTime>>?,
-) {
-    override fun toString(): String = "standard offset is $standardOffset" + (transitions?.let {
-        ", the transitions: ${it.first}, ${it.second}"
-    } ?: "")
+    val daylightOffset: UtcOffset,
+    val daylightTransitionTime: MonthDayTime,
+    val standardTransitionTime: MonthDayTime,
+) : PerYearZoneRulesData {
+    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+        get() = listOf(daylightTransition, standardTransition)
+
+    val daylightTransition get() =
+        RecurringZoneRules.Rule(daylightTransitionTime, offsetBefore = standardOffset, offsetAfter = daylightOffset)
+
+    val standardTransition get() =
+        RecurringZoneRules.Rule(standardTransitionTime, offsetBefore = daylightOffset, offsetAfter = standardOffset)
+
+    override fun offsetAtYearStart(year: Int): UtcOffset = standardOffset
+
+    override fun toString(): String = "standard offset is $standardOffset" +
+            ", daylight offset is $daylightOffset" +
+            ", the transitions: $daylightTransitionTime, $standardTransitionTime"
 }
 
 private fun getLastWindowsError(): String = memScoped {
@@ -292,3 +343,9 @@ private fun getLastWindowsError(): String = memScoped {
     )
     buf.value!!.toKStringFromUtf16().also { LocalFree(buf.ptr) }
 }
+
+private val START_OF_YEAR = MonthDayTime(
+    date = JulianDayOfYear(0),
+    time = MonthDayTime.TransitionLocaltime(0),
+    offset = MonthDayTime.OffsetResolver.WallClockOffset,
+)

@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
     kotlin("multiplatform")
@@ -149,6 +150,14 @@ kotlin {
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
+        }
+        if (konanTarget.family == Family.MINGW) {
+            compilations["test"].cinterops {
+                create("modern_api") {
+                    defFile("$projectDir/windows/test_cinterop/modern_api.def")
+                    headers("$projectDir/windows/test_cinterop/modern_api.h")
+                }
+            }
         }
     }
     sourceSets {
