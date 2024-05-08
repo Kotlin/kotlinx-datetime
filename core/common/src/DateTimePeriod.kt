@@ -424,7 +424,7 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  * On the JVM, there are `DatePeriod.toJavaPeriod()` and `java.time.Period.toKotlinDatePeriod()`
  * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  *
- * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.simpleParsingAndFormatting
+ * @sample kotlinx.datetime.test.samples.DatePeriodSamples.simpleParsingAndFormatting
  */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
@@ -445,7 +445,7 @@ public class DatePeriod internal constructor(
      * For example, instead of `DatePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
      *
      * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
-     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.construction
+     * @sample kotlinx.datetime.test.samples.DatePeriodSamples.construction
      */
     public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
@@ -473,7 +473,7 @@ public class DatePeriod internal constructor(
          * or any time components are not zero.
          *
          * @see DateTimePeriod.parse
-         * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.DatePeriodSamples.parsing
+         * @sample kotlinx.datetime.test.samples.DatePeriodSamples.parsing
          */
         public fun parse(text: String): DatePeriod =
             when (val period = DateTimePeriod.parse(text)) {
