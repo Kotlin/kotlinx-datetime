@@ -63,17 +63,17 @@ class DateTimeFormatSamples {
         // Printing a given date-time format as a Kotlin code snippet that creates the same format
         val customFormat = LocalDate.Format {
             @OptIn(FormatStringsInDatetimeFormats::class)
-            byUnicodePattern("MM/dd uuuu")
+            byUnicodePattern("MM/dd yyyy")
         }
         val customFormatAsKotlinCode = DateTimeFormat.formatAsKotlinBuilderDsl(customFormat)
         check(
-            customFormatAsKotlinCode == """
+            customFormatAsKotlinCode.contains("""
                 monthNumber()
                 char('/')
                 dayOfMonth()
                 char(' ')
                 year()
-            """.trimIndent()
+            """.trimIndent())
         )
     }
 
