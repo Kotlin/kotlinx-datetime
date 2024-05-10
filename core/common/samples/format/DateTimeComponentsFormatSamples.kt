@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class DateTimeComponentsFormatSamples {
+@PublishedApi internal class DateTimeComponentsFormatSamples {
     @Test
     fun timeZoneId() {
         // Defining a custom format that includes a time zone ID

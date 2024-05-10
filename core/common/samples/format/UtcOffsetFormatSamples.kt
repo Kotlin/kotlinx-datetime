@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class UtcOffsetFormatSamples {
+@PublishedApi internal class UtcOffsetFormatSamples {
     @Test
     fun isoOrGmt() {
         // Defining a custom format for the UTC offset

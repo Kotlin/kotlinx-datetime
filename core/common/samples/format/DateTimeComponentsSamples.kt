@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class DateTimeComponentsSamples {
+@PublishedApi internal class DateTimeComponentsSamples {
 
     @Test
     fun parsingComplexInput() {

@@ -10,7 +10,7 @@ import kotlinx.datetime.format.*
 import kotlin.random.*
 import kotlin.test.*
 
-class LocalTimeSamples {
+@PublishedApi internal class LocalTimeSamples {
 
     @Test
     fun construction() {

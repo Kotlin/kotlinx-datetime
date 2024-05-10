@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class LocalTimeFormatSamples {
+@PublishedApi internal class LocalTimeFormatSamples {
     @Test
     fun hhmmss() {
         // Defining a custom format for the local time

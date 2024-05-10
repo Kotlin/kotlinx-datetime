@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class LocalDateTimeFormatSamples {
+@PublishedApi internal class LocalDateTimeFormatSamples {
     @Test
     fun dateTime() {
         // Using a predefined LocalDateTime format in a larger format

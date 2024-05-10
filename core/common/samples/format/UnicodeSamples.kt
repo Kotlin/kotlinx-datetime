@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class UnicodeSamples {
+@PublishedApi internal class UnicodeSamples {
     @Test
     fun byUnicodePattern() {
         // Using the Unicode pattern to define a custom format and obtain the corresponding Kotlin code

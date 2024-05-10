@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class LocalDateFormatSamples {
+@PublishedApi internal class LocalDateFormatSamples {
 
     @Test
     fun year() {

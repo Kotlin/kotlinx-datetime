@@ -175,16 +175,25 @@ kotlin {
         commonMain {
             dependencies {
                 compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                // For the `@Test` annotation on samples
+                compileOnly("org.jetbrains.kotlin:kotlin-test")
             }
+            // This is part of the main source set so that IDEA knows where to look for them for the library users
+            kotlin.srcDir("common/samples")
         }
 
         commonTest {
             dependencies {
                 api("org.jetbrains.kotlin:kotlin-test")
             }
+            kotlin.srcDir("common/samples")
         }
 
         val jvmMain by getting {
+            dependencies {
+                // For the `@Test` annotation on samples
+                compileOnly("org.jetbrains.kotlin:kotlin-test-junit")
+            }
         }
 
         val jvmTest by getting {
@@ -396,7 +405,6 @@ val downloadWindowsZonesMapping by tasks.registering {
 
 tasks.withType<AbstractDokkaLeafTask>().configureEach {
     pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
-
     failOnWarning.set(true)
     dokkaSourceSets.configureEach {
         kotlin.sourceSets.commonTest.get().kotlin.srcDirs.forEach { samples.from(it) }
@@ -430,4 +438,16 @@ tasks.configureEach {
 with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
     nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
     nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "kotlinx.datetime.test.samples.*",
+                )
+            }
+        }
+    }
 }

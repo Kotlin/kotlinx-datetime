@@ -10,7 +10,7 @@ import kotlinx.datetime.format.*
 import kotlin.random.*
 import kotlin.test.*
 
-class LocalDateSamples {
+@PublishedApi internal class LocalDateSamples {
 
     @Test
     fun simpleParsingAndFormatting() {

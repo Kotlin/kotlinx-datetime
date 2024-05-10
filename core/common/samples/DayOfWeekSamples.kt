@@ -8,7 +8,7 @@ package kotlinx.datetime.test.samples
 import kotlinx.datetime.*
 import kotlin.test.*
 
-class DayOfWeekSamples {
+@PublishedApi internal class DayOfWeekSamples {
 
     @Test
     fun usage() {

@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
 
-class DateTimeUnitSamples {
+@PublishedApi internal class DateTimeUnitSamples {
     @Test
     fun construction() {
         // Constructing various measurement units

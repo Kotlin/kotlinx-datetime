@@ -11,7 +11,7 @@ import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
 
-class InstantSamples {
+@PublishedApi internal class InstantSamples {
 
     @Test
     fun epochSeconds() {

@@ -8,7 +8,7 @@ package kotlinx.datetime.test.samples
 import kotlinx.datetime.*
 import kotlin.test.*
 
-class MonthSamples {
+@PublishedApi internal class MonthSamples {
 
     @Test
     fun usage() {

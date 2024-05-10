@@ -10,7 +10,7 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
-class DateTimePeriodSamples {
+@PublishedApi internal class DateTimePeriodSamples {
 
     @Test
     fun construction() {
@@ -109,7 +109,7 @@ class DateTimePeriodSamples {
     }
 }
 
-class DatePeriodSamples {
+@PublishedApi internal class DatePeriodSamples {
 
     @Test
     fun simpleParsingAndFormatting() {

@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class TimeZoneSamples {
+@PublishedApi internal class TimeZoneSamples {
 
     @Test
     fun usage() {

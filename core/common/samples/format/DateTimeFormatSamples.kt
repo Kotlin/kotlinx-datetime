@@ -9,7 +9,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
 
-class DateTimeFormatSamples {
+@PublishedApi internal class DateTimeFormatSamples {
 
     @Test
     fun format() {

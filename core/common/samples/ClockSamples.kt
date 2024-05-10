@@ -8,7 +8,7 @@ package kotlinx.datetime.test.samples
 import kotlinx.datetime.*
 import kotlin.test.*
 
-class ClockSamples {
+@PublishedApi internal class ClockSamples {
     @Test
     fun system() {
         // Getting the current date and time
