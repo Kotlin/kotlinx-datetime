@@ -47,17 +47,19 @@ class InstantSamples {
     @Test
     fun plusDuration() {
         // Finding a moment that's later than the starting point by the given amount of real time
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val fiveHoursLater = instant + 5.hours
-        check(fiveHoursLater.toEpochMilliseconds() == 12 * 60 * 60 * 1000L)
+        check(fiveHoursLater.epochSeconds == 12 * 60 * 60L)
+        check(fiveHoursLater.nanosecondsOfSecond == 123_456_789)
     }
 
     @Test
     fun minusDuration() {
         // Finding a moment that's earlier than the starting point by the given amount of real time
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val fiveHoursEarlier = instant - 5.hours
-        check(fiveHoursEarlier.toEpochMilliseconds() == 2 * 60 * 60 * 1000L)
+        check(fiveHoursEarlier.epochSeconds == 2 * 60 * 60L)
+        check(fiveHoursEarlier.nanosecondsOfSecond == 123_456_789)
     }
 
     @Test
@@ -84,7 +86,7 @@ class InstantSamples {
     @Test
     fun toStringSample() {
         // Converting an Instant to a string
-        check(Instant.fromEpochMilliseconds(0).toString() == "1970-01-01T00:00:00Z")
+        check(Instant.fromEpochSeconds(0).toString() == "1970-01-01T00:00:00Z")
     }
 
     @Test
@@ -113,8 +115,8 @@ class InstantSamples {
     @Test
     fun parsing() {
         // Parsing an Instant from a string using predefined and custom formats
-        check(Instant.parse("1970-01-01T00:00:00Z") == Instant.fromEpochMilliseconds(0))
-        check(Instant.parse("Thu, 01 Jan 1970 03:30:00 +0330", DateTimeComponents.Formats.RFC_1123) == Instant.fromEpochMilliseconds(0))
+        check(Instant.parse("1970-01-01T00:00:00Z") == Instant.fromEpochSeconds(0))
+        check(Instant.parse("Thu, 01 Jan 1970 03:30:00 +0330", DateTimeComponents.Formats.RFC_1123) == Instant.fromEpochSeconds(0))
     }
 
     @Test
@@ -189,8 +191,8 @@ class InstantSamples {
     @Test
     fun untilAsTimeBasedUnit() {
         // Finding the difference between two instants in terms of the given measurement unit
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
-        val otherInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(0)
+        val otherInstant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val hoursBetweenInstants = instant.until(otherInstant, DateTimeUnit.HOUR)
         check(hoursBetweenInstants == 7L)
     }
@@ -271,17 +273,19 @@ class InstantSamples {
     @Test
     fun plusTimeBasedUnit() {
         // Finding a moment that's later than the starting point by the given amount of real time
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val fiveHoursLater = instant.plus(5, DateTimeUnit.HOUR)
-        check(fiveHoursLater.toEpochMilliseconds() == 12 * 60 * 60 * 1000L)
+        check(fiveHoursLater.epochSeconds == 12 * 60 * 60L)
+        check(fiveHoursLater.nanosecondsOfSecond == 123_456_789)
     }
 
     @Test
     fun minusTimeBasedUnit() {
         // Finding a moment that's earlier than the starting point by the given amount of real time
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val fiveHoursEarlier = instant.minus(5, DateTimeUnit.HOUR)
-        check(fiveHoursEarlier.toEpochMilliseconds() == 2 * 60 * 60 * 1000L)
+        check(fiveHoursEarlier.epochSeconds == 2 * 60 * 60L)
+        check(fiveHoursEarlier.nanosecondsOfSecond == 123_456_789)
     }
 
     /** copy of [untilAsDateTimeUnit] */
@@ -302,8 +306,8 @@ class InstantSamples {
     @Test
     fun minusAsTimeBasedUnit() {
         // Finding a moment that's earlier than the starting point by a given amount of real time
-        val instant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
-        val otherInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 7 * 60 * 60 * 1000)
+        val instant = Instant.fromEpochSeconds(0)
+        val otherInstant = Instant.fromEpochSeconds(7 * 60 * 60, nanosecondAdjustment = 123_456_789)
         val hoursBetweenInstants = otherInstant.minus(instant, DateTimeUnit.HOUR)
         check(hoursBetweenInstants == 7L)
     }
@@ -311,7 +315,7 @@ class InstantSamples {
     @Test
     fun formatting() {
         // Formatting an Instant to a string using predefined and custom formats
-        val epochStart = Instant.fromEpochMilliseconds(0)
+        val epochStart = Instant.fromEpochSeconds(0)
         check(epochStart.toString() == "1970-01-01T00:00:00Z")
         check(epochStart.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) == "1970-01-01T00:00:00Z")
         val customFormat = DateTimeComponents.Format {
