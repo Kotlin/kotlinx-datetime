@@ -284,44 +284,6 @@ class InstantSamples {
         check(fiveHoursEarlier.toEpochMilliseconds() == 2 * 60 * 60 * 1000L)
     }
 
-    @Test
-    @Ignore // only the JVM has the range wide enough
-    fun plusDateTimeUnitLong() {
-        // Finding a moment that's later than the starting point by the given large length of calendar time
-        val zone = TimeZone.of("Europe/Berlin")
-        val now = LocalDate(2024, Month.APRIL, 16).atTime(13, 30).toInstant(zone)
-        val tenTrillionDaysLater = now.plus(10_000_000_000L, DateTimeUnit.DAY, zone)
-        check(tenTrillionDaysLater.toLocalDateTime(zone).date == LocalDate(27_381_094, Month.MAY, 12))
-    }
-
-    @Test
-    @Ignore // only the JVM has the range wide enough
-    fun minusDateTimeUnitLong() {
-        // Finding a moment that's earlier than the starting point by the given large length of calendar time
-        val zone = TimeZone.of("Europe/Berlin")
-        val now = LocalDate(2024, Month.APRIL, 16).atTime(13, 30).toInstant(zone)
-        val tenTrillionDaysAgo = now.minus(10_000_000_000L, DateTimeUnit.DAY, zone)
-        check(tenTrillionDaysAgo.toLocalDateTime(zone).date == LocalDate(-27_377_046, Month.MARCH, 22))
-    }
-
-    @Test
-    fun plusTimeBasedUnitLong() {
-        // Finding a moment that's later than the starting point by the given amount of real time
-        val startInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
-        val quadrillion = 1_000_000_000_000L
-        val quadrillionSecondsLater = startInstant.plus(quadrillion, DateTimeUnit.SECOND)
-        check(quadrillionSecondsLater.epochSeconds == quadrillion)
-    }
-
-    @Test
-    fun minusTimeBasedUnitLong() {
-        // Finding a moment that's earlier than the starting point by the given amount of real time
-        val startInstant = Instant.fromEpochMilliseconds(epochMilliseconds = 0)
-        val quadrillion = 1_000_000_000_000L
-        val quadrillionSecondsEarlier = startInstant.minus(quadrillion, DateTimeUnit.SECOND)
-        check(quadrillionSecondsEarlier.epochSeconds == -quadrillion)
-    }
-
     /** copy of [untilAsDateTimeUnit] */
     @Test
     fun minusAsDateTimeUnit() {

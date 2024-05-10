@@ -456,7 +456,7 @@ public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, u
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- * @sample kotlinx.datetime.test.samples.LocalDateSamples.plusInt
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.plus
  */
 public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -469,7 +469,7 @@ public expect fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): Loca
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusInt
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minus
  */
 public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -482,7 +482,7 @@ public expect fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): Loc
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- * @sample kotlinx.datetime.test.samples.LocalDateSamples.plusLong
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.plus
  */
 public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 
@@ -495,7 +495,7 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * The value is rounded toward zero.
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
- * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusLong
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.minus
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
 

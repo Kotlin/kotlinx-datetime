@@ -88,8 +88,7 @@ class LocalDateSamples {
     @Test
     fun dayOfMonth() {
         // Getting the day of the month
-        repeat(30) {
-            val dayOfMonth = it + 1
+        for (dayOfMonth in 1..30) {
             check(LocalDate(2024, Month.APRIL, dayOfMonth).dayOfMonth == dayOfMonth)
         }
     }
@@ -245,7 +244,7 @@ class LocalDateSamples {
     }
 
     @Test
-    fun plusInt() {
+    fun plus() {
         // Adding a number of days or months to a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenDaysLater = today.plus(10, DateTimeUnit.DAY)
@@ -255,31 +254,13 @@ class LocalDateSamples {
     }
 
     @Test
-    fun minusInt() {
+    fun minus() {
         // Subtracting a number of days or months from a date
         val today = LocalDate(2024, Month.APRIL, 16)
         val tenDaysAgo = today.minus(10, DateTimeUnit.DAY)
         check(tenDaysAgo == LocalDate(2024, Month.APRIL, 6))
         val twoMonthsAgo = today.minus(2, DateTimeUnit.MONTH)
         check(twoMonthsAgo == LocalDate(2024, Month.FEBRUARY, 16))
-    }
-
-    @Test
-    @Ignore // only the JVM has the range wide enough
-    fun plusLong() {
-        // Adding a large number of days to a date
-        val today = LocalDate(2024, Month.APRIL, 16)
-        val tenTrillionDaysLater = today.plus(10_000_000_000L, DateTimeUnit.DAY)
-        check(tenTrillionDaysLater == LocalDate(27_381_094, Month.MAY, 12))
-    }
-
-    @Test
-    @Ignore // only the JVM has the range wide enough
-    fun minusLong() {
-        // Subtracting a large number of days from a date
-        val today = LocalDate(2024, Month.APRIL, 16)
-        val tenTrillionDaysAgo = today.minus(10_000_000_000L, DateTimeUnit.DAY)
-        check(tenTrillionDaysAgo == LocalDate(-27_377_046, Month.MARCH, 22))
     }
 
     class Formats {

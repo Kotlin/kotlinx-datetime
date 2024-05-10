@@ -700,7 +700,7 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * It is also not needed when adding date-based units to a [LocalDate].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
- * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnitLong
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
 
@@ -715,7 +715,7 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZo
  * It is also not needed when subtracting date-based units from a [LocalDate].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
- * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnitLong
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
 public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
     if (value != Long.MIN_VALUE) {
@@ -732,7 +732,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  *
- * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnitLong
+ * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
 public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
 
@@ -744,7 +744,7 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
  *
  * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
  *
- * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnitLong
+ * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */
 public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
     if (value != Long.MIN_VALUE) {
