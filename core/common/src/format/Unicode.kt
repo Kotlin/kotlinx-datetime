@@ -53,6 +53,7 @@ public annotation class FormatStringsInDatetimeFormats
  * The list of supported directives is as follows:
  *
  * | **Directive**       | **Meaning**                                                                             |
+ * | ------------------- | --------------------------------------------------------------------------------------- |
  * | `'string'`          | literal `string`, without quotes                                                        |
  * | `'''`               | literal char `'`                                                                        |
  * | `[fmt]`             | equivalent to `fmt` during formatting, but during parsing also accepts the empty string |
@@ -75,6 +76,7 @@ public annotation class FormatStringsInDatetimeFormats
  * and seconds are zero-padded to two digits. Also, hours are unconditionally present.
  * 
  * | **Directive**          | **Minutes** | **Seconds** | **Separator** | **Representation of zero** |
+ * | ---------------------- | ----------- | ----------- | ------------- | -------------------------- |
  * | `X`                    | unless zero | never       | none          | `Z`                        |
  * | `XX`                   | always      | never       | none          | `Z`                        |
  * | `XXX`                  | always      | never       | colon         | `Z`                        |
