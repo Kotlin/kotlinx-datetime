@@ -113,7 +113,7 @@ public actual class Instant internal constructor(
         iStream.defaultReadObject()
         val field = this::class.java.getDeclaredField(::value.name)
         field.isAccessible = true
-        field.set(this, jtOffsetDateTime.parse(fixOffsetRepresentation(iStream.readObject() as String)).toInstant())
+        field.set(this, parse(iStream.readObject() as String).value)
     }
 
     private fun readObjectNoData() {
