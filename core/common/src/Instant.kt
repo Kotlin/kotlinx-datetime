@@ -188,6 +188,7 @@ import kotlin.time.*
  * ```
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [Instant]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [InstantIso8601Serializer] for the ISO 8601 extended format.
  * - [InstantComponentSerializer] for an object with components.
  *

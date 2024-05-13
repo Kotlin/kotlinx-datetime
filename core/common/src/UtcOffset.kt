@@ -47,7 +47,8 @@ import kotlinx.serialization.Serializable
  * [parse] and [UtcOffset.format] both support custom formats created with [Format] or defined in [Formats].
  * See sample 3.
  *
- * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the [UtcOffsetSerializer].
+ * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the default serializer,
+ * or [UtcOffsetIso8601Serializer] for the ISO 8601 format explicitly.
  *
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.construction
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.simpleParsingAndFormatting

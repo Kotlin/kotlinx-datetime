@@ -56,6 +56,7 @@ import kotlinx.serialization.Serializable
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [LocalDateIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateComponentSerializer] for an object with components.
  *

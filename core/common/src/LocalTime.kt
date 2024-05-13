@@ -67,6 +67,7 @@ import kotlinx.serialization.Serializable
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalTime]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [LocalTimeIso8601Serializer] for the ISO 8601 extended format,
  * - [LocalTimeComponentSerializer] for an object with components.
  *
