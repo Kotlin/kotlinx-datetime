@@ -14,28 +14,50 @@ import kotlin.test.*
 
 class UtcOffsetSerializationTest {
 
-    private fun testSerializationAsPrimitive(serializer: KSerializer<UtcOffset>) {
-        val offset2h = UtcOffset(hours = 2)
-        assertEquals("\"+02:00\"", Json.encodeToString(serializer, offset2h))
-        assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02:00\""))
-        assertEquals(offset2h, Json.decodeFromString(serializer, "\"+02:00:00\""))
-
-        assertFailsWith<IllegalArgumentException> {
-            Json.decodeFromString(serializer, "\"UTC+02:00\"") // not an offset
+    private fun iso8601Serialization(serializer: KSerializer<UtcOffset>) {
+        // the default form is obtainable and parsable
+        for ((offset, json) in listOf(
+            Pair(UtcOffset(hours = 0), "\"Z\""),
+            Pair(UtcOffset(hours = 1), "\"+01:00\""),
+            Pair(UtcOffset(hours = 1, minutes = 30), "\"+01:30\""),
+            Pair(UtcOffset(hours = 1, minutes = 30, seconds = 59), "\"+01:30:59\""),
+        )) {
+            assertEquals(json, Json.encodeToString(serializer, offset))
+            assertEquals(offset, Json.decodeFromString(serializer, json))
+        }
+        // alternative forms are also parsable
+        for ((offset, json) in listOf(
+            Pair(UtcOffset(hours = 0), "\"+00:00\""),
+            Pair(UtcOffset(hours = 0), "\"z\""),
+        )) {
+            assertEquals(offset, Json.decodeFromString(serializer, json))
+        }
+        // some strings aren't parsable
+        for (json in listOf(
+            "\"+3\"",
+            "\"+03\"",
+            "\"+03:0\"",
+            "\"UTC+02:00\"",
+        )) {
+            assertFailsWith<IllegalArgumentException> {
+                Json.decodeFromString(serializer, json)
+            }
         }
     }
 
     @Test
-    fun defaultSerializer() {
-        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", Json.serializersModule.serializer())
-        testSerializationAsPrimitive(Json.serializersModule.serializer())
+    fun testIso8601Serialization() {
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", UtcOffsetIso8601Serializer)
+        iso8601Serialization(UtcOffsetIso8601Serializer)
     }
 
     @Test
-    fun stringPrimitiveSerializer() {
-        assertKSerializerName("kotlinx.datetime.UtcOffset", UtcOffsetSerializer)
-        testSerializationAsPrimitive(UtcOffsetSerializer)
-        testSerializationAsPrimitive(UtcOffset.serializer())
+    fun testDefaultSerializers() {
+        // should be the same as the ISO 8601
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", Json.serializersModule.serializer())
+        iso8601Serialization(Json.serializersModule.serializer())
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", UtcOffset.serializer())
+        iso8601Serialization(UtcOffset.serializer())
     }
 
     object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer("FOUR_DIGITS", UtcOffset.Formats.FOUR_DIGITS)

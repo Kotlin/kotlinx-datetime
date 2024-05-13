@@ -13,7 +13,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.*
 
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {

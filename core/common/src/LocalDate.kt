@@ -57,6 +57,7 @@ import kotlin.internal.*
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [LocalDateIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateComponentSerializer] for an object with components.
  *
@@ -65,7 +66,7 @@ import kotlin.internal.*
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.customFormat
  */
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
         /**
