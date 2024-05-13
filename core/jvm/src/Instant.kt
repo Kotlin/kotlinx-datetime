@@ -65,6 +65,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
+        // TODO: implement a custom parser to 1) help DCE get rid of the formatting machinery 2) move Instant to stdlib
         public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
             /**
              * Can't use built-in Java Time's handling of `Instant.parse` because it supports 24:00:00 and

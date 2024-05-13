@@ -73,6 +73,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochMilliseconds > 0) MAX else MIN
         }
 
+        // TODO: implement a custom parser to 1) help DCE get rid of the formatting machinery 2) move Instant to stdlib
         public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
             // This format is not supported properly by Joda-Time, so we can't delegate to it.
             format.parse(input).toInstantUsingOffset()
