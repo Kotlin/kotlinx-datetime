@@ -11,7 +11,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * A serializer for [LocalDateTime] that uses the ISO-8601 representation.
+ * A serializer for [LocalDateTime] that uses the ISO 8601 representation.
  *
  * JSON example: `"2007-12-31T23:59:01"`
  *

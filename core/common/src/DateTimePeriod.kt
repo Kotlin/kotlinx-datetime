@@ -8,6 +8,8 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.DatePeriodIso8601Serializer
 import kotlinx.datetime.serializers.DateTimePeriodIso8601Serializer
+import kotlinx.datetime.serializers.DatePeriodComponentSerializer
+import kotlinx.datetime.serializers.DateTimePeriodComponentSerializer
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlinx.serialization.Serializable
@@ -15,14 +17,57 @@ import kotlinx.serialization.Serializable
 /**
  * A difference between two [instants][Instant], decomposed into date and time components.
  *
- * The date components are: [years], [months], [days].
+ * The date components are: [years] ([DateTimeUnit.YEAR]), [months] ([DateTimeUnit.MONTH]), and [days] ([DateTimeUnit.DAY]).
  *
- * The time components are: [hours], [minutes], [seconds], [nanoseconds].
+ * The time components are: [hours] ([DateTimeUnit.HOUR]), [minutes] ([DateTimeUnit.MINUTE]),
+ * [seconds] ([DateTimeUnit.SECOND]), and [nanoseconds] ([DateTimeUnit.NANOSECOND]).
  *
- * A `DateTimePeriod` can be constructed using the same-named constructor function,
- * [parsed][DateTimePeriod.parse] from a string, or returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
- * All these functions can return a [DatePeriod] value, which is a subtype of `DateTimePeriod`,
- * a special case that only stores date components, if all time components of the result happen to be zero.
+ * The time components are not independent and are always normalized together.
+ * Likewise, months are normalized together with years.
+ * For example, there is no difference between `DateTimePeriod(months = 24, hours = 2, minutes = 63)` and
+ * `DateTimePeriod(years = 2, hours = 3, minutes = 3)`.
+ *
+ * All components can also be negative: for example, `DateTimePeriod(months = -5, days = 6, hours = -3)`.
+ * Whereas `months = 5` means "5 months after," `months = -5` means "5 months earlier."
+ *
+ * A constant time interval that consists of a single non-zero component (like "yearly" or "quarterly") should be
+ * represented by a [DateTimeUnit] directly instead of a [DateTimePeriod]:
+ * for example, instead of `DateTimePeriod(months = 6)`, one could use `DateTimeUnit.MONTH * 6`.
+ * This provides a wider variety of operations: for example, finding how many such intervals fit between two instants
+ * or dates or adding a multiple of such intervals at once.
+ *
+ * ### Interaction with other entities
+ *
+ * [DateTimePeriod] can be returned from [Instant.periodUntil], representing the difference between two instants.
+ * Conversely, there is an [Instant.plus] overload that accepts a [DateTimePeriod] and returns a new instant.
+ *
+ * [DatePeriod] is a subtype of [DateTimePeriod] that only stores the date components and has all time components equal
+ * to zero.
+ *
+ * [DateTimePeriod] can be thought of as a combination of a [Duration] and a [DatePeriod], as it contains both the
+ * time components of [Duration] and the date components of [DatePeriod].
+ * [Duration.toDateTimePeriod] can be used to convert a [Duration] to the corresponding [DateTimePeriod].
+ *
+ * ### Construction, serialization, and deserialization
+ *
+ * When a [DateTimePeriod] is constructed in any way, a [DatePeriod] value, which is a subtype of [DateTimePeriod],
+ * will be returned if all time components happen to be zero.
+ *
+ * A `DateTimePeriod` can be constructed using the constructor function with the same name.
+ * See sample 1.
+ *
+ * [parse] and [toString] methods can be used to obtain a [DateTimePeriod] from and convert it to a string in the
+ * ISO 8601 extended format.
+ * See sample 2.
+ *
+ * `DateTimePeriod` can also be returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
+ *
+ * Additionally, there are several `kotlinx-serialization` serializers for [DateTimePeriod]:
+ * - [DateTimePeriodIso8601Serializer] for the ISO 8601 format;
+ * - [DateTimePeriodComponentSerializer]  for an object with components.
+ *
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.construction
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.simpleParsingAndFormatting
  */
 @Serializable(with = DateTimePeriodIso8601Serializer::class)
 // TODO: could be error-prone without explicitly named params
@@ -30,41 +75,58 @@ public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
 
     /**
-     * The number of calendar days.
+     * The number of calendar days. Can be negative.
      *
      * Note that a calendar day is not identical to 24 hours, see [DateTimeUnit.DayBased] for details.
+     * Also, this field does not get normalized together with months, so values larger than 31 can be present.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public abstract val days: Int
     internal abstract val totalNanoseconds: Long
 
     /**
-     * The number of whole years.
+     * The number of whole years. Can be negative.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public val years: Int get() = totalMonths / 12
 
     /**
      * The number of months in this period that don't form a whole year, so this value is always in `(-11..11)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public val months: Int get() = totalMonths % 12
 
     /**
-     * The number of whole hours in this period.
+     * The number of whole hours in this period. Can be negative.
+     *
+     * This field does not get normalized together with days, so values larger than 23 or smaller than -23 can be present.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val hours: Int get() = (totalNanoseconds / 3_600_000_000_000).toInt()
 
     /**
      * The number of whole minutes in this period that don't form a whole hour, so this value is always in `(-59..59)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val minutes: Int get() = ((totalNanoseconds % 3_600_000_000_000) / 60_000_000_000).toInt()
 
     /**
      * The number of whole seconds in this period that don't form a whole minute, so this value is always in `(-59..59)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val seconds: Int get() = ((totalNanoseconds % 60_000_000_000) / NANOS_PER_ONE).toInt()
 
     /**
      * The number of whole nanoseconds in this period that don't form a whole second, so this value is always in
      * `(-999_999_999..999_999_999)`.
+     *
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.valueNormalization
      */
     public open val nanoseconds: Int get() = (totalNanoseconds % NANOS_PER_ONE).toInt()
 
@@ -72,9 +134,22 @@ public sealed class DateTimePeriod {
         totalMonths <= 0 && days <= 0 && totalNanoseconds <= 0 && (totalMonths or days != 0 || totalNanoseconds != 0L)
 
     /**
-     * Converts this period to the ISO-8601 string representation for durations.
+     * Converts this period to the ISO 8601 string representation for durations, for example, `P2M1DT3H`.
      *
-     * @see DateTimePeriod.parse
+     * Note that the ISO 8601 duration is not the same as [Duration],
+     * but instead includes the date components, like [DateTimePeriod] does.
+     *
+     * Examples of the output:
+     * - `P2Y4M-1D`: two years, four months, minus one day;
+     * - `-P2Y4M1D`: minus two years, minus four months, minus one day;
+     * - `P1DT3H2M4.123456789S`: one day, three hours, two minutes, four seconds, 123456789 nanoseconds;
+     * - `P1DT-3H-2M-4.123456789S`: one day, minus three hours, minus two minutes,
+     *   minus four seconds, minus 123456789 nanoseconds;
+     *
+     * See ISO-8601-1:2019, 5.5.2.2a)
+     *
+     * @see DateTimePeriod.parse for the detailed description of the format.
+     * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.toStringSample
      */
     override fun toString(): String = buildString {
         val sign = if (allNonpositive()) { append('-'); -1 } else 1
@@ -119,19 +194,45 @@ public sealed class DateTimePeriod {
 
     public companion object {
         /**
-         * Parses a ISO-8601 duration string as a [DateTimePeriod].
+         * Parses a ISO 8601 duration string as a [DateTimePeriod].
+         *
          * If the time components are absent or equal to zero, returns a [DatePeriod].
          *
-         * Additionally, we support the `W` signifier to represent weeks.
+         * Note that the ISO 8601 duration is not the same as [Duration],
+         * but instead includes the date components, like [DateTimePeriod] does.
          *
-         * Examples of durations in the ISO-8601 format:
+         * Examples of durations in the ISO 8601 format:
          * - `P1Y40D` is one year and 40 days
          * - `-P1DT1H` is minus (one day and one hour)
          * - `P1DT-1H` is one day minus one hour
          * - `-PT0.000000001S` is minus one nanosecond
          *
+         * The format is defined as follows:
+         * - First, optionally, a `-` or `+`.
+         *   If `-` is present, the whole period after the `-` is negated: `-P-2M1D` is the same as `P2M-1D`.
+         * - Then, the letter `P`.
+         * - Optionally, the number of years, followed by `Y`.
+         * - Optionally, the number of months, followed by `M`.
+         * - Optionally, the number of weeks, followed by `W`.
+         * - Optionally, the number of days, followed by `D`.
+         * - The string can end here if there are no more time components.
+         *   If there are time components, the letter `T` is required.
+         * - Optionally, the number of hours, followed by `H`.
+         * - Optionally, the number of minutes, followed by `M`.
+         * - Optionally, the number of seconds, followed by `S`.
+         *   Seconds can optionally have a fractional part with up to nine digits.
+         *   The fractional part is separated with a `.`.
+         *
+         * An explicit `+` or `-` sign can be prepended to any number.
+         * `-` means that the number is negative, and `+` has no effect.
+         *
+         * See ISO-8601-1:2019, 5.5.2.2a) and 5.5.2.2b).
+         * We combine the two formats into one by allowing the number of weeks to go after the number of months
+         * and before the number of days.
+         *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are
          * exceeded.
+         * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.parsing
          */
         public fun parse(text: String): DateTimePeriod {
             fun parseException(message: String, position: Int): Nothing =
@@ -304,19 +405,48 @@ public sealed class DateTimePeriod {
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
 /**
- * A special case of [DateTimePeriod] that only stores date components and has all time components equal to zero.
+ * A special case of [DateTimePeriod] that only stores the date components and has all time components equal to zero.
  *
  * A `DatePeriod` is automatically returned from all constructor functions for [DateTimePeriod] if it turns out that
  * the time components are zero.
  *
- * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations on [LocalDates][LocalDate],
- * but they also can be passed anywhere a [DateTimePeriod] is expected.
+ * ```
+ * DateTimePeriod.parse("P1Y3D") as DatePeriod // 1 year and 3 days
+ * ```
+ *
+ * Additionally, [DatePeriod] has its own constructor, the [parse] function that will fail if any of the time components
+ * are not zero, and [DatePeriodIso8601Serializer] and [DatePeriodComponentSerializer], mirroring those of
+ * [DateTimePeriod].
+ *
+ * `DatePeriod` values are used in operations on [LocalDates][LocalDate] and are returned from operations
+ * on [LocalDates][LocalDate], but they also can be passed anywhere a [DateTimePeriod] is expected.
+ *
+ * On the JVM, there are `DatePeriod.toJavaPeriod()` and `java.time.Period.toKotlinDatePeriod()`
+ * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
+ *
+ * @sample kotlinx.datetime.test.samples.DatePeriodSamples.simpleParsingAndFormatting
  */
 @Serializable(with = DatePeriodIso8601Serializer::class)
 public class DatePeriod internal constructor(
     internal override val totalMonths: Int,
     override val days: Int,
 ) : DateTimePeriod() {
+    /**
+     * Constructs a new [DatePeriod].
+     *
+     * It is always recommended to name the arguments explicitly when constructing this manually,
+     * like `DatePeriod(years = 1, months = 12, days = 16)`.
+     *
+     * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,
+     * `DateTimePeriod(months = 24, days = 41)` becomes `DateTimePeriod(years = 2, days = 41)`.
+     *
+     * If only a single component is set and is always non-zero and is semantically a fixed time interval
+     * (like "yearly" or "quarterly"), please consider using a multiple of [DateTimeUnit.DateBased] instead.
+     * For example, instead of `DatePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
+     *
+     * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
+     * @sample kotlinx.datetime.test.samples.DatePeriodSamples.construction
+     */
     public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
     // avoiding excessive computations
     /** The number of whole hours in this period. Always equal to zero. */
@@ -334,7 +464,7 @@ public class DatePeriod internal constructor(
 
     public companion object {
         /**
-         * Parses the ISO-8601 duration representation as a [DatePeriod].
+         * Parses the ISO 8601 duration representation as a [DatePeriod], for example, `P1Y2M30D`.
          *
          * This function is equivalent to [DateTimePeriod.parse], but will fail if any of the time components are not
          * zero.
@@ -343,6 +473,7 @@ public class DatePeriod internal constructor(
          * or any time components are not zero.
          *
          * @see DateTimePeriod.parse
+         * @sample kotlinx.datetime.test.samples.DatePeriodSamples.parsing
          */
         public fun parse(text: String): DatePeriod =
             when (val period = DateTimePeriod.parse(text)) {
@@ -397,14 +528,19 @@ internal fun buildDateTimePeriod(totalMonths: Int = 0, days: Int = 0, totalNanos
  * Constructs a new [DateTimePeriod]. If all the time components are zero, returns a [DatePeriod].
  *
  * It is recommended to always explicitly name the arguments when constructing this manually,
- * like `DateTimePeriod(years = 1, months = 12)`.
+ * like `DateTimePeriod(years = 1, months = 12, days = 16)`.
  *
  * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,
- * `DateTimePeriod(months = 24)` becomes `DateTimePeriod(years = 2)`.
+ * `DateTimePeriod(months = 24, days = 41)` becomes `DateTimePeriod(years = 2, days = 41)`.
+ *
+ * If only a single component is set and is always non-zero and is semantically a fixed time interval
+ * (like "yearly" or "quarterly"), please consider using a multiple of [DateTimeUnit] instead.
+ * For example, instead of `DateTimePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
  *
  * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
  * @throws IllegalArgumentException if the total number of months in [hours], [minutes], [seconds] and [nanoseconds]
  * overflows a [Long].
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.constructorFunction
  */
 public fun DateTimePeriod(
     years: Int = 0,
@@ -422,12 +558,22 @@ public fun DateTimePeriod(
  *
  * If the duration value is too big to be represented as a [Long] number of nanoseconds,
  * the result will be [Long.MAX_VALUE] nanoseconds.
+ *
+ * **Pitfall**: a [DateTimePeriod] obtained this way will always have zero date components.
+ * The reason is that even a [Duration] obtained via [Duration.Companion.days] just means a multiple of 24 hours,
+ * whereas in `kotlinx-datetime`, a day is a calendar day, which can be different from 24 hours.
+ * See [DateTimeUnit.DayBased] for details.
+ *
+ * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.durationToDateTimePeriod
  */
 // TODO: maybe it's more consistent to throw here on overflow?
 public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = inWholeNanoseconds)
 
 /**
  * Adds two [DateTimePeriod] instances.
+ *
+ * **Pitfall**: given three instants, adding together the periods between the first and the second and between the
+ * second and the third *does not* necessarily equal the period between the first and the third.
  *
  * @throws DateTimeArithmeticException if arithmetic overflow happens.
  */
@@ -439,6 +585,9 @@ public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod =
 
 /**
  * Adds two [DatePeriod] instances.
+ *
+ * **Pitfall**: given three dates, adding together the periods between the first and the second and between the
+ * second and the third *does not* necessarily equal the period between the first and the third.
  *
  * @throws DateTimeArithmeticException if arithmetic overflow happens.
  */

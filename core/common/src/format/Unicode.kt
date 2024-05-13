@@ -53,6 +53,7 @@ public annotation class FormatStringsInDatetimeFormats
  * The list of supported directives is as follows:
  *
  * | **Directive**       | **Meaning**                                                                             |
+ * | ------------------- | --------------------------------------------------------------------------------------- |
  * | `'string'`          | literal `string`, without quotes                                                        |
  * | `'''`               | literal char `'`                                                                        |
  * | `[fmt]`             | equivalent to `fmt` during formatting, but during parsing also accepts the empty string |
@@ -75,6 +76,7 @@ public annotation class FormatStringsInDatetimeFormats
  * and seconds are zero-padded to two digits. Also, hours are unconditionally present.
  * 
  * | **Directive**          | **Minutes** | **Seconds** | **Separator** | **Representation of zero** |
+ * | ---------------------- | ----------- | ----------- | ------------- | -------------------------- |
  * | `X`                    | unless zero | never       | none          | `Z`                        |
  * | `XX`                   | always      | never       | none          | `Z`                        |
  * | `XXX`                  | always      | never       | colon         | `Z`                        |
@@ -100,6 +102,7 @@ public annotation class FormatStringsInDatetimeFormats
  * @throws IllegalArgumentException if the pattern is invalid or contains unsupported directives.
  * @throws IllegalArgumentException if the builder is incompatible with the specified directives.
  * @throws UnsupportedOperationException if the kotlinx-datetime library does not support the specified directives.
+ * @sample kotlinx.datetime.test.samples.format.UnicodeSamples.byUnicodePattern
  */
 @FormatStringsInDatetimeFormats
 public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {
