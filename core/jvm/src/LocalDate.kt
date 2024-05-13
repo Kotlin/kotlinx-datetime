@@ -53,8 +53,7 @@ public actual class LocalDate internal constructor(
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
 
-        @JvmStatic
-        private val serialVersionUID: Long = 1L
+        private const val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {

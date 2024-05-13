@@ -108,8 +108,7 @@ public actual class LocalDateTime internal constructor(
         public actual fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime> =
             LocalDateTimeFormat.build(builder)
 
-        @JvmStatic
-        private val serialVersionUID: Long = 1L
+        private const val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {

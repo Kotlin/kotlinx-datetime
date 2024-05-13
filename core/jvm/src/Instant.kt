@@ -100,8 +100,7 @@ public actual class Instant internal constructor(
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
 
-        @JvmStatic
-        private val serialVersionUID: Long = 1L
+        private const val serialVersionUID: Long = 1L
     }
 
     private fun writeObject(oStream: java.io.ObjectOutputStream) {
