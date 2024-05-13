@@ -12,13 +12,11 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
-import java.time.format.DateTimeParseException
-import java.time.temporal.ChronoUnit
+import java.time.temporal.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import java.time.Instant as jtInstant
-import java.time.OffsetDateTime as jtOffsetDateTime
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
@@ -67,34 +65,22 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
                 Instant(jtInstant.ofEpochMilli(epochMilliseconds))
 
-        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
-            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
-                try {
-                    Instant(jtOffsetDateTime.parse(fixOffsetRepresentation(input)).toInstant())
-                } catch (e: DateTimeParseException) {
-                    throw DateTimeFormatException(e)
-                }
-            } else {
-                try {
-                    format.parse(input).toInstantUsingOffset()
-                } catch (e: IllegalArgumentException) {
-                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
-                }
-            }
+        // TODO: implement a custom parser to 1) help DCE get rid of the formatting machinery 2) move Instant to stdlib
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            /**
+             * Can't use built-in Java Time's handling of `Instant.parse` because it supports 24:00:00 and
+             * 23:59:60, and also doesn't support non-`Z` UTC offsets on older JDKs.
+             * Can't use custom Java Time's formats because Java 8 doesn't support the UTC offset format with
+             * optional minutes and seconds and `:` between them:
+             * https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatterBuilder.html#appendOffset-java.lang.String-java.lang.String-
+             */
+            format.parse(input).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+        }
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): Instant = parse(input = isoString)
-
-        /** A workaround for a quirk of the JDKs older than 11 where the string representations of Instant that have an
-         * offset of the form "+XX" are not recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
-        private fun fixOffsetRepresentation(isoString: CharSequence): CharSequence {
-            val time = isoString.indexOf('T', ignoreCase = true)
-            if (time == -1) return isoString // the string is malformed
-            val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
-            if (offset < time) return isoString // the offset is 'Z' and not +/- something else
-            val separator = isoString.indexOf(':', offset) // if there is a ':' in the offset, no changes needed
-            return if (separator != -1) isoString else "$isoString:00"
-        }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             Instant(jtInstant.ofEpochSecond(epochSeconds, nanosecondAdjustment))

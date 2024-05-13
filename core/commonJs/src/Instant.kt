@@ -7,7 +7,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
-import kotlinx.datetime.internal.JSJoda.OffsetDateTime as jtOffsetDateTime
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
 import kotlinx.datetime.internal.JSJoda.Clock as jtClock
 import kotlinx.datetime.internal.JSJoda.ChronoUnit as jtChronoUnit
@@ -74,35 +73,16 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochMilliseconds > 0) MAX else MIN
         }
 
-        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant =
-            if (format === DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET) {
-                try {
-                    Instant(jsTry { jtOffsetDateTime.parse(fixOffsetRepresentation(input.toString())) }.toInstant())
-                } catch (e: Throwable) {
-                    if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
-                    throw e
-                }
-            } else {
-                try {
-                    format.parse(input).toInstantUsingOffset()
-                } catch (e: IllegalArgumentException) {
-                    throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
-                }
-            }
+        // TODO: implement a custom parser to 1) help DCE get rid of the formatting machinery 2) move Instant to stdlib
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
+            // This format is not supported properly by Joda-Time, so we can't delegate to it.
+            format.parse(input).toInstantUsingOffset()
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
+        }
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): Instant = parse(input = isoString)
-
-        /** A workaround for the string representations of Instant that have an offset of the form
-         * "+XX" not being recognized by [jtOffsetDateTime.parse], while "+XX:XX" work fine. */
-        private fun fixOffsetRepresentation(isoString: String): String {
-            val time = isoString.indexOf('T', ignoreCase = true)
-            if (time == -1) return isoString // the string is malformed
-            val offset = isoString.indexOfLast { c -> c == '+' || c == '-' }
-            if (offset < time) return isoString // the offset is 'Z' and not +/- something else
-            val separator = isoString.indexOf(':', offset) // if there is a ':' in the offset, no changes needed
-            return if (separator != -1) isoString else "$isoString:00"
-        }
 
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             /* Performing normalization here because otherwise this fails:
