@@ -57,9 +57,17 @@ public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
  *
  * JSON example: `"+02:00"`
  *
- * @see UtcOffset.parse
- * @see UtcOffset.toString
+ * @see UtcOffset.Formats.ISO
  */
+public object UtcOffsetIso8601Serializer : KSerializer<UtcOffset>
+by UtcOffset.Formats.ISO.asKSerializer("kotlinx.datetime.UtcOffset")
+
+/**
+ * A serializer for [UtcOffset] that uses the default [UtcOffset.toString]/[UtcOffset.parse].
+ *
+ * JSON example: `"+02:00"`
+ */
+@Deprecated("Use UtcOffset.serializer() instead", ReplaceWith("UtcOffset.serializer()"))
 public object UtcOffsetSerializer: KSerializer<UtcOffset> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("kotlinx.datetime.UtcOffset", PrimitiveKind.STRING)

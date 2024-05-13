@@ -16,21 +16,10 @@ import kotlinx.serialization.encoding.*
  *
  * JSON example: `"12:01:03.999"`
  *
- * @see LocalDate.parse
- * @see LocalDate.toString
+ * @see LocalTime.Formats.ISO
  */
-public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): LocalTime =
-        LocalTime.parse(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: LocalTime) {
-        encoder.encodeString(value.toString())
-    }
-}
+public object LocalTimeIso8601Serializer : KSerializer<LocalTime>
+by LocalTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalTime")
 
 /**
  * A serializer for [LocalTime] that represents a value as its components.
@@ -109,3 +98,25 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 public abstract class FormattedLocalTimeSerializer(
     name: String, format: DateTimeFormat<LocalTime>
 ) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime serializer $name")
+
+/**
+ * A serializer for [LocalTime] that uses the ISO 8601 representation.
+ *
+ * JSON example: `"12:01:03.999"`
+ *
+ * @see LocalDate.parse
+ * @see LocalDate.toString
+ */
+@PublishedApi
+internal object LocalTimeSerializer : KSerializer<LocalTime> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalTime =
+        LocalTime.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalTime) {
+        encoder.encodeString(value.toString())
+    }
+}
