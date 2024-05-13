@@ -6,7 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
@@ -15,7 +15,7 @@ import java.time.LocalDateTime as jtLocalDateTime
 public actual typealias Month = java.time.Month
 public actual typealias DayOfWeek = java.time.DayOfWeek
 
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :

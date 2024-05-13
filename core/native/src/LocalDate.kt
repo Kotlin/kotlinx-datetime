@@ -12,7 +12,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.safeMultiply
-import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.math.*
 
@@ -22,7 +22,7 @@ internal const val YEAR_MAX = 999_999
 private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public actual class LocalDate actual constructor(public actual val year: Int, public actual val monthNumber: Int, public actual val dayOfMonth: Int) : Comparable<LocalDate> {
 
     init {

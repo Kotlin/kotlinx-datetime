@@ -6,12 +6,12 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
 import kotlinx.datetime.internal.JSJoda.ChronoUnit as jtChronoUnit
 
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
 

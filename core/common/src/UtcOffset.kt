@@ -6,7 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
@@ -53,6 +53,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.customFormat
  */
+@Suppress("DEPRECATION")
 @Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
     /**

@@ -11,9 +11,10 @@ import kotlinx.datetime.internal.JSJoda.DateTimeFormatterBuilder as jtDateTimeFo
 import kotlinx.datetime.internal.JSJoda.DateTimeFormatter as jtDateTimeFormatter
 import kotlinx.datetime.internal.JSJoda.ResolverStyle as jtResolverStyle
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
+@Suppress("DEPRECATION")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset internal constructor(internal val zoneOffset: jtZoneOffset) {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds()

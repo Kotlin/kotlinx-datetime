@@ -64,7 +64,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.customFormat
  */
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
         /**

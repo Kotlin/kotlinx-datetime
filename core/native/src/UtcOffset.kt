@@ -7,10 +7,11 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
 
+@Suppress("DEPRECATION")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
 

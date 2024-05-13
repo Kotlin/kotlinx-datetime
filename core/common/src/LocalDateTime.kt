@@ -6,8 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
-import kotlinx.datetime.serializers.LocalDateTimeComponentSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
@@ -105,7 +104,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.customFormat
  */
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
 

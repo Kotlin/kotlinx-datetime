@@ -15,6 +15,19 @@ import kotlin.test.*
 class LocalDateTimeSerializationTest {
     private fun iso8601Serialization(serializer: KSerializer<LocalDateTime>) {
         for ((localDateTime, json) in listOf(
+            Pair(LocalDateTime(2008, 7, 5, 2, 1), "\"2008-07-05T02:01:00\""),
+            Pair(LocalDateTime(2007, 12, 31, 23, 59, 1), "\"2007-12-31T23:59:01\""),
+            Pair(LocalDateTime(999, 12, 31, 23, 59, 59, 990000000), "\"0999-12-31T23:59:59.99\""),
+            Pair(LocalDateTime(-1, 1, 2, 23, 59, 59, 999990000), "\"-0001-01-02T23:59:59.99999\""),
+            Pair(LocalDateTime(-2008, 1, 2, 23, 59, 59, 999999990), "\"-2008-01-02T23:59:59.99999999\""),
+        )) {
+            assertEquals(json, Json.encodeToString(serializer, localDateTime))
+            assertEquals(localDateTime, Json.decodeFromString(serializer, json))
+        }
+    }
+
+    private fun defaultSerialization(serializer: KSerializer<LocalDateTime>) {
+        for ((localDateTime, json) in listOf(
             Pair(LocalDateTime(2008, 7, 5, 2, 1), "\"2008-07-05T02:01\""),
             Pair(LocalDateTime(2007, 12, 31, 23, 59, 1), "\"2007-12-31T23:59:01\""),
             Pair(LocalDateTime(999, 12, 31, 23, 59, 59, 990000000), "\"0999-12-31T23:59:59.990\""),
@@ -79,7 +92,6 @@ class LocalDateTimeSerializationTest {
 
     @Test
     fun testDefaultSerializers() {
-        // should be the same as the ISO 8601
-        iso8601Serialization(Json.serializersModule.serializer())
+        defaultSerialization(Json.serializersModule.serializer())
     }
 }

@@ -15,6 +15,19 @@ import kotlin.test.*
 class LocalTimeSerializationTest {
     private fun iso8601Serialization(serializer: KSerializer<LocalTime>) {
         for ((localTime, json) in listOf(
+            Pair(LocalTime(2, 1), "\"02:01:00\""),
+            Pair(LocalTime(23, 59, 1), "\"23:59:01\""),
+            Pair(LocalTime(23, 59, 59, 990000000), "\"23:59:59.99\""),
+            Pair(LocalTime(23, 59, 59, 999990000), "\"23:59:59.99999\""),
+            Pair(LocalTime(23, 59, 59, 999999990), "\"23:59:59.99999999\""),
+        )) {
+            assertEquals(json, Json.encodeToString(serializer, localTime))
+            assertEquals(localTime, Json.decodeFromString(serializer, json))
+        }
+    }
+
+    private fun defaultSerialization(serializer: KSerializer<LocalTime>) {
+        for ((localTime, json) in listOf(
             Pair(LocalTime(2, 1), "\"02:01\""),
             Pair(LocalTime(23, 59, 1), "\"23:59:01\""),
             Pair(LocalTime(23, 59, 59, 990000000), "\"23:59:59.990\""),
@@ -69,7 +82,6 @@ class LocalTimeSerializationTest {
 
     @Test
     fun testDefaultSerializers() {
-        // should be the same as the ISO 8601
-        iso8601Serialization(Json.serializersModule.serializer())
+        defaultSerialization(Json.serializersModule.serializer())
     }
 }

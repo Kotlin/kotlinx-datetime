@@ -7,8 +7,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.InstantIso8601Serializer
-import kotlinx.datetime.serializers.InstantComponentSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.*
 
@@ -194,7 +193,7 @@ import kotlin.time.*
  *
  * @see LocalDateTime for a user-visible representation of moments in time in an unspecified time zone.
  */
-@Serializable(with = InstantIso8601Serializer::class)
+@Serializable(with = InstantSerializer::class)
 public expect class Instant : Comparable<Instant> {
 
     /**

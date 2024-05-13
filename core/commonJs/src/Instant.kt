@@ -13,13 +13,13 @@ import kotlinx.datetime.internal.JSJoda.ChronoUnit as jtChronoUnit
 import kotlinx.datetime.internal.JSJoda.ZonedDateTime as jtZonedDateTime
 import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.InstantIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
-@Serializable(with = InstantIso8601Serializer::class)
+@Serializable(with = InstantSerializer::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual val epochSeconds: Long

@@ -7,11 +7,11 @@ package kotlinx.datetime
 import kotlinx.datetime.format.*
 import kotlinx.datetime.format.ISO_DATETIME
 import kotlinx.datetime.format.LocalDateTimeFormat
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
 
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
