@@ -124,5 +124,19 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
     }
 }
 
+/**
+ * Returns the [Clock] by storing an initial [TimeMark] using [TimeSource.markNow] and [returns][Clock.now] the elapsed
+ * time using [TimeMark.elapsedNow] plus the provided [offset].
+ *
+ * This clock stores the initial [TimeMark], so repeatedly creating [Clock]s from the same [TimeSource] results
+ * into different [Instant]s iff the time of the [TimeSource] was increased. To sync different [Clock]s, use the [offset]
+ * parameter.
+ */
+@ExperimentalTime
+public fun TimeSource.asClock(offset: Instant = Instant.fromEpochSeconds(0)): Clock = object : Clock {
+    private val startMark: TimeMark = markNow()
+    override fun now() = offset + startMark.elapsedNow()
+}
+
 @Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)
