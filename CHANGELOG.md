@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 0.6.0
+
+- Introduce the widely requested API for locale-invariant parsing and formatting ([#343](https://github.com/Kotlin/kotlinx-datetime/pull/343))
+- Completely overhaul the KDoc-based documentation ([#347](https://github.com/Kotlin/kotlinx-datetime/issues/347))
+- Breaking change: forbid parsing `Instant` values without the second-of-minute component on the JVM and JS, fixing inconsistency with Native ([#369](https://github.com/Kotlin/kotlinx-datetime/issues/369))
+- Breaking change: use the fully qualified name of classes in the JSON serializers ([#308](https://github.com/Kotlin/kotlinx-datetime/pull/308))
+- Fix Proguard emitting warning about missing `kotlinx-serialization` classes when serialization is not used ([#336](https://github.com/Kotlin/kotlinx-datetime/pull/336))
+- Reimplement the timezone database handling for Native targets from scratch ([#286](https://github.com/Kotlin/kotlinx-datetime/pull/286), [#327](https://github.com/Kotlin/kotlinx-datetime/pull/327))
+- Support Android NDK targets ([#344](https://github.com/Kotlin/kotlinx-datetime/pull/344))
+- Small tweaks and fixes.
+
+### Changelog relative to version 0.6.0-RC.2
+
+- Completely overhaul the KDoc-based documentation ([#347](https://github.com/Kotlin/kotlinx-datetime/issues/347))
+- Breaking change: forbid parsing `Instant` values without the second-of-minute component on the JVM and JS, fixing inconsistency with Native ([#369](https://github.com/Kotlin/kotlinx-datetime/issues/369))
+- Improve error descriptiveness in some cases ([#360](https://github.com/Kotlin/kotlinx-datetime/pull/360), [#371](https://github.com/Kotlin/kotlinx-datetime/pull/371))
+- Remove `stat` usages to comply with Apple's new publishing requirements ([#385](https://github.com/Kotlin/kotlinx-datetime/pull/385))
+- Fix parsing of formats where `optional` is directly between numbers ([#362](https://github.com/Kotlin/kotlinx-datetime/pull/362))
+- Forbid empty and duplicate month, day-of-week, and AM/PM marker names in datetime formats ([#362](https://github.com/Kotlin/kotlinx-datetime/pull/362))
+
 ## 0.6.0-RC.2
 
 - Support Android NDK targets ([#344](https://github.com/Kotlin/kotlinx-datetime/pull/344))
