@@ -9,7 +9,7 @@ package kotlinx.datetime
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.InstantIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.temporal.*
@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
-@Serializable(with = InstantIso8601Serializer::class)
+@Serializable(with = InstantSerializer::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
     public actual val epochSeconds: Long

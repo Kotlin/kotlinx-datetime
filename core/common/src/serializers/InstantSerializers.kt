@@ -6,6 +6,8 @@
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.Instant
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -15,8 +17,7 @@ import kotlinx.serialization.encoding.*
  *
  * JSON example: `"2020-12-09T09:16:56.000124Z"`
  *
- * @see Instant.toString
- * @see Instant.parse
+ * @see DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
  */
 public object InstantIso8601Serializer : KSerializer<Instant> {
 
@@ -24,10 +25,10 @@ public object InstantIso8601Serializer : KSerializer<Instant> {
         PrimitiveSerialDescriptor("kotlinx.datetime.Instant", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Instant =
-        Instant.parse(decoder.decodeString())
+        Instant.parse(decoder.decodeString(), DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)
 
     override fun serialize(encoder: Encoder, value: Instant) {
-        encoder.encodeString(value.toString())
+        encoder.encodeString(value.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET))
     }
 
 }
@@ -72,6 +73,25 @@ public object InstantComponentSerializer : KSerializer<Instant> {
                 encodeIntElement(descriptor, 1, value.nanosecondsOfSecond)
             }
         }
+    }
+
+}
+
+/**
+ * A serializer for [Instant] that uses the default [Instant.toString]/[Instant.parse].
+ *
+ * JSON example: `"2020-12-09T09:16:56.000124Z"`
+ */
+@PublishedApi internal object InstantSerializer : KSerializer<Instant> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("kotlinx.datetime.Instant", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Instant =
+        Instant.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: Instant) {
+        encoder.encodeString(value.toString())
     }
 
 }

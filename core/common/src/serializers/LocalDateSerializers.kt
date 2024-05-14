@@ -6,6 +6,7 @@
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -15,22 +16,10 @@ import kotlinx.serialization.encoding.*
  *
  * JSON example: `"2020-01-01"`
  *
- * @see LocalDate.parse
- * @see LocalDate.toString
+ * @see LocalDate.Formats.ISO
  */
-public object LocalDateIso8601Serializer: KSerializer<LocalDate> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDate", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): LocalDate =
-        LocalDate.parse(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: LocalDate) {
-        encoder.encodeString(value.toString())
-    }
-
-}
+public object LocalDateIso8601Serializer : KSerializer<LocalDate>
+by DateTimeFormatSerializer(LocalDate.Formats.ISO, "kotlinx.datetime.LocalDate")
 
 /**
  * A serializer for [LocalDate] that represents a value as its components.
@@ -74,5 +63,40 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
             encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
         }
     }
+
+}
+
+/**
+ * A serializer for [LocalDate] that uses the default [LocalDate.toString]/[LocalDate.parse].
+ *
+ * JSON example: `"2020-01-01"`
+ */
+@PublishedApi internal object LocalDateSerializer: KSerializer<LocalDate> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDate", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalDate =
+        LocalDate.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeString(value.toString())
+    }
+
+}
+
+/**
+ * A general mechanism of implementing [KSerializer] instances using the given [string formats][DateTimeFormat].
+ */
+internal class DateTimeFormatSerializer<T>(val format: DateTimeFormat<T>, className: String): KSerializer<T> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor(className, PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: T) {
+        encoder.encodeString(format.format(value))
+    }
+
+    override fun deserialize(decoder: Decoder): T =
+        format.parse(decoder.decodeString())
 
 }

@@ -15,22 +15,10 @@ import kotlinx.serialization.encoding.*
  *
  * JSON example: `"2007-12-31T23:59:01"`
  *
- * @see LocalDateTime.parse
- * @see LocalDateTime.toString
+ * @see LocalDateTime.Formats.ISO
  */
-public object LocalDateTimeIso8601Serializer: KSerializer<LocalDateTime> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDateTime", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): LocalDateTime =
-        LocalDateTime.parse(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
-        encoder.encodeString(value.toString())
-    }
-
-}
+public object LocalDateTimeIso8601Serializer : KSerializer<LocalDateTime>
+by DateTimeFormatSerializer(LocalDateTime.Formats.ISO, "kotlinx.datetime.LocalDateTime")
 
 /**
  * A serializer for [LocalDateTime] that represents a value as its components.
@@ -95,6 +83,25 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
                 }
             }
         }
+    }
+
+}
+
+/**
+ * A serializer for [LocalDateTime] that uses the default [LocalDateTime.toString]/[LocalDateTime.parse].
+ *
+ * JSON example: `"2007-12-31T23:59:01"`
+ */
+public object LocalDateTimeSerializer: KSerializer<LocalDateTime> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalDateTime", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalDateTime =
+        LocalDateTime.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.toString())
     }
 
 }
