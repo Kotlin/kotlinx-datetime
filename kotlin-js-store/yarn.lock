@@ -7,10 +7,15 @@
   resolved "https://registry.yarnpkg.com/@js-joda/core/-/core-3.2.0.tgz#3e61e21b7b2b8a6be746df1335cf91d70db2a273"
   integrity sha512-PMqgJ0sw5B7FKb2d5bWYIoxjri+QlW/Pys7+Rw82jSH0QN3rB05jZ/VrrsUdh1w4+i2kw9JOejXGq/KhDOX7Kg==
 
-"@js-joda/timezone@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@js-joda/timezone/-/timezone-2.3.0.tgz#72878f6dc8afef20c29906e5d8d946f91618a2c3"
-  integrity sha512-DHXdNs0SydSqC5f0oRJPpTcNfnpRojgBqMCFupQFv6WgeZAjU3DBx+A7JtaGPP3dHrP2Odi2N8Vf+uAm/8ynCQ==
+"@js-joda/core@5.6.2":
+  version "5.6.2"
+  resolved "https://registry.yarnpkg.com/@js-joda/core/-/core-5.6.2.tgz#1885d10daa404cea2bd55575f910ab3bbe6c33d7"
+  integrity sha512-ow4R+7C24xeTjiMTTZ4k6lvxj7MRBqvqLCQjThQff3RjOmIMokMP20LNYVFhGafJtUx/Xo2Qp4qU8eNoTVH0SA==
+
+"@js-joda/timezone@2.18.3":
+  version "2.18.3"
+  resolved "https://registry.yarnpkg.com/@js-joda/timezone/-/timezone-2.18.3.tgz#3d3d9907557493c77f6e829a583e64db8c15792a"
+  integrity sha512-e+tZFIHWQJoR7ZVyGo5K/i+pPIAvFiEuq8F0CLFINSA7csSIK1dd4mtB2tb43e1/NUmDsnwo9FlhRlyBR9EzoQ==
 
 ansi-colors@4.1.1:
   version "4.1.1"
