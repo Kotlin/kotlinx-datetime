@@ -129,13 +129,16 @@ internal class MonthDayTime(
      * Converts this [MonthDayTime] to an [Instant] in the given [year],
      * using the knowledge of the offset that's in effect at the resulting date-time.
      */
-    fun toInstant(year: Int, effectiveOffset: UtcOffset): Instant {
-        val localDateTime = time.resolve(date.toLocalDate(year))
-        return when (this.offset) {
-            is OffsetResolver.WallClockOffset -> localDateTime.toInstant(effectiveOffset)
-            is OffsetResolver.FixedOffset -> localDateTime.toInstant(this.offset.offset)
-        }
+    fun toInstant(year: Int, effectiveOffset: UtcOffset): Instant = when (this.offset) {
+        is OffsetResolver.WallClockOffset -> toLocalDateTime(year).toInstant(effectiveOffset)
+        is OffsetResolver.FixedOffset -> toLocalDateTime(year).toInstant(this.offset.offset)
     }
+
+    /**
+     * Converts this [MonthDayTime] to a [LocalDateTime] in the given [year],
+     * ignoring the UTC offset.
+     */
+    fun toLocalDateTime(year: Int): LocalDateTime = time.resolve(date.toLocalDate(year))
 
     /**
      * Describes how the offset in which the local date-time is expressed is defined.
@@ -160,7 +163,6 @@ internal class MonthDayTime(
      * The local time of day at which the transition occurs.
      */
     class TransitionLocaltime(val seconds: Int) {
-        constructor(time: LocalTime) : this(time.toSecondOfDay())
 
         constructor(hour: Int, minute: Int, second: Int) : this(hour * 3600 + minute * 60 + second)
 
