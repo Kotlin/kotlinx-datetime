@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import java.util.Locale
 
 plugins {
@@ -52,7 +53,7 @@ kotlin {
         }
     }
 
-
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs {
         }
@@ -61,7 +62,7 @@ kotlin {
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
-        val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
+        val suffix = name.substring(suffixIndex).lowercase(Locale.ROOT).takeIf { it != "main" }
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
     }
