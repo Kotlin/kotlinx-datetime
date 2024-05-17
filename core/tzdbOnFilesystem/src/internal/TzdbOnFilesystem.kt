@@ -30,24 +30,13 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
 private val tabPaths = listOf("zone1970.tab", "zone.tab", "tab/zone_sun.tab")
 
 /** The files that sometimes lie in the `zoneinfo` directory but aren't actually time zones. */
-private val tzdbUnneededFiles = setOf(
+private val tzdbUnneededFiles: Regex = Regex(
     // taken from https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L88C29-L97C21
-    "+VERSION",
-    "leapseconds",
-    "localtime",
-    "posix",
-    "posixrules",
-    "right",
-    "SECURITY",
-    "src",
-    "timeconfig",
+    "\\+VERSION|leapseconds|localtime|posix|posixrules|right|SECURITY|src|timeconfig|" +
+    // replicating https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L442
+    ".*\\..*|" +
     // taken from https://github.com/HowardHinnant/date/blob/ab37c362e35267d6dee02cb47760f9e9c669d3be/src/tz.cpp#L2863-L2874
-    "Factory",
-    "iso3166.tab",
-    "zone.tab",
-    "zone1970.tab",
-    "tzdata.zi",
-    "leap-seconds.list"
+    "Factory"
 )
 
 /** The directories checked for a valid timezone database. */
