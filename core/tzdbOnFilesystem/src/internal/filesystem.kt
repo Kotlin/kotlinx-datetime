@@ -17,7 +17,7 @@ internal fun chaseSymlinks(name: String): Path? = memScoped {
 internal fun Path.containsFile(file: String): Boolean = access("$this/$file", F_OK) == 0
 
 internal fun Path.tryTraverseDirectory(
-    exclude: Set<String> = emptySet(),
+    exclude: Regex,
     stripLeadingComponents: Int = this.components.size,
     maxDepth: Int = 100,
     actionOnFile: (Path) -> Unit
@@ -29,7 +29,7 @@ internal fun Path.tryTraverseDirectory(
             val entry = readdir(handler) ?: break
             val name = entry.pointed.d_name.toKString()
             if (name == "." || name == "..") continue
-            if (name in exclude) continue
+            if (exclude.matches(name)) continue
             val path = Path(isAbsolute, components + name)
             val isDirectory = path.tryTraverseDirectory(
                 exclude, stripLeadingComponents, maxDepth = maxDepth - 1, actionOnFile
