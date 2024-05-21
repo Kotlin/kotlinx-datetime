@@ -127,6 +127,10 @@ kotlin {
         }
     }
 
+    wasmWasi {
+        nodejs()
+    }
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -227,11 +231,14 @@ kotlin {
         }
 
         val wasmWasiMain by getting {
-            dependsOn(pureKotlinMain)
+            dependsOn(commonKotlinMain)
         }
 
         val wasmWasiTest by getting {
-            dependsOn(pureKotlinTest)
+            dependsOn(commonKotlinTest)
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
+            }
         }
 
         val darwinMain by getting {
