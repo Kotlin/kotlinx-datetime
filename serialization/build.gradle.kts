@@ -109,7 +109,11 @@ kotlin {
         }
 
         val wasmWasiMain by getting
-        val wasmWasiTest by getting
+        val wasmWasiTest by getting {
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
+            }
+        }
 
         val nativeMain by getting
         val nativeTest by getting

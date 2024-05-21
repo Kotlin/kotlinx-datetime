@@ -66,6 +66,8 @@ public expect open class TimeZone {
          * On Linux, this function queries the `/etc/localtime` symbolic link. If the link is missing, [UTC] is used.
          * If the link points to an invalid location, [IllegalTimeZoneException] is thrown.
          *
+         * Always returns the `UTC` timezone on the Wasm WASI platform due to the lack of support for retrieving system timezone information.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         public fun currentSystemDefault(): TimeZone
@@ -95,6 +97,10 @@ public expect open class TimeZone {
          *
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
+         *
+         * @throws IllegalTimeZoneException on the Wasm WASI platform for non-fixed-offset time zones,
+         * unless a dependency on the `kotlinx-datetime-zoneinfo` artifact is added.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
          */
         public fun of(zoneId: String): TimeZone

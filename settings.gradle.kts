@@ -16,6 +16,8 @@ rootProject.name = "Kotlin-DateTime-library"
 
 include(":core")
 project(":core").name = "kotlinx-datetime"
+include(":timezones/full")
+project(":timezones/full").name = "kotlinx-datetime-zoneinfo"
 include(":serialization")
 project(":serialization").name = "kotlinx-datetime-serialization"
 include(":benchmarks")
