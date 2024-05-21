@@ -39,6 +39,6 @@ internal actual fun currentTime(): Instant = clockTimeGet().let { time ->
 }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
-    throw UnsupportedOperationException("WASI platform does not support system timezone obtaining")
+    "UTC" to null
 
 internal actual val systemTzdb: TimeZoneDatabase = TzdbOnData()

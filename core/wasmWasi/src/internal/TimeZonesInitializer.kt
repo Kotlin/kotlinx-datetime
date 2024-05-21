@@ -15,7 +15,7 @@ This is internal API which is not intended to use on user-side.
  */
 @InternalDateTimeApi
 public interface TimeZonesProvider {
-    public fun zoneDataByName(name: String): ByteArray
+    public fun  zoneDataByName(name: String): ByteArray
     public fun getTimeZones(): Set<String>
 }
 
@@ -31,15 +31,14 @@ public fun initializeTimeZonesProvider(provider: TimeZonesProvider) {
 @InternalDateTimeApi
 private var timeZonesProvider: TimeZonesProvider? = null
 
+@OptIn(InternalDateTimeApi::class)
 internal class TzdbOnData: TimeZoneDatabase {
     override fun rulesForId(id: String): TimeZoneRules {
-        @OptIn(InternalDateTimeApi::class)
         val data = timeZonesProvider?.zoneDataByName(id)
             ?: throw IllegalTimeZoneException("TimeZones are not supported")
         return readTzFile(data).toTimeZoneRules()
     }
 
     override fun availableTimeZoneIds(): Set<String> =
-        @OptIn(InternalDateTimeApi::class)
-        timeZonesProvider?.getTimeZones() ?: emptySet()
+        timeZonesProvider?.getTimeZones() ?: setOf("UTC")
 }
