@@ -478,6 +478,24 @@ external object JsJodaTimeZoneModule
 private val jsJodaTz = JsJodaTimeZoneModule
 ```
 
+#### Note about time zones in Wasm/WASI
+
+By default, there's only one time zone available in Kotlin/Wasm WASI: the `UTC` time zone with a fixed offset.
+
+If you want to use all time zones in Kotlin/Wasm WASI platform, you need to add the following dependency:
+
+```kotlin
+kotlin {
+    sourceSets {
+        val wasmWasiMain by getting {
+            dependencies {
+                implementation("kotlinx-datetime-zoneinfo", "2024a-spi.0.6.0-RC.2")
+            }
+        }
+    }
+}
+```
+
 ### Maven
 
 Add a dependency to the `<dependencies>` element. Note that you need to use the platform-specific `-jvm` artifact in Maven.

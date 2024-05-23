@@ -63,6 +63,8 @@ public expect open class TimeZone {
          *
          * If the current system time zone changes, this function can reflect this change on the next invocation.
          *
+         * Always returns the `UTC` timezone on the Wasm WASI platform due to the lack of support for retrieving system timezone information.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         public fun currentSystemDefault(): TimeZone
@@ -92,6 +94,10 @@ public expect open class TimeZone {
          *
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
+         *
+         * @throws IllegalTimeZoneException on the Wasm WASI platform for non-fixed-offset time zones,
+         * unless a dependency on the `kotlinx-datetime-zoneinfo` artifact is added.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
          */
         public fun of(zoneId: String): TimeZone

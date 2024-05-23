@@ -129,6 +129,10 @@ kotlin {
         }
     }
 
+    wasmWasi {
+        nodejs()
+    }
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -221,14 +225,34 @@ kotlin {
             dependsOn(commonJsTest)
         }
 
-        val nativeMain by getting {
+        val pureKotlinMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
+        val pureKotlinTest by creating {
+            dependsOn(commonTest.get())
+        }
+
+        val nativeMain by getting {
+            dependsOn(pureKotlinMain)
+        }
+
         val nativeTest by getting {
+            dependsOn(pureKotlinTest)
+        }
+
+        val wasmWasiMain by getting {
+            dependsOn(pureKotlinMain)
+        }
+
+        val wasmWasiTest by getting {
+            dependsOn(pureKotlinTest)
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
+            }
         }
 
         val darwinMain by getting {
