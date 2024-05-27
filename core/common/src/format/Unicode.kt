@@ -323,8 +323,8 @@ internal sealed interface UnicodeFormat {
             class DayOfMonth(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'd'
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = when (formatLength) {
-                    1 -> builder.dayOfMonth(Padding.NONE)
-                    2 -> builder.dayOfMonth(Padding.ZERO)
+                    1 -> builder.day(Padding.NONE)
+                    2 -> builder.day(Padding.ZERO)
                     else -> unknownLength()
                 }
             }

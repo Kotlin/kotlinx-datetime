@@ -74,6 +74,10 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun monthName(names: MonthNames)
 
+        /** @suppress */
+        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
+        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
+
         /**
          * A day-of-month number, from 1 to 31.
          *
@@ -81,7 +85,7 @@ public sealed interface DateTimeFormatBuilder {
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOfMonth
          */
-        public fun dayOfMonth(padding: Padding = Padding.ZERO)
+        public fun day(padding: Padding = Padding.ZERO)
 
         /**
          * A day-of-week name (for example, "Thursday").
@@ -334,9 +338,9 @@ internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(
  * Example:
  * ```
  * alternativeParsing(
- *   { dayOfMonth(); char('-'); monthNumber() },
- *   { monthNumber(); char(' '); dayOfMonth() },
- * ) { monthNumber(); char('/'); dayOfMonth() }
+ *   { day(); char('-'); monthNumber() },
+ *   { monthNumber(); char(' '); day() },
+ * ) { monthNumber(); char('/'); day() }
  * ```
  *
  * This will always format a date as `MM/DD`, but will also accept `DD-MM` and `MM DD`.

@@ -20,9 +20,9 @@ class LocalDateTest {
 
     private fun checkComponents(value: LocalDate, year: Int, month: Int, day: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
         assertEquals(year, value.year)
-        assertEquals(month, value.monthNumber)
+        assertEquals(month, value.month.number)
         assertEquals(Month(month), value.month)
-        assertEquals(day, value.dayOfMonth)
+        assertEquals(day, value.day)
         if (dayOfWeek != null) assertEquals(dayOfWeek, value.dayOfWeek.isoDayNumber)
         if (dayOfYear != null) assertEquals(dayOfYear, value.dayOfYear)
 
@@ -32,7 +32,7 @@ class LocalDateTest {
 
     private fun checkLocalDateTimePart(date: LocalDate, datetime: LocalDateTime) {
         checkEquals(date, datetime.date)
-        checkComponents(date, datetime.year, datetime.monthNumber, datetime.dayOfMonth, datetime.dayOfWeek.isoDayNumber, datetime.dayOfYear)
+        checkComponents(date, datetime.year, datetime.month.number, datetime.day, datetime.dayOfWeek.isoDayNumber, datetime.dayOfYear)
     }
 
     @Test
@@ -292,7 +292,7 @@ class LocalDateTest {
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
     assertFailsWith<IllegalArgumentException> { constructor(2007, 2, 29) }
-    assertEquals(29, constructor(2008, 2, 29).dayOfMonth)
+    assertEquals(29, constructor(2008, 2, 29).day)
     assertFailsWith<IllegalArgumentException> { constructor(2007, 4, 31) }
     assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 0) }
     assertFailsWith<IllegalArgumentException> { constructor(2007,1, 32) }
@@ -303,19 +303,19 @@ fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate
 }
 
 private val LocalDate.next: LocalDate get() =
-    if (dayOfMonth != monthNumber.monthLength(isLeapYear(year))) {
-        LocalDate(year, monthNumber, dayOfMonth + 1)
-    } else if (monthNumber != 12) {
-        LocalDate(year, monthNumber + 1, 1)
+    if (day != month.number.monthLength(isLeapYear(year))) {
+        LocalDate(year, month.number, day + 1)
+    } else if (month.number != 12) {
+        LocalDate(year, month.number + 1, 1)
     } else {
         LocalDate(year + 1, 1, 1)
     }
 
 private val LocalDate.previous: LocalDate get() =
-    if (dayOfMonth != 1) {
-        LocalDate(year, monthNumber, dayOfMonth - 1)
-    } else if (monthNumber != 1) {
-        val newMonthNumber = monthNumber - 1
+    if (day != 1) {
+        LocalDate(year, month.number, day - 1)
+    } else if (month.number != 1) {
+        val newMonthNumber = month.number - 1
         LocalDate(year, newMonthNumber, newMonthNumber.monthLength(isLeapYear(year)))
     } else {
         LocalDate(year - 1, 12, 31)

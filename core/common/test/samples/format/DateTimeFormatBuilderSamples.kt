@@ -17,7 +17,7 @@ class DateTimeFormatBuilderSamples {
         val format = LocalDate.Format {
             monthNumber()
             char('/')
-            dayOfMonth()
+            day()
             chars(", ")
             year()
         }
@@ -96,7 +96,7 @@ class DateTimeFormatBuilderSamples {
             char('-')
             monthNumber()
             char('-')
-            dayOfMonth()
+            day()
         }
         check(LocalDate(2020, 1, 1).format(format) == "2020-01-01")
     }

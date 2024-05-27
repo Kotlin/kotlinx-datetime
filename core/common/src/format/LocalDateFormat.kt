@@ -199,14 +199,14 @@ internal fun <T> requireParsedField(field: T?, name: String): T {
 internal interface DateFieldContainer {
     var year: Int?
     var monthNumber: Int?
-    var dayOfMonth: Int?
+    var day: Int?
     var isoDayOfWeek: Int?
 }
 
 private object DateFields {
     val year = GenericFieldSpec(PropertyAccessor(DateFieldContainer::year))
     val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
-    val dayOfMonth = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfMonth), minValue = 1, maxValue = 31)
+    val day = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::day), minValue = 1, maxValue = 31)
     val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::isoDayOfWeek), minValue = 1, maxValue = 7)
 }
 
@@ -216,14 +216,14 @@ private object DateFields {
 internal class IncompleteLocalDate(
     override var year: Int? = null,
     override var monthNumber: Int? = null,
-    override var dayOfMonth: Int? = null,
+    override var day: Int? = null,
     override var isoDayOfWeek: Int? = null
 ) : DateFieldContainer, Copyable<IncompleteLocalDate> {
     fun toLocalDate(): LocalDate {
         val date = LocalDate(
             requireParsedField(year, "year"),
             requireParsedField(monthNumber, "monthNumber"),
-            requireParsedField(dayOfMonth, "dayOfMonth")
+            requireParsedField(day, "day")
         )
         isoDayOfWeek?.let {
             if (it != date.dayOfWeek.isoDayNumber) {
@@ -238,22 +238,22 @@ internal class IncompleteLocalDate(
 
     fun populateFrom(date: LocalDate) {
         year = date.year
-        monthNumber = date.monthNumber
-        dayOfMonth = date.dayOfMonth
+        monthNumber = date.month.number
+        day = date.day
         isoDayOfWeek = date.dayOfWeek.isoDayNumber
     }
 
-    override fun copy(): IncompleteLocalDate = IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek)
+    override fun copy(): IncompleteLocalDate = IncompleteLocalDate(year, monthNumber, day, isoDayOfWeek)
 
     override fun equals(other: Any?): Boolean =
         other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
-            dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek
+            day == other.day && isoDayOfWeek == other.isoDayOfWeek
 
     override fun hashCode(): Int =
-        year.hashCode() * 31 + monthNumber.hashCode() * 31 + dayOfMonth.hashCode() * 31 + isoDayOfWeek.hashCode() * 31
+        year.hashCode() * 31 + monthNumber.hashCode() * 31 + day.hashCode() * 31 + isoDayOfWeek.hashCode() * 31
 
     override fun toString(): String =
-        "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
+        "${year ?: "??"}-${monthNumber ?: "??"}-${day ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
 }
 
 private class YearDirective(private val padding: Padding, private val isYearOfEra: Boolean = false) :
@@ -361,14 +361,14 @@ private class MonthNameDirective(private val names: MonthNames) :
 
 private class DayDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(
-        DateFields.dayOfMonth,
+        DateFields.day,
         minDigits = padding.minDigits(2),
         spacePadding = padding.spaces(2),
     ) {
     override val builderRepresentation: String
         get() = when (padding) {
-            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}()"
-            else -> "${DateTimeFormatBuilder.WithDate::dayOfMonth.name}(${padding.toKotlinCode()})"
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::day.name}()"
+            else -> "${DateTimeFormatBuilder.WithDate::day.name}(${padding.toKotlinCode()})"
         }
 
     override fun equals(other: Any?): Boolean = other is DayDirective && padding == other.padding
@@ -428,7 +428,9 @@ internal interface AbstractWithDateBuilder : DateTimeFormatBuilder.WithDate {
     override fun monthName(names: MonthNames) =
         addFormatStructureForDate(BasicFormatStructure(MonthNameDirective(names)))
 
-    override fun dayOfMonth(padding: Padding) = addFormatStructureForDate(BasicFormatStructure(DayDirective(padding)))
+    override fun day(padding: Padding) =
+        addFormatStructureForDate(BasicFormatStructure(DayDirective(padding)))
+
     override fun dayOfWeek(names: DayOfWeekNames) =
         addFormatStructureForDate(BasicFormatStructure(DayOfWeekDirective(names)))
 
@@ -440,10 +442,10 @@ internal interface AbstractWithDateBuilder : DateTimeFormatBuilder.WithDate {
 
 // these are constants so that the formats are not recreated every time they are used
 internal val ISO_DATE by lazy {
-    LocalDateFormat.build { year(); char('-'); monthNumber(); char('-'); dayOfMonth() }
+    LocalDateFormat.build { year(); char('-'); monthNumber(); char('-'); day() }
 }
 internal val ISO_DATE_BASIC by lazy {
-    LocalDateFormat.build { year(); monthNumber(); dayOfMonth() }
+    LocalDateFormat.build { year(); monthNumber(); day() }
 }
 
 private val emptyIncompleteLocalDate = IncompleteLocalDate()

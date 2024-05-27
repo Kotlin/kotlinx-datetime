@@ -143,7 +143,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
                 chars(", ")
             }
-            dayOfMonth(Padding.NONE)
+            day(Padding.NONE)
             char(' ')
             monthName(MonthNames.ENGLISH_ABBREVIATED)
             char(' ')
@@ -183,7 +183,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
 
     /**
      * Writes the contents of the specified [localDate] to this [DateTimeComponents].
-     * The [localDate] is written to the [year], [monthNumber], [dayOfMonth], and [dayOfWeek] fields.
+     * The [localDate] is written to the [year], [monthNumber], [day], and [dayOfWeek] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      *
@@ -196,7 +196,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     /**
      * Writes the contents of the specified [localDateTime] to this [DateTimeComponents].
      * The [localDateTime] is written to the
-     * [year], [monthNumber], [dayOfMonth], [dayOfWeek],
+     * [year], [monthNumber], [day], [dayOfWeek],
      * [hour], [hourOfAmPm], [amPm], [minute], [second] and [nanosecond] fields.
      *
      * If any of the fields are already set, they will be overwritten.
@@ -294,7 +294,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.date
      */
-    public var dayOfMonth: Int? by TwoDigitNumber(contents.date::dayOfMonth)
+    public var day: Int? by TwoDigitNumber(contents.date::day)
+
+    /** @suppress */
+    @Deprecated("Use 'day' instead")
+    public var dayOfMonth: Int? by TwoDigitNumber(contents.date::day)
 
     /**
      * The day-of-week component of the date.
@@ -411,7 +415,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * This method uses the following fields:
      * * [year]
      * * [monthNumber]
-     * * [dayOfMonth]
+     * * [day]
      *
      * Also, [dayOfWeek] is checked for consistency with the other fields.
      *
@@ -441,7 +445,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * This method uses the following fields:
      * * [year]
      * * [monthNumber]
-     * * [dayOfMonth]
+     * * [day]
      * * [hour], [hourOfAmPm], and [amPm]
      * * [minute]
      * * [second] (default value is 0)

@@ -129,9 +129,9 @@ class LocalDateTimeTest {
 
 fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
     assertEquals(year, value.year, "years")
-    assertEquals(month, value.monthNumber, "months")
+    assertEquals(month, value.month.number, "months")
     assertEquals(Month(month), value.month)
-    assertEquals(day, value.dayOfMonth, "days")
+    assertEquals(day, value.day, "days")
     assertEquals(hour, value.hour, "hours")
     assertEquals(minute, value.minute, "minutes")
     assertEquals(second, value.second, "seconds")
