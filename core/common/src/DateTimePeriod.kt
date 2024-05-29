@@ -34,7 +34,7 @@ import kotlinx.serialization.Serializable
  * represented by a [DateTimeUnit] directly instead of a [DateTimePeriod]:
  * for example, instead of `DateTimePeriod(months = 6)`, one could use `DateTimeUnit.MONTH * 6`.
  * This provides a wider variety of operations: for example, finding how many such intervals fit between two instants
- * or dates or adding a multiple of such intervals at once.
+ * or dates or adding multiple intervals at once.
  *
  * ### Interaction with other entities
  *
@@ -527,7 +527,7 @@ internal fun buildDateTimePeriod(totalMonths: Int = 0, days: Int = 0, totalNanos
 /**
  * Constructs a new [DateTimePeriod]. If all the time components are zero, returns a [DatePeriod].
  *
- * It is recommended to always explicitly name the arguments when constructing this manually,
+ * It is always recommended to name the arguments explicitly when constructing this manually,
  * like `DateTimePeriod(years = 1, months = 12, days = 16)`.
  *
  * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,

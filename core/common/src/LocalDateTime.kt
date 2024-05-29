@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
  * The main purpose of this class is to provide human-readable representations of [Instant] values, to transfer them
  * as data, or to define future planned events that will have the same local date-time even if the time zone rules
  * change.
- * In all other cases when a specific time zone is known, it is recommended to use [Instant] instead.
+ * In all other cases, when a specific time zone is known, it is recommended to use [Instant] instead.
  *
  * ### Arithmetic operations
  *
@@ -206,7 +206,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
-     * @throws IllegalArgumentException if any parameter is out of range,
+     * @throws IllegalArgumentException if any parameter is out of range
      * or if [dayOfMonth] is invalid for the given [monthNumber] and [year].
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunctionWithMonthNumber
