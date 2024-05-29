@@ -39,7 +39,7 @@ import kotlin.time.Duration.Companion.nanoseconds
  * "two days and three hours".
  * [DatePeriod] is specifically a combination of [DateTimeUnit.DateBased] values.
  * [DateTimePeriod] is more flexible than [DateTimeUnit] because it can express a combination of values with different
- * kinds of units, but in exchange, the duration of time between two [Instant] or [LocalDate] values can be
+ * kinds of units. However, in exchange, the duration of time between two [Instant] or [LocalDate] values can be
  * measured in terms of some [DateTimeUnit], but not [DateTimePeriod] or [DatePeriod].
  *
  * ### Construction, serialization, and deserialization
@@ -169,8 +169,8 @@ public sealed class DateTimeUnit {
      *
      * The reason lies in time zone transitions, because of which some days can be 23 or 25 hours.
      * For example, we say that exactly a whole day has passed between `2019-10-27T02:59` and `2019-10-28T02:59`
-     * in Berlin, despite the fact that the clocks were turned back one hour, so there are, in fact, 25 hours
-     * between the two date-times.
+     * in Berlin, even though the clocks were turned back one hour, so there are, in fact, 25 hours
+     * between the two date/times.
      *
      * @see DateTimeUnit for a description of date-time units in general.
      * @sample kotlinx.datetime.test.samples.DateTimeUnitSamples.dayBasedUnit

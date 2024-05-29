@@ -21,8 +21,8 @@ public interface Clock {
     /**
      * Returns the [Instant] corresponding to the current time, according to this clock.
      *
-     * It is not guaranteed that calling [now] later will return a larger [Instant].
-     * In particular, for [Clock.System] it is completely expected that the opposite will happen,
+     * Calling [now] later is not guaranteed to return a larger [Instant].
+     * In particular, for [Clock.System], the opposite is completely expected,
      * and it must be taken into account.
      * See the [System] documentation for details.
      *
