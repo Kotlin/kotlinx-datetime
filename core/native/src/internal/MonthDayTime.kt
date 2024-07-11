@@ -20,8 +20,8 @@ import kotlinx.datetime.*
  */
 internal interface DateOfYear {
     /**
-     * Converts this date-time to an [Instant] in the given [year],
-     * using the knowledge of the offset that's in effect at the resulting date-time.
+     * Converts this datetime to an [Instant] in the given [year],
+     * using the knowledge of the offset that's in effect at the resulting datetime.
      */
     fun toLocalDate(year: Int): LocalDate
 }
@@ -120,14 +120,14 @@ internal class MonthDayTime(
      */
     val time: TransitionLocaltime,
     /**
-     * The definition of how the offset in which the local date-time is expressed.
+     * The definition of how the offset in which the local datetime is expressed.
      */
     val offset: OffsetResolver,
 ) {
 
     /**
      * Converts this [MonthDayTime] to an [Instant] in the given [year],
-     * using the knowledge of the offset that's in effect at the resulting date-time.
+     * using the knowledge of the offset that's in effect at the resulting datetime.
      */
     fun toInstant(year: Int, effectiveOffset: UtcOffset): Instant {
         val localDateTime = time.resolve(date.toLocalDate(year))
@@ -138,7 +138,7 @@ internal class MonthDayTime(
     }
 
     /**
-     * Describes how the offset in which the local date-time is expressed is defined.
+     * Describes how the offset in which the local datetime is expressed is defined.
      */
     sealed interface OffsetResolver {
         /**

@@ -79,7 +79,7 @@ import kotlin.time.*
  * Clock.System.now() + 5.seconds // 5 seconds from now
  * ```
  *
- * Durations can also be represented as multiples of some [time-based date-time unit][DateTimeUnit.TimeBased]:
+ * Durations can also be represented as multiples of some [time-based datetime unit][DateTimeUnit.TimeBased]:
  *
  * ```
  * Clock.System.now().plus(4, DateTimeUnit.HOUR) // 4 hours from now

@@ -29,7 +29,7 @@ import kotlin.native.concurrent.*
 public annotation class FormatStringsInDatetimeFormats
 
 /**
- * Appends a Unicode date/time format string to the [DateTimeFormatBuilder].
+ * Appends a Unicode datetime format string to the [DateTimeFormatBuilder].
  *
  * This is the format string syntax used by the Java Time's `DateTimeFormatter` class, Swift's and Objective-C's
  * `NSDateFormatter` class, and the ICU library.

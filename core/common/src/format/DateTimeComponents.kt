@@ -14,9 +14,9 @@ import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
 /**
- * A collection of date-time fields used specifically for parsing and formatting.
+ * A collection of datetime fields used specifically for parsing and formatting.
  *
- * Its main purpose is to support complex date-time formats that don't correspond to any of the standard
+ * Its main purpose is to support complex datetime formats that don't correspond to any of the standard
  * entities in the library. For example, a format that includes only the month and the day of the month but not the
  * year cannot be represented and parsed as a [LocalDate], but it is valid for a [DateTimeComponents].
  * See sample 1.

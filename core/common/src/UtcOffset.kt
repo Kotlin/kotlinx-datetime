@@ -58,7 +58,7 @@ public expect class UtcOffset {
     /**
      * The number of seconds from UTC.
      *
-     * The larger the value, the earlier some specific civil date/time happens with the offset.
+     * The larger the value, the earlier some specific civil datetime happens with the offset.
      */
     public val totalSeconds: Int
 

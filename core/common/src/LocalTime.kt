@@ -278,7 +278,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * Returns the time as a millisecond of a day, in `0 until 24 * 60 * 60 * 1_000`.
      *
      * Note that this is *not* the number of milliseconds since the start of the day!
-     * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000`, the four hours'
+     * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000`, the four hours
      * worth of milliseconds, but because of DST transitions, when clocks show 4:00, in fact, three, four, five, or
      * some other number of hours could have passed since the day started.
      * Use [Instant] to perform reliable time arithmetic.
@@ -294,7 +294,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * Returns the time as a nanosecond of a day, in `0 until 24 * 60 * 60 * 1_000_000_000`.
      *
      * Note that this is *not* the number of nanoseconds since the start of the day!
-     * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000_000_000`, the four hours'
+     * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000_000_000`, the four hours
      * worth of nanoseconds, but because of DST transitions, when clocks show 4:00, in fact, three, four, five, or
      * some other number of hours could have passed since the day started.
      * Use [Instant] to perform reliable time arithmetic.

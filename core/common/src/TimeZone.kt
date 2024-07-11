@@ -105,7 +105,7 @@ public expect open class TimeZone {
     }
 
     /**
-     * Return the civil date/time value that this instant has in the time zone provided as an implicit receiver.
+     * Return the civil datetime value that this instant has in the time zone provided as an implicit receiver.
      *
      * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
      * is not necessarily so.
@@ -118,15 +118,15 @@ public expect open class TimeZone {
     public fun Instant.toLocalDateTime(): LocalDateTime
 
     /**
-     * Returns an instant that corresponds to this civil date/time value in the time zone provided as an implicit receiver.
+     * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
      *
      * Note that the conversion is not always well-defined. There can be the following possible situations:
-     * - Only one instant has this date/time value in the [timeZone].
+     * - Only one instant has this datetime value in the [timeZone].
      *   In this case, the conversion is unambiguous.
-     * - No instant has this date/time value in the [timeZone].
+     * - No instant has this datetime value in the [timeZone].
      *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
      *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
-     * - Two possible instants can have these date/time components in the [timeZone].
+     * - Two possible instants can have these datetime components in the [timeZone].
      *   In this case, the earlier instant is returned.
      *
      * @see Instant.toLocalDateTime
@@ -176,7 +176,7 @@ public typealias ZoneOffset = FixedOffsetTimeZone
 /**
  * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
  *
- * **Pitfall**: the offset returned from this function should typically not be used for date/time arithmetics
+ * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics
  * because the offset can change over time due to daylight-saving-time transitions and other reasons.
  * Use [TimeZone] directly with arithmetic operations instead.
  *
@@ -187,7 +187,7 @@ public typealias ZoneOffset = FixedOffsetTimeZone
 public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 
 /**
- * Returns a civil date/time value that this instant has in the specified [timeZone].
+ * Returns a civil datetime value that this instant has in the specified [timeZone].
  *
  * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
  * is not necessarily so.
@@ -200,7 +200,7 @@ public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
 /**
- * Returns a civil date/time value that this instant has in the specified [UTC offset][offset].
+ * Returns a civil datetime value that this instant has in the specified [UTC offset][offset].
  *
  * **Pitfall**: it is typically more robust to use [TimeZone] directly because the offset can change over time due to
  * daylight-saving-time transitions and other reasons, so [this] instant may actually correspond to a different offset
@@ -215,7 +215,7 @@ internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
 /**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
  *
- * **Pitfall**: the offset returned from this function should typically not be used for date/time arithmetics
+ * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics
  * because the offset can change over time due to daylight-saving-time transitions and other reasons.
  * Use [TimeZone] directly with arithmetic operations instead.
  *
@@ -227,15 +227,15 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
         timeZone.offsetAt(this)
 
 /**
- * Returns an instant that corresponds to this civil date/time value in the specified [timeZone].
+ * Returns an instant that corresponds to this civil datetime value in the specified [timeZone].
  *
  * Note that the conversion is not always well-defined. There can be the following possible situations:
- * - Only one instant has this date/time value in the [timeZone].
+ * - Only one instant has this datetime value in the [timeZone].
  *   In this case, the conversion is unambiguous.
- * - No instant has this date/time value in the [timeZone].
+ * - No instant has this datetime value in the [timeZone].
  *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
  *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
- * - Two possible instants can have these date/time components in the [timeZone].
+ * - Two possible instants can have these datetime components in the [timeZone].
  *   In this case, the earlier instant is returned.
  *
  * @see Instant.toLocalDateTime
@@ -244,7 +244,7 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
 
 /**
- * Returns an instant that corresponds to this civil date/time value that happens at the specified [UTC offset][offset].
+ * Returns an instant that corresponds to this civil datetime value that happens at the specified [UTC offset][offset].
  *
  * @see Instant.toLocalDateTime
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInOffset
