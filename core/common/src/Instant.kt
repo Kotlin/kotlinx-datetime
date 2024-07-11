@@ -15,7 +15,7 @@ import kotlin.time.*
 /**
  * A moment in time.
  *
- * A point in time must be uniquely identified to be independent of a time zone.
+ * A point in time must be uniquely identified in a way that is independent of a time zone.
  * For example, `1970-01-01, 00:00:00` does not represent a moment in time since this would happen at different times
  * in different time zones: someone in Tokyo would think it is already `1970-01-01` several hours earlier than someone in
  * Berlin would. To represent such entities, use [LocalDateTime].
