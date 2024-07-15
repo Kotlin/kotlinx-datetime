@@ -14,9 +14,9 @@ import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
 /**
- * A collection of date-time fields, used specifically for parsing and formatting.
+ * A collection of datetime fields used specifically for parsing and formatting.
  *
- * Its main purpose is to provide support for complex date-time formats that don't correspond to any of the standard
+ * Its main purpose is to support complex datetime formats that don't correspond to any of the standard
  * entities in the library. For example, a format that includes only the month and the day of the month but not the
  * year cannot be represented and parsed as a [LocalDate], but it is valid for a [DateTimeComponents].
  * See sample 1.
@@ -66,8 +66,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         /**
          * ISO 8601 extended format for dates and times with UTC offset.
          *
-         * For specifying the time zone offset, the format uses the [UtcOffset.Formats.ISO] format, except that during
-         * parsing, specifying the minutes of the offset is optional (so offsets like `+03` are also allowed).
+         * The format uses the [UtcOffset.Formats.ISO] format to specify the time zone offset, except that
+         * specifying the minutes of the offset is optional during parsing (so offsets like `+03` are also allowed).
          *
          * This format differs from [LocalTime.Formats.ISO] in its time part in that
          * specifying the seconds is *not* optional.

@@ -27,7 +27,7 @@ import kotlinx.datetime.internal.format.parser.Copyable
  */
 public class MonthNames(
     /**
-     * A list of month names, in order from January to December.
+     * A list of month names in order from January to December.
      *
      * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.names
      */
@@ -58,7 +58,7 @@ public class MonthNames(
 
     public companion object {
         /**
-         * English month names, 'January' to 'December'.
+         * English month names from 'January' to 'December'.
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishFull
          */
@@ -70,7 +70,7 @@ public class MonthNames(
         )
 
         /**
-         * Shortened English month names, 'Jan' to 'Dec'.
+         * Shortened English month names from 'Jan' to 'Dec'.
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishAbbreviated
          */
@@ -114,7 +114,7 @@ private fun MonthNames.toKotlinCode(): String = when (this.names) {
  */
 public class DayOfWeekNames(
     /**
-     * A list of day of week names, in order from Monday to Sunday.
+     * A list of the names of weekdays in order from Monday to Sunday.
      *
      * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.names
      */
@@ -133,7 +133,7 @@ public class DayOfWeekNames(
     }
 
     /**
-     * A constructor that takes the day of week names, in order from Monday to Sunday.
+     * A constructor that takes the names of weekdays in order from Monday to Sunday.
      *
      * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.constructionFromStrings
      */
@@ -150,7 +150,7 @@ public class DayOfWeekNames(
 
     public companion object {
         /**
-         * English day of week names, 'Monday' to 'Sunday'.
+         * English names of weekdays from 'Monday' to 'Sunday'.
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.englishFull
          */
@@ -161,7 +161,7 @@ public class DayOfWeekNames(
         )
 
         /**
-         * Shortened English day of week names, 'Mon' to 'Sun'.
+         * Shortened English names of weekdays from 'Mon' to 'Sun'.
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOfWeekNamesSamples.englishAbbreviated
          */

@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
  *
  * **Pitfall**: the offset is not a time zone.
  * It does not contain any information about the time zone's rules, such as daylight-saving-time transitions.
- * It is just a fixed offset from UTC, something that may be in effect in a given location today but change
+ * It is just a fixed offset from UTC, something that may be in effect in a given location today but will change
  * tomorrow.
  * Even if the offset is fixed currently, it may change in the future due to political decisions.
  *
@@ -58,7 +58,7 @@ public expect class UtcOffset {
     /**
      * The number of seconds from UTC.
      *
-     * The larger the value, the earlier some specific civil date/time happens with the offset.
+     * The larger the value, the earlier some specific civil datetime happens with the offset.
      */
     public val totalSeconds: Int
 
@@ -118,7 +118,7 @@ public expect class UtcOffset {
         /**
          * ISO 8601 extended format, which is the format used by [UtcOffset.parse] and [UtcOffset.toString].
          *
-         * An extension of the ISO 8601 is that this format allows parsing and formatting seconds.
+         * An extension of ISO 8601 that allows parsing and formatting seconds.
          *
          * When formatting, seconds are omitted if they are zero. If the whole offset is zero, the letter `Z` is output.
          *
@@ -138,7 +138,7 @@ public expect class UtcOffset {
         /**
          * ISO 8601 basic format.
          *
-         * An extension of the ISO 8601 is that this format allows parsing and formatting seconds.
+         * An extension of ISO 8601 that allows parsing and formatting seconds.
          *
          * When formatting, seconds are omitted if they are zero. If the whole offset is zero, the letter `Z` is output.
          *
@@ -173,7 +173,7 @@ public expect class UtcOffset {
     }
 
     /**
-     * Converts this UTC offset to the extended ISO 8601 string representation; for example, `+02:30` or `Z`.
+     * Converts this UTC offset to the extended ISO 8601 string representation, for example, `+02:30` or `Z`.
      *
      * @see Formats.ISO for the format details.
      * @see parse for the dual operation: obtaining [UtcOffset] from a string.
@@ -220,7 +220,7 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
  *
  * **Pitfall**: UTC offsets are static values and do not change with time.
  * If the logic requires that the offset changes with time, for example, to account for daylight-saving-time
- * transitions, use [TimeZone.of] with a IANA time zone name to obtain a time zone that can handle
+ * transitions, use [TimeZone.of] with an IANA time zone name to obtain a time zone that can handle
  * changes in the offset.
  *
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.asFixedOffsetTimeZone

@@ -6,7 +6,7 @@
 package kotlinx.datetime
 
 /**
- * Thrown by date-time arithmetic operations if the result cannot be computed or represented.
+ * Thrown by datetime arithmetic operations if the result cannot be computed or represented.
  */
 public class DateTimeArithmeticException: RuntimeException {
     public constructor(): super()

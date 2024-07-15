@@ -47,7 +47,7 @@ The library provides a basic set of types for working with date and time:
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
 it represents a difference between two LocalDate values decomposed into date units.
 - `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations on `Instant` and `LocalDate`. 
-- `UtcOffset` represents the amount of time the local date/time at a particular time zone differs from the date/time at UTC.
+- `UtcOffset` represents the amount of time the local datetime at a particular time zone differs from the datetime at UTC.
 
 ### Type use-cases
 
@@ -63,7 +63,7 @@ Here is some basic advice on how to choose which of the date-carrying types to u
   rules might change unexpectedly in the future. In this [blog post](https://codeblog.jonskeet.uk/2019/03/27/storing-utc-is-not-a-silver-bullet/), you can read more about why it's not always 
   a good idea to use `Instant` everywhere.
   
-  Also, use `LocalDateTime` to decode an `Instant` to its local date-time components for display and UIs.
+  Also, use `LocalDateTime` to decode an `Instant` to its local datetime components for display and UIs.
   
 - Use `LocalDate` to represent the date of an event that does not have a specific time associated with it (like a birth date).
 
@@ -99,7 +99,7 @@ An `Instant` is just a counter of high resolution time intervals since the begin
 To get human readable components from an `Instant` value, you need to convert it to the `LocalDateTime`
 type that represents date and time components without a reference to the particular time zone.
 
-The `TimeZone` type provides the rules to convert instants from and to date/time components.
+The `TimeZone` type provides the rules to convert instants from and to datetime components.
 
 ```kotlin
 val currentMoment: Instant = Clock.System.now()
@@ -172,7 +172,7 @@ val hourMinute = LocalTime(hour = 12, minute = 13)
 An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
 To convert back, use the companion object function `Instant.fromEpochMilliseconds(Long)`.
 
-### Converting instant and local date/time to and from the ISO 8601 string
+### Converting instant and local datetime to and from the ISO 8601 string
 
 `Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` provide shortcuts for
 parsing and formatting them using the extended ISO 8601 format.
@@ -268,7 +268,7 @@ dateTimeFormat.parse("2023-12-24T23:59:59")
 
 Sometimes, the required string format doesn't fully correspond to any of the
 classes `kotlinx-datetime` provides. In these cases, `DateTimeComponents`, a
-collection of all date-time fields, can be used instead.
+collection of all datetime fields, can be used instead.
 
 ```kotlin
 // import kotlinx.datetime.format.*
@@ -341,7 +341,7 @@ val diffInMonths = instantInThePast.until(Clock.System.now(), DateTimeUnit.MONTH
 ```
 There are also shortcuts `yearsUntil(...)`, `monthsUntil(...)`, and `daysUntil(...)`.
 
-A particular amount of date/time units or a date/time period can be added to an `Instant` with the `plus` function:
+A particular amount of datetime units or a datetime period can be added to an `Instant` with the `plus` function:
 
 ```kotlin
 val now = Clock.System.now()
@@ -395,7 +395,7 @@ val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
 
 ## Implementation
 
-The implementation of date/time types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
+The implementation of datetime types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
 
 - in JVM: [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API;
 - in Js and Wasm-Js: [`js-joda`](https://js-joda.github.io/js-joda/) library;
@@ -405,7 +405,7 @@ The implementation of date/time types, such as `Instant`, `LocalDateTime`, `Time
 ## Known/open issues, work TBD
 
 - [x] Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
-- [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various date/time interchange
+- [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various datetime interchange
   formats that are used in practice (in particular, various RFCs).
 
 ## Using in your projects

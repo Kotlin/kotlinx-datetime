@@ -19,9 +19,9 @@ import kotlinx.serialization.Serializable
  * this on their clocks at different times, but it is a [LocalDateTime].
  *
  * The main purpose of this class is to provide human-readable representations of [Instant] values, to transfer them
- * as data, or to define future planned events that will have the same local date-time even if the time zone rules
+ * as data, or to define future planned events that will have the same local datetime even if the time zone rules
  * change.
- * In all other cases when a specific time zone is known, it is recommended to use [Instant] instead.
+ * In all other cases, when a specific time zone is known, it is recommended to use [Instant] instead.
  *
  * ### Arithmetic operations
  *
@@ -30,11 +30,11 @@ import kotlinx.serialization.Serializable
  *
  * For example, in Berlin, naively adding one day to `2021-03-27T02:16:20` without accounting for the time zone would
  * result in `2021-03-28T02:16:20`.
- * However, the resulting local date-time cannot be observed in that time zone
+ * However, the resulting local datetime cannot be observed in that time zone
  * because the clocks moved forward from `02:00` to `03:00` on that day.
  * This is known as a "time gap" or a "spring forward" transition.
  *
- * Similarly, the local date-time `2021-10-31T02:16:20` is ambiguous,
+ * Similarly, the local datetime `2021-10-31T02:16:20` is ambiguous,
  * because the clocks moved back from `03:00` to `02:00`.
  * This is known as a "time overlap" or a "fall back" transition.
  *
@@ -97,8 +97,8 @@ import kotlinx.serialization.Serializable
  * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateTimeComponentSerializer] for an object with components.
  *
- * @see LocalDate for only the date part of the date/time value.
- * @see LocalTime for only the time part of the date/time value.
+ * @see LocalDate for only the date part of the datetime value.
+ * @see LocalTime for only the time part of the datetime value.
  * @see Instant for the representation of a specific moment in time independent of a time zone.
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.fromDateAndTime
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.alternativeConstruction
@@ -112,7 +112,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
         /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
-         * Parses a string that represents a date/time value including date and time components
+         * Parses a string that represents a datetime value including date and time components
          * but without any time zone component and returns the parsed [LocalDateTime] value.
          *
          * If [format] is not specified, [Formats.ISO] is used.
@@ -172,7 +172,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
         /**
          * ISO 8601 extended format.
          *
-         * Examples of date/time in ISO 8601 format:
+         * Examples of datetime in ISO 8601 format:
          * - `2020-08-30T18:43`
          * - `+12020-08-30T18:43:00`
          * - `0000-08-30T18:43:00.5`
@@ -206,7 +206,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
-     * @throws IllegalArgumentException if any parameter is out of range,
+     * @throws IllegalArgumentException if any parameter is out of range
      * or if [dayOfMonth] is invalid for the given [monthNumber] and [year].
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunctionWithMonthNumber
@@ -299,49 +299,49 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public val dayOfYear: Int
 
     /**
-     * Returns the hour-of-day (`0..59`) [time] component of this date/time value.
+     * Returns the hour-of-day (`0..59`) [time] component of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
      */
     public val hour: Int
 
     /**
-     * Returns the minute-of-hour (`0..59`) [time] component of this date/time value.
+     * Returns the minute-of-hour (`0..59`) [time] component of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
      */
     public val minute: Int
 
     /**
-     * Returns the second-of-minute (`0..59`) [time] component of this date/time value.
+     * Returns the second-of-minute (`0..59`) [time] component of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
      */
     public val second: Int
 
     /**
-     * Returns the nanosecond-of-second (`0..999_999_999`) [time] component of this date/time value.
+     * Returns the nanosecond-of-second (`0..999_999_999`) [time] component of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
      */
     public val nanosecond: Int
 
     /**
-     * Returns the date part of this date/time value.
+     * Returns the date part of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateAndTime
      */
     public val date: LocalDate
 
     /**
-     * Returns the time part of this date/time value.
+     * Returns the time part of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateAndTime
      */
     public val time: LocalTime
 
     /**
-     * Compares `this` date/time value with the [other] date/time value.
+     * Compares `this` datetime value with the [other] datetime value.
      * Returns zero if this value is equal to the other,
      * a negative number if this value represents earlier civil time than the other,
      * and a positive number if this value represents later civil time than the other.
@@ -361,7 +361,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public override operator fun compareTo(other: LocalDateTime): Int
 
     /**
-     * Converts this date/time value to the ISO 8601 string representation.
+     * Converts this datetime value to the ISO 8601 string representation.
      *
      * For readability, if the time represents a round minute (without seconds or fractional seconds),
      * the string representation will not include seconds. Also, fractions of seconds will add trailing zeros to

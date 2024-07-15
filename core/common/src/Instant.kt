@@ -15,7 +15,7 @@ import kotlin.time.*
 /**
  * A moment in time.
  *
- * A point in time must be uniquely identified so that it is independent of a time zone.
+ * A point in time must be uniquely identified in a way that is independent of a time zone.
  * For example, `1970-01-01, 00:00:00` does not represent a moment in time since this would happen at different times
  * in different time zones: someone in Tokyo would think it is already `1970-01-01` several hours earlier than someone in
  * Berlin would. To represent such entities, use [LocalDateTime].
@@ -36,7 +36,7 @@ import kotlin.time.*
  * ```
  *
  * The [Clock.System] implementation uses the platform-specific system clock to obtain the current moment.
- * Note that this clock is not guaranteed to be monotonic, and it may be adjusted by the user or the system at any time,
+ * Note that this clock is not guaranteed to be monotonic, and the user or the system may adjust it at any time,
  * so it should not be used for measuring time intervals.
  * For that, consider using [TimeSource.Monotonic] and [TimeMark] instead of [Clock.System] and [Instant].
  *
@@ -79,7 +79,7 @@ import kotlin.time.*
  * Clock.System.now() + 5.seconds // 5 seconds from now
  * ```
  *
- * Durations can also be represented as multiples of some [time-based date-time unit][DateTimeUnit.TimeBased]:
+ * Durations can also be represented as multiples of some [time-based datetime unit][DateTimeUnit.TimeBased]:
  *
  * ```
  * Clock.System.now().plus(4, DateTimeUnit.HOUR) // 4 hours from now
@@ -121,7 +121,7 @@ import kotlin.time.*
  * // Two months, three days, four hours, and five minutes until the concert
  * ```
  *
- * or [Instant.until] method, as well as [Instant.daysUntil], [Instant.monthsUntil],
+ * Or the [Instant.until] method, as well as [Instant.daysUntil], [Instant.monthsUntil],
  * and [Instant.yearsUntil] extension functions:
  *
  * ```
@@ -223,7 +223,7 @@ public expect class Instant : Comparable<Instant> {
     /**
      * Returns the number of milliseconds from the epoch instant `1970-01-01T00:00:00Z`.
      *
-     * Any fractional part of millisecond is rounded toward zero to the whole number of milliseconds.
+     * Any fractional part of a millisecond is rounded toward zero to the whole number of milliseconds.
      *
      * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
      *
@@ -362,13 +362,13 @@ public expect class Instant : Comparable<Instant> {
         /**
          * A shortcut for calling [DateTimeFormat.parse], followed by [DateTimeComponents.toInstantUsingOffset].
          *
-         * Parses a string that represents an instant including date and time components and a mandatory
+         * Parses a string that represents an instant, including date and time components and a mandatory
          * time zone offset and returns the parsed [Instant] value.
          *
          * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
          * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
          * time is parsed, even if it's in the last 1000 seconds of the day.
-         * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered valid time.
+         * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered a valid time.
          * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
          *
          * If the format is not specified, [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is used.

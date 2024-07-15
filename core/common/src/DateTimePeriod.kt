@@ -434,7 +434,7 @@ public class DatePeriod internal constructor(
     /**
      * Constructs a new [DatePeriod].
      *
-     * It is always recommended to name the arguments explicitly when constructing this manually,
+     * It is recommended to always name the arguments explicitly when constructing this manually,
      * like `DatePeriod(years = 1, months = 12, days = 16)`.
      *
      * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,
@@ -527,7 +527,7 @@ internal fun buildDateTimePeriod(totalMonths: Int = 0, days: Int = 0, totalNanos
 /**
  * Constructs a new [DateTimePeriod]. If all the time components are zero, returns a [DatePeriod].
  *
- * It is recommended to always explicitly name the arguments when constructing this manually,
+ * It is recommended to always name the arguments explicitly when constructing this manually,
  * like `DateTimePeriod(years = 1, months = 12, days = 16)`.
  *
  * The passed numbers are not stored as is but are normalized instead for human readability, so, for example,
