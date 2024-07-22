@@ -7,6 +7,7 @@ package kotlinx.datetime.internal.format
 
 import kotlinx.datetime.internal.format.formatter.*
 import kotlinx.datetime.internal.format.parser.*
+import kotlinx.datetime.internal.isAsciiDigit
 
 internal sealed interface FormatStructure<in T> {
     fun parser(): ParserStructure<T>
@@ -37,16 +38,20 @@ internal class ConstantFormatStructure<in T>(
         operations = when {
             string.isEmpty() -> emptyList()
             else -> buildList {
-                val suffix = if (string[0].isDigit()) {
-                    add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(string.takeWhile { it.isDigit() }))))
-                    string.dropWhile { it.isDigit() }
+                val suffix = if (string[0].isAsciiDigit()) {
+                    add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(string.takeWhile {
+                        it.isAsciiDigit()
+                    }))))
+                    string.dropWhile { it.isAsciiDigit() }
                 } else {
                     string
                 }
                 if (suffix.isNotEmpty()) {
-                    if (suffix[suffix.length - 1].isDigit()) {
-                        add(PlainStringParserOperation(suffix.dropLastWhile { it.isDigit() }))
-                        add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(suffix.takeLastWhile { it.isDigit() }))))
+                    if (suffix[suffix.length - 1].isAsciiDigit()) {
+                        add(PlainStringParserOperation(suffix.dropLastWhile { it.isAsciiDigit() }))
+                        add(NumberSpanParserOperation(listOf(ConstantNumberConsumer(suffix.takeLastWhile {
+                            it.isAsciiDigit()
+                        }))))
                     } else {
                         add(PlainStringParserOperation(suffix))
                     }

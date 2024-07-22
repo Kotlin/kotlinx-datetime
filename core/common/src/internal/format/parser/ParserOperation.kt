@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal.format.parser
 
+import kotlinx.datetime.internal.isAsciiDigit
+
 internal interface ParserOperation<in Output> {
     fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult
 }
@@ -15,8 +17,8 @@ internal interface ParserOperation<in Output> {
 internal class PlainStringParserOperation<Output>(val string: String) : ParserOperation<Output> {
     init {
         require(string.isNotEmpty()) { "Empty string is not allowed" }
-        require(!string[0].isDigit()) { "String '$string' starts with a digit" }
-        require(!string[string.length - 1].isDigit()) { "String '$string' ends with a digit" }
+        require(!string[0].isAsciiDigit()) { "String '$string' starts with a digit" }
+        require(!string[string.length - 1].isAsciiDigit()) { "String '$string' ends with a digit" }
     }
 
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
@@ -77,7 +79,7 @@ internal class NumberSpanParserOperation<Output>(
         if (startIndex + minLength > input.length)
             return ParseResult.Error(startIndex) { "Unexpected end of input: yet to parse $whatThisExpects" }
         var digitsInRow = 0
-        while (startIndex + digitsInRow < input.length && input[startIndex + digitsInRow].isDigit()) {
+        while (startIndex + digitsInRow < input.length && input[startIndex + digitsInRow].isAsciiDigit()) {
             ++digitsInRow
         }
         if (digitsInRow < minLength)
