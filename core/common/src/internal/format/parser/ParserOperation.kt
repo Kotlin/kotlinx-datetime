@@ -89,9 +89,9 @@ internal class NumberSpanParserOperation<Output>(
         var index = startIndex
         for (i in consumers.indices) {
             val length = consumers[i].length ?: (digitsInRow - minLength + 1)
-            val numberString = input.substring(index, index + length)
-            val error = consumers[i].consume(storage, numberString)
+            val error = consumers[i].consume(storage, input, index, index + length)
             if (error != null) {
+                val numberString = input.substring(index, index + length)
                 return ParseResult.Error(index) {
                     "Can not interpret the string '$numberString' as ${consumers[i].whatThisExpects}: ${error.errorMessage()}"
                 }
