@@ -149,6 +149,37 @@ class DateTimeFormatTest {
         }
         assertEquals(UtcOffset(-7, -30), format.parse("-730"))
     }
+
+    @Test
+    fun testNotParsingNonAsciiNumbers() {
+        val formatWithFraction = DateTimeComponents.Format {
+            secondFraction(3)
+        }
+        formatWithFraction.parse("999")
+        assertFailsWith<IllegalArgumentException> {
+            formatWithFraction.parse("٩٩٩")
+        }
+        val formatWithArbitraryWidthNumber = DateTimeComponents.Format {
+            year()
+        }
+        formatWithArbitraryWidthNumber.parse("+99999")
+        assertFailsWith<IllegalArgumentException> {
+            formatWithArbitraryWidthNumber.parse("+٩٩٩٩٩")
+        }
+        val formatWithFixedWidthNumber = DateTimeComponents.Format {
+            monthNumber()
+        }
+        formatWithFixedWidthNumber.parse("99")
+        assertFailsWith<IllegalArgumentException> {
+            formatWithFixedWidthNumber.parse("٩٩")
+        }
+        val formatWithNonAsciiNumberInString = DateTimeComponents.Format {
+            chars("99")
+            chars("٩٩")
+            chars("99")
+        }
+        formatWithNonAsciiNumberInString.parse("99٩٩99")
+    }
 }
 
 fun <T> DateTimeFormat<T>.assertCanNotParse(input: String) {
