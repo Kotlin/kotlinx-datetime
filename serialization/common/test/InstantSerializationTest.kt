@@ -14,10 +14,26 @@ class InstantSerializationTest {
 
     private fun iso8601Serialization(serializer: KSerializer<Instant>) {
         for ((instant, json) in listOf(
-            Pair(Instant.fromEpochSeconds(1607505416, 124000),
-                "\"2020-12-09T09:16:56.000124Z\""),
-            Pair(Instant.fromEpochSeconds(-1607505416, -124000),
-                "\"1919-01-23T14:43:03.999876Z\""),
+            Pair(Instant.fromEpochSeconds(1607505416, 120000),
+                "\"2020-12-09T09:16:56.00012Z\""),
+            Pair(Instant.fromEpochSeconds(-1607505416, -120000),
+                "\"1919-01-23T14:43:03.99988Z\""),
+            Pair(Instant.fromEpochSeconds(987654321, 123456789),
+                "\"2001-04-19T04:25:21.123456789Z\""),
+            Pair(Instant.fromEpochSeconds(987654321, 0),
+                "\"2001-04-19T04:25:21Z\""),
+        )) {
+            assertEquals(json, Json.encodeToString(serializer, instant))
+            assertEquals(instant, Json.decodeFromString(serializer, json))
+        }
+    }
+
+    private fun defaultSerialization(serializer: KSerializer<Instant>) {
+        for ((instant, json) in listOf(
+            Pair(Instant.fromEpochSeconds(1607505416, 120000),
+                "\"2020-12-09T09:16:56.000120Z\""),
+            Pair(Instant.fromEpochSeconds(-1607505416, -120000),
+                "\"1919-01-23T14:43:03.999880Z\""),
             Pair(Instant.fromEpochSeconds(987654321, 123456789),
                 "\"2001-04-19T04:25:21.123456789Z\""),
             Pair(Instant.fromEpochSeconds(987654321, 0),
@@ -64,6 +80,6 @@ class InstantSerializationTest {
     @Test
     fun testDefaultSerializers() {
         // should be the same as the ISO 8601
-        iso8601Serialization(Json.serializersModule.serializer())
+        defaultSerialization(Json.serializersModule.serializer())
     }
 }
