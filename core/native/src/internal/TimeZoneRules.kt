@@ -167,7 +167,7 @@ internal class RecurringZoneRules(
             val ldtAfter = rule.transitionDateTime.toLocalDateTime(rule.offsetAfter)
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
                 OffsetInfo.Regular(rule.offsetBefore)
-            } else if (localDateTime > ldtBefore && localDateTime >= ldtAfter) {
+            } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
                 offset = rule.offsetAfter
                 continue
             } else if (ldtAfter < ldtBefore) {

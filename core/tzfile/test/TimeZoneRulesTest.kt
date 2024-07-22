@@ -22,10 +22,13 @@ class TimeZoneRulesTest {
         // on the last Sunday in October.
         val dstStartTime = LocalDateTime(2040, 3, 25, 2, 0)
         val infoAtDstStart = rules.infoAtDatetime(dstStartTime)
-        assertTrue(infoAtDstStart is OffsetInfo.Gap, "Expected Gap, got $infoAtDstStart")
+        assertIs<OffsetInfo.Gap>(infoAtDstStart)
         val dstEndTime = LocalDateTime(2040, 10, 28, 3, 0)
         val infoAtDstEnd = rules.infoAtDatetime(dstEndTime)
-        assertTrue(infoAtDstEnd is OffsetInfo.Overlap, "Expected Overlap, got $infoAtDstEnd")
+        assertIs<OffsetInfo.Regular>(infoAtDstEnd)
+        val timeBeforeDstEnd = LocalDateTime(2040, 10, 28, 2, 59, 59, 999_999_999)
+        val infoBeforeDstEnd = rules.infoAtDatetime(timeBeforeDstEnd)
+        assertIs<OffsetInfo.Overlap>(infoBeforeDstEnd)
     }
 
     @Test

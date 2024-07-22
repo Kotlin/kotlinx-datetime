@@ -281,6 +281,7 @@ private fun checkOverlap(timeZone: TimeZone, overlapStart: LocalDateTime) {
     val instantStart = overlapStart.plusNominalSeconds(-1).toInstant(timeZone).plus(1, DateTimeUnit.SECOND)
     // the later occurrence of the overlap
     val instantEnd = overlapStart.plusNominalSeconds(1).toInstant(timeZone).minus(1, DateTimeUnit.SECOND)
+    assertEquals(instantEnd, overlapStart.toInstant(timeZone))
     try {
         // there is at least a one-second overlap
         assertNotEquals(instantStart, instantEnd)
