@@ -35,4 +35,20 @@ class UtcOffsetSerializationTest {
         testSerializationAsPrimitive(UtcOffsetSerializer)
         testSerializationAsPrimitive(UtcOffset.serializer())
     }
+
+    object FourDigitOffsetSerializer : CustomUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+
+    @Test
+    fun testCustomSerializer() {
+        for ((utcOffset, json) in listOf(
+            Pair(UtcOffset.ZERO, "\"+0000\""),
+            Pair(UtcOffset(2), "\"+0200\""),
+            Pair(UtcOffset(2, 30), "\"+0230\""),
+            Pair(UtcOffset(-2, -30), "\"-0230\""),
+        )) {
+            assertEquals(json, Json.encodeToString(FourDigitOffsetSerializer, utcOffset))
+            assertEquals(utcOffset, Json.decodeFromString(FourDigitOffsetSerializer, json))
+        }
+        assertEquals("\"+1234\"", Json.encodeToString(FourDigitOffsetSerializer, UtcOffset(12, 34, 56)))
+    }
 }

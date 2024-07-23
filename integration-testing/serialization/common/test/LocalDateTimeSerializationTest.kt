@@ -6,6 +6,7 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.char
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
@@ -81,5 +82,25 @@ class LocalDateTimeSerializationTest {
     fun testDefaultSerializers() {
         // should be the same as the ISO 8601
         iso8601Serialization(Json.serializersModule.serializer())
+    }
+
+    object PythonDateTimeSerializer : CustomLocalDateTimeSerializer(LocalDateTime.Format {
+        date(LocalDate.Formats.ISO)
+        char(' ')
+        time(LocalTime.Formats.ISO)
+    })
+
+    @Test
+    fun testCustomSerializer() {
+        for ((localDateTime, json) in listOf(
+            Pair(LocalDateTime(2008, 7, 5, 2, 1), "\"2008-07-05 02:01:00\""),
+            Pair(LocalDateTime(2007, 12, 31, 23, 59, 1), "\"2007-12-31 23:59:01\""),
+            Pair(LocalDateTime(999, 12, 31, 23, 59, 59, 990000000), "\"0999-12-31 23:59:59.99\""),
+            Pair(LocalDateTime(-1, 1, 2, 23, 59, 59, 999990000), "\"-0001-01-02 23:59:59.99999\""),
+            Pair(LocalDateTime(-2008, 1, 2, 23, 59, 59, 999999990), "\"-2008-01-02 23:59:59.99999999\""),
+        )) {
+            assertEquals(json, Json.encodeToString(PythonDateTimeSerializer, localDateTime))
+            assertEquals(localDateTime, Json.decodeFromString(PythonDateTimeSerializer, json))
+        }
     }
 }

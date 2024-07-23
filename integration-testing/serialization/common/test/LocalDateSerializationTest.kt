@@ -70,4 +70,17 @@ class LocalDateSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
+    object IsoBasicLocalDateSerializer : CustomLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
+
+    @Test
+    fun testCustomSerializer() {
+        for ((localDate, json) in listOf(
+            Pair(LocalDate(2020, 12, 9), "\"20201209\""),
+            Pair(LocalDate(-2020, 1, 1), "\"-20200101\""),
+            Pair(LocalDate(2019, 10, 1), "\"20191001\""),
+        )) {
+            assertEquals(json, Json.encodeToString(IsoBasicLocalDateSerializer, localDate))
+            assertEquals(localDate, Json.decodeFromString(IsoBasicLocalDateSerializer, json))
+        }
+    }
 }
