@@ -6,6 +6,7 @@
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -81,3 +82,23 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
         }
     }
 }
+
+/**
+ * An abstract serializer for [LocalTime] values that uses
+ * a custom [DateTimeFormat] to serialize and deserialize the value.
+ *
+ * This serializer is abstract and must be subclassed to provide a concrete serializer.
+ * Example:
+ * ```
+ * object FixedWidthTimeSerializer : CustomLocalTimeSerializer(LocalTime.Format {
+ *     hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
+ * })
+ * ```
+ *
+ * Note that [LocalTime] is [kotlinx.serialization.Serializable] by default,
+ * so it is not necessary to create custom serializers when the format is not important.
+ * Additionally, [LocalTimeIso8601Serializer] is provided for the ISO 8601 format.
+ */
+public abstract class CustomLocalTimeSerializer(
+    format: DateTimeFormat<LocalTime>,
+) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime")

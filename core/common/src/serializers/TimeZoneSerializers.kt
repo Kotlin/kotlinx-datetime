@@ -5,9 +5,8 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.FixedOffsetTimeZone
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -74,3 +73,21 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
     }
 
 }
+
+/**
+ * An abstract serializer for [UtcOffset] values that uses
+ * a custom [DateTimeFormat] to serialize and deserialize the value.
+ *
+ * This serializer is abstract and must be subclassed to provide a concrete serializer.
+ * Example:
+ * ```
+ * object FourDigitOffsetSerializer : CustomUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+ * ```
+ *
+ * Note that [UtcOffset] is [kotlinx.serialization.Serializable] by default,
+ * so it is not necessary to create custom serializers when the format is not important.
+ * Additionally, [UtcOffsetSerializer] is provided for the ISO 8601 format.
+ */
+public abstract class CustomUtcOffsetSerializer(
+    format: DateTimeFormat<UtcOffset>,
+) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset")

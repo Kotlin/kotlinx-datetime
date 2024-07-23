@@ -6,6 +6,7 @@
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -76,3 +77,33 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
     }
 
 }
+
+/**
+ * An abstract serializer for [LocalDate] values that uses
+ * a custom [DateTimeFormat] to serialize and deserialize the value.
+ *
+ * This serializer is abstract and must be subclassed to provide a concrete serializer.
+ * Example:
+ * ```
+ * object IsoBasicLocalDateSerializer : CustomLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
+ * ```
+ *
+ * Note that [LocalDate] is [kotlinx.serialization.Serializable] by default,
+ * so it is not necessary to create custom serializers when the format is not important.
+ * Additionally, [LocalDateIso8601Serializer] is provided for the ISO 8601 format.
+ */
+public abstract class CustomLocalDateSerializer(
+    format: DateTimeFormat<LocalDate>,
+) : KSerializer<LocalDate> by format.asKSerializer("kotlinx.datetime.LocalDate")
+
+internal fun <T> DateTimeFormat<T>.asKSerializer(classFqn: String): KSerializer<T> =
+    object : KSerializer<T> {
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor(classFqn, PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder): T = parse(decoder.decodeString())
+
+        override fun serialize(encoder: Encoder, value: T) {
+            encoder.encodeString(format(value))
+        }
+    }

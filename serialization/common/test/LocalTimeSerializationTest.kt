@@ -6,6 +6,7 @@
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.char
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
@@ -71,5 +72,24 @@ class LocalTimeSerializationTest {
     fun testDefaultSerializers() {
         // should be the same as the ISO 8601
         iso8601Serialization(Json.serializersModule.serializer())
+    }
+
+    object FixedWidthTimeSerializer : CustomLocalTimeSerializer(LocalTime.Format {
+        hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
+    })
+
+    @Test
+    fun testCustomSerializer() {
+        for ((localTime, json) in listOf(
+            Pair(LocalTime(2, 1), "\"02:01:00.000\""),
+            Pair(LocalTime(23, 59, 1), "\"23:59:01.000\""),
+            Pair(LocalTime(23, 59, 59, 990000000), "\"23:59:59.990\""),
+            Pair(LocalTime(23, 59, 59, 999000000), "\"23:59:59.999\""),
+        )) {
+            assertEquals(json, Json.encodeToString(FixedWidthTimeSerializer, localTime))
+            assertEquals(localTime, Json.decodeFromString(FixedWidthTimeSerializer, json))
+        }
+        assertEquals("\"12:34:56.123\"", Json.encodeToString(FixedWidthTimeSerializer,
+            LocalTime(12, 34, 56, 123999999)))
     }
 }
