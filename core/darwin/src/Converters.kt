@@ -71,8 +71,8 @@ public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
 public fun LocalDate.toNSDateComponents(): NSDateComponents {
     val components = NSDateComponents()
     components.year = year.convert()
-    components.month = monthNumber.convert()
-    components.day = dayOfMonth.convert()
+    components.month = month.number.convert()
+    components.day = day.convert()
     return components
 }
 

@@ -53,7 +53,7 @@ internal fun JulianDayOfYearSkippingLeapDate(dayOfYear: Int) : DateOfYear {
     // For example, `dayOfYear = 60` is always 1st March, even in leap years.
     // We take a non-leap year, as in that case, this is the same as JulianDayOfYear, so regular addition works.
     val date = LocalDate(2011, 1, 1).plusDays(dayOfYear - 1)
-    return MonthDayOfYear(date.month, MonthDayOfYear.TransitionDay.ExactlyDayOfMonth(date.dayOfMonth))
+    return MonthDayOfYear(date.month, MonthDayOfYear.TransitionDay.ExactlyDayOfMonth(date.day))
 }
 
 internal class MonthDayOfYear(val month: Month, val day: TransitionDay) : DateOfYear {

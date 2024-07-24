@@ -15,7 +15,7 @@ class LocalDateFormatSamples {
     fun year() {
         // Using the year number in a custom format
         val format = LocalDate.Format {
-            year(); char(' '); monthNumber(); char('/'); dayOfMonth()
+            year(); char(' '); monthNumber(); char('/'); day()
         }
         check(format.format(LocalDate(2021, 1, 13)) == "2021 01/13")
         check(format.format(LocalDate(13, 1, 13)) == "0013 01/13")
@@ -27,7 +27,7 @@ class LocalDateFormatSamples {
     fun yearTwoDigits() {
         // Using two-digit years in a custom format
         val format = LocalDate.Format {
-            yearTwoDigits(baseYear = 1960); char(' '); monthNumber(); char('/'); dayOfMonth()
+            yearTwoDigits(baseYear = 1960); char(' '); monthNumber(); char('/'); day()
         }
         check(format.format(LocalDate(1960, 1, 13)) == "60 01/13")
         check(format.format(LocalDate(2000, 1, 13)) == "00 01/13")
@@ -41,12 +41,12 @@ class LocalDateFormatSamples {
     fun monthNumber() {
         // Using month number with various paddings in a custom format
         val zeroPaddedMonths = LocalDate.Format {
-            monthNumber(); char('/'); dayOfMonth(); char('/'); year()
+            monthNumber(); char('/'); day(); char('/'); year()
         }
         check(zeroPaddedMonths.format(LocalDate(2021, 1, 13)) == "01/13/2021")
         check(zeroPaddedMonths.format(LocalDate(2021, 12, 13)) == "12/13/2021")
         val spacePaddedMonths = LocalDate.Format {
-            monthNumber(padding = Padding.SPACE); char('/'); dayOfMonth(); char('/'); year()
+            monthNumber(padding = Padding.SPACE); char('/'); day(); char('/'); year()
         }
         check(spacePaddedMonths.format(LocalDate(2021, 1, 13)) == " 1/13/2021")
         check(spacePaddedMonths.format(LocalDate(2021, 12, 13)) == "12/13/2021")
@@ -56,7 +56,7 @@ class LocalDateFormatSamples {
     fun monthName() {
         // Using strings for month names in a custom format
         val format = LocalDate.Format {
-            monthName(MonthNames.ENGLISH_FULL); char(' '); dayOfMonth(); char('/'); year()
+            monthName(MonthNames.ENGLISH_FULL); char(' '); day(); char('/'); year()
         }
         check(format.format(LocalDate(2021, 1, 13)) == "January 13/2021")
         check(format.format(LocalDate(2021, 12, 13)) == "December 13/2021")
@@ -66,12 +66,12 @@ class LocalDateFormatSamples {
     fun dayOfMonth() {
         // Using day-of-month with various paddings in a custom format
         val zeroPaddedDays = LocalDate.Format {
-            dayOfMonth(); char('/'); monthNumber(); char('/'); year()
+            day(); char('/'); monthNumber(); char('/'); year()
         }
         check(zeroPaddedDays.format(LocalDate(2021, 1, 6)) == "06/01/2021")
         check(zeroPaddedDays.format(LocalDate(2021, 1, 31)) == "31/01/2021")
         val spacePaddedDays = LocalDate.Format {
-            dayOfMonth(padding = Padding.SPACE); char('/'); monthNumber(); char('/'); year()
+            day(padding = Padding.SPACE); char('/'); monthNumber(); char('/'); year()
         }
         check(spacePaddedDays.format(LocalDate(2021, 1, 6)) == " 6/01/2021")
         check(spacePaddedDays.format(LocalDate(2021, 1, 31)) == "31/01/2021")
@@ -81,7 +81,7 @@ class LocalDateFormatSamples {
     fun dayOfWeek() {
         // Using strings for day-of-week names in a custom format
         val format = LocalDate.Format {
-            dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); char('/'); monthNumber(); char('/'); year()
+            dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED); char(' '); day(); char('/'); monthNumber(); char('/'); year()
         }
         check(format.format(LocalDate(2021, 1, 13)) == "Wed 13/01/2021")
         check(format.format(LocalDate(2021, 12, 13)) == "Mon 13/12/2021")
@@ -105,7 +105,7 @@ class LocalDateFormatSamples {
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_ABBREVIATED) // "Jan", "Feb", ...
                 char(' ')
-                dayOfMonth()
+                day()
                 chars(", ")
                 year()
             }
@@ -149,7 +149,7 @@ class LocalDateFormatSamples {
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_FULL)
                 char(' ')
-                dayOfMonth()
+                day()
                 chars(", ")
                 year()
             }
@@ -162,7 +162,7 @@ class LocalDateFormatSamples {
             val format = LocalDate.Format {
                 monthName(MonthNames.ENGLISH_ABBREVIATED)
                 char(' ')
-                dayOfMonth()
+                day()
                 chars(", ")
                 year()
             }

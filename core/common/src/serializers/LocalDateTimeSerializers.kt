@@ -84,8 +84,8 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
     override fun serialize(encoder: Encoder, value: LocalDateTime) {
         encoder.encodeStructure(descriptor) {
             encodeIntElement(descriptor, 0, value.year)
-            encodeShortElement(descriptor, 1, value.monthNumber.toShort())
-            encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
+            encodeShortElement(descriptor, 1, value.month.number.toShort())
+            encodeShortElement(descriptor, 2, value.day.toShort())
             encodeShortElement(descriptor, 3, value.hour.toShort())
             encodeShortElement(descriptor, 4, value.minute.toShort())
             if (value.second != 0 || value.nanosecond != 0) {

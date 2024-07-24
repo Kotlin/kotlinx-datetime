@@ -46,7 +46,7 @@ class LocalDateFormatTest {
                 char(s)
                 monthNumber()
                 char(s)
-                dayOfMonth()
+                day()
             })
         }
     }
@@ -71,7 +71,7 @@ class LocalDateFormatTest {
                 year()
             })
             test(dates, LocalDate.Format {
-                dayOfMonth()
+                day()
                 char(s)
                 monthNumber()
                 char(s)
@@ -101,7 +101,7 @@ class LocalDateFormatTest {
         test(dates, LocalDate.Format {
             year()
             monthNumber()
-            dayOfMonth()
+            day()
         })
     }
 
@@ -120,7 +120,7 @@ class LocalDateFormatTest {
             put(LocalDate(-123456, 5, 1), ("01 May -123456" to setOf()))
         }
         val format = LocalDate.Format {
-            dayOfMonth()
+            day()
             char(' ')
             monthName(MonthNames.ENGLISH_FULL)
             char(' ')
@@ -144,7 +144,7 @@ class LocalDateFormatTest {
             put(LocalDate(-123456, 5, 1), ("01 V -123456" to setOf()))
         }
         val format = LocalDate.Format {
-            dayOfMonth()
+            day()
             char(' ')
             monthName(MonthNames("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"))
             char(' ')
@@ -170,7 +170,7 @@ class LocalDateFormatTest {
         val format = LocalDate.Format {
             yearTwoDigits(baseYear = 1960)
             monthNumber()
-            dayOfMonth()
+            day()
         }
         test(dates, format)
     }
@@ -216,7 +216,7 @@ class LocalDateFormatTest {
           char(' ')
           monthName(MonthNames.ENGLISH_ABBREVIATED)
           char(' ')
-          dayOfMonth()
+          day()
         }
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
     }
