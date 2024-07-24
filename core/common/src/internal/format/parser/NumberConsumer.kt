@@ -5,8 +5,7 @@
 
 package kotlinx.datetime.internal.format.parser
 
-import kotlinx.datetime.internal.POWERS_OF_TEN
-import kotlinx.datetime.internal.DecimalFraction
+import kotlinx.datetime.internal.*
 
 /**
  * A parser that expects to receive a string consisting of [length] digits, or, if [length] is `null`,
@@ -19,13 +18,16 @@ internal sealed class NumberConsumer<in Receiver>(
     val whatThisExpects: String
 ) {
     /**
-     * Wholly consumes the given [input]. Should be called with a string consisting of [length] digits, or,
-     * if [length] is `null`, with a string consisting of any number of digits. [consume] itself does not
-     * necessarily check the length of the input string, instead expecting to be passed a valid one.
+     * Wholly consumes the substring of [input] between indices [start] (inclusive) and [end] (exclusive).
+     *
+     * If [length] is non-null, [end] must be equal to [start] + [length].
+     * In any case, the substring between [start] and [end] must consist of ASCII digits only.
+     * [consume] itself does not necessarily check the length of the input string,
+     * instead expecting to be given a valid one.
      *
      * Returns `null` on success and a `NumberConsumptionError` on failure.
      */
-    abstract fun consume(storage: Receiver, input: String): NumberConsumptionError?
+    abstract fun consume(storage: Receiver, input: CharSequence, start: Int, end: Int): NumberConsumptionError?
 }
 
 internal interface NumberConsumptionError {
@@ -50,7 +52,6 @@ internal interface NumberConsumptionError {
 /**
  * A parser that accepts an [Int] value in range from `0` to [Int.MAX_VALUE].
  */
-// TODO: should the parser reject excessive padding?
 internal class UnsignedIntConsumer<in Receiver>(
     private val minLength: Int?,
     private val maxLength: Int?,
@@ -63,10 +64,10 @@ internal class UnsignedIntConsumer<in Receiver>(
         require(length == null || length in 1..9) { "Invalid length for field $whatThisExpects: $length" }
     }
 
-    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when {
-        maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
-        minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
-        else -> when (val result = input.toIntOrNull()) {
+    override fun consume(storage: Receiver, input: CharSequence, start: Int, end: Int): NumberConsumptionError? = when {
+        maxLength != null && end - start > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
+        minLength != null && end - start < minLength -> NumberConsumptionError.TooFewDigits(minLength)
+        else -> when (val result = input.parseAsciiIntOrNull(start = start, end = end)) {
             null -> NumberConsumptionError.ExpectedInt
             else -> setter.setWithoutReassigning(storage, if (multiplyByMinus1) -result else result)
         }
@@ -84,9 +85,13 @@ internal class ReducedIntConsumer<in Receiver>(
     private val baseMod = base % modulo
     private val baseFloor = base - baseMod
 
-    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when (val result = input.toIntOrNull()) {
-        null -> NumberConsumptionError.ExpectedInt
-        else -> setter.setWithoutReassigning(storage, if (result >= baseMod) {
+    init {
+        require(length in 1..9) { "Invalid length for field $whatThisExpects: $length" }
+    }
+
+    override fun consume(storage: Receiver, input: CharSequence, start: Int, end: Int): NumberConsumptionError? {
+        val result = input.parseAsciiInt(start = start, end = end)
+        return setter.setWithoutReassigning(storage, if (result >= baseMod) {
             baseFloor + result
         } else {
             baseFloor + modulo + result
@@ -100,31 +105,35 @@ internal class ReducedIntConsumer<in Receiver>(
 internal class ConstantNumberConsumer<in Receiver>(
     private val expected: String
 ) : NumberConsumer<Receiver>(expected.length, "the predefined string $expected") {
-    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = if (input == expected) {
-        null
-    } else {
-        NumberConsumptionError.WrongConstant(expected)
-    }
+    override fun consume(storage: Receiver, input: CharSequence, start: Int, end: Int): NumberConsumptionError? =
+        if (input.substring(startIndex = start, endIndex = end) == expected) {
+            null
+        } else {
+            NumberConsumptionError.WrongConstant(expected)
+        }
 }
 
 internal class FractionPartConsumer<in Receiver>(
-    private val minLength: Int?,
-    private val maxLength: Int?,
+    private val minLength: Int,
+    private val maxLength: Int,
     private val setter: AssignableField<Receiver, DecimalFraction>,
     name: String,
 ) : NumberConsumer<Receiver>(if (minLength == maxLength) minLength else null, name) {
     init {
-        require(minLength == null || minLength in 1..9) { "Invalid length for field $whatThisExpects: $length" }
-        // TODO: bounds on maxLength
+        require(minLength in 1..9) {
+            "Invalid minimum length $minLength for field $whatThisExpects: expected 1..9"
+        }
+        require(maxLength in minLength..9) {
+            "Invalid maximum length $maxLength for field $whatThisExpects: expected $minLength..9"
+        }
     }
 
-    override fun consume(storage: Receiver, input: String): NumberConsumptionError? = when {
-        minLength != null && input.length < minLength -> NumberConsumptionError.TooFewDigits(minLength)
-        maxLength != null && input.length > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
-        else -> when (val numerator = input.toIntOrNull()) {
-            null -> NumberConsumptionError.TooManyDigits(9)
-            else -> setter.setWithoutReassigning(storage, DecimalFraction(numerator, input.length))
-        }
+    override fun consume(storage: Receiver, input: CharSequence, start: Int, end: Int): NumberConsumptionError? = when {
+        end - start < minLength -> NumberConsumptionError.TooFewDigits(minLength)
+        end - start > maxLength -> NumberConsumptionError.TooManyDigits(maxLength)
+        else -> setter.setWithoutReassigning(
+            storage, DecimalFraction(input.parseAsciiInt(start = start, end = end), end - start)
+        )
     }
 }
 
@@ -134,4 +143,37 @@ private fun <Object, Type> AssignableField<Object, Type>.setWithoutReassigning(
 ): NumberConsumptionError? {
     val conflictingValue = trySetWithoutReassigning(receiver, value) ?: return null
     return NumberConsumptionError.Conflicting(conflictingValue)
+}
+
+/**
+ * Parses a substring of the receiver string as a positive ASCII integer.
+ *
+ * All characters between [start] (inclusive) and [end] (exclusive) must be ASCII digits,
+ * and the size of the substring must be at most 9, but the function does not check it.
+ */
+private fun CharSequence.parseAsciiInt(start: Int, end: Int): Int {
+    var result = 0
+    for (i in start until end) {
+        val digit = this[i]
+        result = result * 10 + digit.asciiDigitToInt()
+    }
+    return result
+}
+
+/**
+ * Parses a substring of the receiver string as a positive ASCII integer.
+ *
+ * All characters between [start] (inclusive) and [end] (exclusive) must be ASCII digits,
+ * but the function does not check it.
+ *
+ * Returns `null` if the result does not fit into a positive [Int].
+ */
+private fun CharSequence.parseAsciiIntOrNull(start: Int, end: Int): Int? {
+    var result = 0
+    for (i in start until end) {
+        val digit = this[i]
+        result = result * 10 + digit.asciiDigitToInt()
+        if (result < 0) return null
+    }
+    return result
 }
