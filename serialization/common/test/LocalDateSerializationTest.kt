@@ -70,10 +70,11 @@ class LocalDateSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object IsoBasicLocalDateSerializer : FormattedLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
+    object IsoBasicLocalDateSerializer : FormattedLocalDateSerializer("ISO_BASIC", LocalDate.Formats.ISO_BASIC)
 
     @Test
     fun testCustomSerializer() {
+        assertKSerializerName("kotlinx.datetime.LocalDate serializer ISO_BASIC", IsoBasicLocalDateSerializer)
         for ((localDate, json) in listOf(
             Pair(LocalDate(2020, 12, 9), "\"20201209\""),
             Pair(LocalDate(-2020, 1, 1), "\"-20200101\""),
@@ -83,4 +84,9 @@ class LocalDateSerializationTest {
             assertEquals(localDate, Json.decodeFromString(IsoBasicLocalDateSerializer, json))
         }
     }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+fun <T> assertKSerializerName(expectedName: String, serializer: KSerializer<T>) {
+    assertEquals(expectedName, serializer.descriptor.serialName)
 }

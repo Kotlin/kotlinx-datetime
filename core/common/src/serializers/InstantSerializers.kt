@@ -5,8 +5,7 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.Instant
-import kotlinx.datetime.format
+import kotlinx.datetime.*
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
@@ -86,13 +85,23 @@ public object InstantComponentSerializer : KSerializer<Instant> {
  * [format] should be a format that includes enough components to unambiguously define a date, a time, and a UTC offset.
  * See [Instant.parse] for details of how deserialization is performed.
  *
+ * [name] is the name of the serializer.
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.Instant serializer `[name].
+ * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
+ * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
+ * to avoid conflicts with serializers defined by other libraries and client code.
+ *
  * When serializing, the [Instant] value is formatted as a string using the specified [format]
  * in the [ZERO][UtcOffset.ZERO] UTC offset.
  *
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object Rfc1123InstantSerializer : FormattedInstantSerializer(DateTimeComponents.Formats.RFC_1123)
+ * // serializes LocalDateTime(2008, 6, 30, 11, 5, 30).toInstant(TimeZone.UTC)
+ * // as the string "Mon, 30 Jun 2008 11:05:30 GMT"
+ * object Rfc1123InstantSerializer : FormattedInstantSerializer(
+ *     "my.package.RFC1123", DateTimeComponents.Formats.RFC_1123
+ * )
  * ```
  *
  * Note that [Instant] is [kotlinx.serialization.Serializable] by default,
@@ -100,11 +109,11 @@ public object InstantComponentSerializer : KSerializer<Instant> {
  * Additionally, [InstantIso8601Serializer] is provided for the ISO 8601 format.
  */
 public abstract class FormattedInstantSerializer(
+    name: String,
     private val format: DateTimeFormat<DateTimeComponents>,
 ) : KSerializer<Instant> {
-
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.Instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.Instant serializer $name", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Instant =
         Instant.parse(decoder.decodeString(), format)
@@ -112,4 +121,7 @@ public abstract class FormattedInstantSerializer(
     override fun serialize(encoder: Encoder, value: Instant) {
         encoder.encodeString(value.format(format))
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun toString(): String = descriptor.serialName
 }

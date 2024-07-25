@@ -78,10 +78,19 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
  * An abstract serializer for [UtcOffset] values that uses
  * a custom [DateTimeFormat] to serialize and deserialize the value.
  *
+ * [name] is the name of the serializer.
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.UtcOffset serializer `[name].
+ * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
+ * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
+ * to avoid conflicts with serializers defined by other libraries and client code.
+ *
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+ * // serializes the UTC offset UtcOffset(hours = 2) as the string "+0200"
+ * object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer(
+ *     "my.package.FOUR_DIGITS", UtcOffset.Formats.FOUR_DIGITS
+ * )
  * ```
  *
  * Note that [UtcOffset] is [kotlinx.serialization.Serializable] by default,
@@ -89,5 +98,5 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
  * Additionally, [UtcOffsetSerializer] is provided for the ISO 8601 format.
  */
 public abstract class FormattedUtcOffsetSerializer(
-    format: DateTimeFormat<UtcOffset>,
-) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset")
+    name: String, format: DateTimeFormat<UtcOffset>
+) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset serializer $name")

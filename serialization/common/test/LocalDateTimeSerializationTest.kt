@@ -84,7 +84,7 @@ class LocalDateTimeSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object PythonDateTimeSerializer : FormattedLocalDateTimeSerializer(LocalDateTime.Format {
+    object PythonDateTimeSerializer : FormattedLocalDateTimeSerializer("PythonDateTime", LocalDateTime.Format {
         date(LocalDate.Formats.ISO)
         char(' ')
         time(LocalTime.Formats.ISO)
@@ -92,6 +92,7 @@ class LocalDateTimeSerializationTest {
 
     @Test
     fun testCustomSerializer() {
+        assertKSerializerName("kotlinx.datetime.LocalDateTime serializer PythonDateTime", PythonDateTimeSerializer)
         for ((localDateTime, json) in listOf(
             Pair(LocalDateTime(2008, 7, 5, 2, 1), "\"2008-07-05 02:01:00\""),
             Pair(LocalDateTime(2007, 12, 31, 23, 59, 1), "\"2007-12-31 23:59:01\""),
