@@ -92,14 +92,14 @@ public object InstantComponentSerializer : KSerializer<Instant> {
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object Rfc1123InstantSerializer : CustomInstantSerializer(DateTimeComponents.Formats.RFC_1123)
+ * object Rfc1123InstantSerializer : FormattedInstantSerializer(DateTimeComponents.Formats.RFC_1123)
  * ```
  *
  * Note that [Instant] is [kotlinx.serialization.Serializable] by default,
  * so it is not necessary to create custom serializers when the format is not important.
  * Additionally, [InstantIso8601Serializer] is provided for the ISO 8601 format.
  */
-public abstract class CustomInstantSerializer(
+public abstract class FormattedInstantSerializer(
     private val format: DateTimeFormat<DateTimeComponents>,
 ) : KSerializer<Instant> {
 
