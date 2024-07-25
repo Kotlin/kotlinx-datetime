@@ -27,11 +27,13 @@ class UtcOffsetSerializationTest {
 
     @Test
     fun defaultSerializer() {
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", Json.serializersModule.serializer())
         testSerializationAsPrimitive(Json.serializersModule.serializer())
     }
 
     @Test
     fun stringPrimitiveSerializer() {
+        assertKSerializerName("kotlinx.datetime.UtcOffset", UtcOffsetSerializer)
         testSerializationAsPrimitive(UtcOffsetSerializer)
         testSerializationAsPrimitive(UtcOffset.serializer())
     }

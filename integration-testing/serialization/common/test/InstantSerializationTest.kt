@@ -54,17 +54,20 @@ class InstantSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
+        assertKSerializerName("kotlinx.datetime.Instant", InstantIso8601Serializer)
         iso8601Serialization(InstantIso8601Serializer)
     }
 
     @Test
     fun testComponentSerialization() {
+        assertKSerializerName("kotlinx.datetime.Instant", InstantComponentSerializer)
         componentSerialization(InstantComponentSerializer)
     }
 
     @Test
     fun testDefaultSerializers() {
         // should be the same as the ISO 8601
+        assertKSerializerName<Instant>("kotlinx.datetime.Instant", Json.serializersModule.serializer())
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
