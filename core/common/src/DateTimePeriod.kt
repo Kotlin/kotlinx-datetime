@@ -9,7 +9,9 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.DatePeriodIso8601Serializer
 import kotlinx.datetime.serializers.DateTimePeriodIso8601Serializer
 import kotlinx.datetime.serializers.DatePeriodComponentSerializer
+import kotlinx.datetime.serializers.DatePeriodSerializer
 import kotlinx.datetime.serializers.DateTimePeriodComponentSerializer
+import kotlinx.datetime.serializers.DateTimePeriodSerializer
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlinx.serialization.Serializable
@@ -63,13 +65,14 @@ import kotlinx.serialization.Serializable
  * `DateTimePeriod` can also be returned as the result of instant arithmetic operations (see [Instant.periodUntil]).
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [DateTimePeriod]:
- * - [DateTimePeriodIso8601Serializer] for the ISO 8601 format;
+ * - The default serializer, delegating to [toString] and [parse].
+ * - [DateTimePeriodIso8601Serializer] for the ISO 8601 format.
  * - [DateTimePeriodComponentSerializer]  for an object with components.
  *
  * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.construction
  * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.simpleParsingAndFormatting
  */
-@Serializable(with = DateTimePeriodIso8601Serializer::class)
+@Serializable(with = DateTimePeriodSerializer::class)
 // TODO: could be error-prone without explicitly named params
 public sealed class DateTimePeriod {
     internal abstract val totalMonths: Int
@@ -426,7 +429,7 @@ public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this
  *
  * @sample kotlinx.datetime.test.samples.DatePeriodSamples.simpleParsingAndFormatting
  */
-@Serializable(with = DatePeriodIso8601Serializer::class)
+@Serializable(with = DatePeriodSerializer::class)
 public class DatePeriod internal constructor(
     internal override val totalMonths: Int,
     override val days: Int,
