@@ -201,6 +201,7 @@ internal interface DateFieldContainer {
     var monthNumber: Int?
     var dayOfMonth: Int?
     var isoDayOfWeek: Int?
+    var dayOfYear: Int?
 }
 
 private object DateFields {
@@ -208,6 +209,7 @@ private object DateFields {
     val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
     val dayOfMonth = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfMonth), minValue = 1, maxValue = 31)
     val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::isoDayOfWeek), minValue = 1, maxValue = 7)
+    val dayOfYear = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfYear), minValue = 1, maxValue = 366)
 }
 
 /**
@@ -217,14 +219,40 @@ internal class IncompleteLocalDate(
     override var year: Int? = null,
     override var monthNumber: Int? = null,
     override var dayOfMonth: Int? = null,
-    override var isoDayOfWeek: Int? = null
+    override var isoDayOfWeek: Int? = null,
+    override var dayOfYear: Int? = null,
 ) : DateFieldContainer, Copyable<IncompleteLocalDate> {
     fun toLocalDate(): LocalDate {
-        val date = LocalDate(
-            requireParsedField(year, "year"),
-            requireParsedField(monthNumber, "monthNumber"),
-            requireParsedField(dayOfMonth, "dayOfMonth")
-        )
+        val year = requireParsedField(year, "year")
+        val date = when (val dayOfYear = dayOfYear) {
+            null -> LocalDate(
+                year,
+                requireParsedField(monthNumber, "monthNumber"),
+                requireParsedField(dayOfMonth, "dayOfMonth")
+            )
+            else -> LocalDate(year, 1, 1).plus(dayOfYear - 1, DateTimeUnit.DAY).also {
+                if (it.year != year) {
+                    throw DateTimeFormatException(
+                        "Can not create a LocalDate from the given input: " +
+                            "the day of year is $dayOfYear, which is not a valid day of year for the year $year"
+                    )
+                }
+                if (monthNumber != null && it.monthNumber != monthNumber) {
+                    throw DateTimeFormatException(
+                        "Can not create a LocalDate from the given input: " +
+                            "the day of year is $dayOfYear, which is ${it.month}, " +
+                                "but $monthNumber was specified as the month number"
+                    )
+                }
+                if (dayOfMonth != null && it.dayOfMonth != dayOfMonth) {
+                    throw DateTimeFormatException(
+                        "Can not create a LocalDate from the given input: " +
+                            "the day of year is $dayOfYear, which is the day ${it.dayOfMonth} of ${it.month}, " +
+                                "but $dayOfMonth was specified as the day of month"
+                    )
+                }
+            }
+        }
         isoDayOfWeek?.let {
             if (it != date.dayOfWeek.isoDayNumber) {
                 throw DateTimeFormatException(
@@ -241,16 +269,19 @@ internal class IncompleteLocalDate(
         monthNumber = date.monthNumber
         dayOfMonth = date.dayOfMonth
         isoDayOfWeek = date.dayOfWeek.isoDayNumber
+        dayOfYear = date.dayOfYear
     }
 
-    override fun copy(): IncompleteLocalDate = IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek)
+    override fun copy(): IncompleteLocalDate =
+        IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek, dayOfYear)
 
     override fun equals(other: Any?): Boolean =
         other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
-            dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek
+            dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek && dayOfYear == other.dayOfYear
 
     override fun hashCode(): Int =
-        year.hashCode() * 31 + monthNumber.hashCode() * 31 + dayOfMonth.hashCode() * 31 + isoDayOfWeek.hashCode() * 31
+        year.hashCode() * 31 + monthNumber.hashCode() * 31 + dayOfMonth.hashCode() * 31 + isoDayOfWeek.hashCode() * 31 +
+            dayOfYear.hashCode() * 31
 
     override fun toString(): String =
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
@@ -375,6 +406,22 @@ private class DayDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
+private class DayOfYearDirective(private val padding: Padding) :
+    UnsignedIntFieldFormatDirective<DateFieldContainer>(
+        DateFields.dayOfYear,
+        minDigits = padding.minDigits(3),
+        spacePadding = padding.spaces(3),
+    ) {
+    override val builderRepresentation: String
+        get() = when (padding) {
+            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::dayOfYear.name}()"
+            else -> "${DateTimeFormatBuilder.WithDate::dayOfYear.name}(${padding.toKotlinCode()})"
+        }
+
+    override fun equals(other: Any?): Boolean = other is DayOfYearDirective && padding == other.padding
+    override fun hashCode(): Int = padding.hashCode()
+}
+
 private class DayOfWeekDirective(private val names: DayOfWeekNames) :
     NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names, "dayOfWeekName") {
 
@@ -431,6 +478,9 @@ internal interface AbstractWithDateBuilder : DateTimeFormatBuilder.WithDate {
     override fun dayOfMonth(padding: Padding) = addFormatStructureForDate(BasicFormatStructure(DayDirective(padding)))
     override fun dayOfWeek(names: DayOfWeekNames) =
         addFormatStructureForDate(BasicFormatStructure(DayOfWeekDirective(names)))
+
+    override fun dayOfYear(padding: Padding) =
+        addFormatStructureForDate(BasicFormatStructure(DayOfYearDirective(padding)))
 
     @Suppress("NO_ELSE_IN_WHEN")
     override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
