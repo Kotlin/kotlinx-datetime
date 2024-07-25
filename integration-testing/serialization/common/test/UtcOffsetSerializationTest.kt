@@ -36,10 +36,11 @@ class UtcOffsetSerializationTest {
         testSerializationAsPrimitive(UtcOffset.serializer())
     }
 
-    object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+    object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer("FOUR_DIGITS", UtcOffset.Formats.FOUR_DIGITS)
 
     @Test
     fun testCustomSerializer() {
+        assertKSerializerName("kotlinx.datetime.UtcOffset serializer FOUR_DIGITS", FourDigitOffsetSerializer)
         for ((utcOffset, json) in listOf(
             Pair(UtcOffset.ZERO, "\"+0000\""),
             Pair(UtcOffset(2), "\"+0200\""),

@@ -82,10 +82,18 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
  * An abstract serializer for [LocalDate] values that uses
  * a custom [DateTimeFormat] to serialize and deserialize the value.
  *
+ * [name] is the name of the serializer.
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.LocalDate serializer `[name].
+ * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
+ * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
+ * to avoid conflicts with serializers defined by other libraries and client code.
+ *
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object IsoBasicLocalDateSerializer : FormattedLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
+ * // serializes LocalDate(2020, 1, 4) as the string "20200104"
+ * object IsoBasicLocalDateSerializer :
+ *     FormattedLocalDateSerializer("my.package.ISO_BASIC", LocalDate.Formats.ISO_BASIC)
  * ```
  *
  * Note that [LocalDate] is [kotlinx.serialization.Serializable] by default,
@@ -93,17 +101,19 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
  * Additionally, [LocalDateIso8601Serializer] is provided for the ISO 8601 format.
  */
 public abstract class FormattedLocalDateSerializer(
-    format: DateTimeFormat<LocalDate>,
-) : KSerializer<LocalDate> by format.asKSerializer("kotlinx.datetime.LocalDate")
+    name: String, format: DateTimeFormat<LocalDate>
+) : KSerializer<LocalDate> by format.asKSerializer("kotlinx.datetime.LocalDate serializer $name")
 
-internal fun <T> DateTimeFormat<T>.asKSerializer(classFqn: String): KSerializer<T> =
+internal fun <T> DateTimeFormat<T>.asKSerializer(serialName: String): KSerializer<T> =
     object : KSerializer<T> {
         override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor(classFqn, PrimitiveKind.STRING)
+            PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder): T = parse(decoder.decodeString())
 
         override fun serialize(encoder: Encoder, value: T) {
             encoder.encodeString(format(value))
         }
+
+        override fun toString(): String = serialName
     }

@@ -87,10 +87,17 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
  * An abstract serializer for [LocalTime] values that uses
  * a custom [DateTimeFormat] to serialize and deserialize the value.
  *
+ * [name] is the name of the serializer.
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.LocalTime serializer `[name].
+ * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
+ * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
+ * to avoid conflicts with serializers defined by other libraries and client code.
+ *
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object FixedWidthTimeSerializer : FormattedLocalTimeSerializer(LocalTime.Format {
+ * // serializes LocalTime(12, 30) as "12:30:00.000"
+ * object FixedWidthTimeSerializer : FormattedLocalTimeSerializer("my.package.FixedWidthTime", LocalTime.Format {
  *     hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
  * })
  * ```
@@ -100,5 +107,5 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
  * Additionally, [LocalTimeIso8601Serializer] is provided for the ISO 8601 format.
  */
 public abstract class FormattedLocalTimeSerializer(
-    format: DateTimeFormat<LocalTime>,
-) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime")
+    name: String, format: DateTimeFormat<LocalTime>
+) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime serializer $name")

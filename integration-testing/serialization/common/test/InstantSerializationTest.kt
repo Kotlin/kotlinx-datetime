@@ -68,10 +68,11 @@ class InstantSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object Rfc1123InstantSerializer : FormattedInstantSerializer(DateTimeComponents.Formats.RFC_1123)
+    object Rfc1123InstantSerializer : FormattedInstantSerializer("RFC_1123", DateTimeComponents.Formats.RFC_1123)
 
     @Test
     fun testCustomSerializer() {
+        assertKSerializerName("kotlinx.datetime.Instant serializer RFC_1123", Rfc1123InstantSerializer)
         for ((instant, json) in listOf(
             Pair(Instant.fromEpochSeconds(1607505416),
                 "\"Wed, 9 Dec 2020 09:16:56 GMT\""),

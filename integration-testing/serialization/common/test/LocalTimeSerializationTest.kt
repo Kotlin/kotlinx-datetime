@@ -74,12 +74,13 @@ class LocalTimeSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object FixedWidthTimeSerializer : FormattedLocalTimeSerializer(LocalTime.Format {
+    object FixedWidthTimeSerializer : FormattedLocalTimeSerializer("FixedWidth", LocalTime.Format {
         hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
     })
 
     @Test
     fun testCustomSerializer() {
+        assertKSerializerName("kotlinx.datetime.LocalTime serializer FixedWidth", FixedWidthTimeSerializer)
         for ((localTime, json) in listOf(
             Pair(LocalTime(2, 1), "\"02:01:00.000\""),
             Pair(LocalTime(23, 59, 1), "\"23:59:01.000\""),
