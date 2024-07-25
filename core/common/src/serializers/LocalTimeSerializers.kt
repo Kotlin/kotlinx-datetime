@@ -90,7 +90,7 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object FixedWidthTimeSerializer : CustomLocalTimeSerializer(LocalTime.Format {
+ * object FixedWidthTimeSerializer : FormattedLocalTimeSerializer(LocalTime.Format {
  *     hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
  * })
  * ```
@@ -99,6 +99,6 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
  * so it is not necessary to create custom serializers when the format is not important.
  * Additionally, [LocalTimeIso8601Serializer] is provided for the ISO 8601 format.
  */
-public abstract class CustomLocalTimeSerializer(
+public abstract class FormattedLocalTimeSerializer(
     format: DateTimeFormat<LocalTime>,
 ) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime")

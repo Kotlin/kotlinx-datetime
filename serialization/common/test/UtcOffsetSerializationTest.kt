@@ -36,7 +36,7 @@ class UtcOffsetSerializationTest {
         testSerializationAsPrimitive(UtcOffset.serializer())
     }
 
-    object FourDigitOffsetSerializer : CustomUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+    object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
 
     @Test
     fun testCustomSerializer() {

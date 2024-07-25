@@ -107,7 +107,7 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object PythonDateTimeSerializer : CustomLocalDateTimeSerializer(LocalDateTime.Format {
+ * object PythonDateTimeSerializer : FormattedLocalDateTimeSerializer(LocalDateTime.Format {
  *     date(LocalDate.Formats.ISO)
  *     char(' ')
  *     time(LocalTime.Formats.ISO)
@@ -118,6 +118,6 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
  * so it is not necessary to create custom serializers when the format is not important.
  * Additionally, [LocalDateTimeIso8601Serializer] is provided for the ISO 8601 format.
  */
-public abstract class CustomLocalDateTimeSerializer(
+public abstract class FormattedLocalDateTimeSerializer(
     format: DateTimeFormat<LocalDateTime>,
 ) : KSerializer<LocalDateTime> by format.asKSerializer("kotlinx.datetime.LocalDateTime")

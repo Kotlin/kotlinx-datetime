@@ -68,7 +68,7 @@ class InstantSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object Rfc1123InstantSerializer : CustomInstantSerializer(DateTimeComponents.Formats.RFC_1123)
+    object Rfc1123InstantSerializer : FormattedInstantSerializer(DateTimeComponents.Formats.RFC_1123)
 
     @Test
     fun testCustomSerializer() {

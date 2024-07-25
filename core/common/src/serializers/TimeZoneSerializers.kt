@@ -81,13 +81,13 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
  * ```
- * object FourDigitOffsetSerializer : CustomUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
+ * object FourDigitOffsetSerializer : FormattedUtcOffsetSerializer(UtcOffset.Formats.FOUR_DIGITS)
  * ```
  *
  * Note that [UtcOffset] is [kotlinx.serialization.Serializable] by default,
  * so it is not necessary to create custom serializers when the format is not important.
  * Additionally, [UtcOffsetSerializer] is provided for the ISO 8601 format.
  */
-public abstract class CustomUtcOffsetSerializer(
+public abstract class FormattedUtcOffsetSerializer(
     format: DateTimeFormat<UtcOffset>,
 ) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset")

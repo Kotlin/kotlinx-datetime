@@ -74,7 +74,7 @@ class LocalTimeSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object FixedWidthTimeSerializer : CustomLocalTimeSerializer(LocalTime.Format {
+    object FixedWidthTimeSerializer : FormattedLocalTimeSerializer(LocalTime.Format {
         hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
     })
 

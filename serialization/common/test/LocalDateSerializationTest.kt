@@ -70,7 +70,7 @@ class LocalDateSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object IsoBasicLocalDateSerializer : CustomLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
+    object IsoBasicLocalDateSerializer : FormattedLocalDateSerializer(LocalDate.Formats.ISO_BASIC)
 
     @Test
     fun testCustomSerializer() {

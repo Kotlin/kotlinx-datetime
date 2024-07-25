@@ -84,7 +84,7 @@ class LocalDateTimeSerializationTest {
         iso8601Serialization(Json.serializersModule.serializer())
     }
 
-    object PythonDateTimeSerializer : CustomLocalDateTimeSerializer(LocalDateTime.Format {
+    object PythonDateTimeSerializer : FormattedLocalDateTimeSerializer(LocalDateTime.Format {
         date(LocalDate.Formats.ISO)
         char(' ')
         time(LocalTime.Formats.ISO)
