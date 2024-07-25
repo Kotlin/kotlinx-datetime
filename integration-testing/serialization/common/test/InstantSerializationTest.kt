@@ -70,13 +70,13 @@ class InstantSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.Instant", InstantIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.Instant ISO", InstantIso8601Serializer)
         iso8601Serialization(InstantIso8601Serializer)
     }
 
     @Test
     fun testComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.Instant", InstantComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.Instant components", InstantComponentSerializer)
         componentSerialization(InstantComponentSerializer)
     }
 
