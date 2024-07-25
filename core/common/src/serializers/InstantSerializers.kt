@@ -22,7 +22,7 @@ import kotlinx.serialization.encoding.*
 public object InstantIso8601Serializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.Instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.Instant ISO", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Instant =
         Instant.parse(decoder.decodeString(), DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET)
@@ -41,7 +41,7 @@ public object InstantIso8601Serializer : KSerializer<Instant> {
 public object InstantComponentSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("kotlinx.datetime.Instant") {
+        buildClassSerialDescriptor("kotlinx.datetime.Instant components") {
             element<Long>("epochSeconds")
             element<Long>("nanosecondsOfSecond", isOptional = true)
         }

@@ -97,25 +97,25 @@ class DateTimePeriodSerializationTest {
 
     @Test
     fun testDatePeriodIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.DatePeriod", DatePeriodIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.DatePeriod ISO", DatePeriodIso8601Serializer)
         datePeriodIso8601Serialization(DatePeriodIso8601Serializer, DateTimePeriodIso8601Serializer)
     }
 
     @Test
     fun testDatePeriodComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.DatePeriod", DatePeriodComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.DatePeriod components", DatePeriodComponentSerializer)
         datePeriodComponentSerialization(DatePeriodComponentSerializer, DateTimePeriodComponentSerializer)
     }
 
     @Test
     fun testDateTimePeriodIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.DateTimePeriod", DateTimePeriodIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.DateTimePeriod ISO", DateTimePeriodIso8601Serializer)
         dateTimePeriodIso8601Serialization(DateTimePeriodIso8601Serializer)
     }
 
     @Test
     fun testDateTimePeriodComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.DateTimePeriod", DateTimePeriodComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.DateTimePeriod components", DateTimePeriodComponentSerializer)
         dateTimePeriodComponentSerialization(DateTimePeriodComponentSerializer)
     }
 

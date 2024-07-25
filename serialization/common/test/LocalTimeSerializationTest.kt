@@ -73,13 +73,13 @@ class LocalTimeSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.LocalTime", LocalTimeIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.LocalTime ISO", LocalTimeIso8601Serializer)
         iso8601Serialization(LocalTimeIso8601Serializer)
     }
 
     @Test
     fun testComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.LocalTime", LocalTimeComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.LocalTime components", LocalTimeComponentSerializer)
         componentSerialization(LocalTimeComponentSerializer)
     }
 

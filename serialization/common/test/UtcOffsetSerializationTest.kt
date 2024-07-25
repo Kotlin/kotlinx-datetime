@@ -47,7 +47,7 @@ class UtcOffsetSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset", UtcOffsetIso8601Serializer)
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset ISO", UtcOffsetIso8601Serializer)
         iso8601Serialization(UtcOffsetIso8601Serializer)
     }
 
