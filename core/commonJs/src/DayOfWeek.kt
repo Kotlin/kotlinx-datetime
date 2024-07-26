@@ -7,14 +7,4 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.DayOfWeek as jsDayOfWeek
 
-public actual enum class DayOfWeek {
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    SUNDAY;
-}
-
 internal fun jsDayOfWeek.toDayOfWeek(): DayOfWeek = DayOfWeek(this.value())

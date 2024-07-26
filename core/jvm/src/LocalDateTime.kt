@@ -12,9 +12,6 @@ import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.LocalDateTime as jtLocalDateTime
 
-public actual typealias Month = java.time.Month
-public actual typealias DayOfWeek = java.time.DayOfWeek
-
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
@@ -33,9 +30,9 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
-    public actual val month: Month get() = value.month
+    public actual val month: Month get() = value.month.toKotlinMonth()
     public actual val dayOfMonth: Int get() = value.dayOfMonth
-    public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek
+    public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
     public actual val dayOfYear: Int get() = value.dayOfYear
 
     public actual val hour: Int get() = value.hour
@@ -85,3 +82,24 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
 }
 
+@Deprecated(
+    "Use kotlinx.datetime.Month",
+    ReplaceWith("LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)")
+)
+public fun LocalDateTime(
+    year: Int,
+    month: java.time.Month,
+    dayOfMonth: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0
+): LocalDateTime = LocalDateTime(
+    year,
+    month.toKotlinMonth(),
+    dayOfMonth,
+    hour,
+    minute,
+    second,
+    nanosecond
+)
