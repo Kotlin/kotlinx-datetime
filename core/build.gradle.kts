@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
@@ -20,7 +21,7 @@ mavenPublicationsPom {
 }
 
 base {
-    archivesBaseName = "kotlinx-datetime" // doesn't work
+    archivesName.set("kotlinx-datetime")
 }
 
 val mainJavaToolchainVersion: String by project
@@ -119,6 +120,7 @@ kotlin {
 //        }
     }
 
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs {
             testTask {
@@ -309,7 +311,7 @@ tasks {
     // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
     // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
     val clean by existing(Delete::class) {
-        setDelete(fileTree(buildDir) {
+        setDelete(fileTree(layout.buildDirectory) {
             exclude("tmp/.cache/expanded/expanded.lock")
         })
     }
