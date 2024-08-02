@@ -5,6 +5,13 @@
 
 package kotlinx.datetime
 
+import kotlin.annotation.AnnotationRetention.BINARY
+import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FILE
+import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.PROPERTY
 
-@Retention(AnnotationRetention.SOURCE)
+
+@Retention(BINARY)
+@Target(CLASS, PROPERTY, FUNCTION, FILE)
 public actual annotation class SafeJsExport

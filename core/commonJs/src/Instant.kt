@@ -7,6 +7,10 @@
 
 package kotlinx.datetime
 
+import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FILE
+import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.JSJoda.Instant as jtInstant
 import kotlinx.datetime.internal.JSJoda.Duration as jtDuration
@@ -27,6 +31,8 @@ import kotlin.time.Duration.Companion.seconds
  * The actual for the JS target is [JsExport], while the actual for WASM target is
  * an annotation without any effect.
  */
+@Target(CLASS, PROPERTY, FUNCTION, FILE)
+@Retention(AnnotationRetention.BINARY)
 public expect annotation class SafeJsExport()
 
 @SafeJsExport
