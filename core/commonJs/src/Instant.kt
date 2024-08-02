@@ -3,6 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:OptIn(ExperimentalJsExport::class)
+
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
@@ -19,17 +21,39 @@ import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * This annotation is a workaround for
+ * [KT-62385 @JsExport doesn't play well with the WasmTarget](https://youtrack.jetbrains.com/issue/KT-62385).
+ * The actual for the JS target is [JsExport], while the actual for WASM target is
+ * an annotation without any effect.
+ */
+public expect annotation class SafeJsExport()
+
+@SafeJsExport
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
 
+    @JsExport.Ignore
     public actual val epochSeconds: Long
         get() = value.epochSecond().toLong()
+
+    @JsExport.Ignore
     public actual val nanosecondsOfSecond: Int
         get() = value.nano().toInt()
 
+    @JsExport.Ignore
     public actual fun toEpochMilliseconds(): Long =
             epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
 
+    /**
+     * Same as [toEpochMilliseconds], but returns a [Double] instead of [Long].
+     * This function is actually [JsExport]able because the return type
+     * is [Double] and not [Long].
+     */
+    public fun toEpochMillisecondsDouble(): Double =
+        value.epochSecond() * MILLIS_PER_ONE + value.nano() / NANOS_PER_MILLI
+
+    @JsExport.Ignore
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         return try {
             Instant(plusFix(seconds.toDouble(), nanoseconds))
@@ -45,15 +69,19 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         return jsTry { jtInstant.ofEpochSecond(newSeconds, newNanos.toInt()) }
     }
 
+    @JsExport.Ignore
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
+    @JsExport.Ignore
     public actual operator fun minus(other: Instant): Duration {
         val diff = jtDuration.between(other.value, this.value)
         return diff.seconds().seconds + diff.nano().nanoseconds
     }
 
+    @JsExport.Ignore
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value)
 
+    @JsExport.Ignore
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is Instant && (this.value === other.value || this.value.equals(other.value)))
 
@@ -62,10 +90,13 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
     actual override fun toString(): String = value.toString()
 
     public actual companion object {
+
+        @JsExport.Ignore
         @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
         public actual fun now(): Instant =
                 Instant(jtClock.systemUTC().instant())
 
+        @JsExport.Ignore
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant = try {
             fromEpochSeconds(epochMilliseconds / MILLIS_PER_ONE, epochMilliseconds % MILLIS_PER_ONE * NANOS_PER_MILLI)
         } catch (e: Throwable) {
@@ -74,6 +105,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         // TODO: implement a custom parser to 1) help DCE get rid of the formatting machinery 2) move Instant to stdlib
+        @JsExport.Ignore
         public actual fun parse(input: CharSequence, format: DateTimeFormat<DateTimeComponents>): Instant = try {
             // This format is not supported properly by Joda-Time, so we can't delegate to it.
             format.parse(input).toInstantUsingOffset()
@@ -82,8 +114,10 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
         }
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        @JsExport.Ignore
         public fun parse(isoString: String): Instant = parse(input = isoString)
 
+        @JsExport.Ignore
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             /* Performing normalization here because otherwise this fails:
                assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(),
@@ -96,6 +130,7 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochSeconds > 0) MAX else MIN
         }
 
+        @JsExport.Ignore
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Int): Instant = try {
             Instant(jsTry { jtInstant.ofEpochSecond(epochSeconds.toDouble(), nanosecondAdjustment) })
         } catch (e: Throwable) {
@@ -103,7 +138,9 @@ public actual class Instant internal constructor(internal val value: jtInstant) 
             if (epochSeconds > 0) MAX else MIN
         }
 
+        @JsExport.Ignore
         public actual val DISTANT_PAST: Instant = Instant(jsTry { jtInstant.ofEpochSecond(DISTANT_PAST_SECONDS.toDouble(), 999_999_999) })
+        @JsExport.Ignore
         public actual val DISTANT_FUTURE: Instant = Instant(jsTry { jtInstant.ofEpochSecond(DISTANT_FUTURE_SECONDS.toDouble(), 0) })
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
