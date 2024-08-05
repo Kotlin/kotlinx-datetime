@@ -280,8 +280,8 @@ internal class IncompleteLocalDate(
             dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek && dayOfYear == other.dayOfYear
 
     override fun hashCode(): Int =
-        year.hashCode() * 31 + monthNumber.hashCode() * 31 + dayOfMonth.hashCode() * 31 + isoDayOfWeek.hashCode() * 31 +
-            dayOfYear.hashCode() * 31
+        year.hashCode() + monthNumber.hashCode() + dayOfMonth.hashCode() + isoDayOfWeek.hashCode() +
+            dayOfYear.hashCode()
 
     override fun toString(): String =
         "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
