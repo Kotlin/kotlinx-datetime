@@ -21,12 +21,11 @@ sourceSets {
 
 // Publish benchmarks to the root for the easier 'java -jar benchmarks.jar`
 tasks.named<Jar>("jmhJar") {
-    val nullString: String? = null
-    archiveBaseName.set("benchmarks")
-    archiveClassifier.set(nullString)
-    archiveVersion.set(nullString)
-    archiveVersion.convention(nullString)
-    destinationDirectory.set(file("$rootDir"))
+    archiveBaseName = "benchmarks"
+    archiveClassifier = null
+    archiveVersion.convention(null as String?)
+    archiveVersion = null
+    destinationDirectory = file("$rootDir")
 }
 
 repositories {

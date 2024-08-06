@@ -10,7 +10,7 @@ val mainJavaToolchainVersion: String by project
 val serializationVersion: String by project
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    toolchain { languageVersion = JavaLanguageVersion.of(mainJavaToolchainVersion) }
 }
 
 kotlin {
