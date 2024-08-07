@@ -53,8 +53,8 @@ class TimeZoneRulesCompleteTest {
                             checkTransition(Instant.fromEpochSeconds(transition))
                         }
                         // check recurring rules
-                        if (windowsName != "Morocco Standard Time" && windowsName != "West Bank Standard Time") {
-                            // we skip checking these two time zones because Windows does something arbitrary with them
+                        if (windowsName !in strangeTimeZones) {
+                            // we skip checking these time zones because Windows does something arbitrary with them
                             // after 2030. For example, Morocco DST transitions are linked to the month of Ramadan,
                             // and after 2030, Windows doesn't seem to calculate Ramadan properly, but also, it doesn't
                             // follow the rules stored in the registry. Odd, but it doesn't seem worth it trying to
@@ -118,3 +118,7 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
         second = wSecond.convert(),
         nanosecond = wMilliseconds.convert<Int>() * (NANOS_PER_ONE / MILLIS_PER_ONE)
     )
+
+private val strangeTimeZones = listOf(
+    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time"
+)
