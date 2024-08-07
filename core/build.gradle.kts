@@ -1,12 +1,14 @@
 import kotlinx.team.infra.mavenPublicationsPom
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
-import javax.xml.parsers.DocumentBuilderFactory
-import java.io.ByteArrayOutputStream
-import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.target.Family
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
+import java.net.URL
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     kotlin("multiplatform")
@@ -99,20 +101,14 @@ kotlin {
                 }
             }
         }
-        compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
-                metaInfo = true
-            }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            sourceMap = true
+            moduleKind = JsModuleKind.MODULE_UMD
         }
-//        compilations["main"].apply {
-//            kotlinOptions {
-//                outputFile = "kotlinx-datetime-tmp.js"
-//            }
-//        }
     }
 
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs {
             testTask {
@@ -126,6 +122,7 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xdont-warn-on-error-suppression")
     }
 
     sourceSets.all {
@@ -141,8 +138,8 @@ kotlin {
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
+        compilations["test"].compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.add("-trw")
         }
         if (konanTarget.family == Family.MINGW) {
             compilations["test"].cinterops {
@@ -288,14 +285,6 @@ tasks {
         }
     }
 
-    // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
-    // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
-    val clean by existing(Delete::class) {
-        setDelete(fileTree(layout.buildDirectory) {
-            exclude("tmp/.cache/expanded/expanded.lock")
-        })
-    }
-
     // workaround from KT-61313
     withType<Sign>().configureEach {
         val pubName = name.removePrefix("sign").removeSuffix("Publication")
@@ -404,12 +393,4 @@ tasks.configureEach {
     if (name == "compileCommonJsMainKotlinMetadata") {
         enabled = false
     }
-}
-
-// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
-// check it here:
-// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
-with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
-    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }

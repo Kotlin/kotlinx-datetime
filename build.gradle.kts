@@ -24,22 +24,12 @@ allprojects {
         addTrainRepositories(project)
         mavenCentral()
     }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        // outputs the compiler version to logs so we can check whether the train configuration applied
-        kotlinOptions.freeCompilerArgs += "-version"
-    }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
         compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
         compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
     }
-}
-
-// Disable NPM to NodeJS nightly compatibility check.
-// Drop this when NodeJs version that supports latest Wasm become stable
-tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
 }
 
 kover {

@@ -5,11 +5,12 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.*
 import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.native.concurrent.ThreadLocal
 
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {

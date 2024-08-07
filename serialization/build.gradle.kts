@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import java.util.Locale
 
 plugins {
@@ -43,16 +46,14 @@ kotlin {
     js {
         nodejs {
         }
-        compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
-                metaInfo = true
-            }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            sourceMap = true
+            moduleKind = JsModuleKind.MODULE_UMD
         }
     }
 
-
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs {
         }
@@ -67,8 +68,8 @@ kotlin {
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
+        compilations["test"].compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.add("-trw")
         }
     }
 
