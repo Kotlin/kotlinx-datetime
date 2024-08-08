@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.1
+
+- Prohibit parsing non-ASCII digits as numbers in `DateTimeFormat` ([#405](https://github.com/Kotlin/kotlinx-datetime/issues/405))
+- More accurately determine which files represent time zones and which don't on Linux and Darwin ([#395](https://github.com/Kotlin/kotlinx-datetime/pull/395))
+- Fix a regression that occasionally considered the right boundary of a time overlap to be a part of it on Native ([#399](https://github.com/Kotlin/kotlinx-datetime/issues/399))
+- Introduce various small improvements to the timezone handling on Windows ([#390](https://github.com/Kotlin/kotlinx-datetime/pull/390))
+- On Linux, allow not having any `/etc/localtime` set, defaulting to `TimeZone.UTC` as the system time zone ([#426](https://github.com/Kotlin/kotlinx-datetime/pull/426))
+
 ## 0.6.0
 
 - Introduce the widely requested API for locale-invariant parsing and formatting ([#343](https://github.com/Kotlin/kotlinx-datetime/pull/343))
