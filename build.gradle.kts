@@ -1,12 +1,15 @@
 plugins {
-    id("kotlinx.team.infra") version "0.4.0-dev-81"
+    id("kotlinx.team.infra")
+    id("org.jetbrains.kotlinx.kover")
+
     kotlin("multiplatform") apply false
-    id("org.jetbrains.kotlinx.kover") version "0.8.0-Beta2"
 }
 
+fun javaLanguageVersionProperty(propertyName: String) = JavaLanguageVersion.of(property(propertyName) as String)
+val mainJavaToolchainVersion by extra(javaLanguageVersionProperty("java.mainToolchainVersion"))
+val modularJavaToolchainVersion by extra(javaLanguageVersionProperty("java.modularToolchainVersion"))
+
 infra {
-    teamcity {
-    }
     publishing {
         include(":kotlinx-datetime")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
@@ -16,20 +19,11 @@ infra {
     }
 }
 
-val mainJavaToolchainVersion by ext(project.property("java.mainToolchainVersion"))
-val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVersion"))
-
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
-
 kover {
     reports {
         verify {
             rule {
-                // requirement for a minimum lines coverage of 85%
+                // requirement for a minimum line coverage of 85%
                 minBound(85)
             }
         }

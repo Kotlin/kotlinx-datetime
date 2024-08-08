@@ -1,25 +1,20 @@
-/*
- * Copyright 2019-2023 JetBrains s.r.o. and contributors.
- * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
- */
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
-    id("kotlin")
+    kotlin("jvm")
     id("me.champeau.jmh")
 }
 
-
-val mainJavaToolchainVersion by ext(project.property("java.mainToolchainVersion"))
-val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVersion"))
+val jmhVersion: String by project
 
 sourceSets {
     dependencies {
         implementation(project(":kotlinx-datetime"))
-        implementation("org.openjdk.jmh:jmh-core:1.35")
+        implementation("org.openjdk.jmh:jmh-core:$jmhVersion")
     }
 }
 
-// Publish benchmarks to the root for the easier 'java -jar benchmarks.jar`
+// publish benchmarks to the repository root for easier `java -jar benchmarks.jar`
 tasks.named<Jar>("jmhJar") {
     archiveBaseName = "benchmarks"
     archiveClassifier = null
@@ -28,6 +23,9 @@ tasks.named<Jar>("jmhJar") {
     destinationDirectory = file("$rootDir")
 }
 
-repositories {
-    mavenCentral()
+// compile all Kotlin code from the module during full-repository builds
+tasks.named("assemble") {
+    tasks.withType<KotlinCompilationTask<*>>().forEach { compileKotlinTask ->
+        dependsOn(compileKotlinTask)
+    }
 }
