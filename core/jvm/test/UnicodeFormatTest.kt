@@ -40,7 +40,6 @@ class UnicodeFormatTest {
             "yyyy_MM_dd_HH_mm_ss", "yyyy-MM-d 'at' HH:mm ", "yyyy:MM:dd HH:mm:ss",
             "yyyy年MM月dd日 HH:mm:ss", "yyyy年MM月dd日", "dd.MM.yyyy. HH:mm:ss", "ss", "ddMMyyyy",
             "yyyyMMdd'T'HHmmss'Z'", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssX",
-            "yyyy-MM-dd'T'HH:mm:ss[.SSS]X" // not in top 100, but interesting, as it contains an optional section
         )
         val localizedPatterns = listOf(
             "MMMM", "hh:mm a", "h:mm a", "dd MMMM yyyy", "dd MMM yyyy", "yyyy-MM-dd hh:mm:ss", "d MMMM yyyy", "MMM",
@@ -69,6 +68,16 @@ class UnicodeFormatTest {
         for (pattern in nonLocalizedPatterns) {
             checkPattern(pattern)
         }
+    }
+
+    @Test
+    fun testOptionalSection() {
+        checkPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS]X")
+    }
+
+    @Test
+    fun testDayOfYearFormats() {
+        checkPattern("yyyyDDDHHmm")
     }
 
     private fun checkPattern(pattern: String) {
@@ -160,6 +169,7 @@ private val dateTimeComponentsTemporalQuery = TemporalQuery { accessor ->
             ChronoField.YEAR to { year = it },
             ChronoField.MONTH_OF_YEAR to { monthNumber = it },
             ChronoField.DAY_OF_MONTH to { dayOfMonth = it },
+            ChronoField.DAY_OF_YEAR to { dayOfYear = it },
             ChronoField.DAY_OF_WEEK to { dayOfWeek = DayOfWeek(it) },
             ChronoField.AMPM_OF_DAY to { amPm = if (it == 1) AmPmMarker.PM else AmPmMarker.AM },
             ChronoField.CLOCK_HOUR_OF_AMPM to { hourOfAmPm = it },

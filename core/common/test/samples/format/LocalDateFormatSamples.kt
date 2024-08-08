@@ -88,6 +88,16 @@ class LocalDateFormatSamples {
     }
 
     @Test
+    fun dayOfYear() {
+        // Using day-of-year in a custom format
+        val format = LocalDate.Format {
+            year(); dayOfYear()
+        }
+        check(format.format(LocalDate(2021, 2, 13)) == "2021044")
+        check(format.parse("2021044") == LocalDate(2021, 2, 13))
+    }
+
+    @Test
     fun date() {
         // Using a predefined format for a date in a larger custom format
         val format = LocalDateTime.Format {

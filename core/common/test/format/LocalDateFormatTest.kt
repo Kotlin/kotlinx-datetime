@@ -210,6 +210,27 @@ class LocalDateFormatTest {
     }
 
     @Test
+    fun testDayOfYear() {
+        val dates = buildMap<LocalDate, Pair<String, Set<String>>> {
+            put(LocalDate(2008, 7, 5), ("2008-187" to setOf()))
+            put(LocalDate(2007, 12, 31), ("2007-365" to setOf()))
+            put(LocalDate(999, 11, 30), ("0999-334" to setOf()))
+            put(LocalDate(-1, 1, 2), ("-0001-002" to setOf()))
+            put(LocalDate(9999, 10, 31), ("9999-304" to setOf()))
+            put(LocalDate(-9999, 9, 30), ("-9999-273" to setOf()))
+            put(LocalDate(10000, 8, 1), ("+10000-214" to setOf()))
+            put(LocalDate(-10000, 7, 1), ("-10000-183" to setOf()))
+            put(LocalDate(123456, 6, 1), ("+123456-153" to setOf()))
+            put(LocalDate(-123456, 5, 1), ("-123456-122" to setOf()))
+        }
+        test(dates, LocalDate.Format {
+            year()
+            char('-')
+            dayOfYear()
+        })
+    }
+
+    @Test
     fun testDoc() {
         val format = LocalDate.Format {
           year()
