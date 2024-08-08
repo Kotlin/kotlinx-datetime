@@ -1,16 +1,16 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
-    kotlin("jvm")
-    id("me.champeau.jmh")
+    with(libs.plugins) {
+        alias(kotlin.jvm)
+        alias(jmh)
+    }
 }
-
-val jmhVersion: String by project
 
 sourceSets {
     dependencies {
         implementation(project(":kotlinx-datetime"))
-        implementation("org.openjdk.jmh:jmh-core:$jmhVersion")
+        implementation(libs.jmh)
     }
 }
 

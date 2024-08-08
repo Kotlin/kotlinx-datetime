@@ -12,19 +12,17 @@ import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("org.jetbrains.kotlinx.kover")
-    id("org.jetbrains.dokka")
+    with(libs.plugins) {
+        alias(kotlin.multiplatform)
+        alias(kotlin.plugin.serialization)
+        alias(kover)
+        alias(dokka)
+    }
     `maven-publish`
 }
 
 val mainJavaToolchainVersion: JavaLanguageVersion by project
 val modularJavaToolchainVersion: JavaLanguageVersion by project
-
-val serializationVersion: String by project
-val jsJodaCoreVersion: String by project
-val jsJodaTimezoneVersion: String by project
 
 mavenPublicationsPom {
     description = "Kotlin Datetime Library"
@@ -157,12 +155,12 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                compileOnly(libs.kotlinx.serialization.core)
             }
         }
         val commonTest by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test")
+                api(libs.kotlin.test)
             }
         }
 
@@ -171,7 +169,7 @@ kotlin {
 
         val nativeMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                api(libs.kotlinx.serialization.core)
             }
         }
         val nativeTest by getting
@@ -179,14 +177,14 @@ kotlin {
         val commonJsMain by creating {
             dependsOn(commonMain)
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", jsJodaCoreVersion))
+                api(libs.kotlinx.serialization.core)
+                implementation(npm("@js-joda/core", libs.versions.jsJoda.core.get()))
             }
         }
         val commonJsTest by creating {
             dependsOn(commonTest)
             dependencies {
-                implementation(npm("@js-joda/timezone", jsJodaTimezoneVersion))
+                implementation(npm("@js-joda/timezone", libs.versions.jsJoda.timezone.get()))
             }
         }
 

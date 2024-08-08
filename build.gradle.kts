@@ -1,8 +1,10 @@
 plugins {
-    id("kotlinx.team.infra")
-    id("org.jetbrains.kotlinx.kover")
+    with(libs.plugins) {
+        alias(kotlinx.infra)
+        alias(kover)
 
-    kotlin("multiplatform") apply false
+        alias(kotlin.multiplatform) apply false
+    }
 }
 
 fun javaLanguageVersionProperty(propertyName: String) = JavaLanguageVersion.of(property(propertyName) as String)

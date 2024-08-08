@@ -4,17 +4,15 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("org.jetbrains.kotlinx.kover")
+    with(libs.plugins) {
+        alias(kotlin.multiplatform)
+        alias(kotlin.plugin.serialization)
+        alias(kover)
+    }
 }
 
 val mainJavaToolchainVersion: JavaLanguageVersion by project
 val modularJavaToolchainVersion: JavaLanguageVersion by project
-
-val serializationVersion: String by project
-val jsJodaCoreVersion: String by project
-val jsJodaTimezoneVersion: String by project
 
 java {
     toolchain.languageVersion = mainJavaToolchainVersion
@@ -97,8 +95,8 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+                api(libs.kotlin.test)
+                api(libs.kotlinx.serialization.json)
             }
         }
 
@@ -114,7 +112,7 @@ kotlin {
         val commonJsTest by creating {
             dependsOn(commonTest)
             dependencies {
-                implementation(npm("@js-joda/timezone", jsJodaTimezoneVersion))
+                implementation(npm("@js-joda/timezone", libs.versions.jsJoda.timezone.get()))
             }
         }
 
