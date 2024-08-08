@@ -4,9 +4,12 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    val kotlinVersion: String by settings
     val dokkaVersion: String by settings
     val benchmarksVersion: String by settings
     plugins {
+        kotlin("multiplatform") version kotlinVersion
+        kotlin("plugin.serialization") version kotlinVersion
         id("org.jetbrains.dokka") version dokkaVersion
         id("me.champeau.jmh") version benchmarksVersion
     }

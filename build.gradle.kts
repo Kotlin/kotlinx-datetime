@@ -21,14 +21,7 @@ val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVe
 
 allprojects {
     repositories {
-        addTrainRepositories(project)
         mavenCentral()
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
     }
 }
 
