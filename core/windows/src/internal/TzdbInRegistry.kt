@@ -7,8 +7,8 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
-import platform.posix.*
 import platform.windows.*
+import kotlin.experimental.*
 
 internal class TzdbInRegistry: TimeZoneDatabase {
 
@@ -16,30 +16,52 @@ internal class TzdbInRegistry: TimeZoneDatabase {
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
     private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
-            val transitions = recurring.transitions?.let { listOf(it.first, it.second) } ?: emptyList()
-            val rules = if (historic.isEmpty()) {
-                TimeZoneRules(recurring.standardOffset, RecurringZoneRules(transitions))
-            } else {
+            val recurringRules = RecurringZoneRules(recurring.transitions)
+            val rules = run {
+                val offsets = mutableListOf<UtcOffset>()
                 val transitionEpochSeconds = mutableListOf<Long>()
-                val offsets = mutableListOf(historic[0].second.standardOffset)
                 for ((year, record) in historic) {
-                    if (record.transitions == null) continue
-                    val (trans1, trans2) = record.transitions
-                    val transTime1 = trans1.transitionDateTime.toInstant(year, trans1.offsetBefore)
-                    val transTime2 = trans2.transitionDateTime.toInstant(year, trans2.offsetBefore)
-                    if (transTime2 >= transTime1) {
-                        transitionEpochSeconds.add(transTime1.epochSeconds)
-                        offsets.add(trans1.offsetAfter)
-                        transitionEpochSeconds.add(transTime2.epochSeconds)
-                        offsets.add(trans2.offsetAfter)
-                    } else {
-                        transitionEpochSeconds.add(transTime2.epochSeconds)
-                        offsets.add(trans2.offsetAfter)
-                        transitionEpochSeconds.add(transTime1.epochSeconds)
-                        offsets.add(trans1.offsetAfter)
+                    when (record) {
+                        is PerYearZoneRulesDataWithoutTransitions -> {
+                            val lastOffset = offsets.lastOrNull()
+                            if (lastOffset != record.standardOffset) {
+                                lastOffset?.let {
+                                    transitionEpochSeconds.add(START_OF_YEAR.toInstant(year, it).epochSeconds)
+                                }
+                                offsets.add(record.standardOffset)
+                            }
+                        }
+                        is PerYearZoneRulesDataWithTransitions -> {
+                            val toDstTime = record.daylightTransitionTime.toLocalDateTime(year)
+                            val toStdTime = record.standardTransitionTime.toLocalDateTime(year)
+                            val initialOffset =
+                                if (toDstTime < toStdTime) record.standardOffset else record.daylightOffset
+                            if (offsets.isEmpty()) { offsets.add(initialOffset) }
+                            val newYearTransition: RecurringZoneRules.Rule<MonthDayTime> =
+                                RecurringZoneRules.Rule(
+                                    transitionDateTime = START_OF_YEAR,
+                                    offsetBefore = offsets.last(),
+                                    offsetAfter = initialOffset,
+                                )
+                            // The order is important: newYearTransition must be overwritten by the explicit Jan 1st transition
+                            mapOf(
+                                LocalDate(year, Month.JANUARY, 1).atTime(0, 0) to newYearTransition,
+                                toDstTime to record.daylightTransition,
+                                toStdTime to record.standardTransition
+                            ).toList().sortedBy(Pair<LocalDateTime, *>::first).forEach { (time, transition) ->
+                                // occasionally, there are transitions that have no effect at all, whose purpose is
+                                // just to fulfill the contract that there are either two or zero transitions per year.
+                                // We skip such transitions entirely to simplify handling.
+                                if (offsets.last() != transition.offsetAfter) {
+                                    transitionEpochSeconds.add(time.toInstant(transition.offsetBefore).epochSeconds)
+                                    offsets.add(transition.offsetAfter)
+                                }
+                            }
+                        }
                     }
                 }
-                TimeZoneRules(transitionEpochSeconds, offsets, RecurringZoneRules(transitions))
+                if (offsets.isEmpty()) { offsets.add(recurring.offsetAtYearStart()) }
+                TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
         }
@@ -77,31 +99,38 @@ internal class TzdbInRegistry: TimeZoneDatabase {
    https://docs.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-dynamic_time_zone_information
    */
 private const val MAX_KEY_LENGTH = 128
+private const val KEY_BUFFER_SIZE = MAX_KEY_LENGTH + 1
 
-internal fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData, List<Pair<Int, PerYearZoneRulesData>>) -> Unit) {
+private fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData, List<Pair<Int, PerYearZoneRulesData>>) -> Unit) {
     memScoped {
-        withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones", { err ->
+        alloc<HKEYVar>().withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones", { err ->
             throw IllegalStateException("Error while opening the registry to fetch the time zones (err = $err): ${getLastWindowsError()}")
         }) { hKey ->
             var index = 0u
+            val cbDataBuffer = alloc<DWORDVar>()
+            val zoneInfoBuffer = RegistryTimeZoneInfoBuffer.allocate(this, cbDataBuffer)
+            val dwordBuffer = RegistryDwordBuffer.allocate(this, cbDataBuffer)
+            val tzHkeyBuffer = alloc<HKEYVar>()
+            val dynamicDstHkeyBuffer = alloc<HKEYVar>()
+            val windowsTzNameBuffer = allocArray<WCHARVar>(KEY_BUFFER_SIZE)
+            val windowsTzNameSizeBuffer = alloc<UIntVar>()
             while (true) {
-                val windowsTzName = allocArray<WCHARVar>(MAX_KEY_LENGTH + 1)
-                val bufSize = alloc<UIntVar>().apply { value = MAX_KEY_LENGTH.toUInt() + 1u }
-                when (RegEnumKeyExW(hKey, index++, windowsTzName, bufSize.ptr, null, null, null, null)) {
+                windowsTzNameSizeBuffer.value = KEY_BUFFER_SIZE.convert()
+                when (RegEnumKeyExW(hKey, index++, windowsTzNameBuffer, windowsTzNameSizeBuffer.ptr, null, null, null, null)) {
                     ERROR_SUCCESS -> {
-                        withRegistryKey(hKey, windowsTzName.toKString(), { err ->
+                        tzHkeyBuffer.withRegistryKey(hKey, windowsTzNameBuffer.toKString(), { err ->
                             throw IllegalStateException(
-                                    "Error while opening the registry to fetch the time zone '${windowsTzName.toKString()} (err = $err)': ${getLastWindowsError()}"
+                                "Error while opening the registry to fetch the time zone '${windowsTzNameBuffer.toKString()} (err = $err)': ${getLastWindowsError()}"
                             )
                         }) { tzHKey ->
                             // first, read the current data from the TZI value
-                            val tziRecord = getRegistryValue<REG_TZI_FORMAT>(tzHKey, "TZI")
+                            val tziRecord = zoneInfoBuffer.readZoneRules(tzHKey, "TZI")
                             val historicData = try {
-                                readHistoricDataFromRegistry(tzHKey)
+                                dynamicDstHkeyBuffer.readHistoricDataFromRegistry(tzHKey, dwordBuffer, zoneInfoBuffer)
                             } catch (e: IllegalStateException) {
                                 emptyList()
                             }
-                            onTimeZone(windowsTzName.toKString(), tziRecord.toZoneRules(), historicData)
+                            onTimeZone(windowsTzNameBuffer.toKString(), tziRecord, historicData)
                         }
                     }
                     ERROR_MORE_DATA -> throw IllegalStateException("The name of a time zone in the registry was too long")
@@ -122,46 +151,117 @@ internal fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesDat
  *
  * @throws IllegalStateException if the 'Dynamic DST' key is present but malformed.
  */
-private fun MemScope.readHistoricDataFromRegistry(tzHKey: HKEY): List<Pair<Int, PerYearZoneRulesData>> {
-    return withRegistryKey(tzHKey, "Dynamic DST", { emptyList() }) { dynDstHKey ->
-        val firstEntry = getRegistryValue<DWORDVar>(dynDstHKey, "FirstEntry").value.toInt()
-        val lastEntry = getRegistryValue<DWORDVar>(dynDstHKey, "LastEntry").value.toInt()
+private fun HKEYVar.readHistoricDataFromRegistry(
+    tzHKey: HKEY, dwordBuffer: RegistryDwordBuffer, zoneRulesBuffer: RegistryTimeZoneInfoBuffer
+): List<Pair<Int, PerYearZoneRulesData>> =
+    withRegistryKey(tzHKey, "Dynamic DST", { emptyList() }) { dynDstHKey ->
+        val firstEntry = dwordBuffer.readValue(dynDstHKey, "FirstEntry")
+        val lastEntry = dwordBuffer.readValue(dynDstHKey, "LastEntry")
         (firstEntry..lastEntry).map { year ->
-            year to getRegistryValue<REG_TZI_FORMAT>(dynDstHKey, year.toString()).toZoneRules()
+            year to zoneRulesBuffer.readZoneRules(dynDstHKey, year.toString())
         }
     }
-}
 
-private inline fun<T> MemScope.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
-    val subHKey: HKEYVar = alloc()
-    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), subHKey.ptr)
+private inline fun<T> HKEYVar.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
+    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), ptr)
     return if (err != ERROR_SUCCESS) { onError(err) } else {
         try {
-            block(subHKey.value!!)
+            block(value!!)
         } finally {
-            RegCloseKey(subHKey.value)
+            RegCloseKey(value)
         }
     }
 }
 
-private inline fun<reified T: CVariable> MemScope.getRegistryValue(hKey: HKEY, valueName: String): T {
-    val buffer = alloc<T>()
-    val cbData = alloc<DWORDVar>().apply { value = sizeOf<T>().convert() }
-    val err = RegQueryValueExW(hKey, valueName, null, null, buffer.reinterpret<BYTEVar>().ptr, cbData.ptr)
-    check(err == ERROR_SUCCESS) { "The expected Windows registry value '$valueName' could not be accessed (err = $err)': ${getLastWindowsError()}" }
-    check(cbData.value.toLong() == sizeOf<T>()) { "Expected '$valueName' to have size ${sizeOf<T>()}, but got ${cbData.value}" }
-    return buffer
+private fun getRegistryValue(
+    cbDataBuffer: DWORDVar, buffer: CPointer<BYTEVar>, bufferSize: UInt, hKey: HKEY, valueName: String
+) {
+    cbDataBuffer.value = bufferSize
+    val err = RegQueryValueExW(hKey, valueName, null, null, buffer, cbDataBuffer.ptr)
+    check(err == ERROR_SUCCESS) {
+        "The expected Windows registry value '$valueName' could not be accessed (err = $err)': ${getLastWindowsError()}"
+    }
+    check(cbDataBuffer.value.convert<UInt>() == bufferSize) {
+        "Expected '$valueName' to have size $bufferSize, but got ${cbDataBuffer.value}"
+    }
 }
 
-private fun _REG_TZI_FORMAT.toZoneRules(): PerYearZoneRulesData {
-    val standardOffset = UtcOffset(minutes = -(StandardBias + Bias))
-    val daylightOffset = UtcOffset(minutes = -(DaylightBias + Bias))
-    if (DaylightDate.wMonth == 0.convert<WORD>()) {
-        return PerYearZoneRulesData(standardOffset, null)
+private class RegistryTimeZoneInfoBuffer private constructor(
+    private val buffer: CPointer<BYTEVar>,
+    private val cbData: DWORDVar,
+) {
+    /**
+     * The data structure is described at
+     * https://learn.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-time_zone_information, as
+     * `_REG_TZI_FORMAT`:
+     *
+     * ```
+     * // 16 bytes
+     * typedef struct {
+     *     uint16_t wYear;
+     *     uint16_t wMonth;
+     *     uint16_t wDayOfWeek;
+     *     uint16_t wDay;
+     *     uint16_t wHour;
+     *     uint16_t wMinute;
+     *     uint16_t wSecond;
+     *     uint16_t wMilliseconds;
+     * } SYSTEMTIME;
+     *
+     * // 44 bytes
+     * typedef struct _REG_TZI_FORMAT
+     * {
+     *     int32_t Bias;
+     *     int32_t StandardBias;
+     *     int32_t DaylightBias;
+     *     SYSTEMTIME StandardDate;
+     *     SYSTEMTIME DaylightDate;
+     * } REG_TZI_FORMAT;
+     * ```
+     */
+    companion object {
+        fun allocate(scope: MemScope, cbData: DWORDVar): RegistryTimeZoneInfoBuffer =
+            RegistryTimeZoneInfoBuffer(scope.allocArray<BYTEVar>(SIZE_BYTES), cbData)
+
+        private val SIZE_BYTES = 44
     }
-    val changeToDst = RecurringZoneRules.Rule(DaylightDate.toMonthDayTime(), standardOffset, daylightOffset)
-    val changeToStd = RecurringZoneRules.Rule(StandardDate.toMonthDayTime(), daylightOffset, standardOffset)
-    return PerYearZoneRulesData(standardOffset, changeToDst to changeToStd)
+
+    @OptIn(ExperimentalNativeApi::class)
+    fun readZoneRules(tzHKey: HKEY, name: String): PerYearZoneRulesData {
+        getRegistryValue(cbData, buffer, SIZE_BYTES.convert(), tzHKey, name)
+        // convert the buffer to a byte array
+        val byteArray = buffer.readBytes(SIZE_BYTES)
+        // obtaining raw data
+        val bias = byteArray.getIntAt(0)
+        val standardBias = byteArray.getIntAt(4)
+        val daylightBias = byteArray.getIntAt(8)
+        val standardDate = (buffer + 12)!!.reinterpret<SYSTEMTIME>().pointed
+        val daylightDate = (buffer + 28)!!.reinterpret<SYSTEMTIME>().pointed
+        // calculating the things we're interested in
+        if (daylightDate.wMonth == 0.convert<WORD>()) {
+            return PerYearZoneRulesDataWithoutTransitions(UtcOffset(minutes = -bias))
+        }
+        val standardOffset = UtcOffset(minutes = -(standardBias + bias))
+        val daylightOffset = UtcOffset(minutes = -(daylightBias + bias))
+        val changeToDst = daylightDate.toMonthDayTime()
+        val changeToStd = standardDate.toMonthDayTime()
+        return PerYearZoneRulesDataWithTransitions(standardOffset, daylightOffset, changeToDst, changeToStd)
+    }
+}
+
+private class RegistryDwordBuffer private constructor(
+    private val buffer: CPointer<DWORDVar>,
+    private val cbData: DWORDVar,
+) {
+    companion object {
+        fun allocate(scope: MemScope, cbData: DWORDVar): RegistryDwordBuffer =
+            RegistryDwordBuffer(scope.alloc<DWORDVar>().ptr, cbData)
+    }
+
+    fun readValue(hKey: HKEY, valueName: String): Int {
+        getRegistryValue(cbData, buffer.reinterpret(), sizeOf<DWORDVar>().convert(), hKey, valueName)
+        return buffer.pointed.value.toInt()
+    }
 }
 
 /* this code is explained at
@@ -192,13 +292,42 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
     return MonthDayTime(MonthDayOfYear(month, transitionDay), localTime, MonthDayTime.OffsetResolver.WallClockOffset)
 }
 
-internal class PerYearZoneRulesData(
-        val standardOffset: UtcOffset,
-        val transitions: Pair<RecurringZoneRules.Rule<MonthDayTime>, RecurringZoneRules.Rule<MonthDayTime>>?,
-) {
-    override fun toString(): String = "standard offset is $standardOffset" + (transitions?.let {
-        ", the transitions: ${it.first}, ${it.second}"
-    } ?: "")
+private sealed interface PerYearZoneRulesData {
+    val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+    fun offsetAtYearStart(): UtcOffset
+}
+
+private class PerYearZoneRulesDataWithoutTransitions(
+    val standardOffset: UtcOffset
+) : PerYearZoneRulesData {
+    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+        get() = emptyList()
+
+    override fun offsetAtYearStart(): UtcOffset = standardOffset
+
+    override fun toString(): String = "standard offset is $standardOffset"
+}
+
+private class PerYearZoneRulesDataWithTransitions(
+    val standardOffset: UtcOffset,
+    val daylightOffset: UtcOffset,
+    val daylightTransitionTime: MonthDayTime,
+    val standardTransitionTime: MonthDayTime,
+) : PerYearZoneRulesData {
+    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+        get() = listOf(daylightTransition, standardTransition)
+
+    val daylightTransition get() =
+        RecurringZoneRules.Rule(daylightTransitionTime, offsetBefore = standardOffset, offsetAfter = daylightOffset)
+
+    val standardTransition get() =
+        RecurringZoneRules.Rule(standardTransitionTime, offsetBefore = daylightOffset, offsetAfter = standardOffset)
+
+    override fun offsetAtYearStart(): UtcOffset = standardOffset // TODO: not true in all years + all zones
+
+    override fun toString(): String = "standard offset is $standardOffset" +
+            ", daylight offset is $daylightOffset" +
+            ", the transitions: $daylightTransitionTime, $standardTransitionTime"
 }
 
 private fun getLastWindowsError(): String = memScoped {
@@ -214,3 +343,9 @@ private fun getLastWindowsError(): String = memScoped {
     )
     buf.value!!.toKStringFromUtf16().also { LocalFree(buf.ptr) }
 }
+
+private val START_OF_YEAR = MonthDayTime(
+    date = JulianDayOfYear(0),
+    time = MonthDayTime.TransitionLocaltime(0),
+    offset = MonthDayTime.OffsetResolver.WallClockOffset,
+)

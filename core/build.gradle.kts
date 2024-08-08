@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
     kotlin("multiplatform")
@@ -29,9 +30,6 @@ val serializationVersion: String by project
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
-    with(javaToolchains.launcherFor(toolchain).get().metadata) {
-        logger.info("Using JDK $languageVersion toolchain installed in $installationPath")
-    }
 }
 
 kotlin {
@@ -150,24 +148,12 @@ kotlin {
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
         }
-        when {
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
-                compilations["main"].cinterops {
-                    create("declarations") {
-                        defFile("$projectDir/windows/cinterop/definitions.def")
-                        headers("$projectDir/windows/cinterop/definitions.h")
-                    }
+        if (konanTarget.family == Family.MINGW) {
+            compilations["test"].cinterops {
+                create("modern_api") {
+                    defFile("$projectDir/windows/test_cinterop/modern_api.def")
+                    headers("$projectDir/windows/test_cinterop/modern_api.h")
                 }
-            }
-
-            konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX ||
-                konanTarget.family == org.jetbrains.kotlin.konan.target.Family.ANDROID ||
-                konanTarget.family.isAppleFamily ->
-            {
-                // do nothing special
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown native target ${this@withType}")
             }
         }
     }
