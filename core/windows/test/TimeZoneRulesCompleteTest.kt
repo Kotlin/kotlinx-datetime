@@ -52,6 +52,7 @@ class TimeZoneRulesCompleteTest {
                                         val offsetAccordingToWindows =
                                             (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds
                                         add(date to offsetAccordingToWindows)
+                                        date = date.plus(1, DateTimeUnit.DAY)
                                     }
                                 }
                                 throw AssertionError(
