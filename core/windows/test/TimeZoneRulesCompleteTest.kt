@@ -7,6 +7,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.cinterop.*
+import kotlinx.cinterop.ptr
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import platform.windows.*
@@ -16,6 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class TimeZoneRulesCompleteTest {
 
     /** Tests that all transitions that our system recognizes are actually there. */
+    @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbInRegistry()
@@ -42,7 +44,38 @@ class TimeZoneRulesCompleteTest {
                             val ldt = instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                             val offset = rules.infoAtInstant(instant)
                             val ourLdt = instant.toLocalDateTime(offset)
-                            assertEquals(ldt, ourLdt, "in zone $windowsName, at $instant (our guess at the offset is $offset)")
+                            if (ldt != ourLdt) {
+                                val offsetsAccordingToWindows = buildList {
+                                    var date = LocalDate(ldt.year, Month.JANUARY, 1)
+                                    while (date.year == ldt.year) {
+                                        val instant = date.atTime(0, 0).toInstant(UtcOffset.ZERO)
+                                        val ldtAccordingToWindows =
+                                            instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
+                                        val offsetAccordingToWindows =
+                                            (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds
+                                        add(date to offsetAccordingToWindows)
+                                        date = date.plus(1, DateTimeUnit.DAY)
+                                    }
+                                }
+                                val rawData = memScoped {
+                                    val hKey = alloc<HKEYVar>()
+                                    RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", 0u, KEY_READ.toUInt(), hKey.ptr)
+                                    try {
+                                        val cbDataBuffer = alloc<DWORDVar>()
+                                        val SIZE_BYTES = 44
+                                        val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                        cbDataBuffer.value = SIZE_BYTES.convert()
+                                        RegQueryValueExW(hKey.value, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                        zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                    } finally {
+                                        RegCloseKey(hKey.value)
+                                    }
+                                }
+                                throw AssertionError(
+                                    "Expected $ldt, got $ourLdt in zone $windowsName at $instant (our guess at the offset is $offset)." +
+                                    "The rules are $rules, and the offsets throughout the year according to Windows are: $offsetsAccordingToWindows; the raw data for the recurring rules is $rawData"
+                                )
+                            }
                         }
                         fun checkTransition(instant: Instant) {
                             checkAtInstant(instant - 2.milliseconds)
@@ -120,5 +153,6 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
     )
 
 private val strangeTimeZones = listOf(
-    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time"
+    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
+    "Paraguay Standard Time"
 )
