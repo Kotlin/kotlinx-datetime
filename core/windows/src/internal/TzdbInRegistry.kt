@@ -332,9 +332,7 @@ private class PerYearZoneRulesDataWithTransitions(
     val standardTransition get() =
         RecurringZoneRules.Rule(standardTransitionTime, offsetBefore = daylightOffset, offsetAfter = standardOffset)
 
-    override fun offsetAtYearStart(): UtcOffset =
-        if (daylightTransitionTime.toLocalDateTime(2030) < standardTransitionTime.toLocalDateTime(2030))
-            standardOffset else daylightOffset
+    override fun offsetAtYearStart(): UtcOffset = standardOffset // TODO: not true in all years + all zones
 
     override fun toString(): String = "standard offset is $standardOffset" +
             ", daylight offset is $daylightOffset" +

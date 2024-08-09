@@ -7,6 +7,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.cinterop.*
+import kotlinx.cinterop.ptr
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import platform.windows.*
@@ -57,15 +58,17 @@ class TimeZoneRulesCompleteTest {
                                     }
                                 }
                                 val rawData = memScoped {
-                                    alloc<HKEYVar>().withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", { err ->
-                                        return@memScoped null
-                                    }) { hKey ->
+                                    val hKey = alloc<HKEYVar>()
+                                    RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", 0u, KEY_READ.toUInt(), hKey.ptr)
+                                    try {
                                         val cbDataBuffer = alloc<DWORDVar>()
                                         val SIZE_BYTES = 44
                                         val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
                                         cbDataBuffer.value = SIZE_BYTES.convert()
-                                        RegQueryValueExW(hKey, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                        RegQueryValueExW(hKey.value, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
                                         zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                    } finally {
+                                        RegCloseKey(hKey.value)
                                     }
                                 }
                                 throw AssertionError(
@@ -153,15 +156,3 @@ private val strangeTimeZones = listOf(
     "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
     "Paraguay Standard Time"
 )
-
-
-private inline fun<T> HKEYVar.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
-    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), ptr)
-    return if (err != ERROR_SUCCESS) { onError(err) } else {
-        try {
-            block(value!!)
-        } finally {
-            RegCloseKey(value)
-        }
-    }
-}
