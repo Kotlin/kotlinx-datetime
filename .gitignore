@@ -1,8 +1,9 @@
 /.idea/*
 !/.idea/copyright
 .gradle
+.kotlin
 *.iml
 target
 build
-/local.properties
+local.properties
 benchmarks.jar

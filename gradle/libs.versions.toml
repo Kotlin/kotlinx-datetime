@@ -1,0 +1,35 @@
+[versions]
+
+kotlinx-infra = "0.4.0-dev-81"
+
+kotlin = "2.0.10"
+
+kover = "0.8.0-Beta2"
+dokka = "1.9.20"
+jmh-plugin = "0.7.2"
+
+kotlinx-serialization = "1.6.2"
+jmh = "1.35"
+
+jsJoda-core="3.2.0" # NPM dependency '@js-joda/core'
+jsJoda-timezone="2.3.0" # NPM dependency '@js-joda/timezone'
+
+[plugins]
+
+kotlinx-infra = { id = "kotlinx.team.infra", version.ref = "kotlinx-infra" }
+
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm" } # version is provided by kotlin-multiplatform
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+jmh = { id = "me.champeau.jmh", version.ref = "jmh-plugin" }
+
+[libraries]
+
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+
+kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+jmh = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
