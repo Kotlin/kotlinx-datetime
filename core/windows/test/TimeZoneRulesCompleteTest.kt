@@ -49,10 +49,9 @@ class TimeZoneRulesCompleteTest {
                                         val instant = date.atTime(0, 0).toInstant(UtcOffset.ZERO)
                                         val ldtAccordingToWindows =
                                             instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
-                                        val offsetAccordingToWindows = UtcOffset(null, null,
+                                        val offsetAccordingToWindows =
                                             (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds
-                                        )
-                                        add(instant to offsetAccordingToWindows)
+                                        add(date to offsetAccordingToWindows)
                                     }
                                 }
                                 throw AssertionError(
