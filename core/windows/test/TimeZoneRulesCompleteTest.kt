@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class TimeZoneRulesCompleteTest {
 
     /** Tests that all transitions that our system recognizes are actually there. */
+    @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbInRegistry()
@@ -55,9 +56,21 @@ class TimeZoneRulesCompleteTest {
                                         date = date.plus(1, DateTimeUnit.DAY)
                                     }
                                 }
+                                val rawData = memScoped {
+                                    alloc<HKEYVar>().withRegistryKey(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", { err ->
+                                        return@memScoped null
+                                    }) { hKey ->
+                                        val cbDataBuffer = alloc<DWORDVar>()
+                                        val SIZE_BYTES = 44
+                                        val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                        cbDataBuffer.value = SIZE_BYTES.convert()
+                                        RegQueryValueExW(hKey, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                        zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                    }
+                                }
                                 throw AssertionError(
                                     "Expected $ldt, got $ourLdt in zone $windowsName at $instant (our guess at the offset is $offset)." +
-                                    "The rules are $rules, and the offsets throughout the year according to Windows are: $offsetsAccordingToWindows"
+                                    "The rules are $rules, and the offsets throughout the year according to Windows are: $offsetsAccordingToWindows; the raw data for the recurring rules is $rawData"
                                 )
                             }
                         }
@@ -139,3 +152,15 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
 private val strangeTimeZones = listOf(
     "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time"
 )
+
+
+private inline fun<T> HKEYVar.withRegistryKey(hKey: HKEY, subKeyName: String, onError: (Int) -> T, block: (HKEY) -> T): T {
+    val err = RegOpenKeyExW(hKey, subKeyName, 0u, KEY_READ.toUInt(), ptr)
+    return if (err != ERROR_SUCCESS) { onError(err) } else {
+        try {
+            block(value!!)
+        } finally {
+            RegCloseKey(value)
+        }
+    }
+}
