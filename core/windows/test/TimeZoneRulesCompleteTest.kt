@@ -42,7 +42,12 @@ class TimeZoneRulesCompleteTest {
                             val ldt = instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                             val offset = rules.infoAtInstant(instant)
                             val ourLdt = instant.toLocalDateTime(offset)
-                            assertEquals(ldt, ourLdt, "in zone $windowsName, at $instant (our guess at the offset is $offset)")
+                            assertEquals(
+                                ldt,
+                                ourLdt,
+                                "in zone $windowsName at $instant (our guess at the offset is $offset). " +
+                                        "The rules are $rules"
+                            )
                         }
                         fun checkTransition(instant: Instant) {
                             checkAtInstant(instant - 2.milliseconds)
