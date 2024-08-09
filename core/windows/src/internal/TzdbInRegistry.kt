@@ -60,7 +60,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                         }
                     }
                 }
-                offsets.lastOrNull()?.let { lastOffset ->
+                val lastOffset = offsets.lastOrNull()
+                if (lastOffset == null) {
+                    offsets.add(recurring.offsetAtYearStart())
+                } else {
                     /* If there are already some offsets, we can not add a new offset without defining a transition to
                     it. The moment when we start using the recurring rules is the first year that does not have any
                     historic data provided. */
@@ -68,8 +71,8 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                     val newYearInLastOffset = LocalDate(firstYearWithRecurringRules, Month.JANUARY, 1).atTime(0, 0)
                         .toInstant(lastOffset)
                     transitionEpochSeconds.add(newYearInLastOffset.epochSeconds)
+                    offsets.add(offsets.last())
                 }
-                offsets.add(recurring.offsetAtYearStart())
                 TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
