@@ -150,7 +150,8 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
     )
 
 private val strangeTimeZones = listOf(
-    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time"
+    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
+    "Paraguay Standard Time"
 )
 
 
