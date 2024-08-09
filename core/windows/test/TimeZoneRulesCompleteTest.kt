@@ -42,12 +42,24 @@ class TimeZoneRulesCompleteTest {
                             val ldt = instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                             val offset = rules.infoAtInstant(instant)
                             val ourLdt = instant.toLocalDateTime(offset)
-                            assertEquals(
-                                ldt,
-                                ourLdt,
-                                "in zone $windowsName at $instant (our guess at the offset is $offset). " +
-                                        "The rules are $rules"
-                            )
+                            if (ldt != ourLdt) {
+                                val offsetsAccordingToWindows = buildList {
+                                    var date = LocalDate(ldt.year, Month.JANUARY, 1)
+                                    while (date.year == ldt.year) {
+                                        val instant = date.atTime(0, 0).toInstant(UtcOffset.ZERO)
+                                        val ldtAccordingToWindows =
+                                            instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
+                                        val offsetAccordingToWindows = UtcOffset(null, null,
+                                            (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds
+                                        )
+                                        add(instant to offsetAccordingToWindows)
+                                    }
+                                }
+                                throw AssertionError(
+                                    "Expected $ldt, got $ourLdt in zone $windowsName at $instant (our guess at the offset is $offset)." +
+                                    "The rules are $rules, and the offsets throughout the year according to Windows are: $offsetsAccordingToWindows"
+                                )
+                            }
                         }
                         fun checkTransition(instant: Instant) {
                             checkAtInstant(instant - 2.milliseconds)
