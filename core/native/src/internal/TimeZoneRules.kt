@@ -126,7 +126,7 @@ internal class TimeZoneRules(
         append("then ")
         append(offsets.last())
         if (recurringZoneRules != null) {
-            append(", after that")
+            append(", after that ")
             append(recurringZoneRules)
         }
     }
