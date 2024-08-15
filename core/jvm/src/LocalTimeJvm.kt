@@ -86,8 +86,6 @@ public actual class LocalTime internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
-
-        private const val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {
@@ -95,21 +93,7 @@ public actual class LocalTime internal constructor(
 
     }
 
-    private fun writeObject(oStream: java.io.ObjectOutputStream) {
-        oStream.defaultWriteObject()
-        oStream.writeObject(value.toString())
-    }
-
-    private fun readObject(iStream: java.io.ObjectInputStream) {
-        iStream.defaultReadObject()
-        val field = this::class.java.getDeclaredField(::value.name)
-        field.isAccessible = true
-        field.set(this, jtLocalTime.parse(iStream.readObject() as String))
-    }
-
-    private fun readObjectNoData() {
-        throw java.io.InvalidObjectException("Stream data required")
-    }
+    private fun writeReplace(): Any = SerializedValue(SerializedValue.TIME_TAG, this)
 }
 
 @Deprecated(

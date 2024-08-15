@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.SerializedValue
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -47,21 +48,7 @@ public actual class UtcOffset(
         public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
 
-    private fun writeObject(oStream: java.io.ObjectOutputStream) {
-        oStream.defaultWriteObject()
-        oStream.writeObject(zoneOffset.toString())
-    }
-
-    private fun readObject(iStream: java.io.ObjectInputStream) {
-        iStream.defaultReadObject()
-        val field = this::class.java.getDeclaredField(::zoneOffset.name)
-        field.isAccessible = true
-        field.set(this, ZoneOffset.of(iStream.readObject() as String))
-    }
-
-    private fun readObjectNoData() {
-        throw java.io.InvalidObjectException("Stream data required")
-    }
+    private fun writeReplace(): Any = SerializedValue(SerializedValue.UTC_OFFSET_TAG, this)
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

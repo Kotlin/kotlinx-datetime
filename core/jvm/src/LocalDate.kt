@@ -52,8 +52,6 @@ public actual class LocalDate internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
-
-        private const val serialVersionUID: Long = 1L
     }
 
     public actual object Formats {
@@ -105,21 +103,7 @@ public actual class LocalDate internal constructor(
     @JvmName("toEpochDays")
     internal fun toEpochDaysJvm(): Int = value.toEpochDay().clampToInt()
 
-    private fun writeObject(oStream: java.io.ObjectOutputStream) {
-        oStream.defaultWriteObject()
-        oStream.writeObject(value.toString())
-    }
-
-    private fun readObject(iStream: java.io.ObjectInputStream) {
-        iStream.defaultReadObject()
-        val field = this::class.java.getDeclaredField(::value.name)
-        field.isAccessible = true
-        field.set(this, jtLocalDate.parse(iStream.readObject() as String))
-    }
-
-    private fun readObjectNoData() {
-        throw java.io.InvalidObjectException("Stream data required")
-    }
+    private fun writeReplace(): Any = SerializedValue(SerializedValue.DATE_TAG, this)
 }
 
 /**

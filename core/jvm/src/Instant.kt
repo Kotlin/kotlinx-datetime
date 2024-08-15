@@ -99,25 +99,9 @@ public actual class Instant internal constructor(
 
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
-
-        private const val serialVersionUID: Long = 1L
     }
 
-    private fun writeObject(oStream: java.io.ObjectOutputStream) {
-        oStream.defaultWriteObject()
-        oStream.writeObject(value.toString())
-    }
-
-    private fun readObject(iStream: java.io.ObjectInputStream) {
-        iStream.defaultReadObject()
-        val field = this::class.java.getDeclaredField(::value.name)
-        field.isAccessible = true
-        field.set(this, parse(iStream.readObject() as String).value)
-    }
-
-    private fun readObjectNoData() {
-        throw java.io.InvalidObjectException("Stream data required")
-    }
+    private fun writeReplace(): Any = SerializedValue(SerializedValue.INSTANT_TAG, this)
 }
 
 private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {
