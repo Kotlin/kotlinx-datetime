@@ -115,6 +115,21 @@ internal class TimeZoneRules(
         val offsetAfter = offsets[transitionIndex + 1]
         return OffsetInfo(transitionInstant, offsetBefore, offsetAfter)
     }
+
+    override fun toString(): String = buildString {
+        for (i in transitionEpochSeconds.indices) {
+            append(offsets[i])
+            append(" until ")
+            append(Instant.fromEpochSeconds(transitionEpochSeconds[i]))
+            append(", ")
+        }
+        append("then ")
+        append(offsets.last())
+        if (recurringZoneRules != null) {
+            append(", after that ")
+            append(recurringZoneRules)
+        }
+    }
 }
 
 internal class RecurringZoneRules(
