@@ -63,6 +63,9 @@ public expect open class TimeZone {
          *
          * If the current system time zone changes, this function can reflect this change on the next invocation.
          *
+         * On Linux, this function queries the `/etc/localtime` symbolic link. If the link is missing, [UTC] is used.
+         * If the link points to an invalid location, [IllegalTimeZoneException] is thrown.
+         *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         public fun currentSystemDefault(): TimeZone
@@ -70,7 +73,7 @@ public expect open class TimeZone {
         /**
          * Returns the time zone with the fixed UTC+0 offset.
          *
-         * The [id] of this time zone is `"UTC"`.
+         * The [id] of this time zone is `"Z"`.
          *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.utc
          */

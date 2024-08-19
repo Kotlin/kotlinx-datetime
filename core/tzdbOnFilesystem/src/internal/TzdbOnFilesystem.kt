@@ -44,16 +44,21 @@ internal fun tzdbPaths(defaultTzdbPath: Path?) = sequence {
     defaultTzdbPath?.let { yield(it) }
     // taken from https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L70
     yieldAll(listOf("/usr/share/zoneinfo", "/usr/share/lib/zoneinfo", "/etc/zoneinfo").map { Path.fromString(it) })
-    pathToSystemDefault()?.first?.let { yield(it) }
+    currentSystemTimeZonePath?.splitTimeZonePath()?.first?.let { yield(it) }
 }
 
+internal val currentSystemTimeZonePath get() = chaseSymlinks("/etc/localtime")
+
+/**
+ * Given a path like `/usr/share/zoneinfo/Europe/Berlin`, produces `/usr/share/zoneinfo to Europe/Berlin`.
+ * Returns null if the function can't recognize the boundary between the time zone and the tzdb.
+ */
 // taken from https://github.com/HowardHinnant/date/blob/ab37c362e35267d6dee02cb47760f9e9c669d3be/src/tz.cpp#L3951-L3952
-internal fun pathToSystemDefault(): Pair<Path, Path>? {
-    val info = chaseSymlinks("/etc/localtime") ?: return null
-    val i = info.components.indexOf("zoneinfo")
-    if (!info.isAbsolute || i == -1 || i == info.components.size - 1) return null
+internal fun Path.splitTimeZonePath(): Pair<Path, Path>? {
+    val i = components.indexOf("zoneinfo")
+    if (!isAbsolute || i == -1 || i == components.size - 1) return null
     return Pair(
-        Path(true, info.components.subList(0, i + 1)),
-        Path(false, info.components.subList(i + 1, info.components.size))
+        Path(true, components.subList(0, i + 1)),
+        Path(false, components.subList(i + 1, components.size))
     )
 }
