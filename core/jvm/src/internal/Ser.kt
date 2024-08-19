@@ -3,12 +3,13 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.internal
+@file:Suppress("PackageDirectoryMismatch")
+package kotlinx.datetime
 
-import kotlinx.datetime.*
 import java.io.*
 
-internal class SerializedValue(var typeTag: Int, var value: Any?) : Externalizable {
+@PublishedApi // changing the class name would result in serialization incompatibility
+internal class Ser(private var typeTag: Int, private var value: Any?) : Externalizable {
     constructor() : this(0, null)
 
     override fun writeExternal(out: ObjectOutput) {

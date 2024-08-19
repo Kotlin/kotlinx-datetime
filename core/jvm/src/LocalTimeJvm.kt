@@ -93,7 +93,7 @@ public actual class LocalTime internal constructor(
 
     }
 
-    private fun writeReplace(): Any = SerializedValue(SerializedValue.TIME_TAG, this)
+    private fun writeReplace(): Any = Ser(Ser.TIME_TAG, this)
 }
 
 @Deprecated(

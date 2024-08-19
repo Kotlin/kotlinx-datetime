@@ -103,7 +103,7 @@ public actual class LocalDate internal constructor(
     @JvmName("toEpochDays")
     internal fun toEpochDaysJvm(): Int = value.toEpochDay().clampToInt()
 
-    private fun writeReplace(): Any = SerializedValue(SerializedValue.DATE_TAG, this)
+    private fun writeReplace(): Any = Ser(Ser.DATE_TAG, this)
 }
 
 /**

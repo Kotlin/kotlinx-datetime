@@ -101,7 +101,7 @@ public actual class Instant internal constructor(
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
     }
 
-    private fun writeReplace(): Any = SerializedValue(SerializedValue.INSTANT_TAG, this)
+    private fun writeReplace(): Any = Ser(Ser.INSTANT_TAG, this)
 }
 
 private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {

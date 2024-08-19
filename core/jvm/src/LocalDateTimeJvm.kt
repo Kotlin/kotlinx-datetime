@@ -8,7 +8,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.removeLeadingZerosFromLongYearFormLocalDateTime
-import kotlinx.datetime.internal.SerializedValue
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -114,7 +113,7 @@ public actual class LocalDateTime internal constructor(
         public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
     }
 
-    private fun writeReplace(): Any = SerializedValue(SerializedValue.DATE_TIME_TAG, this)
+    private fun writeReplace(): Any = Ser(Ser.DATE_TIME_TAG, this)
 }
 
 /**

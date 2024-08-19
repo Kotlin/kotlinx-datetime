@@ -6,7 +6,6 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.internal.SerializedValue
 import kotlinx.datetime.serializers.UtcOffsetSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -48,7 +47,7 @@ public actual class UtcOffset(
         public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
 
-    private fun writeReplace(): Any = SerializedValue(SerializedValue.UTC_OFFSET_TAG, this)
+    private fun writeReplace(): Any = Ser(Ser.UTC_OFFSET_TAG, this)
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

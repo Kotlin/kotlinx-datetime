@@ -79,12 +79,16 @@ class JvmSerializationTest {
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun expectedDeserialization(expected: Any, blockData: String) {
-        val serialized = "aced0005737200296b6f746c696e782e6461746574696d652e696e7465726e616c2e53657269616c697a656456616c756500000000000000000c0000787077${blockData}78"
+        val serialized = "aced0005737200146b6f746c696e782e6461746574696d652e53657200000000000000000c0000787077${blockData}78"
         val hexFormat = HexFormat { bytes.byteSeparator = "" }
 
-        val deserialized = deserialize(serialized.hexToByteArray(hexFormat))
-        if (expected != deserialized) {
-            assertEquals(expected, deserialized, "Golden serial form: $serialized\nActual serial form: ${serialize(expected).toHexString(hexFormat)}")
+        try {
+            val deserialized = deserialize(serialized.hexToByteArray(hexFormat))
+            if (expected != deserialized) {
+                assertEquals(expected, deserialized, "Golden serial form: $serialized\nActual serial form: ${serialize(expected).toHexString(hexFormat)}")
+            }
+        } catch (e: Throwable) {
+            fail("Failed to deserialize $serialized\nActual serial form: ${serialize(expected).toHexString(hexFormat)}", e)
         }
     }
 
