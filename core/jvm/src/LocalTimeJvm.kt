@@ -17,8 +17,7 @@ import java.time.LocalTime as jtLocalTime
 
 @Serializable(with = LocalTimeIso8601Serializer::class)
 public actual class LocalTime internal constructor(
-    // only a `var` to allow Java deserialization
-    internal var value: jtLocalTime
+    internal val value: jtLocalTime
 ) : Comparable<LocalTime>, java.io.Serializable {
 
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
