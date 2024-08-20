@@ -5,7 +5,7 @@
 
 package kotlinx.datetime.serializers
 
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.*
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -70,8 +70,8 @@ public object LocalDateComponentSerializer: KSerializer<LocalDate> {
     override fun serialize(encoder: Encoder, value: LocalDate) {
         encoder.encodeStructure(descriptor) {
             encodeIntElement(descriptor, 0, value.year)
-            encodeShortElement(descriptor, 1, value.monthNumber.toShort())
-            encodeShortElement(descriptor, 2, value.dayOfMonth.toShort())
+            encodeShortElement(descriptor, 1, value.month.number.toShort())
+            encodeShortElement(descriptor, 2, value.day.toShort())
         }
     }
 

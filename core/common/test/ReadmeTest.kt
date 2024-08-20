@@ -77,7 +77,7 @@ class ReadmeTest {
         val dateFormat = LocalDate.Format {
             monthNumber(padding = Padding.SPACE)
             char('/')
-            dayOfMonth()
+            day()
             char(' ')
             year()
         }
