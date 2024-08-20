@@ -61,9 +61,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     public actual val year: Int get() = value.year
     public actual val monthNumber: Int get() = value.monthValue
-    public actual val month: Month get() = value.month
+    public actual val month: Month get() = value.month.toKotlinMonth()
     public actual val dayOfMonth: Int get() = value.dayOfMonth
-    public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek
+    public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
     public actual val dayOfYear: Int get() = value.dayOfYear
 
     override fun equals(other: Any?): Boolean =
@@ -77,6 +77,13 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     public actual fun toEpochDays(): Int = value.toEpochDay().clampToInt()
 }
+
+@Deprecated(
+    "Use kotlinx.datetime.Month",
+    ReplaceWith("LocalDate(year, month.toKotlinMonth(), dayOfMonth)")
+)
+public fun LocalDate(year: Int, month: java.time.Month, dayOfMonth: Int): LocalDate =
+    LocalDate(year, month.toKotlinMonth(), dayOfMonth)
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
@@ -149,3 +156,6 @@ public actual fun LocalDate.monthsUntil(other: LocalDate): Int =
 
 public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.YEARS).clampToInt()
+
+@Deprecated("Use kotlinx.datetime.Month", ReplaceWith("toKotlinMonth().number"))
+public val java.time.Month.number: Int get() = toKotlinMonth().number

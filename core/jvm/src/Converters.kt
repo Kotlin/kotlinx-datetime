@@ -93,3 +93,22 @@ public fun UtcOffset.toJavaZoneOffset(): java.time.ZoneOffset = this.zoneOffset
  */
 public fun java.time.ZoneOffset.toKotlinUtcOffset(): UtcOffset = UtcOffset(this)
 
+/**
+ * Converts this [kotlinx.datetime.Month][Month] value to a [java.time.Month][java.time.Month] value.
+ */
+public fun Month.toJavaMonth(): java.time.Month = java.time.Month.of(number)
+
+/**
+ * Converts this [java.time.Month][java.time.Month] value to a [kotlinx.datetime.Month][Month] value.
+ */
+public fun java.time.Month.toKotlinMonth(): Month = Month.entries[this.value - 1]
+
+/**
+ * Converts this [kotlinx.datetime.DayOfWeek][DayOfWeek] value to a [java.time.DayOfWeek][java.time.DayOfWeek] value.
+ */
+public fun DayOfWeek.toJavaDayOfWeek(): java.time.DayOfWeek = java.time.DayOfWeek.of(isoDayNumber)
+
+/**
+ * Converts this [java.time.DayOfWeek][java.time.DayOfWeek] value to a [kotlinx.datetime.DayOfWeek][DayOfWeek] value.
+ */
+public fun java.time.DayOfWeek.toKotlinDayOfWeek(): DayOfWeek = DayOfWeek.entries[this.value - 1]
