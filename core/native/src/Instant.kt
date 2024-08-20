@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.math.absoluteValue
 
 public actual enum class DayOfWeek {
     MONDAY,
@@ -151,6 +152,261 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual val DISTANT_FUTURE: Instant = fromEpochSeconds(DISTANT_FUTURE_SECONDS, 0)
     }
 
+}
+
+private class UnboundedLocalDateTime(
+    val year: Int,
+    val month: Int,
+    val day: Int,
+    val hour: Int,
+    val minute: Int,
+    val second: Int,
+    val nanosecond: Int,
+) {
+    fun toInstant(offsetSeconds: Int): Instant {
+        val epochSeconds = run {
+            // org.threeten.bp.LocalDate#toEpochDay
+            val epochDays = run {
+                val y = year
+                var total = 365 * y
+                if (y >= 0) {
+                    total += (y + 3) / 4 - (y + 99) / 100 + (y + 399) / 400
+                } else {
+                    total -= y / -4 - y / -100 + y / -400
+                }
+                total += ((367 * month - 362) / 12)
+                total += day - 1
+                if (month > 2) {
+                    total--
+                    if (!isLeapYear(year)) {
+                        total--
+                    }
+                }
+                total - DAYS_0000_TO_1970
+            }
+            // org.threeten.bp.LocalTime#toSecondOfDay
+            val daySeconds = hour * SECONDS_PER_HOUR + minute * SECONDS_PER_MINUTE + second
+            // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
+            epochDays * 86400L + daySeconds - offsetSeconds
+        }
+        if (epochSeconds < Instant.MIN.epochSeconds || epochSeconds > Instant.MAX.epochSeconds)
+            throw DateTimeFormatException(
+                "The parsed date is outside the range representable by Instant (Unix epoch second $epochSeconds)"
+            )
+        return Instant.fromEpochSeconds(epochSeconds, nanosecond)
+    }
+
+    companion object {
+        fun fromInstant(instant: Instant, offsetSeconds: Int): UnboundedLocalDateTime {
+            val localSecond: Long = instant.epochSeconds + offsetSeconds
+            val epochDays = localSecond.floorDiv(SECONDS_PER_DAY.toLong()).toInt()
+            val secsOfDay = localSecond.mod(SECONDS_PER_DAY.toLong()).toInt()
+            val year: Int
+            val month: Int
+            val day: Int
+            // org.threeten.bp.LocalDate#toEpochDay
+            run {
+                var zeroDay = epochDays + DAYS_0000_TO_1970
+                // find the march-based year
+                zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
+
+                var adjust = 0
+                if (zeroDay < 0) { // adjust negative years to positive for calculation
+                    val adjustCycles = (zeroDay + 1) / DAYS_PER_CYCLE - 1
+                    adjust = adjustCycles * 400
+                    zeroDay += -adjustCycles * DAYS_PER_CYCLE
+                }
+                var yearEst = ((400 * zeroDay.toLong() + 591) / DAYS_PER_CYCLE).toInt()
+                var doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
+                if (doyEst < 0) { // fix estimate
+                    yearEst--
+                    doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
+                }
+                yearEst += adjust // reset any negative year
+
+                val marchDoy0 = doyEst
+
+                // convert march-based values back to january-based
+                val marchMonth0 = (marchDoy0 * 5 + 2) / 153
+                month = (marchMonth0 + 2) % 12 + 1
+                day = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
+                year = yearEst + marchMonth0 / 10
+            }
+            val hours = (secsOfDay / SECONDS_PER_HOUR)
+            val secondWithoutHours = secsOfDay - hours * SECONDS_PER_HOUR
+            val minutes = (secondWithoutHours / SECONDS_PER_MINUTE)
+            val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE
+            return UnboundedLocalDateTime(year, month, day, hours, minutes, second, instant.nanosecondsOfSecond)
+        }
+    }
+}
+
+internal fun parseIso(isoString: String): Instant {
+    fun parseFailure(error: String): Nothing {
+        throw IllegalArgumentException("$error when parsing an Instant from $isoString")
+    }
+    inline fun expect(what: String, where: Int, predicate: (Char) -> Boolean) {
+        val c = isoString[where]
+        if (!predicate(c)) {
+            parseFailure("Expected $what, but got $c at position $where")
+        }
+    }
+    val s = isoString
+    var i = 0
+    require(s.isNotEmpty()) { "An empty string is not a valid Instant" }
+    val yearSign = when (val c = s[i]) {
+        '+', '-' -> { ++i; c }
+        else -> ' '
+    }
+    val yearStart = i
+    var absYear = 0
+    while (i < s.length && s[i] in '0'..'9') {
+        absYear = absYear * 10 + (s[i] - '0')
+        ++i
+    }
+    val year = when {
+        i > yearStart + 9 -> {
+            parseFailure("Expected at most 9 digits for the year number, got ${i - yearStart}")
+        }
+        i - yearStart < 4 -> {
+            parseFailure("The year number must be padded to 4 digits, got ${i - yearStart} digits")
+        }
+        else -> {
+            if (yearSign == '+' && i - yearStart == 4) {
+                parseFailure("The '+' sign at the start is only valid for year numbers longer than 4 digits")
+            }
+            if (yearSign == ' ' && i - yearStart != 4) {
+                parseFailure("A '+' or '-' sign is required for year numbers longer than 4 digits")
+            }
+            if (yearSign == '-') -absYear else absYear
+        }
+    }
+    // reading at least -MM-DDTHH:MM:SSZ
+    //                  0123456789012345 16 chars
+    if (s.length < i + 16) {
+        parseFailure("The input string is too short")
+    }
+    expect("'-'", i) { it == '-' }
+    expect("'-'", i + 3) { it == '-' }
+    expect("'T' or 't'", i + 6) { it == 'T' || it == 't' }
+    expect("':'", i + 9) { it == ':' }
+    expect("':'", i + 12) { it == ':' }
+    for (j in listOf(1, 2, 4, 5, 7, 8, 10, 11, 13, 14)) {
+        expect("an ASCII digit", i + j) { it in '0'..'9' }
+    }
+    fun twoDigitNumber(index: Int) = s[index].code * 10 + s[index + 1].code - '0'.code * 11
+    val month = twoDigitNumber(i + 1)
+    val day = twoDigitNumber(i + 4)
+    val hour = twoDigitNumber(i + 7)
+    val minute = twoDigitNumber(i + 10)
+    val second = twoDigitNumber(i + 13)
+    val nanosecond = if (s[i + 15] == '.') {
+        val fractionStart = i + 16
+        i = fractionStart
+        var fraction = 0
+        while (i < s.length && s[i] in '0'..'9') {
+            fraction = fraction * 10 + (s[i] - '0')
+            ++i
+        }
+        if (i - fractionStart in 1..9) {
+            fraction * POWERS_OF_TEN[fractionStart + 9 - i]
+        } else {
+            parseFailure("1..9 digits are supported for the fraction of the second, got {i - fractionStart}")
+        }
+    } else {
+        i += 15
+        0
+    }
+    val offsetSeconds = when (val sign = s.getOrNull(i)) {
+        null -> {
+            parseFailure("The UTC offset at the end of the string is missing")
+        }
+        'z', 'Z' -> if (s.length == i + 1) {
+            0
+        } else {
+            parseFailure("Extra text after the instant at position ${i + 1}")
+        }
+        '-', '+' -> {
+            val offsetStrLength = s.length - i
+            if (offsetStrLength % 3 != 0) { parseFailure("Invalid UTC offset string '${s.substring(i)}'") }
+            if (offsetStrLength > 9) { parseFailure("The UTC offset string '${s.substring(i)}' is too long") }
+            for (j in listOf(3, 6)) {
+                if (s.getOrNull(i + j) ?: break != ':')
+                    parseFailure("Expected ':' at index ${i + j}, got '${s[i + j]}'")
+            }
+            for (j in listOf(1, 2, 4, 5, 7, 8)) {
+                if (s.getOrNull(i + j) ?: break !in '0'..'9')
+                    parseFailure("Expected a digit at index ${i + j}, got '${s[i + j]}'")
+            }
+            val offsetHour = twoDigitNumber(i + 1)
+            val offsetMinute = if (offsetStrLength > 3) { twoDigitNumber(i + 4) } else { 0 }
+            val offsetSecond = if (offsetStrLength > 6) { twoDigitNumber(i + 7) } else { 0 }
+            if (offsetMinute > 59) { parseFailure("Expected offset-minute-of-hour in 0..59, got $offsetMinute") }
+            if (offsetSecond > 59) { parseFailure("Expected offset-second-of-minute in 0..59, got $offsetSecond") }
+            if (offsetHour > 17 && !(offsetHour == 18 && offsetMinute == 0 && offsetSecond == 0)) {
+                parseFailure("Expected an offset in -18:00..+18:00, got $sign$offsetHour:$offsetMinute:$offsetSecond")
+            }
+            (offsetHour * 3600 + offsetMinute * 60 + offsetSecond) * if (sign == '-') -1 else 1
+        }
+        else -> {
+            parseFailure("Expected the UTC offset at position $i, got '$sign'")
+        }
+    }
+    if (month !in 1..12) { parseFailure("Expected a month number in 1..12, got $month") }
+    if (day !in 1..month.monthLength(isLeapYear(year))) {
+        parseFailure("Expected a valid day-of-month for $year-$month, got $day")
+    }
+    if (hour > 23) { parseFailure("Expected hour in 0..23, got $hour") }
+    if (minute > 59) { parseFailure("Expected minute-of-hour in 0..59, got $minute") }
+    if (second > 59) { parseFailure("Expected second-of-minute in 0..59, got $second") }
+    return UnboundedLocalDateTime(year, month, day, hour, minute, second, nanosecond).toInstant(offsetSeconds)
+}
+
+internal fun formatIso(instant: Instant): String = buildString {
+    val ldt = UnboundedLocalDateTime.fromInstant(instant, 0)
+    fun Appendable.appendTwoDigits(number: Int) {
+        if (number < 10) append('0')
+        append(number)
+    }
+    run {
+        val number = ldt.year
+        when {
+            number.absoluteValue < 1_000 -> {
+                val innerBuilder = StringBuilder()
+                if (number >= 0) {
+                    innerBuilder.append((number + 10_000)).deleteAt(0)
+                } else {
+                    innerBuilder.append((number - 10_000)).deleteAt(1)
+                }
+                append(innerBuilder)
+            }
+            else -> {
+                if (number >= 10_000) append('+')
+                append(number)
+            }
+        }
+    }
+    append('-')
+    appendTwoDigits(ldt.month)
+    append('-')
+    appendTwoDigits(ldt.day)
+    append('T')
+    appendTwoDigits(ldt.hour)
+    append(':')
+    appendTwoDigits(ldt.minute)
+    append(':')
+    appendTwoDigits(ldt.second)
+    if (ldt.nanosecond != 0) {
+        append('.')
+        var zerosToStrip = 0
+        while (ldt.nanosecond % POWERS_OF_TEN[zerosToStrip + 1] == 0) {
+            ++zerosToStrip
+        }
+        zerosToStrip -= (zerosToStrip.mod(3)) // rounding down to a multiple of 3
+        val numberToOutput = ldt.nanosecond / POWERS_OF_TEN[zerosToStrip]
+        append((numberToOutput + POWERS_OF_TEN[9 - zerosToStrip]).toString().substring(1))
+    }
+    append('Z')
 }
 
 private fun Instant.toZonedDateTimeFailing(zone: TimeZone): ZonedDateTime = try {
