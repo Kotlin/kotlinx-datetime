@@ -137,14 +137,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalDate): Int {
-        val y = year.compareTo(other.year)
-        if (y != 0) {
-            return y
-        }
-        val m = monthNumber.compareTo(other.monthNumber)
-        if (m != 0) {
-            return m
-        }
+        onNonZero(year.compareTo(other.year)) { return it }
+        onNonZero(monthNumber.compareTo(other.monthNumber)) { return it }
         return dayOfMonth.compareTo(other.dayOfMonth)
     }
 
@@ -162,15 +156,12 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plusMonths(monthsToAdd: Int): LocalDate {
-        if (monthsToAdd == 0) {
-            return this
-        }
+    internal fun plusMonths(monthsToAdd: Int): LocalDate = onNonZero(monthsToAdd) {
         val monthCount = year * 12 + (monthNumber - 1)
         val calcMonths = safeAdd(monthCount, monthsToAdd)
         val newYear = calcMonths.floorDiv(12)
         val newMonth = calcMonths.mod(12) + 1
-        return resolvePreviousValid(newYear, newMonth, dayOfMonth)
+        resolvePreviousValid(newYear, newMonth, dayOfMonth)
     }
 
     // org.threeten.bp.LocalDate#plusDays
@@ -179,8 +170,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
      * @throws ArithmeticException if arithmetic overflow occurs
      */
     internal fun plusDays(daysToAdd: Int): LocalDate =
-        if (daysToAdd == 0) this
-        else fromEpochDays(safeAdd(toEpochDays(), daysToAdd))
+        onNonZero(daysToAdd) { fromEpochDays(safeAdd(toEpochDays(), daysToAdd)) }
 
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDate && compareTo(other) == 0)
@@ -224,8 +214,8 @@ public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
     with(period) {
         try {
             this@plus
-                .run { if (totalMonths != 0) plusMonths(totalMonths) else this }
-                .run { if (days != 0) plusDays(days) else this }
+                .run { onNonZero(totalMonths) { plusMonths(it) } }
+                .run { onNonZero(days) { plusDays(days) } }
         } catch (e: ArithmeticException) {
             throw DateTimeArithmeticException("Arithmetic overflow when adding a period to a date", e)
         } catch (e: IllegalArgumentException) {
