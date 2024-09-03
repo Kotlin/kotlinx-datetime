@@ -48,14 +48,14 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val days = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DayBased(days)
-            val json = "{\"type\":\"DayBased\",\"days\":$days}"
+            val json = "{\"type\":\"kotlinx.datetime.DayBased\",\"days\":$days}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.MonthBased(months)
-            val json = "{\"type\":\"MonthBased\",\"months\":$months}"
+            val json = "{\"type\":\"kotlinx.datetime.MonthBased\",\"months\":$months}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
@@ -65,21 +65,21 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
-            val json = "{\"type\":\"TimeBased\",\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
+            val json = "{\"type\":\"kotlinx.datetime.TimeBased\",\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
         repeat(100) {
             val days = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.DayBased(days)
-            val json = "{\"type\":\"DayBased\",\"days\":$days}"
+            val json = "{\"type\":\"kotlinx.datetime.DayBased\",\"days\":$days}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
         repeat(100) {
             val months = Random.nextInt(1, Int.MAX_VALUE)
             val unit = DateTimeUnit.MonthBased(months)
-            val json = "{\"type\":\"MonthBased\",\"months\":$months}"
+            val json = "{\"type\":\"kotlinx.datetime.MonthBased\",\"months\":$months}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }

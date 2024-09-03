@@ -8,46 +8,49 @@
 
 package kotlinx.datetime
 
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_TIME
-internal val localTimeParser: Parser<LocalTime>
-    get() = intParser(2, 2) // hour
-        .chainIgnoring(concreteCharParser(':'))
-        .chain(intParser(2, 2)) // minute
-        .chain(optional(
-            concreteCharParser(':')
-                .chainSkipping(intParser(2, 2)) // second
-                .chain(optional(
-                    concreteCharParser('.')
-                        .chainSkipping(fractionParser(0, 9, 9))
-                ))
-        ))
-        .map {
-            val (hourMinute, secNano) = it
-            val (hour, minute) = hourMinute
-            val (sec, nanosecond) = when (secNano) {
-                null -> Pair(0, 0)
-                else -> Pair(secNano.first, secNano.second ?: 0)
-            }
-            try {
-                LocalTime.of(hour, minute, sec, nanosecond)
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException(e)
-            }
-        }
+import kotlinx.datetime.internal.*
+import kotlinx.datetime.format.*
+import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
+import kotlinx.serialization.Serializable
 
-internal class LocalTime private constructor(val hour: Int, val minute: Int, val second: Int, val nanosecond: Int) :
-    Comparable<LocalTime> {
+@Serializable(LocalTimeIso8601Serializer::class)
+public actual class LocalTime actual constructor(
+    public actual val hour: Int,
+    public actual val minute: Int,
+    public actual val second: Int,
+    public actual val nanosecond: Int
+    ) : Comparable<LocalTime> {
 
-    companion object {
-        internal fun parse(isoString: String): LocalTime =
-            localTimeParser.parse(isoString)
+    init {
+        fun check(value: Int, lower: Int, upper: Int, str: String) =
+            require(value in lower..upper) {
+                "Invalid time: $str must be a number between $lower and $upper, got $value"
+            }
+        check(hour, 0, 23, "hour")
+        check(minute, 0, 59, "minute")
+        check(second, 0, 59, "second")
+        check(nanosecond, 0, NANOS_PER_ONE - 1, "nanosecond")
+    }
+
+    public actual companion object {
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
+
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(isoString: String): LocalTime = parse(input = isoString)
+
+        public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
+            ofSecondOfDay(secondOfDay, 0)
+
+        public actual fun fromMillisecondOfDay(millisecondOfDay: Int): LocalTime =
+            ofNanoOfDay(millisecondOfDay.toLong() * NANOS_PER_MILLI)
+
+        public actual fun fromNanosecondOfDay(nanosecondOfDay: Long): LocalTime =
+            ofNanoOfDay(nanosecondOfDay)
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
-            // Unidiomatic code due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-            require(secondOfDay >= 0 && secondOfDay < SECONDS_PER_DAY)
-            require(nanoOfSecond >= 0 && nanoOfSecond < NANOS_PER_ONE)
+            require(secondOfDay in 0 until SECONDS_PER_DAY)
+            require(nanoOfSecond in 0 until NANOS_PER_ONE)
             val hours = (secondOfDay / SECONDS_PER_HOUR)
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE)
@@ -56,14 +59,6 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
         }
 
         internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
-            fun check(value: Int, lower: Int, upper: Int, str: String) =
-                require(value >= lower && value <= upper) {
-                    "Invalid time: $str must be a number between $lower and $upper, got $value"
-                }
-            check(hour, 0, 23, "hour")
-            check(minute, 0, 59, "minute")
-            check(second, 0, 59, "second")
-            check(nanosecond, 0, NANOS_PER_ONE - 1, "nanosecond")
             return LocalTime(hour, minute, second, nanosecond)
         }
 
@@ -80,12 +75,20 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
             return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt())
         }
 
-        internal val MIN = LocalTime(0, 0, 0, 0)
-        internal val MAX = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
+        internal actual val MIN: LocalTime = LocalTime(0, 0, 0, 0)
+        internal actual val MAX: LocalTime = LocalTime(23, 59, 59, NANOS_PER_ONE - 1)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
+            LocalTimeFormat.build(builder)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
     }
 
     // Several times faster than using `compareBy`
-    override fun compareTo(other: LocalTime): Int {
+    actual override fun compareTo(other: LocalTime): Int {
         val h = hour.compareTo(other.hour)
         if (h != 0) {
             return h
@@ -102,12 +105,23 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
     }
 
     override fun hashCode(): Int {
-        val nod: Long = toNanoOfDay()
+        val nod: Long = this.toNanosecondOfDay()
         return (nod xor (nod ushr 32)).toInt()
     }
 
+    // org.threeten.bp.LocalTime#toSecondOfDay
+    public actual fun toSecondOfDay(): Int {
+        var total: Int = hour * SECONDS_PER_HOUR
+        total += minute * SECONDS_PER_MINUTE
+        total += second
+        return total
+    }
+
+    public actual fun toMillisecondOfDay(): Int =
+        toSecondOfDay() * MILLIS_PER_ONE + nanosecond / NANOS_PER_MILLI
+
     // org.threeten.bp.LocalTime#toNanoOfDay
-    internal fun toNanoOfDay(): Long {
+    public actual fun toNanosecondOfDay(): Long {
         var total: Long = hour.toLong() * NANOS_PER_ONE * SECONDS_PER_HOUR
         total += minute.toLong() * NANOS_PER_ONE * SECONDS_PER_MINUTE
         total += second.toLong() * NANOS_PER_ONE
@@ -115,44 +129,25 @@ internal class LocalTime private constructor(val hour: Int, val minute: Int, val
         return total
     }
 
-    // org.threeten.bp.LocalTime#toSecondOfDay
-    internal fun toSecondOfDay(): Int {
-        var total: Int = hour * SECONDS_PER_HOUR
-        total += minute * SECONDS_PER_MINUTE
-        total += second
-        return total
-    }
-
-    // org.threeten.bp.LocalTime#toString
-    override fun toString(): String {
-        val buf = StringBuilder(18)
-        val hourValue = hour
-        val minuteValue = minute
-        val secondValue = second
-        val nanoValue: Int = nanosecond
-        buf.append(if (hourValue < 10) "0" else "").append(hourValue)
-            .append(if (minuteValue < 10) ":0" else ":").append(minuteValue)
-        if (secondValue > 0 || nanoValue > 0) {
-            buf.append(if (secondValue < 10) ":0" else ":").append(secondValue)
-            if (nanoValue > 0) {
-                buf.append('.')
-                when {
-                    nanoValue % 1000000 == 0 -> {
-                        buf.append((nanoValue / 1000000 + 1000).toString().substring(1))
-                    }
-                    nanoValue % 1000 == 0 -> {
-                        buf.append((nanoValue / 1000 + 1000000).toString().substring(1))
-                    }
-                    else -> {
-                        buf.append((nanoValue + 1000000000).toString().substring(1))
-                    }
-                }
-            }
-        }
-        return buf.toString()
-    }
+    actual override fun toString(): String = format(ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
     override fun equals(other: Any?): Boolean =
         other is LocalTime && this.compareTo(other) == 0
 
+}
+
+internal val ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
+    LocalTimeFormat.build {
+        hour()
+        char(':')
+        minute()
+        optional {
+            char(':')
+            second()
+            optional {
+                char('.')
+                secondFractionInternal(1, 9, FractionalSecondDirective.GROUP_BY_THREE)
+            }
+        }
+    }
 }

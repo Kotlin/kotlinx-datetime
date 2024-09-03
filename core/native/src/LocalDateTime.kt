@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 /* Based on the ThreeTenBp project.
@@ -8,28 +8,31 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
-import kotlinx.serialization.Serializable
-
-// This is a function and not a value due to https://github.com/Kotlin/kotlinx-datetime/issues/5
-// org.threeten.bp.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME
-internal val localDateTimeParser: Parser<LocalDateTime>
-    get() = localDateParser
-        .chainIgnoring(concreteCharParser('T').or(concreteCharParser('t')))
-        .chain(localTimeParser)
-        .map { (date, time) ->
-            LocalDateTime(date, time)
-        }
+import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.*
+import kotlinx.datetime.serializers.*
+import kotlinx.serialization.*
 
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
-public actual class LocalDateTime internal constructor(
-    public actual val date: LocalDate, internal val time: LocalTime) : Comparable<LocalDateTime> {
+public actual class LocalDateTime
+public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDateTime =
-            localDateTimeParser.parse(isoString)
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
+            format.parse(input)
+
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(isoString: String): LocalDateTime = parse(input = isoString)
 
         internal actual val MIN: LocalDateTime = LocalDateTime(LocalDate.MIN, LocalTime.MIN)
         internal actual val MAX: LocalDateTime = LocalDateTime(LocalDate.MAX, LocalTime.MAX)
+
+        @Suppress("FunctionName")
+        public actual fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime> =
+            LocalDateTimeFormat.build(builder)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
@@ -67,11 +70,11 @@ public actual class LocalDateTime internal constructor(
     }
 
     // org.threeten.bp.LocalDateTime#toString
-    actual override fun toString(): String = date.toString() + 'T' + time.toString()
+    actual override fun toString(): String = format(ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
-        val epochDay = date.toEpochDay().toLong()
+        val epochDay = date.toEpochDays().toLong()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
         secs -= offset.totalSeconds
         return secs
@@ -103,7 +106,7 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBa
 /** @throws ArithmeticException on arithmetic overflow. */
 internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBased): Long {
     val daysUntil = date.daysUntil(other.date)
-    val timeUntil: Long = other.time.toNanoOfDay() - time.toNanoOfDay()
+    val timeUntil: Long = other.time.toNanosecondOfDay() - time.toNanosecondOfDay()
     return multiplyAddAndDivide(daysUntil.toLong(), NANOS_PER_DAY, timeUntil, unit.nanoseconds)
 }
 
@@ -117,12 +120,20 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
     if (seconds == 0) {
         return this
     }
-    val currentNanoOfDay = time.toNanoOfDay() // at most a day
+    val currentNanoOfDay = time.toNanosecondOfDay() // at most a day
     val totalNanos: Long = seconds % SECONDS_PER_DAY * NANOS_PER_ONE.toLong() + // at most a day
         currentNanoOfDay
     val totalDays = seconds / SECONDS_PER_DAY + // max/24*60*60 < max * 0.000012
-        floorDiv(totalNanos, NANOS_PER_DAY) // max 2 days
-    val newNanoOfDay: Long = floorMod(totalNanos, NANOS_PER_DAY)
+        totalNanos.floorDiv(NANOS_PER_DAY) // max 2 days
+    val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
     return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
+}
+
+private val ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
+    LocalDateTimeFormat.build {
+        date(ISO_DATE)
+        alternativeParsing({ char('t') }) { char('T') }
+        time(ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS)
+    }
 }

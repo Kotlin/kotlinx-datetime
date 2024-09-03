@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -11,17 +11,17 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * A serializer for [Instant] that uses the ISO-8601 representation.
+ * A serializer for [Instant] that uses the ISO 8601 representation.
  *
  * JSON example: `"2020-12-09T09:16:56.000124Z"`
  *
  * @see Instant.toString
  * @see Instant.parse
  */
-public object InstantIso8601Serializer: KSerializer<Instant> {
+public object InstantIso8601Serializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.Instant", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Instant =
         Instant.parse(decoder.decodeString())
@@ -37,20 +37,20 @@ public object InstantIso8601Serializer: KSerializer<Instant> {
  *
  * JSON example: `{"epochSeconds":1607505416,"nanosecondsOfSecond":124000}`
  */
-public object InstantComponentSerializer: KSerializer<Instant> {
+public object InstantComponentSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("Instant") {
+        buildClassSerialDescriptor("kotlinx.datetime.Instant") {
             element<Long>("epochSeconds")
             element<Long>("nanosecondsOfSecond", isOptional = true)
         }
 
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): Instant =
         decoder.decodeStructure(descriptor) {
             var epochSeconds: Long? = null
             var nanosecondsOfSecond = 0
-            loop@while (true) {
+            loop@ while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> epochSeconds = decodeLongElement(descriptor, 0)
                     1 -> nanosecondsOfSecond = decodeIntElement(descriptor, 1)
@@ -58,7 +58,10 @@ public object InstantComponentSerializer: KSerializer<Instant> {
                     else -> throw SerializationException("Unexpected index: $index")
                 }
             }
-            if (epochSeconds == null) throw MissingFieldException("epochSeconds")
+            if (epochSeconds == null) throw MissingFieldException(
+                missingField = "epochSeconds",
+                serialName = descriptor.serialName
+            )
             Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
         }
 

@@ -3,6 +3,7 @@ import java.util.Locale
 plugins {
     id("kotlin-multiplatform")
     kotlin("plugin.serialization")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 val mainJavaToolchainVersion: String by project
@@ -15,18 +16,19 @@ java {
 kotlin {
     infra {
         target("linuxX64")
+        target("linuxArm64")
+        target("linuxArm32Hfp")
         target("mingwX64")
         target("macosX64")
         target("macosArm64")
         target("iosX64")
         target("iosArm64")
-        target("iosArm32")
         target("iosSimulatorArm64")
         target("watchosArm32")
         target("watchosArm64")
-        target("watchosX86")
         target("watchosX64")
         target("watchosSimulatorArm64")
+        target("watchosDeviceArm64")
         target("tvosArm64")
         target("tvosX64")
         target("tvosSimulatorArm64")
@@ -50,15 +52,18 @@ kotlin {
         }
     }
 
+
+    wasmJs {
+        nodejs {
+        }
+    }
+
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
         val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
-        languageSettings {
-            optIn("kotlin.Experimental")
-        }
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
@@ -71,7 +76,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":kotlinx-datetime"))
-                api("org.jetbrains.kotlin:kotlin-stdlib-common")
             }
         }
 
@@ -83,14 +87,17 @@ kotlin {
         }
 
         val jvmMain by getting
-        val jvmTest by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-junit")
-            }
-        }
+        val jvmTest by getting
 
         val jsMain by getting
         val jsTest by getting {
+            dependencies {
+                implementation(npm("@js-joda/timezone", "2.3.0"))
+            }
+        }
+
+        val wasmJsMain by getting
+        val wasmJsTest by getting {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }

@@ -5,6 +5,10 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.safeAdd
+import kotlinx.datetime.internal.safeMultiply
+import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -15,14 +19,35 @@ import java.time.LocalDate as jtLocalDate
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
     public actual companion object {
-        public actual fun parse(isoString: String): LocalDate = try {
-            jtLocalDate.parse(isoString).let(::LocalDate)
-        } catch (e: DateTimeParseException) {
-            throw DateTimeFormatException(e)
-        }
+        public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
+            if (format === Formats.ISO) {
+                try {
+                    jtLocalDate.parse(input).let(::LocalDate)
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                format.parse(input)
+            }
+
+        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun parse(isoString: String): LocalDate = parse(input = isoString)
 
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
+
+        public actual fun fromEpochDays(epochDays: Int): LocalDate =
+            LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
+
+        @Suppress("FunctionName")
+        public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
+            LocalDateFormat.build(block)
+    }
+
+    public actual object Formats {
+        public actual val ISO: DateTimeFormat<LocalDate> get() = ISO_DATE
+
+        public actual val ISO_BASIC: DateTimeFormat<LocalDate> = ISO_DATE_BASIC
     }
 
     public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int) :
@@ -49,8 +74,11 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun toString(): String = value.toString()
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
+
+    public actual fun toEpochDays(): Int = value.toEpochDay().clampToInt()
 }
 
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1L, unit)
 

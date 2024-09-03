@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 package kotlinx.datetime.test
@@ -9,6 +9,7 @@ import kotlin.random.Random
 import kotlin.test.*
 import java.time.Instant as JTInstant
 import java.time.LocalDateTime as JTLocalDateTime
+import java.time.LocalTime as JTLocalTime
 import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
@@ -29,7 +30,7 @@ class ConvertersTest {
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             val seconds = Random.nextLong(1_000_000_000_000)
             val nanos = Random.nextInt()
             test(seconds, nanos)
@@ -38,7 +39,7 @@ class ConvertersTest {
 
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
-        val month = Month.values().random()
+        val month = Month.entries.random()
         val day = (1..java.time.YearMonth.of(year, month).lengthOfMonth()).random()
         return LocalDate(year, month.number, day)
     }
@@ -48,6 +49,14 @@ class ConvertersTest {
             Random.nextInt(60),
             Random.nextInt(60),
             Random.nextInt(1_000_000_000))
+
+    private fun randomTime(): LocalTime {
+        val hour = Random.nextInt(24)
+        val minute = Random.nextInt(60)
+        val second = Random.nextInt(60)
+        val nanosecond = Random.nextInt(1_000_000_000)
+        return LocalTime(hour, minute, second, nanosecond)
+    }
 
     @Test
     fun localDateTime() {
@@ -61,8 +70,25 @@ class ConvertersTest {
             assertEquals(jtDateTime, ktDateTime.toString().let(JTLocalDateTime::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(randomDateTime())
+        }
+    }
+
+    @Test
+    fun localTime() {
+        fun test(ktTime: LocalTime) {
+            val jtTime = with(ktTime) { JTLocalTime.of(hour, minute, second, nanosecond) }
+
+            assertEquals(ktTime, jtTime.toKotlinLocalTime())
+            assertEquals(jtTime, ktTime.toJavaLocalTime())
+
+            assertEquals(ktTime, jtTime.toString().toLocalTime())
+            assertEquals(jtTime, ktTime.toString().let(JTLocalTime::parse))
+        }
+
+        repeat(STRESS_TEST_ITERATIONS) {
+            test(randomTime())
         }
     }
 
@@ -78,7 +104,7 @@ class ConvertersTest {
             assertEquals(jtDate, ktDate.toString().let(JTLocalDate::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(randomDate())
         }
     }
@@ -102,7 +128,7 @@ class ConvertersTest {
             assertJtPeriodNormalizedEquals(jtPeriod, ktPeriod.toString().let(JTPeriod::parse))
         }
 
-        repeat(1000) {
+        repeat(STRESS_TEST_ITERATIONS) {
             test(Random.nextInt(-1000, 1000), Random.nextInt(-1000, 1000), Random.nextInt(-1000, 1000))
         }
     }

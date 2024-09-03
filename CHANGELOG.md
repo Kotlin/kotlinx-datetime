@@ -1,5 +1,71 @@
 # CHANGELOG
 
+## 0.6.1
+
+- Prohibit parsing non-ASCII digits as numbers in `DateTimeFormat` ([#405](https://github.com/Kotlin/kotlinx-datetime/issues/405))
+- More accurately determine which files represent time zones and which don't on Linux and Darwin ([#395](https://github.com/Kotlin/kotlinx-datetime/pull/395))
+- Fix a regression that occasionally considered the right boundary of a time overlap to be a part of it on Native ([#399](https://github.com/Kotlin/kotlinx-datetime/issues/399))
+- Introduce various small improvements to the timezone handling on Windows ([#390](https://github.com/Kotlin/kotlinx-datetime/pull/390))
+- On Linux, allow not having any `/etc/localtime` set, defaulting to `TimeZone.UTC` as the system time zone ([#426](https://github.com/Kotlin/kotlinx-datetime/pull/426))
+
+## 0.6.0
+
+- Introduce the widely requested API for locale-invariant parsing and formatting ([#343](https://github.com/Kotlin/kotlinx-datetime/pull/343))
+- Completely overhaul the KDoc-based documentation ([#347](https://github.com/Kotlin/kotlinx-datetime/issues/347))
+- Breaking change: forbid parsing `Instant` values without the second-of-minute component on the JVM and JS, fixing inconsistency with Native ([#369](https://github.com/Kotlin/kotlinx-datetime/issues/369))
+- Breaking change: use the fully qualified name of classes in the JSON serializers ([#308](https://github.com/Kotlin/kotlinx-datetime/pull/308))
+- Fix Proguard emitting warning about missing `kotlinx-serialization` classes when serialization is not used ([#336](https://github.com/Kotlin/kotlinx-datetime/pull/336))
+- Reimplement the timezone database handling for Native targets from scratch ([#286](https://github.com/Kotlin/kotlinx-datetime/pull/286), [#327](https://github.com/Kotlin/kotlinx-datetime/pull/327))
+- Support Android NDK targets ([#344](https://github.com/Kotlin/kotlinx-datetime/pull/344))
+- Small tweaks and fixes.
+
+### Changelog relative to version 0.6.0-RC.2
+
+- Completely overhaul the KDoc-based documentation ([#347](https://github.com/Kotlin/kotlinx-datetime/issues/347))
+- Breaking change: forbid parsing `Instant` values without the second-of-minute component on the JVM and JS, fixing inconsistency with Native ([#369](https://github.com/Kotlin/kotlinx-datetime/issues/369))
+- Improve error descriptiveness in some cases ([#360](https://github.com/Kotlin/kotlinx-datetime/pull/360), [#371](https://github.com/Kotlin/kotlinx-datetime/pull/371))
+- Remove `stat` usages to comply with Apple's new publishing requirements ([#385](https://github.com/Kotlin/kotlinx-datetime/pull/385))
+- Fix parsing of formats where `optional` is directly between numbers ([#362](https://github.com/Kotlin/kotlinx-datetime/pull/362))
+- Forbid empty and duplicate month, day-of-week, and AM/PM marker names in datetime formats ([#362](https://github.com/Kotlin/kotlinx-datetime/pull/362))
+
+## 0.6.0-RC.2
+
+- Support Android NDK targets ([#344](https://github.com/Kotlin/kotlinx-datetime/pull/344))
+- Ensure ABI compatibility with v0.5.0 ([#357](https://github.com/Kotlin/kotlinx-datetime/pull/357))
+
+## 0.6.0-RC
+
+- Introduce the widely requested API for locale-invariant parsing and formatting ([#343](https://github.com/Kotlin/kotlinx-datetime/pull/343))
+- Breaking change: use the fully qualified name of classes in the JSON serializers ([#308](https://github.com/Kotlin/kotlinx-datetime/pull/308))
+- Fix Proguard emitting warning about missing `kotlinx-serialization` classes when serialization is not used ([#336](https://github.com/Kotlin/kotlinx-datetime/pull/336))
+- Reimplement the timezone database handling for Native targets from scratch ([#286](https://github.com/Kotlin/kotlinx-datetime/pull/286), [#327](https://github.com/Kotlin/kotlinx-datetime/pull/327))
+
+## 0.5.0
+
+- Update Kotlin dependency to 1.9.21, kotlinx.serialization to 1.6.2
+- Add support of Wasm-Js target through Js interop with the same js-joda library as in Js ([#315](https://github.com/Kotlin/kotlinx-datetime/pull/315))
+- Prevent secondary outputs of Java 9 compilation getting packed into jar ([#305](https://github.com/Kotlin/kotlinx-datetime/pull/305))
+
+## 0.4.1
+
+- Update Kotlin dependency to 1.8.21, kotlinx.serialization to 1.5.1
+- Support more Kotlin/Native targets: `linuxArm64`, `linuxArm32Hfp`, `watchosDeviceArm64`
+- Implement [comparable time marks](https://kotlinlang.org/docs/time-measurement.html#measure-differences-in-time) in a time source returned by `Clock.asTimeSource()` ([#271](https://github.com/Kotlin/kotlinx-datetime/pull/271))
+- Deprecate `Instant` and `LocalDate` arithmetic operations (`plus` and `minus`) taking `DateTimeUnit` without a number of units ([#247](https://github.com/Kotlin/kotlinx-datetime/pull/247))
+- Fix adding small `Duration` to large `Instant` on JS and Native ([#264](https://github.com/Kotlin/kotlinx-datetime/pull/264))
+
+## 0.4.0
+
+- Add the `LocalTime` class for representing time-of-day ([#57](https://github.com/Kotlin/kotlinx-datetime/pull/57)). Thank you, @bishiboosh!
+- Provide `LocalTime#toSecondOfDay`, `LocalTime.fromSecondOfDay`, and various other functions for compact representation of `LocalTime` ([#204](https://github.com/Kotlin/kotlinx-datetime/pull/204)). Thank you, @vanniktech!
+- Provide `LocalDate#toEpochDays`, `LocalDate.fromEpochDays` for representing a `LocalDate` as a single number ([#214](https://github.com/Kotlin/kotlinx-datetime/pull/214)).
+- Rename `Clock.todayAt` to `Clock.todayIn` for naming consistency ([#206](https://github.com/Kotlin/kotlinx-datetime/pull/206)).
+- Update the Kotlin dependency to 1.7.0.
+
+## 0.3.3
+
+- Just updated Kotlin dependency to 1.7.0-Beta and kotlinx.serialization to 1.3.2
+
 ## 0.3.2
 
 #### Features

@@ -13,7 +13,7 @@ import kotlin.test.*
 class MonthSerializationTest {
     @Test
     fun testSerialization() {
-        for (month in Month.values()) {
+        for (month in Month.entries) {
             val json = "\"${month.name}\""
             assertEquals(json, Json.encodeToString(MonthSerializer, month))
             assertEquals(month, Json.decodeFromString(MonthSerializer, json))

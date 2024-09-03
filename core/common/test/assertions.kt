@@ -35,3 +35,8 @@ inline fun <T> assertIllegalArgument(message: String? = null, f: () -> T) {
         fail(result.toString())
     }
 }
+
+/**
+ * The number of iterations to perform in nondeterministic tests.
+ */
+const val STRESS_TEST_ITERATIONS = 1000
