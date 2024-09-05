@@ -8,7 +8,7 @@ package kotlinx.datetime
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-internal class LocalDateProgressionIterator(private val iterator: IntIterator) : Iterator<LocalDate> {
+private class LocalDateProgressionIterator(private val iterator: IntIterator) : Iterator<LocalDate> {
     override fun hasNext(): Boolean = iterator.hasNext()
     override fun next(): LocalDate = LocalDate.fromEpochDays(iterator.next())
 }
