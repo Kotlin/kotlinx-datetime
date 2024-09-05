@@ -594,8 +594,6 @@ public operator fun DateTimePeriod.minus(other: DateTimePeriod) : DateTimePeriod
     safeAdd(totalNanoseconds, -other.totalNanoseconds)
 )
 
-public operator fun DateTimePeriod.unaryMinus(): DateTimePeriod = buildDateTimePeriod(-totalMonths, -days, -totalNanoseconds)
-
 /**
  * Adds two [DatePeriod] instances.
  *
@@ -618,5 +616,3 @@ public operator fun DatePeriod.minus(other: DatePeriod): DatePeriod = DatePeriod
     safeAdd(totalMonths, -other.totalMonths),
     safeAdd(days, -other.days)
 )
-
-public operator fun DatePeriod.unaryMinus(): DatePeriod = DatePeriod(-totalMonths, -days)
