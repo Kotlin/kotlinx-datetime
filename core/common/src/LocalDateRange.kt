@@ -102,7 +102,6 @@ public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : 
 public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = step(value.toInt(), unit)
 
 public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = LocalDateProgression.fromClosedRange(this, that, -1, DateTimeUnit.DAY)
-public infix fun LocalDate.downUntil(that: LocalDate) : LocalDateProgression = downTo(that.plus(1, DateTimeUnit.DAY))
 
 public operator fun LocalDate.rangeTo(that: LocalDate): LocalDateRange = LocalDateRange(this, that)
 public operator fun LocalDate.rangeUntil(that: LocalDate) : LocalDateRange = rangeTo(that.minus(1, DateTimeUnit.DAY))
