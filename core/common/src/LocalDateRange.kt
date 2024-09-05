@@ -106,21 +106,12 @@ public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = Loca
 public operator fun LocalDate.rangeTo(that: LocalDate): LocalDateRange = LocalDateRange(this, that)
 public operator fun LocalDate.rangeUntil(that: LocalDate) : LocalDateRange = rangeTo(that.minus(1, DateTimeUnit.DAY))
 
-public fun LocalDateProgression.random(randomIntFunction: (IntRange) -> Int) : LocalDate = intProgression.random(randomIntFunction)
-    .let(LocalDate.Companion::fromEpochDays)
 
 public fun LocalDateProgression.random(random: Random = Random) : LocalDate = intProgression.random(random).let(LocalDate.Companion::fromEpochDays)
-
-public fun LocalDateProgression.randomOrNull(randomIntFunction: (range: IntRange) -> Int) : LocalDate? = intProgression.randomOrNull(randomIntFunction)
-    ?.let(LocalDate.Companion::fromEpochDays)
 
 public fun LocalDateProgression.randomOrNull(random: Random = Random) : LocalDate? = intProgression.randomOrNull(random)
     ?.let(LocalDate.Companion::fromEpochDays)
 
-public inline fun IntProgression.random(func: (IntRange) -> Int) : Int = func(0..(last - first) / step) * step + first
-
-public fun IntProgression.random(random: Random = Random) : Int = random(random::nextInt)
-
-public inline fun IntProgression.randomOrNull(randomIntFunction: (range: IntRange) -> Int) : Int? = if (isEmpty()) null else random(randomIntFunction)
+public fun IntProgression.random(random: Random = Random) : Int = random.nextInt(0..(last - first) / step) * step + first
 
 public fun IntProgression.randomOrNull(random: Random = Random) : Int? = if (isEmpty()) null else random(random)
