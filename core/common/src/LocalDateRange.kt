@@ -58,7 +58,16 @@ internal constructor(internal val intProgression: IntProgression) : Iterable<Loc
 public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDateProgression(start, endInclusive, 1), ClosedRange<LocalDate>, OpenEndRange<LocalDate> {
     override val start: LocalDate get() = first
     override val endInclusive: LocalDate get() = last
-    override val endExclusive: LocalDate get() = endInclusive.plus(1, DateTimeUnit.DAY)
+    @Deprecated(
+        "This throws an exception if the exclusive end if not inside " +
+                "the platform-specific boundaries for LocalDate. " +
+                "The 'endInclusive' property does not throw and should be preferred.",
+        level = DeprecationLevel.WARNING
+    )
+    override val endExclusive: LocalDate get(){
+        if (last == LocalDate.MAX) error("Cannot return the exclusive upper bound of a range that includes LocalDate.MAX.")
+        return endInclusive.plus(1, DateTimeUnit.DAY)
+    }
 
     @Suppress("ConvertTwoComparisonsToRangeCheck")
     override fun contains(value: LocalDate): Boolean = first <= value && value <= last
