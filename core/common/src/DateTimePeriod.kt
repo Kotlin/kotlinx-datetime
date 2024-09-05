@@ -584,17 +584,6 @@ public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod =
 )
 
 /**
- * Subtracts one [DateTimePeriod] instance from another.
- *
- * @throws DateTimeArithmeticException if arithmetic overflow happens.
- */
-public operator fun DateTimePeriod.minus(other: DateTimePeriod) : DateTimePeriod = buildDateTimePeriod(
-    safeAdd(totalMonths, -other.totalMonths),
-    safeAdd(days, -other.days),
-    safeAdd(totalNanoseconds, -other.totalNanoseconds)
-)
-
-/**
  * Adds two [DatePeriod] instances.
  *
  * **Pitfall**: given three dates, adding together the periods between the first and the second and between the
@@ -605,14 +594,4 @@ public operator fun DateTimePeriod.minus(other: DateTimePeriod) : DateTimePeriod
 public operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
     safeAdd(totalMonths, other.totalMonths),
     safeAdd(days, other.days),
-)
-
-/**
- * Subtracts one [DatePeriod] instance from another.
- *
- * @throws DateTimeArithmeticException if arithmetic overflow happens.
- */
-public operator fun DatePeriod.minus(other: DatePeriod): DatePeriod = DatePeriod(
-    safeAdd(totalMonths, -other.totalMonths),
-    safeAdd(days, -other.days)
 )
