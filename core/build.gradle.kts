@@ -1,50 +1,65 @@
 import kotlinx.team.infra.mavenPublicationsPom
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
-import javax.xml.parsers.DocumentBuilderFactory
-import java.io.ByteArrayOutputStream
-import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.target.Family
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
+import java.net.URL
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
-    id("org.jetbrains.dokka")
+    with(libs.plugins) {
+        alias(kotlin.multiplatform)
+        alias(kotlin.plugin.serialization)
+        alias(kover)
+        alias(dokka)
+    }
     `maven-publish`
-    id("org.jetbrains.kotlinx.kover")
 }
+
+val mainJavaToolchainVersion: JavaLanguageVersion by project
+val modularJavaToolchainVersion: JavaLanguageVersion by project
 
 mavenPublicationsPom {
-    description.set("Kotlin Datetime Library")
+    description = "Kotlin Datetime Library"
 }
-
-base {
-    archivesBaseName = "kotlinx-datetime" // doesn't work
-}
-
-val mainJavaToolchainVersion: String by project
-val modularJavaToolchainVersion: String by project
-val serializationVersion: String by project
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    toolchain.languageVersion = mainJavaToolchainVersion
 }
 
 kotlin {
+    // all-targets configuration
+
     explicitApi()
 
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xdont-warn-on-error-suppression")
+    }
+
+    // target-specific and compilation-specific configuration
+
+    jvm {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, java.toolchain.languageVersion.get().asInt())
+        }
+    }
+
+    // tiers of K/Native targets are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
     infra {
         common("tzfile") {
-            // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
             common("tzdbOnFilesystem") {
                 common("linux") {
-                    // Tier 1
-                    target("linuxX64")
                     // Tier 2
+                    target("linuxX64")
                     target("linuxArm64")
-                    // Tier 4 (deprecated, but still in demand)
+                    // Deprecated
                     target("linuxArm32Hfp")
                 }
                 common("darwin") {
@@ -73,80 +88,22 @@ kotlin {
                 }
             }
             common("androidNative") {
+                // Tier 3
                 target("androidNativeArm32")
                 target("androidNativeArm64")
                 target("androidNativeX86")
                 target("androidNativeX64")
             }
         }
-        // Tier 3
         common("windows") {
+            // Tier 3
             target("mingwX64")
         }
     }
 
-    jvm {
-        attributes {
-            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
-        }
-        compilations.all {
-            // Set compilation options for JVM target here
-        }
-
-    }
-
-    js {
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
-        compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
-                metaInfo = true
-            }
-        }
-//        compilations["main"].apply {
-//            kotlinOptions {
-//                outputFile = "kotlinx-datetime-tmp.js"
-//            }
-//        }
-    }
-
-    wasmJs {
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
-    }
-
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
-
-    sourceSets.all {
-        val suffixIndex = name.indexOfLast { it.isUpperCase() }
-        val targetName = name.substring(0, suffixIndex)
-        val suffix = name.substring(suffixIndex).lowercase().takeIf { it != "main" }
-//        println("SOURCE_SET: $name")
-        kotlin.srcDir("$targetName/${suffix ?: "src"}")
-        resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
-        languageSettings {
-            //            progressiveMode = true
-        }
-    }
-
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
+    targets.withType<KotlinNativeTarget> {
+        compilations["test"].compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.add("-trw")
         }
         if (konanTarget.family == Family.MINGW) {
             compilations["test"].cinterops {
@@ -157,162 +114,178 @@ kotlin {
             }
         }
     }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
+    }
+
+    js {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
+
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            sourceMap = true
+            moduleKind = JsModuleKind.MODULE_UMD
+        }
+    }
+
+    // configuration of source sets
+
+    sourceSets.all {
+        val suffixIndex = name.indexOfLast { it.isUpperCase() }
+        val targetName = name.substring(0, suffixIndex)
+        val suffix = name.substring(suffixIndex).lowercase().takeIf { it != "main" }
+        kotlin.srcDir("$targetName/${suffix ?: "src"}")
+        resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
+    }
+
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                compileOnly(libs.kotlinx.serialization.core)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                api(libs.kotlin.test)
             }
         }
 
-        commonTest {
+        val jvmMain by getting
+        val jvmTest by getting
+
+        val nativeMain by getting {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test")
+                api(libs.kotlinx.serialization.core)
             }
         }
-
-        val jvmMain by getting {
-        }
-
-        val jvmTest by getting {
-        }
+        val nativeTest by getting
 
         val commonJsMain by creating {
-            dependsOn(commonMain.get())
+            dependsOn(commonMain)
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", "3.2.0"))
+                api(libs.kotlinx.serialization.core)
+                implementation(npm("@js-joda/core", libs.versions.jsJoda.core.get()))
             }
         }
-
         val commonJsTest by creating {
-            dependsOn(commonTest.get())
+            dependsOn(commonTest)
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", libs.versions.jsJoda.timezone.get()))
             }
-        }
-
-        val jsMain by getting {
-            dependsOn(commonJsMain)
-        }
-
-        val jsTest by getting {
-            dependsOn(commonJsTest)
         }
 
         val wasmJsMain by getting {
             dependsOn(commonJsMain)
         }
-
         val wasmJsTest by getting {
             dependsOn(commonJsTest)
         }
 
-        val nativeMain by getting {
-            dependsOn(commonMain.get())
-            dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-            }
+        val jsMain by getting {
+            dependsOn(commonJsMain)
         }
-
-        val nativeTest by getting {
-        }
-
-        val darwinMain by getting {
-        }
-
-        val darwinTest by getting {
+        val jsTest by getting {
+            dependsOn(commonJsTest)
         }
     }
 }
 
-tasks {
-    val jvmTest by existing(Test::class) {
-        // maxHeapSize = "1024m"
+val compileJavaModuleInfo by tasks.registering(JavaCompile::class) {
+    val moduleName = "kotlinx.datetime" // this module's name
+    val compileKotlinJvm by tasks.getting(KotlinCompile::class)
+    val sourceDir = file("jvm/java9/")
+    val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
+
+    // Always compile Kotlin classes first before compiling the module descriptor.
+    dependsOn(compileKotlinJvm)
+
+    // Add the module-info.java source file to the Kotlin compilation.
+    // The Kotlin compiler currently won't compile a module descriptor itself,
+    // but it will parse and check module dependencies.
+    // (Note that module checking only works on JDK 9+ because built-in JDK base modules are not available in earlier versions.)
+    val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.getOrNull()
+    if (javaVersion?.isJava9Compatible == true) {
+        logger.info("module-info.java checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
+        compileKotlinJvm.source(sourceDir)
+    } else {
+        logger.info("module-info.java checking is disabled")
     }
 
-    val compileJavaModuleInfo by registering(JavaCompile::class) {
-        val moduleName = "kotlinx.datetime" // this module's name
-        val compileKotlinJvm by getting(KotlinCompile::class)
-        val sourceDir = file("jvm/java9/")
-        val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
+    // Add the module-info.java source file to this task.
+    source(sourceDir)
 
-        // Use a Java 11 compiler for the module info.
-        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
+    // Configure output destinations of this task.
+    outputs.dir(targetDir)
+    destinationDirectory = targetDir
 
-        // Always compile kotlin classes before the module descriptor.
-        dependsOn(compileKotlinJvm)
+    // Use a Java 11 compiler for the module descriptor compilation.
+    javaCompiler = project.javaToolchains.compilerFor { languageVersion = modularJavaToolchainVersion }
 
-        // Add the module-info source file.
-        source(sourceDir)
+    // Configure the minimum JVM compatibility options and Java release version that support JPMS.
+    sourceCompatibility = JavaVersion.VERSION_1_9.toString()
+    targetCompatibility = JavaVersion.VERSION_1_9.toString()
+    options.release = 9
 
-        // Also add the module-info.java source file to the Kotlin compile task.
-        // The Kotlin compiler will parse and check module dependencies,
-        // but it currently won't compile to a module-info.class file.
-        // Note that module checking only works on JDK 9+,
-        // because the JDK built-in base modules are not available in earlier versions.
-        val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.getOrNull()
-        if (javaVersion?.isJava9Compatible == true) {
-            logger.info("Module-info checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
-            compileKotlinJvm.source(sourceDir)
-        } else {
-            logger.info("Module-info checking is disabled")
-        }
+    // Use the same classpath as during the Kotlin compilation.
+    classpath = compileKotlinJvm.libraries
 
-        // Set the task outputs and destination dir
-        outputs.dir(targetDir)
-        destinationDirectory.set(targetDir)
+    // Ensure that the classpath is interpreted as a module path when compiling the module descriptor.
+    modularity.inferModulePath = true
 
-        // Configure JVM compatibility
-        sourceCompatibility = JavaVersion.VERSION_1_9.toString()
-        targetCompatibility = JavaVersion.VERSION_1_9.toString()
+    // Patch compiled Kotlin classes into the module descriptor compilation so that exporting packages works correctly.
+    options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDirectory.get()}"))
 
-        // Set the Java release version.
-        options.release.set(9)
+    // Ignore warnings about using `requires transitive` on automatic modules.
+    // (Not needed when compiling with recent JDKs, e.g., 17.)
+    options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
+}
 
-        // Ignore warnings about using 'requires transitive' on automatic modules.
-        // not needed when compiling with recent JDKs, e.g. 17
-        options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
-
-        // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
-        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDirectory.get()}"))
-
-        // Use the classpath of the compileKotlinJvm task.
-        // Also ensure that the module path is used instead of classpath.
-        classpath = compileKotlinJvm.libraries
-        modularity.inferModulePath.set(true)
+// Configure the JAR task so that it includes the compiled module descriptor.
+val jvmJar by tasks.existing(Jar::class) {
+    manifest.attributes("Multi-Release" to true)
+    from(compileJavaModuleInfo.map { it.destinationDirectory }) {
+        into("META-INF/versions/9/")
     }
+}
 
-    // Configure the JAR task so that it will include the compiled module-info class file.
-    val jvmJar by existing(Jar::class) {
-        manifest {
-            attributes("Multi-Release" to true)
+tasks.withType<AbstractDokkaLeafTask>().configureEach {
+    val dokkaBasePluginConfiguration = """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""
+    pluginsMapConfiguration = mapOf("org.jetbrains.dokka.base.DokkaBase" to dokkaBasePluginConfiguration)
+
+    failOnWarning = true
+
+    dokkaSourceSets.configureEach {
+        kotlin.sourceSets.commonTest.get().kotlin.srcDirs.forEach {
+            samples.from(it)
         }
-        from(compileJavaModuleInfo.map { it.destinationDirectory }) {
-            into("META-INF/versions/9/")
+
+        skipDeprecated = true
+        // hide enum members and undocumented 'toString's
+        suppressInheritedMembers = true
+        // hide the `internal` package, which, on JS, has public members generated by Dukat that would otherwise get mentioned
+        perPackageOption {
+            matchingRegex = ".*\\.internal(\\..*)?"
+            suppress = true
         }
-    }
 
-    // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
-    // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
-    val clean by existing(Delete::class) {
-        setDelete(fileTree(buildDir) {
-            exclude("tmp/.cache/expanded/expanded.lock")
-        })
-    }
-
-    // workaround from KT-61313
-    withType<Sign>().configureEach {
-        val pubName = name.removePrefix("sign").removeSuffix("Publication")
-
-        // These tasks only exist for native targets, hence findByName() to avoid trying to find them for other targets
-
-        // Task ':linkDebugTest<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
-        findByName("linkDebugTest$pubName")?.let {
-            mustRunAfter(it)
-        }
-        // Task ':compileTestKotlin<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
-        findByName("compileTestKotlin$pubName")?.let {
-            mustRunAfter(it)
+        sourceLink {
+            localDirectory = rootDir
+            remoteUrl = URL("https://github.com/kotlin/kotlinx-datetime/tree/latest-release")
+            remoteLineSuffix = "#L"
         }
     }
 }
@@ -322,7 +295,7 @@ val downloadWindowsZonesMapping by tasks.registering {
     val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)
     doLast {
-        val initialFileContents = try { File(output).readBytes() } catch(e: Throwable) { ByteArray(0) }
+        val initialFileContents = try { File(output).readBytes() } catch(_: Throwable) { ByteArray(0) }
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
         // otherwise, parsing fails since it can't find the dtd
         documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
@@ -374,46 +347,29 @@ val downloadWindowsZonesMapping by tasks.registering {
         val newFileContents = bos.toByteArray()
         if (!(initialFileContents contentEquals newFileContents)) {
             File(output).writeBytes(newFileContents)
-            throw GradleException("The mappings between Windows and IANA timezone names changed. " +
-                "The new mappings were written to the filesystem.")
+            throw GradleException(
+                "The mappings between Windows and IANA timezone names changed. " +
+                "The new mappings were written to the filesystem."
+            )
         }
     }
 }
 
-tasks.withType<AbstractDokkaLeafTask>().configureEach {
-    pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
+// workaround from KT-61313
+tasks.withType<Sign>().configureEach {
+    val platform = name.removePrefix("sign").removeSuffix("Publication")
 
-    failOnWarning.set(true)
-    dokkaSourceSets.configureEach {
-        kotlin.sourceSets.commonTest.get().kotlin.srcDirs.forEach { samples.from(it) }
-        // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
-        skipDeprecated.set(true)
-        // Enum members and undocumented toString()
-        suppressInheritedMembers.set(true)
-        // hide the `internal` package, which, on JS, has public members generated by Dukat that would get mentioned
-        perPackageOption {
-            matchingRegex.set(".*\\.internal(\\..*)?")
-            suppress.set(true)
-        }
-        sourceLink {
-            localDirectory.set(rootDir)
-            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/latest-release"))
-            remoteLineSuffix.set("#L")
-        }
+    // these tasks only exist for native targets,
+    // hence 'findByName' to avoid trying to find them for other targets
+
+    // "Task `:compileTestKotlin<platform>` uses [...] output of task `:sign<platform>Publication`
+    //  without declaring an explicit or implicit dependency [...]"
+    tasks.findByName("compileTestKotlin$platform")?.let {
+        mustRunAfter(it)
     }
-}
-
-// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
-tasks.configureEach {
-    if (name == "compileCommonJsMainKotlinMetadata") {
-        enabled = false
+    // "Task `:linkDebugTest<platform>` uses [...] output of task `:sign<platform>Publication`
+    //  without declaring an explicit or implicit dependency [...]"
+    tasks.findByName("linkDebugTest$platform")?.let {
+        mustRunAfter(it)
     }
-}
-
-// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
-// check it here:
-// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
-with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
-    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }
