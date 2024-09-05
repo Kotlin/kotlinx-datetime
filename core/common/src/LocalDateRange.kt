@@ -29,7 +29,7 @@ internal constructor(internal val intProgression: IntProgression) : Iterable<Loc
 
     public open fun isEmpty(): Boolean = intProgression.isEmpty()
 
-    override fun toString(): String = if (intProgression.step > 0) "$first..$last step ${intProgression.step}" else "$first downTo $last step ${intProgression.step}"
+    override fun toString(): String = if (intProgression.step > 0) "$first..$last step ${intProgression.step}D" else "$first downTo $last step ${intProgression.step}D"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
