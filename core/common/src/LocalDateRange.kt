@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.safeMultiply
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -51,7 +52,7 @@ internal constructor(internal val intProgression: IntProgression) : Iterable<Loc
             rangeEnd: LocalDate,
             stepValue: Int,
             stepUnit: DateTimeUnit.DayBased
-        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, stepValue * stepUnit.days)
+        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, safeMultiply(stepValue, stepUnit.days))
     }
 }
 
@@ -98,7 +99,7 @@ public fun LocalDateProgression.lastOrNull(): LocalDate? = if (isEmpty()) null e
 
 public fun LocalDateProgression.reversed(): LocalDateProgression = LocalDateProgression(intProgression.reversed())
 
-public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(intProgression.step(value * unit.days))
+public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(intProgression.step(safeMultiply(value, unit.days)))
 public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = step(value.toInt(), unit)
 
 public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = LocalDateProgression.fromClosedRange(this, that, -1, DateTimeUnit.DAY)
