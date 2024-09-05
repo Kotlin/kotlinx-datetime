@@ -47,7 +47,7 @@ internal constructor(internal val intProgression: IntProgression) : Iterable<Loc
 
 
     public companion object {
-        public fun fromClosedRange(
+        internal fun fromClosedRange(
             rangeStart: LocalDate,
             rangeEnd: LocalDate,
             stepValue: Int,
