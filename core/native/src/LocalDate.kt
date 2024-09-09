@@ -82,6 +82,13 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
             return LocalDate(yearEst, month, dom)
         }
 
+        public actual fun fromEpochDays(epochDays: Long): LocalDate {
+            require(epochDays in MIN_EPOCH_DAY..MAX_EPOCH_DAY) {
+                "Invalid date: boundaries of LocalDate exceeded"
+            }
+            return fromEpochDays(epochDays.toInt())
+        }
+
         internal actual val MIN = LocalDate(YEAR_MIN, 1, 1)
         internal actual val MAX = LocalDate(YEAR_MAX, 12, 31)
 
@@ -119,6 +126,10 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
             }
         }
         return total - DAYS_0000_TO_1970
+    }
+
+    internal actual fun toEpochDaysLong() : Long {
+        return toEpochDays().toLong()
     }
 
     public actual val month: Month

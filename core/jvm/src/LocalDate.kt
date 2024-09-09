@@ -39,6 +39,9 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         public actual fun fromEpochDays(epochDays: Int): LocalDate =
             LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
 
+        internal actual fun fromEpochDays(epochDays: Long) : LocalDate =
+            LocalDate(jtLocalDate.ofEpochDay(epochDays))
+
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
@@ -76,6 +79,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
 
     public actual fun toEpochDays(): Int = value.toEpochDay().clampToInt()
+
+    internal actual fun toEpochDaysLong(): Long = value.toEpochDay()
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
