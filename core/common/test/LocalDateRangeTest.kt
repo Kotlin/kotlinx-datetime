@@ -8,6 +8,7 @@ package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlin.random.Random
 import kotlin.random.nextInt
+import kotlin.random.nextLong
 import kotlin.test.*
 
 class LocalDateRangeTest {
@@ -132,31 +133,31 @@ class LocalDateRangeTest {
 
         repeat(20) {
             assertEquals(
-                expectedRand.nextInt(0..23).let { Jan_01_2000.plus(it, DateTimeUnit.DAY) },
+                expectedRand.nextLong(0L..23L).let { Jan_01_2000.plus(it, DateTimeUnit.DAY) },
                 (Jan_01_2000..Jan_24_2000).random(actualRand)
             )
         }
 
         repeat(20) {
             assertEquals(
-                expectedRand.nextInt(0..23).let { Jan_24_2000.minus(it, DateTimeUnit.DAY) },
+                expectedRand.nextLong(0L..23L).let { Jan_24_2000.minus(it, DateTimeUnit.DAY) },
                 (Jan_24_2000 downTo Jan_01_2000).random(actualRand)
             )
         }
 
-        listOf(1, 2, 5, 30).forEach { step ->
+        listOf(1L, 2L, 5L, 30L).forEach { step ->
             repeat(20) {
-                val range = (0..23 step step)
+                val range = (0L..23L step step)
                 assertEquals(
-                    expectedRand.nextInt(0..range.last / step).let { Jan_01_2000.plus(it * step, DateTimeUnit.DAY) },
+                    expectedRand.nextLong(0L..range.last / step).let { Jan_01_2000.plus(it * step, DateTimeUnit.DAY) },
                     (Jan_01_2000..Jan_24_2000).step(step, DateTimeUnit.DAY).random(actualRand)
                 )
             }
 
             repeat(20) {
-                val range = (0..23 step step)
+                val range = (0L..23L step step)
                 assertEquals(
-                    expectedRand.nextInt(0..range.last / step).let { Jan_24_2000.minus(it * step, DateTimeUnit.DAY) },
+                    expectedRand.nextLong(0..range.last / step).let { Jan_24_2000.minus(it * step, DateTimeUnit.DAY) },
                     (Jan_24_2000 downTo Jan_01_2000).step(step, DateTimeUnit.DAY).random(actualRand)
                 )
             }

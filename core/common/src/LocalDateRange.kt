@@ -5,49 +5,54 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.clampToInt
+import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.random.Random
-import kotlin.random.nextInt
+import kotlin.random.nextLong
 
-private class LocalDateProgressionIterator(private val iterator: IntIterator) : Iterator<LocalDate> {
+private class LocalDateProgressionIterator(private val iterator: LongIterator) : Iterator<LocalDate> {
     override fun hasNext(): Boolean = iterator.hasNext()
     override fun next(): LocalDate = LocalDate.fromEpochDays(iterator.next())
 }
 
 public open class LocalDateProgression
-internal constructor(internal val intProgression: IntProgression) : Iterable<LocalDate> {
+internal constructor(internal val longProgression: LongProgression) : Collection<LocalDate> {
 
     internal constructor(
         start: LocalDate,
         endInclusive: LocalDate,
-        step: Int
-    ) : this(IntProgression.fromClosedRange(start.toEpochDays(), endInclusive.toEpochDays(), step))
+        step: Long
+    ) : this(LongProgression.fromClosedRange(start.toEpochDaysLong(), endInclusive.toEpochDaysLong(), step))
 
-    public val first: LocalDate = LocalDate.fromEpochDays(intProgression.first)
-    public val last: LocalDate = LocalDate.fromEpochDays(intProgression.last)
+    public val first: LocalDate = LocalDate.fromEpochDays(longProgression.first)
 
-    override fun iterator(): Iterator<LocalDate> = LocalDateProgressionIterator(intProgression.iterator())
+    public val last: LocalDate = LocalDate.fromEpochDays(longProgression.last)
 
-    public open fun isEmpty(): Boolean = intProgression.isEmpty()
+    override fun iterator(): Iterator<LocalDate> = LocalDateProgressionIterator(longProgression.iterator())
 
-    override fun toString(): String = if (intProgression.step > 0) "$first..$last step ${intProgression.step}D" else "$first downTo $last step ${intProgression.step}D"
+    public override fun isEmpty(): Boolean = longProgression.isEmpty()
 
-    override fun equals(other: Any?): Boolean {
-        return other is LocalDateProgression && intProgression == other.intProgression
-    }
+    override fun toString(): String = if (longProgression.step > 0) "$first..$last step ${longProgression.step}D" else "$first downTo $last step ${longProgression.step}D"
 
-    override fun hashCode(): Int {
-        return intProgression.hashCode()
-    }
+    override val size: Int
+        get() = longProgression.size
 
+    override fun containsAll(elements: Collection<LocalDate>): Boolean = elements.all(::contains)
+
+    override fun contains(element: LocalDate): Boolean = longProgression.contains(element.toEpochDaysLong())
+
+    override fun equals(other: Any?): Boolean = other is LocalDateProgression && longProgression == other.longProgression
+
+    override fun hashCode(): Int = longProgression.hashCode()
 
     public companion object {
         internal fun fromClosedRange(
             rangeStart: LocalDate,
             rangeEnd: LocalDate,
-            stepValue: Int,
+            stepValue: Long,
             stepUnit: DateTimeUnit.DayBased
-        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, safeMultiply(stepValue, stepUnit.days))
+        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, safeMultiply(stepValue, stepUnit.days.toLong()))
     }
 }
 
@@ -90,24 +95,33 @@ public fun LocalDateProgression.last(): LocalDate {
     return this.last
 }
 public fun LocalDateProgression.firstOrNull(): LocalDate? = if (isEmpty()) null else this.first
+
 public fun LocalDateProgression.lastOrNull(): LocalDate? = if (isEmpty()) null else this.last
 
-public fun LocalDateProgression.reversed(): LocalDateProgression = LocalDateProgression(intProgression.reversed())
+public fun LocalDateProgression.reversed(): LocalDateProgression = LocalDateProgression(longProgression.reversed())
 
-public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(intProgression.step(safeMultiply(value, unit.days)))
-public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = step(value.toInt(), unit)
+public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : LocalDateProgression = step(value.toLong(), unit)
+public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(longProgression.step(safeMultiply(value, unit.days.toLong())))
 
 public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = LocalDateProgression.fromClosedRange(this, that, -1, DateTimeUnit.DAY)
 
 public operator fun LocalDate.rangeTo(that: LocalDate): LocalDateRange = LocalDateRange(this, that)
 public operator fun LocalDate.rangeUntil(that: LocalDate) : LocalDateRange = rangeTo(that.minus(1, DateTimeUnit.DAY))
 
+public fun LocalDateProgression.random(random: Random = Random) : LocalDate = longProgression.random(random).let(LocalDate.Companion::fromEpochDays)
 
-public fun LocalDateProgression.random(random: Random = Random) : LocalDate = intProgression.random(random).let(LocalDate.Companion::fromEpochDays)
-
-public fun LocalDateProgression.randomOrNull(random: Random = Random) : LocalDate? = intProgression.randomOrNull(random)
+public fun LocalDateProgression.randomOrNull(random: Random = Random) : LocalDate? = longProgression.randomOrNull(random)
     ?.let(LocalDate.Companion::fromEpochDays)
 
-public fun IntProgression.random(random: Random = Random) : Int = random.nextInt(0..(last - first) / step) * step + first
+internal fun LongProgression.random(random: Random = Random) : Long = random.nextLong(0L..(last - first) / step) * step + first
 
-public fun IntProgression.randomOrNull(random: Random = Random) : Int? = if (isEmpty()) null else random(random)
+internal fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
+
+internal fun LongProgression.contains(element: Long) : Boolean = element in first..last && (element - first) % step == 0L
+
+internal val LongProgression.size: Int
+    get() = if(isEmpty()) 0 else try {
+        (safeAdd(last, -first) / step + 1).clampToInt()
+    } catch (e: ArithmeticException) {
+        Int.MAX_VALUE
+    }
