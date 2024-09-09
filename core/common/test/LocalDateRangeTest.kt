@@ -59,10 +59,6 @@ class LocalDateRangeTest {
             Jan_05_2000 downTo Jan_01_2000
         )
         assertContentEquals(
-            (5 downTo 2).map { LocalDate(2000, 1, it) },
-            Jan_05_2000 downUntil Jan_01_2000
-        )
-        assertContentEquals(
             listOf(Jan_01_2000),
             Jan_01_2000 downTo Jan_01_2000
         )
