@@ -95,15 +95,15 @@ class LocalDateRangeTest {
             (Jan_01_2000..Jan_05_2000).toString()
         )
         assertEquals(
-            "2000-01-05 downTo 2000-01-01 step -1",
+            "2000-01-05 downTo 2000-01-01 step -1D",
             (Jan_05_2000 downTo Jan_01_2000).toString()
         )
         assertEquals(
-            "2000-01-01..2000-01-05 step 1",
+            "2000-01-01..2000-01-05 step 1D",
             LocalDateProgression.fromClosedRange(Jan_01_2000, Jan_05_2000, 1, DateTimeUnit.DAY).toString()
         )
         assertEquals(
-            "2000-01-05 downTo 2000-01-01 step -1",
+            "2000-01-05 downTo 2000-01-01 step -1D",
             LocalDateProgression.fromClosedRange(Jan_05_2000, Jan_01_2000, -1, DateTimeUnit.DAY).toString()
         )
     }
