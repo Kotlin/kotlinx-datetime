@@ -259,7 +259,7 @@ internal fun LongProgression.random(random: Random = Random) : Long = random.nex
 
 internal fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
 
-internal fun LongProgression.contains(element: Long) : Boolean = element in first..last && (element - first) % step == 0L
+internal fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
 
 internal val LongProgression.size: Int
     get() = if(isEmpty()) 0 else try {
