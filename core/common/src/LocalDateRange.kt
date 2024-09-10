@@ -139,9 +139,7 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
     override fun toString(): String = "$first..$last"
 
     public companion object {
-        private val DATE_ONE = LocalDate(1, 1, 1)
-        private val DATE_TWO = LocalDate(1, 1, 2)
-        public val EMPTY: LocalDateRange = LocalDateRange(DATE_TWO, DATE_ONE)
+        public val EMPTY: LocalDateRange = LocalDateRange(LocalDate(1970, 1, 2), LocalDate(1970, 1, 1))
     }
 }
 
