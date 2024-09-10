@@ -49,6 +49,7 @@ class LocalDateRangeSamples {
 
     @Test
     fun random() {
+        // Getting a random element from a LocalDateProgression
         check((Jan_01_2000..Jan_05_2000).random() in Jan_01_2000..Jan_05_2000)
         check((Jan_01_2000..Jan_05_2000).random(Random(123456)) in Jan_01_2000..Jan_05_2000)
         check((Jan_05_2000..Jan_01_2000).randomOrNull() == null)

@@ -7,7 +7,6 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlin.random.Random
-import kotlin.random.nextInt
 import kotlin.random.nextLong
 import kotlin.test.*
 
@@ -158,5 +157,102 @@ class LocalDateRangeTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun first() {
+        assertEquals((Jan_01_2000..Jan_01_2000).first(), Jan_01_2000)
+        assertEquals((Jan_01_2000 downTo Jan_01_2000).first(), Jan_01_2000)
+        assertEquals((Jan_01_2000..Jan_05_2000).first(), Jan_01_2000)
+        assertEquals((Jan_05_2000 downTo Jan_01_2000).first(), Jan_05_2000)
+        assertFails { (Jan_02_2000..Jan_01_2000).first() }
+        assertFails { (Jan_01_2000 downTo Jan_02_2000).first() }
+    }
+
+    @Test
+    fun last() {
+        assertEquals((Jan_01_2000..Jan_01_2000).last(), Jan_01_2000)
+        assertEquals((Jan_01_2000 downTo Jan_01_2000).last(), Jan_01_2000)
+        assertEquals((Jan_01_2000..Jan_05_2000).last(), Jan_05_2000)
+        assertEquals((Jan_05_2000 downTo Jan_01_2000).last(), Jan_01_2000)
+        assertFails { (Jan_02_2000..Jan_01_2000).last() }
+        assertFails { (Jan_01_2000 downTo Jan_02_2000).last() }
+    }
+
+    @Test
+    fun firstOrNull() {
+        assertEquals((Jan_01_2000..Jan_01_2000).firstOrNull(), Jan_01_2000)
+        assertEquals((Jan_01_2000 downTo Jan_01_2000).firstOrNull(), Jan_01_2000)
+        assertEquals((Jan_01_2000..Jan_05_2000).firstOrNull(), Jan_01_2000)
+        assertEquals((Jan_05_2000 downTo Jan_01_2000).firstOrNull(), Jan_05_2000)
+        assertNull( (Jan_02_2000..Jan_01_2000).firstOrNull() )
+        assertNull( (Jan_01_2000 downTo Jan_02_2000).firstOrNull() )
+    }
+
+    @Test
+    fun lastOrNull() {
+        assertEquals((Jan_01_2000..Jan_01_2000).lastOrNull(), Jan_01_2000)
+        assertEquals((Jan_01_2000 downTo Jan_01_2000).lastOrNull(), Jan_01_2000)
+        assertEquals((Jan_01_2000..Jan_05_2000).lastOrNull(), Jan_05_2000)
+        assertEquals((Jan_05_2000 downTo Jan_01_2000).lastOrNull(), Jan_01_2000)
+        assertNull( (Jan_02_2000..Jan_01_2000).lastOrNull() )
+        assertNull( (Jan_01_2000 downTo Jan_02_2000).lastOrNull() )
+    }
+
+    @Test
+    fun reversed() {
+        assertContentEquals(
+            Jan_05_2000 downTo Jan_01_2000,
+            (Jan_01_2000..Jan_05_2000).reversed()
+        )
+        assertContentEquals(
+            Jan_01_2000..Jan_05_2000,
+            (Jan_05_2000 downTo Jan_01_2000).reversed()
+        )
+        assertContentEquals(
+            Jan_01_2000..Jan_01_2000,
+            (Jan_01_2000..Jan_01_2000).reversed()
+        )
+
+    }
+
+    @Test
+    fun contains() {
+        assertTrue { Jan_01_2000 in Jan_01_2000..Jan_01_2000 }
+        assertTrue { Jan_02_2000 in Jan_01_2000..Jan_05_2000 }
+        assertTrue { Jan_01_2000 in Jan_01_2000 downTo Jan_01_2000 }
+        assertTrue { Jan_02_2000 in Jan_05_2000 downTo Jan_01_2000 }
+
+        assertFalse { Jan_01_2000 in Jan_02_2000..Jan_02_2000 }
+        assertFalse { Jan_05_2000 in Jan_02_2000..Jan_02_2000 }
+        assertFalse { Jan_01_2000 in Jan_02_2000..Jan_05_2000 }
+        assertFalse { Jan_24_2000 in Jan_02_2000..Jan_02_2000 }
+        assertFalse { Jan_01_2000 in Jan_02_2000 downTo Jan_02_2000 }
+        assertFalse { Jan_05_2000 in Jan_02_2000 downTo Jan_02_2000 }
+        assertFalse { Jan_01_2000 in Jan_02_2000 downTo Jan_05_2000 }
+        assertFalse { Jan_24_2000 in Jan_05_2000 downTo Jan_02_2000 }
+
+        assertTrue { (Jan_01_2000..Jan_01_2000).containsAll(listOf(Jan_01_2000)) }
+        assertTrue { (Jan_01_2000..Jan_05_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000, Jan_05_2000)) }
+
+        assertFalse { (Jan_01_2000..Jan_01_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000)) }
+        assertFalse { (Jan_01_2000..Jan_05_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000, Jan_05_2000, Jan_24_2000)) }
+
+    }
+
+    @Test
+    fun getSize() {
+        assertEquals(1, (Jan_01_2000..Jan_01_2000).size)
+        assertEquals(1, (Jan_01_2000 downTo Jan_01_2000).size)
+        assertEquals(2, (Jan_01_2000..Jan_02_2000).size)
+        assertEquals(2, (Jan_02_2000 downTo Jan_01_2000).size)
+        assertEquals(5, (Jan_01_2000..Jan_05_2000).size)
+        assertEquals(5, (Jan_05_2000 downTo Jan_01_2000).size)
+        assertEquals(4, (Jan_01_2000..<Jan_05_2000).size)
+
+        assertEquals(0, (Jan_02_2000..Jan_01_2000).size)
+        assertEquals (0, (Jan_01_2000 downTo Jan_02_2000).size)
+        assertEquals(Int.MAX_VALUE, (LocalDate.MIN..LocalDate.MAX).size)
+        assertEquals(Int.MAX_VALUE, (LocalDate.MAX downTo LocalDate.MIN).size)
     }
 }
