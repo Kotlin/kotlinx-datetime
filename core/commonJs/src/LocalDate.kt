@@ -89,6 +89,10 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     public actual fun toEpochDays(): Int = value.toEpochDay().toInt()
 
     internal actual fun toEpochDaysLong(): Long = value.toEpochDay().toLong()
+
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))

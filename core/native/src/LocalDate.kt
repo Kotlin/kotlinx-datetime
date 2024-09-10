@@ -206,6 +206,10 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
 
     // org.threeten.bp.LocalDate#toString
     actual override fun toString(): String = format(Formats.ISO)
+
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))

@@ -140,6 +140,14 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
 
     public companion object {
         public val EMPTY: LocalDateRange = LocalDateRange(LocalDate(1970, 1, 2), LocalDate(1970, 1, 1))
+
+        internal fun fromRangeUntil(start: LocalDate, endExclusive: LocalDate) : LocalDateRange {
+            return fromRangeTo(start, endExclusive.minus(1, DateTimeUnit.DAY))
+        }
+
+        internal fun fromRangeTo(start: LocalDate, endInclusive: LocalDate) : LocalDateRange {
+            return LocalDateRange(start, endInclusive)
+        }
     }
 }
 
@@ -219,20 +227,6 @@ public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) :
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
  */
 public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = LocalDateProgression.fromClosedRange(this, that, -1, DateTimeUnit.DAY)
-
-/**
- * Creates a [LocalDateRange] from `this` to [that], inclusive.
- *
- * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
- */
-public operator fun LocalDate.rangeTo(that: LocalDate): LocalDateRange = LocalDateRange(this, that)
-
-/**
- * Creates a [LocalDateRange] from `this` to [that], exclusive. i.e. from this to (that - 1 day)
- *
- * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
- */
-public operator fun LocalDate.rangeUntil(that: LocalDate) : LocalDateRange = rangeTo(that.minus(1, DateTimeUnit.DAY))
 
 /**
  * Returns a random [LocalDate] within the bounds of the [LocalDateProgression].

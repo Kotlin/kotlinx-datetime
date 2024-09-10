@@ -276,6 +276,20 @@ public expect class LocalDate : Comparable<LocalDate> {
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.toStringSample
      */
     public override fun toString(): String
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], inclusive.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeTo(that: LocalDate): LocalDateRange
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], exclusive. i.e. from this to (that - 1 day)
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeUntil(that: LocalDate) : LocalDateRange
 }
 
 /**
