@@ -58,6 +58,11 @@ kotlin {
         }
     }
 
+    wasmWasi {
+        nodejs {
+        }
+    }
+
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
@@ -100,6 +105,13 @@ kotlin {
         val wasmJsTest by getting {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
+            }
+        }
+
+        val wasmWasiMain by getting
+        val wasmWasiTest by getting {
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
         }
 
