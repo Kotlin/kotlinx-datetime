@@ -142,7 +142,7 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
         public val EMPTY: LocalDateRange = LocalDateRange(LocalDate(1970, 1, 2), LocalDate(1970, 1, 1))
 
         internal fun fromRangeUntil(start: LocalDate, endExclusive: LocalDate) : LocalDateRange {
-            return fromRangeTo(start, endExclusive.minus(1, DateTimeUnit.DAY))
+            return if(endExclusive == LocalDate.MIN) EMPTY else fromRangeTo(start, endExclusive.minus(1, DateTimeUnit.DAY))
         }
 
         internal fun fromRangeTo(start: LocalDate, endInclusive: LocalDate) : LocalDateRange {

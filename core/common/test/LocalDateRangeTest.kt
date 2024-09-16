@@ -36,6 +36,10 @@ class LocalDateRangeTest {
             (1..<5).map { LocalDate(2000, 1, it) },
             Jan_01_2000..<Jan_05_2000
         )
+        assertTrue {
+            (LocalDate.MIN..<LocalDate.MIN).isEmpty()
+            (LocalDate.MIN..<LocalDate.MAX).isNotEmpty()
+        }
         assertContentEquals(
             listOf(Jan_01_2000),
             Jan_01_2000..Jan_01_2000
