@@ -258,5 +258,12 @@ class LocalDateRangeTest {
         assertEquals (0, (Jan_01_2000 downTo Jan_02_2000).size)
         assertEquals(Int.MAX_VALUE, (LocalDate.MIN..LocalDate.MAX).size)
         assertEquals(Int.MAX_VALUE, (LocalDate.MAX downTo LocalDate.MIN).size)
+
+        assertEquals(1, (Jan_01_2000..Jan_02_2000).step(2, DateTimeUnit.DAY).size)
+        assertEquals(3, (Jan_01_2000..Jan_05_2000).step(2, DateTimeUnit.DAY).size)
+        assertEquals(2, (Jan_02_2000..Jan_05_2000).step(2, DateTimeUnit.DAY).size)
+        assertEquals(1, (Jan_02_2000 downTo Jan_01_2000).step(2, DateTimeUnit.DAY).size)
+        assertEquals(3, (Jan_05_2000 downTo Jan_01_2000).step(2, DateTimeUnit.DAY).size)
+        assertEquals(2, (Jan_05_2000 downTo Jan_02_2000).step(2, DateTimeUnit.DAY).size)
     }
 }
