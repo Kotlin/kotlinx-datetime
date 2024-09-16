@@ -161,6 +161,11 @@ class LocalDateRangeTest {
                 )
             }
         }
+        repeat(20) {
+            assertTrue {
+                (Jan_01_2000..Jan_24_2000).step(5, DateTimeUnit.DAY).let { it.contains(it.random()) }
+            }
+        }
     }
 
     @Test
