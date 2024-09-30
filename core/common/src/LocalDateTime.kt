@@ -299,7 +299,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public val dayOfYear: Int
 
     /**
-     * Returns the hour-of-day (`0..59`) [time] component of this datetime value.
+     * Returns the hour-of-day (`0..23`) [time] component of this datetime value.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.timeComponents
      */
