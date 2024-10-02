@@ -14,7 +14,9 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.format.*
 
 @Serializable(with = UtcOffsetSerializer::class)
-public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
+public actual class UtcOffset(
+    internal val zoneOffset: ZoneOffset
+): java.io.Serializable {
     public actual val totalSeconds: Int get() = zoneOffset.totalSeconds
 
     override fun hashCode(): Int = zoneOffset.hashCode()
@@ -44,6 +46,8 @@ public actual class UtcOffset(internal val zoneOffset: ZoneOffset) {
         public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
         public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
+
+    private fun writeReplace(): Any = Ser(Ser.UTC_OFFSET_TAG, this)
 }
 
 @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
