@@ -305,8 +305,12 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         set(value) {
             contents.date.isoDayOfWeek = value?.isoDayNumber
         }
-    // /** Returns the day-of-year component of the date. */
-    // public var dayOfYear: Int
+
+    /**
+     * The day-of-year component of the date.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.dayOfYear
+     */
+    public var dayOfYear: Int? by ThreeDigitNumber(contents.date::dayOfYear)
 
     /**
      * The hour-of-day (0..23) time component.
@@ -600,6 +604,17 @@ private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {
 
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int?) {
         require(value === null || value in 0..99) { "${property.name} must be a two-digit number, got '$value'" }
+        reference.setValue(thisRef, property, value)
+    }
+}
+
+private class ThreeDigitNumber(private val reference: KMutableProperty0<Int?>) {
+    operator fun getValue(thisRef: Any?, property: KProperty<*>) = reference.getValue(thisRef, property)
+
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int?) {
+        require(value === null || value in 0..999) {
+            "${property.name} must be a three-digit number, got '$value'"
+        }
         reference.setValue(thisRef, property, value)
     }
 }
