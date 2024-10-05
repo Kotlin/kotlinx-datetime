@@ -128,9 +128,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         return total - DAYS_0000_TO_1970
     }
 
-    internal actual fun toEpochDaysLong() : Long {
-        return toEpochDays().toLong()
-    }
+    internal actual fun toEpochDaysLong(): Long = toEpochDays().toLong()
 
     public actual val month: Month
         get() = Month(monthNumber)
