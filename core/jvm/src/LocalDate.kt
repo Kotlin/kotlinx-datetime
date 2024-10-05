@@ -37,7 +37,7 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 
         public actual fun fromEpochDays(epochDays: Int): LocalDate =
-            LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
+            fromEpochDays(epochDays.toLong())
 
         internal actual fun fromEpochDays(epochDays: Long) : LocalDate =
             LocalDate(jtLocalDate.ofEpochDay(epochDays))
