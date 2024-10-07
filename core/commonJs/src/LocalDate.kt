@@ -42,12 +42,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
             throw e
         }
 
-        internal actual fun fromEpochDays(epochDays: Long): LocalDate {
-            require(epochDays in Int.MIN_VALUE..Int.MAX_VALUE) {
-                "Invalid date: boundaries of LocalDate exceeded"
-            }
-            return fromEpochDays(epochDays.toInt())
-        }
+        internal actual fun fromEpochDays(epochDays: Long): LocalDate =
+            fromEpochDays(epochDays.clampToInt())
 
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
