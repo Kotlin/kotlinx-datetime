@@ -139,6 +139,7 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
     override fun toString(): String = "$first..$last"
 
     public companion object {
+        /** An empty range of values of type LocalDate. */
         public val EMPTY: LocalDateRange = LocalDateRange(LocalDate(1970, 1, 2), LocalDate(1970, 1, 1))
 
         internal fun fromRangeUntil(start: LocalDate, endExclusive: LocalDate) : LocalDateRange {
