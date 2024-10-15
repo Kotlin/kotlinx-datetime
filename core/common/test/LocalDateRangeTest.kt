@@ -120,7 +120,7 @@ class LocalDateRangeTest {
             (Jan_01_2000 downTo Jan_01_2000).random()
         )
 
-        assertFails {
+        assertFailsWith<IllegalArgumentException> {
             (Jan_02_2000..Jan_01_2000).random()
         }
 
