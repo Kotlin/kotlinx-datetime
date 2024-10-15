@@ -182,8 +182,8 @@ class LocalDateRangeTest {
         assertEquals((Jan_01_2000 downTo Jan_01_2000).last(), Jan_01_2000)
         assertEquals((Jan_01_2000..Jan_05_2000).last(), Jan_05_2000)
         assertEquals((Jan_05_2000 downTo Jan_01_2000).last(), Jan_01_2000)
-        assertFails { (Jan_02_2000..Jan_01_2000).last() }
-        assertFails { (Jan_01_2000 downTo Jan_02_2000).last() }
+        assertFailsWith<NoSuchElementException> { (Jan_02_2000..Jan_01_2000).last() }
+        assertFailsWith<NoSuchElementException> { (Jan_01_2000 downTo Jan_02_2000).last() }
     }
 
     @Test
