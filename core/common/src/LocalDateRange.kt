@@ -108,7 +108,7 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
     override val endInclusive: LocalDate get() = last
 
     /**
-     * returns the upper bound of the range, exclusive.
+     * Returns the upper bound of the range, exclusive.
      */
     @Deprecated(
         "This throws an exception if the exclusive end if not inside " +
