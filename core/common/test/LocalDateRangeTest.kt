@@ -38,6 +38,8 @@ class LocalDateRangeTest {
         )
         assertTrue {
             (LocalDate.MIN..<LocalDate.MIN).isEmpty()
+        }
+        assertTrue {
             (LocalDate.MIN..<LocalDate.MAX).isNotEmpty()
         }
         assertContentEquals(
