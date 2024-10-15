@@ -16,6 +16,7 @@ class LocalDateRangeTest {
     val Jan_01_2000 = LocalDate(2000, 1, 1)
     val Jan_02_2000 = LocalDate(2000, 1, 2)
     val Jan_05_2000 = LocalDate(2000, 1, 5)
+    val Jan_06_2000 = LocalDate(2000, 1, 6)
     val Jan_24_2000 = LocalDate(2000, 1, 24)
     val Dec_24_2000 = LocalDate(2000, 12, 24)
 
@@ -184,6 +185,8 @@ class LocalDateRangeTest {
         assertEquals((Jan_01_2000 downTo Jan_01_2000).last(), Jan_01_2000)
         assertEquals((Jan_01_2000..Jan_05_2000).last(), Jan_05_2000)
         assertEquals((Jan_05_2000 downTo Jan_01_2000).last(), Jan_01_2000)
+        assertEquals((Jan_01_2000..Jan_06_2000).step(2, DateTimeUnit.DAY).last(), Jan_05_2000)
+        assertEquals((Jan_06_2000 downTo Jan_01_2000).step(2, DateTimeUnit.DAY).last(), Jan_02_2000)
         assertFailsWith<NoSuchElementException> { (Jan_02_2000..Jan_01_2000).last() }
         assertFailsWith<NoSuchElementException> { (Jan_01_2000 downTo Jan_02_2000).last() }
     }
