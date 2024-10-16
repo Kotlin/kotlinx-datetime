@@ -254,7 +254,8 @@ public fun LocalDateProgression.randomOrNull(random: Random = Random) : LocalDat
 // but for the range of epoch days in LocalDate it's good enough
 private fun LongProgression.random(random: Random = Random) : Long = random.nextLong(0L..(last - first) / step) * step + first
 
-internal fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
+// incorrect in general; see `random` just above
+private fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
 
 internal fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
 
