@@ -257,7 +257,10 @@ private fun LongProgression.random(random: Random = Random) : Long = random.next
 // incorrect in general; see `random` just above
 private fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
 
-internal fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
+// this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).step(5).contains(2)` returns `false`
+// incorrectly https://www.wolframalpha.com/input?i=-2%5E63+%2B+1844674407370955162+*+5),
+// but for the range of epoch days in LocalDate it's good enough
+private fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
 
 // this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
 // but for the range of epoch days in LocalDate it's good enough
