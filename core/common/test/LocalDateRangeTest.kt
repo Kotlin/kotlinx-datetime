@@ -11,14 +11,12 @@ import kotlin.random.nextLong
 import kotlin.test.*
 
 class LocalDateRangeTest {
-    val Dec_24_1900 = LocalDate(1900, 12, 24)
     val Dec_30_1999 = LocalDate(1999, 12, 30)
     val Jan_01_2000 = LocalDate(2000, 1, 1)
     val Jan_02_2000 = LocalDate(2000, 1, 2)
     val Jan_05_2000 = LocalDate(2000, 1, 5)
     val Jan_06_2000 = LocalDate(2000, 1, 6)
     val Jan_24_2000 = LocalDate(2000, 1, 24)
-    val Dec_24_2000 = LocalDate(2000, 12, 24)
 
     @Test
     fun emptyRange() {
