@@ -256,7 +256,9 @@ internal fun LongProgression.randomOrNull(random: Random = Random) : Long? = if 
 
 internal fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
 
-internal val LongProgression.size: Int
+// this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
+// but for the range of epoch days in LocalDate it's good enough
+private val LongProgression.size: Int
     get() = if(isEmpty()) 0 else try {
         (safeAdd(last, -first) / step + 1).clampToInt()
     } catch (e: ArithmeticException) {
