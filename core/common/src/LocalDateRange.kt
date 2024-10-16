@@ -194,7 +194,7 @@ public fun LocalDateProgression.lastOrNull(): LocalDate? = if (isEmpty()) null e
 
 /**
  * Returns a reversed [LocalDateProgression], i.e. one that goes from [last] to [first].
- * The sign of the step is switched, in order to reverse the directionality of the progression.
+ * The sign of the step is switched, in order to reverse the direction of the progression.
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.reversedProgression
  */
@@ -204,7 +204,7 @@ public fun LocalDateProgression.reversed(): LocalDateProgression = LocalDateProg
  * Returns a [LocalDateProgression] with the same start and end, but a changed step value.
  *
  * **Pitfall**: the value parameter represents the magnitude of the step, not the direction, and therefore must be positive.
- * Its sign will be matched to the sign of the existing step, in order to maintain the directionality of the progression.
+ * Its sign will be matched to the sign of the existing step, in order to maintain the direction of the progression.
  * If you wish to switch the direction of the progression, use [LocalDateProgression.reversed]
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.progressionWithStep
@@ -215,7 +215,7 @@ public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : 
  * Returns a [LocalDateProgression] with the same start and end, but a changed step value.
  *
  * **Pitfall**: the value parameter represents the magnitude of the step, not the direction, and therefore must be positive.
- * Its sign will be matched to the sign of the existing step, in order to maintain the directionality of the progression.
+ * Its sign will be matched to the sign of the existing step, in order to maintain the direction of the progression.
  * If you wish to switch the direction of the progression, use [LocalDateProgression.reversed]
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.progressionWithStep
