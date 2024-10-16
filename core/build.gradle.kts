@@ -21,7 +21,7 @@ mavenPublicationsPom {
 }
 
 base {
-    archivesBaseName = "kotlinx-datetime" // doesn't work
+    archivesName = "kotlinx-datetime" // doesn't work
 }
 
 val mainJavaToolchainVersion: String by project
