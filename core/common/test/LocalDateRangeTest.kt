@@ -89,6 +89,10 @@ class LocalDateRangeTest {
             (24 downTo 1  step 2).map { LocalDate(2000, 1, it) },
             (Jan_24_2000 downTo Jan_01_2000).step(2, DateTimeUnit.DAY)
         )
+        assertContentEquals(
+            (Jan_01_2000..Jan_24_2000).step(Long.MAX_VALUE / 2, DateTimeUnit.WEEK),
+            listOf(Jan_01_2000)
+        )
     }
 
     @Test

@@ -7,7 +7,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.clampToInt
 import kotlinx.datetime.internal.safeAdd
-import kotlinx.datetime.internal.safeMultiply
+import kotlinx.datetime.internal.safeMultiplyOrClamp
 import kotlin.random.Random
 import kotlin.random.nextLong
 
@@ -87,7 +87,7 @@ internal constructor(internal val longProgression: LongProgression) : Collection
             rangeEnd: LocalDate,
             stepValue: Long,
             stepUnit: DateTimeUnit.DayBased
-        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, safeMultiply(stepValue, stepUnit.days.toLong()))
+        ): LocalDateProgression = LocalDateProgression(rangeStart, rangeEnd, safeMultiplyOrClamp(stepValue, stepUnit.days.toLong()))
     }
 }
 
@@ -220,7 +220,7 @@ public fun LocalDateProgression.step(value: Int, unit: DateTimeUnit.DayBased) : 
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.progressionWithStep
  */
-public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(longProgression.step(safeMultiply(value, unit.days.toLong())))
+public fun LocalDateProgression.step(value: Long, unit: DateTimeUnit.DayBased) : LocalDateProgression = LocalDateProgression(longProgression.step(safeMultiplyOrClamp(value, unit.days.toLong())))
 
 /**
  * Creates a [LocalDateProgression] from `this` down to [that], inclusive.
