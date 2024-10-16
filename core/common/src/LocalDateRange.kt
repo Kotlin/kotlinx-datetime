@@ -250,7 +250,9 @@ public fun LocalDateProgression.random(random: Random = Random) : LocalDate = lo
 public fun LocalDateProgression.randomOrNull(random: Random = Random) : LocalDate? = longProgression.randomOrNull(random)
     ?.let(LocalDate.Companion::fromEpochDays)
 
-internal fun LongProgression.random(random: Random = Random) : Long = random.nextLong(0L..(last - first) / step) * step + first
+// this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).random()` throws an exception),
+// but for the range of epoch days in LocalDate it's good enough
+private fun LongProgression.random(random: Random = Random) : Long = random.nextLong(0L..(last - first) / step) * step + first
 
 internal fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (isEmpty()) null else random(random)
 
