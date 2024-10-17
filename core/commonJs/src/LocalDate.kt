@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.clampToInt
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
