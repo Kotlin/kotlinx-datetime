@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.removeLeadingZerosFromLongYearFormLocalDateTime
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -60,7 +61,8 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             if (format === Formats.ISO) {
                 try {
-                    jtLocalDateTime.parse(input).let(::LocalDateTime)
+                    val sanitizedInput = removeLeadingZerosFromLongYearFormLocalDateTime(input.toString())
+                    jtLocalDateTime.parse(sanitizedInput).let(::LocalDateTime)
                 } catch (e: DateTimeParseException) {
                     throw DateTimeFormatException(e)
                 }
@@ -84,4 +86,3 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     }
 
 }
-
