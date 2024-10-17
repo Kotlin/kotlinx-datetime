@@ -8,6 +8,7 @@
 package kotlinx.datetime
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.internal.NANOS_PER_ONE
 import platform.Foundation.*
 
 /**
@@ -27,14 +28,16 @@ public fun Instant.toNSDate(): NSDate {
 /**
  * Converts the [NSDate] to the corresponding [Instant].
  *
- * Even though Darwin only uses millisecond precision, it is possible that [date] uses larger resolution, storing
- * microseconds or even nanoseconds. In this case, the sub-millisecond parts of [date] are rounded to the nearest
- * millisecond, given that they are likely to be conversion artifacts.
+ * Note that the [NSDate] stores a [Double] value.
+ * This means that the results of this conversion may be imprecise.
+ * For example, if the [NSDate] only has millisecond or microsecond precision logically,
+ * due to conversion artifacts in [Double] values, the result may include non-zero nanoseconds.
  */
 public fun NSDate.toKotlinInstant(): Instant {
     val secs = timeIntervalSince1970()
-    val millis = secs * 1000 + if (secs > 0) 0.5 else -0.5
-    return Instant.fromEpochMilliseconds(millis.toLong())
+    val fullSeconds = secs.toLong()
+    val nanos = (secs - fullSeconds) * NANOS_PER_ONE
+    return Instant.fromEpochSeconds(fullSeconds, nanos.toLong())
 }
 
 /**
