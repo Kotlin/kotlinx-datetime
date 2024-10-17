@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.internal.clampToInt
 import kotlin.random.Random
 import kotlin.random.nextLong
 import kotlin.test.*
@@ -266,8 +267,11 @@ class LocalDateRangeTest {
 
         assertEquals(0, (Jan_02_2000..Jan_01_2000).size)
         assertEquals (0, (Jan_01_2000 downTo Jan_02_2000).size)
-        assertEquals(Int.MAX_VALUE, (LocalDate.MIN..LocalDate.MAX).size)
-        assertEquals(Int.MAX_VALUE, (LocalDate.MAX downTo LocalDate.MIN).size)
+
+        val maxSizeOfRange = (LocalDate.MAX.toEpochDaysLong() - LocalDate.MIN.toEpochDaysLong() + 1L).clampToInt()
+        assertEquals(maxSizeOfRange, (LocalDate.MIN..LocalDate.MAX).size)
+        assertEquals(maxSizeOfRange, (LocalDate.MAX downTo LocalDate.MIN).size)
+
 
         assertEquals(1, (Jan_01_2000..Jan_02_2000).step(2, DateTimeUnit.DAY).size)
         assertEquals(3, (Jan_01_2000..Jan_05_2000).step(2, DateTimeUnit.DAY).size)
