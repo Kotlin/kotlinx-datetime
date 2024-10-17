@@ -6,6 +6,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
+import kotlinx.datetime.internal.removeLeadingZerosFromLongYearFormLocalDate
 import kotlinx.datetime.serializers.LocalDateIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.internal.JSJoda.LocalDate as jtLocalDate
@@ -20,7 +21,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
             format: DateTimeFormat<LocalDate>
         ): LocalDate = if (format === Formats.ISO) {
             try {
-                jsTry { jtLocalDate.parse(input.toString()) }.let(::LocalDate)
+                val sanitizedInput = removeLeadingZerosFromLongYearFormLocalDate(input.toString())
+                jsTry { jtLocalDate.parse(sanitizedInput.toString()) }.let(::LocalDate)
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeParseException()) throw DateTimeFormatException(e)
                 throw e

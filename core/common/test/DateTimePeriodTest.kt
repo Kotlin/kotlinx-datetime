@@ -110,10 +110,14 @@ class DateTimePeriodTest {
         assertEquals(DateTimePeriod(nanoseconds = -999_999_999), DateTimePeriod.parse("-PT0.999999999S"))
         assertEquals(DateTimePeriod(days = 1, nanoseconds = -999_999_999), DateTimePeriod.parse("P1DT-0.999999999S"))
         assertPeriodComponents(DateTimePeriod.parse("P1DT-0.999999999S"), days = 1, nanoseconds = -999_999_999)
+        assertEquals(DatePeriod(days = 1), DateTimePeriod.parse("P000000000000000000000000000001D"))
+
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P") }
 
         // overflow of `Int.MAX_VALUE` months
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P2000000000Y") }
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y2147483640M") }
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("PT+-2H") }
 
         // too large a number in a field
         assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000Y") }

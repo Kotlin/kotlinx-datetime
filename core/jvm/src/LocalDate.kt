@@ -22,7 +22,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
             if (format === Formats.ISO) {
                 try {
-                    jtLocalDate.parse(input).let(::LocalDate)
+                    val sanitizedInput = removeLeadingZerosFromLongYearFormLocalDate(input.toString())
+                    jtLocalDate.parse(sanitizedInput).let(::LocalDate)
                 } catch (e: DateTimeParseException) {
                     throw DateTimeFormatException(e)
                 }
