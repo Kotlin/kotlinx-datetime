@@ -6,7 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.Clock // currently, requires an explicit import due to a conflict with the deprecated Clock from kotlin.time
+import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
@@ -84,7 +84,9 @@ class InstantTest {
             assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
         }
 
-        // TODO: assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")} // fails on Native
+        assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")}
+        assertInvalidFormat { Instant.parse("1970-01-01T24:00:00Z")}
+        assertInvalidFormat { Instant.parse("1970-01-01T23:59Z")}
         assertInvalidFormat { Instant.parse("x") }
         assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
@@ -117,19 +119,33 @@ class InstantTest {
             Instant.DISTANT_PAST,
             Instant.fromEpochSeconds(0, 0))
 
-        val offsets = listOf(
-            UtcOffset.parse("Z"),
-            UtcOffset.parse("+03:12:14"),
-            UtcOffset.parse("-03:12:14"),
-            UtcOffset.parse("+02:35"),
-            UtcOffset.parse("-02:35"),
-            UtcOffset.parse("+04"),
-            UtcOffset.parse("-04"),
+        val offsetStrings = listOf(
+            "Z",
+            "+03:12:14",
+            "-03:12:14",
+            "+02:35",
+            "-02:35",
+            "+04",
+            "-04",
         )
 
+        val offsetFormat = UtcOffset.Format {
+            optional("Z") {
+                offsetHours()
+                optional {
+                    char(':'); offsetMinutesOfHour()
+                    optional { char(':'); offsetSecondsOfMinute() }
+                }
+            }
+        }
+        val offsets = offsetStrings.map { UtcOffset.parse(it, offsetFormat) }
+
         for (instant in instants) {
-            for (offset in offsets) {
-                val str = instant.toStringWithOffset(offset)
+            for (offsetIx in offsets.indices) {
+                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offsets[offsetIx])
+                val offsetString = offsets[offsetIx].toString()
+                assertEquals(offsetString, offsetString.commonSuffixWith(str))
+                assertEquals(instant, Instant.parse(str, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET))
                 assertEquals(instant, Instant.parse(str))
             }
         }
@@ -251,6 +267,10 @@ class InstantTest {
         val instant3 = instant2 - 2.hours
         val offset3 = instant3.offsetIn(zone)
         assertEquals(offset1, offset3)
+
+        // TODO: fails on JS
+        // // without the minus, this test fails on JVM
+        // (Instant.MAX - (2 * 365).days).offsetIn(zone)
     }
 
     @Test
@@ -617,5 +637,12 @@ class InstantRangeTest {
             assertEquals(expected = Instant.MAX, actual = Instant.MAX + smallDuration)
             assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
         }
+    }
+
+    @Test
+    fun subtractInstants() {
+        val max = Instant.fromEpochSeconds(31494816403199L)
+        val min = Instant.fromEpochSeconds(-31619119219200L)
+        assertEquals(max.epochSeconds - min.epochSeconds, (max - min).inWholeSeconds)
     }
 }

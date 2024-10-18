@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 JetBrains s.r.o.
+ * Copyright 2019-2023 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -16,14 +16,13 @@ import kotlinx.serialization.internal.*
  *
  * JSON example: `"JANUARY"`
  */
-@Suppress("INVISIBLE_MEMBER")
-public object MonthSerializer: KSerializer<Month> {
-    private val impl = EnumSerializer("Month", Month.values())
+@Suppress("EnumValuesSoftDeprecate") // createEnumSerializer requires an array
+public object MonthSerializer : KSerializer<Month> by createEnumSerializer<Month>(
+    "kotlinx.datetime.Month",
+    Month.values())
 
-    override val descriptor: SerialDescriptor
-        get() = impl.descriptor
-
-    override fun deserialize(decoder: Decoder): Month = impl.deserialize(decoder)
-
-    override fun serialize(encoder: Encoder, value: Month): Unit = impl.serialize(encoder, value)
+// Until https://github.com/Kotlin/kotlinx.serialization/issues/2459 is resolved
+internal fun <E : Enum<E>> createEnumSerializer(serialName: String, values: Array<E>): KSerializer<E> {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    return kotlinx.serialization.internal.EnumSerializer(serialName, values)
 }

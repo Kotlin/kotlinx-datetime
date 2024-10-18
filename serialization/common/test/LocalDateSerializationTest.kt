@@ -66,7 +66,7 @@ class LocalDateSerializationTest {
 
     @Test
     fun testDefaultSerializers() {
-        // should be the same as the ISO-8601
+        // should be the same as the ISO 8601
         iso8601Serialization(Json.serializersModule.serializer())
     }
 

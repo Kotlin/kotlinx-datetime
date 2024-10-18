@@ -3,14 +3,12 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.*
 
 const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
 const val releaseVersionParameter = "releaseVersion"
 
-const val bintrayUserName = "%env.BINTRAY_USER%"
-const val bintrayToken = "%env.BINTRAY_API_KEY%"
 const val libraryStagingRepoDescription = "Kotlin-DateTime-library"
 
 val platforms = Platform.values()

@@ -5,10 +5,14 @@
 
 package kotlinx.datetime
 
-import kotlin.native.concurrent.*
-
 /**
  * The enumeration class representing the 12 months of the year.
+ *
+ * Can be acquired from [LocalDate.month] or constructed using the `Month` factory function that accepts
+ * the month number.
+ * This number can be obtained from the [number] property.
+ *
+ * @sample kotlinx.datetime.test.samples.MonthSamples.usage
  */
 public expect enum class Month {
     /** January, month #01, with 31 days. */
@@ -46,24 +50,24 @@ public expect enum class Month {
 
     /** December, month #12, with 31 days. */
     DECEMBER;
-
-//    val value: Int // member missing in java.time.Month has to be an extension
 }
 
 /**
  * The number of the [Month]. January is 1, December is 12.
+ *
+ * @sample kotlinx.datetime.test.samples.MonthSamples.number
  */
 public val Month.number: Int get() = ordinal + 1
 
-@SharedImmutable
-private val allMonths = Month.values().asList()
-
 /**
  * Returns the [Month] instance for the given month number. January is 1, December is 12.
+ *
+ * @throws IllegalArgumentException if the month number is not in the range 1..12
+ * @sample kotlinx.datetime.test.samples.MonthSamples.constructorFunction
  */
 public fun Month(number: Int): Month {
     require(number in 1..12)
-    return allMonths[number - 1]
+    return Month.entries[number - 1]
 }
 
 

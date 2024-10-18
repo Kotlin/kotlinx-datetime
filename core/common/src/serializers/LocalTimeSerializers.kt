@@ -11,7 +11,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * A serializer for [LocalTime] that uses the ISO-8601 representation.
+ * A serializer for [LocalTime] that uses the ISO 8601 representation.
  *
  * JSON example: `"12:01:03.999"`
  *
@@ -21,7 +21,7 @@ import kotlinx.serialization.encoding.*
 public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalTime", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): LocalTime =
         LocalTime.parse(decoder.decodeString())
@@ -39,14 +39,14 @@ public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("LocalTime") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalTime") {
             element<Short>("hour")
             element<Short>("minute")
             element<Short>("second", isOptional = true)
             element<Int>("nanosecond", isOptional = true)
         }
 
-    @Suppress("INVISIBLE_MEMBER") // to be able to throw `MissingFieldException`
+    @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): LocalTime =
         decoder.decodeStructure(descriptor) {
             var hour: Short? = null
@@ -63,8 +63,8 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
                     else -> throw SerializationException("Unexpected index: $index")
                 }
             }
-            if (hour == null) throw MissingFieldException("hour")
-            if (minute == null) throw MissingFieldException("minute")
+            if (hour == null) throw MissingFieldException(missingField = "hour", serialName = descriptor.serialName)
+            if (minute == null) throw MissingFieldException(missingField = "minute", serialName = descriptor.serialName)
             LocalTime(hour.toInt(), minute.toInt(), second.toInt(), nanosecond)
         }
 

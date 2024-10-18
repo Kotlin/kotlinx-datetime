@@ -27,7 +27,9 @@ class UtcOffsetTest {
             "@01:00")
 
         val fixedOffsetTimeZoneIds = listOf(
-            "UTC", "UTC+0", "GMT+01", "UT-01", "Etc/UTC"
+            "UTC", "UTC+0", "GMT+01", "UT-01", "Etc/UTC",
+            "+0000", "+0100", "+1800", "+180000",
+            "+4", "+0", "-0",
         )
 
         val offsetSecondsRange = -18 * 60 * 60 .. +18 * 60 * 60
@@ -123,29 +125,21 @@ class UtcOffsetTest {
 
 
             check(offsetSeconds, "$sign${hours.pad()}:${minutes.pad()}:${seconds.pad()}", canonical = seconds != 0)
-            check(offsetSeconds, "$sign${hours.pad()}${minutes.pad()}${seconds.pad()}")
             if (seconds == 0) {
                 check(offsetSeconds, "$sign${hours.pad()}:${minutes.pad()}", canonical = offsetSeconds != 0)
-                check(offsetSeconds, "$sign${hours.pad()}${minutes.pad()}")
-                if (minutes == 0) {
-                    check(offsetSeconds, "$sign${hours.pad()}")
-                    check(offsetSeconds, "$sign$hours")
-                }
             }
         }
         check(0, "+00:00")
         check(0, "-00:00")
-        check(0, "+0")
-        check(0, "-0")
         check(0, "Z", canonical = true)
     }
 
     @Test
     fun equality() {
         val equalOffsets = listOf(
-            listOf("Z", "+0", "+00", "+0000", "+00:00:00", "-00:00:00"),
-            listOf("+4", "+04", "+04:00"),
-            listOf("-18", "-1800", "-18:00:00"),
+            listOf("Z", "+00:00", "-00:00", "+00:00:00", "-00:00:00"),
+            listOf("+04:00", "+04:00:00"),
+            listOf("-18:00", "-18:00:00"),
         )
         for (equalGroup in equalOffsets) {
             val offsets = equalGroup.map { UtcOffset.parse(it) }

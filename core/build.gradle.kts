@@ -1,17 +1,19 @@
 import kotlinx.team.infra.mavenPublicationsPom
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
-import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
     `maven-publish`
+    id("org.jetbrains.kotlinx.kover")
 }
 
 mavenPublicationsPom {
@@ -28,33 +30,58 @@ val serializationVersion: String by project
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
-    with(javaToolchains.launcherFor(toolchain).get().metadata) {
-        logger.info("Using JDK $languageVersion toolchain installed in $installationPath")
-    }
 }
 
 kotlin {
     explicitApi()
 
     infra {
-        target("linuxX64")
-        target("mingwX64")
-
-        common("darwin") {
-            target("macosX64")
-            target("macosArm64")
-            target("iosX64")
-            target("iosArm64")
-            target("iosArm32")
-            target("iosSimulatorArm64")
-            target("watchosArm32")
-            target("watchosArm64")
-            target("watchosX86")
-            target("watchosX64")
-            target("watchosSimulatorArm64")
-            target("tvosArm64")
-            target("tvosX64")
-            target("tvosSimulatorArm64")
+        common("tzfile") {
+            // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+            common("tzdbOnFilesystem") {
+                common("linux") {
+                    // Tier 1
+                    target("linuxX64")
+                    // Tier 2
+                    target("linuxArm64")
+                    // Tier 4 (deprecated, but still in demand)
+                    target("linuxArm32Hfp")
+                }
+                common("darwin") {
+                    common("darwinDevices") {
+                        // Tier 1
+                        target("macosX64")
+                        target("macosArm64")
+                        // Tier 2
+                        target("watchosX64")
+                        target("watchosArm32")
+                        target("watchosArm64")
+                        target("tvosX64")
+                        target("tvosArm64")
+                        target("iosArm64")
+                        // Tier 3
+                        target("watchosDeviceArm64")
+                    }
+                    common("darwinSimulator") {
+                        // Tier 1
+                        target("iosSimulatorArm64")
+                        target("iosX64")
+                        // Tier 2
+                        target("watchosSimulatorArm64")
+                        target("tvosSimulatorArm64")
+                    }
+                }
+            }
+            common("androidNative") {
+                target("androidNativeArm32")
+                target("androidNativeArm64")
+                target("androidNativeX86")
+                target("androidNativeX64")
+            }
+        }
+        // Tier 3
+        common("windows") {
+            target("mingwX64")
         }
     }
 
@@ -90,6 +117,25 @@ kotlin {
 //        }
     }
 
+    wasmJs {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
+    }
+
+    wasmWasi {
+        nodejs()
+    }
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
@@ -106,54 +152,18 @@ kotlin {
         compilations["test"].kotlinOptions {
             freeCompilerArgs += listOf("-trw")
         }
-        if (konanTarget.family.isAppleFamily) {
-            return@withType
-        }
-        compilations["main"].cinterops {
-            create("date") {
-                val cinteropDir = "$projectDir/native/cinterop"
-                val dateLibDir = "${project(":").projectDir}/thirdparty/date"
-                headers("$cinteropDir/public/cdate.h")
-                defFile("native/cinterop/date.def")
-                extraOpts("-Xsource-compiler-option", "-I$cinteropDir/public")
-                extraOpts("-Xsource-compiler-option", "-DONLY_C_LOCALE=1")
-                when {
-                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.LINUX -> {
-                        // needed for the date library so that it does not try to download the timezone database
-                        extraOpts("-Xsource-compiler-option", "-DUSE_OS_TZDB=1")
-                        /* using a more modern C++ version causes the date library to use features that are not
-                    * present in the currently outdated GCC root shipped with Kotlin/Native for Linux. */
-                        extraOpts("-Xsource-compiler-option", "-std=c++11")
-                        // the date library and its headers
-                        extraOpts("-Xcompile-source", "$dateLibDir/src/tz.cpp")
-                        extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
-                        // the main source for the platform bindings.
-                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/cdate.cpp")
-                    }
-                    konanTarget.family == org.jetbrains.kotlin.konan.target.Family.MINGW -> {
-                        // needed to be able to use std::shared_mutex to implement caching.
-                        extraOpts("-Xsource-compiler-option", "-std=c++17")
-                        // the date library headers, needed for some pure calculations.
-                        extraOpts("-Xsource-compiler-option", "-I$dateLibDir/include")
-                        // the main source for the platform bindings.
-                        extraOpts("-Xcompile-source", "$cinteropDir/cpp/windows.cpp")
-                    }
-                    else -> {
-                        throw IllegalArgumentException("Unknown native target ${this@withType}")
-                    }
+        if (konanTarget.family == Family.MINGW) {
+            compilations["test"].cinterops {
+                create("modern_api") {
+                    defFile("$projectDir/windows/test_cinterop/modern_api.def")
+                    headers("$projectDir/windows/test_cinterop/modern_api.h")
                 }
             }
         }
-        compilations["main"].defaultSourceSet {
-            kotlin.srcDir("native/cinterop_actuals")
-        }
     }
-
-
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-common")
                 compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
@@ -165,39 +175,70 @@ kotlin {
         }
 
         val jvmMain by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib")
-            }
         }
 
         val jvmTest by getting {
-            dependencies {
-                api("org.jetbrains.kotlin:kotlin-test-junit")
-            }
         }
 
-        val jsMain by getting {
+        val commonJsMain by creating {
+            dependsOn(commonMain.get())
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-stdlib-js")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
             }
         }
 
-        val jsTest by getting {
+        val commonJsTest by creating {
+            dependsOn(commonTest.get())
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        val nativeMain by getting {
+        val jsMain by getting {
+            dependsOn(commonJsMain)
+        }
+
+        val jsTest by getting {
+            dependsOn(commonJsTest)
+        }
+
+        val wasmJsMain by getting {
+            dependsOn(commonJsMain)
+        }
+
+        val wasmJsTest by getting {
+            dependsOn(commonJsTest)
+        }
+
+        val commonKotlinMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
+        val commonKotlinTest by creating {
+            dependsOn(commonTest.get())
+        }
+
+        val nativeMain by getting {
+            dependsOn(commonKotlinMain)
+        }
+
         val nativeTest by getting {
+            dependsOn(commonKotlinTest)
+        }
+
+        val wasmWasiMain by getting {
+            dependsOn(commonKotlinMain)
+        }
+
+        val wasmWasiTest by getting {
+            dependsOn(commonKotlinTest)
+            dependencies {
+                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
+            }
         }
 
         val darwinMain by getting {
@@ -270,7 +311,7 @@ tasks {
         manifest {
             attributes("Multi-Release" to true)
         }
-        from(compileJavaModuleInfo) {
+        from(compileJavaModuleInfo.map { it.destinationDirectory }) {
             into("META-INF/versions/9/")
         }
     }
@@ -282,14 +323,30 @@ tasks {
             exclude("tmp/.cache/expanded/expanded.lock")
         })
     }
+
+    // workaround from KT-61313
+    withType<Sign>().configureEach {
+        val pubName = name.removePrefix("sign").removeSuffix("Publication")
+
+        // These tasks only exist for native targets, hence findByName() to avoid trying to find them for other targets
+
+        // Task ':linkDebugTest<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
+        findByName("linkDebugTest$pubName")?.let {
+            mustRunAfter(it)
+        }
+        // Task ':compileTestKotlin<platform>' uses this output of task ':sign<platform>Publication' without declaring an explicit or implicit dependency
+        findByName("compileTestKotlin$pubName")?.let {
+            mustRunAfter(it)
+        }
+    }
 }
 
 val downloadWindowsZonesMapping by tasks.registering {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
-    val output = "$projectDir/native/cinterop/public/windows_zones.hpp"
-    val initialFileContents = File(output).readBytes()
+    val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)
     doLast {
+        val initialFileContents = try { File(output).readBytes() } catch(e: Throwable) { ByteArray(0) }
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
         // otherwise, parsing fails since it can't find the dtd
         documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
@@ -301,11 +358,13 @@ val downloadWindowsZonesMapping by tasks.registering {
         xmlDoc.documentElement.normalize()
         val mapZones = xmlDoc.getElementsByTagName("mapZone")
         val mapping = linkedMapOf<String, String>()
+        mapping["UTC"] = "UTC"
         for (i in 0 until mapZones.length) {
             val mapZone = mapZones.item(i)
             val windowsName = mapZone.attributes.getNamedItem("other").nodeValue
             val usualNames = mapZone.attributes.getNamedItem("type").nodeValue
             for (usualName in usualNames.split(' ')) {
+                if (usualName == "") continue
                 val oldWindowsName = mapping[usualName] // don't do it in `put` to preserve the order in the map
                 if (oldWindowsName == null) {
                     mapping[usualName] = windowsName
@@ -318,14 +377,13 @@ val downloadWindowsZonesMapping by tasks.registering {
         val bos = ByteArrayOutputStream()
         PrintWriter(bos).use { out ->
             out.println("""// generated with gradle task `$name`""")
-            out.println("""#include <unordered_map>""")
-            out.println("""#include <string>""")
-            out.println("""static const std::unordered_map<std::string, std::string> standard_to_windows = {""")
+            out.println("""package kotlinx.datetime.internal""")
+            out.println("""internal val standardToWindows: Map<String, String> = mutableMapOf(""")
             for ((usualName, windowsName) in sortedMapping) {
-                out.println("\t{ \"$usualName\", \"$windowsName\" },")
+                out.println("  \"$usualName\" to \"$windowsName\",")
             }
-            out.println("};")
-            out.println("""static const std::unordered_map<std::string, std::string> windows_to_standard = {""")
+            out.println(")")
+            out.println("""internal val windowsToStandard: Map<String, String> = mutableMapOf(""")
             val reverseMap = sortedMapOf<String, String>()
             for ((usualName, windowsName) in mapping) {
                 if (reverseMap[windowsName] == null) {
@@ -333,16 +391,9 @@ val downloadWindowsZonesMapping by tasks.registering {
                 }
             }
             for ((windowsName, usualName) in reverseMap) {
-                out.println("\t{ \"$windowsName\", \"$usualName\" },")
+                out.println("  \"$windowsName\" to \"$usualName\",")
             }
-            out.println("};")
-            out.println("""static const std::unordered_map<std::string, size_t> zone_ids = {""")
-            var i = 0
-            for ((usualName, windowsName) in sortedMapping) {
-                out.println("\t{ \"$usualName\", $i },")
-                ++i
-            }
-            out.println("};")
+            out.println(")")
         }
         val newFileContents = bos.toByteArray()
         if (!(initialFileContents contentEquals newFileContents)) {
@@ -356,13 +407,37 @@ val downloadWindowsZonesMapping by tasks.registering {
 tasks.withType<AbstractDokkaLeafTask>().configureEach {
     pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
 
+    failOnWarning.set(true)
     dokkaSourceSets.configureEach {
+        kotlin.sourceSets.commonTest.get().kotlin.srcDirs.forEach { samples.from(it) }
         // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
         skipDeprecated.set(true)
+        // Enum members and undocumented toString()
+        suppressInheritedMembers.set(true)
         // hide the `internal` package, which, on JS, has public members generated by Dukat that would get mentioned
         perPackageOption {
-            matchingRegex.set(".*\\.internal\\..*")
+            matchingRegex.set(".*\\.internal(\\..*)?")
             suppress.set(true)
         }
+        sourceLink {
+            localDirectory.set(rootDir)
+            remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/latest-release"))
+            remoteLineSuffix.set("#L")
+        }
     }
+}
+
+// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
+tasks.configureEach {
+    if (name == "compileCommonJsMainKotlinMetadata") {
+        enabled = false
+    }
+}
+
+// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
+// check it here:
+// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
+with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
+    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }

@@ -51,7 +51,12 @@ class ConvertersTest {
             if (timeZone is FixedOffsetTimeZone) {
                 continue
             }
-            val nsTimeZone = timeZone.toNSTimeZone()
+            val nsTimeZone = try {
+                timeZone.toNSTimeZone()
+            } catch (e: IllegalArgumentException) {
+                assertEquals("America/Ciudad_Juarez", id)
+                continue
+            }
             assertEquals(normalizedId, nsTimeZone.name)
             assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
         }
@@ -79,6 +84,7 @@ class ConvertersTest {
         components.timeZone = utc
         val nsDate = gregorian.dateFromComponents(components)!!
         val formatter = NSDateFormatter()
+        formatter.timeZone = utc
         formatter.dateFormat = "yyyy-MM-dd"
         assertEquals("2019-02-04", formatter.stringFromDate(nsDate))
     }
@@ -93,6 +99,7 @@ class ConvertersTest {
         assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
     }
 
+    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
         val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
