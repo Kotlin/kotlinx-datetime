@@ -556,10 +556,13 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder {
 public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate : kotlinx/datetime/format/DateTimeFormatBuilder {
 	public abstract fun date (Lkotlinx/datetime/format/DateTimeFormat;)V
 	public abstract fun dayOfMonth (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun dayOfMonth$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun dayOfWeek (Lkotlinx/datetime/format/DayOfWeekNames;)V
 	public abstract fun monthName (Lkotlinx/datetime/format/MonthNames;)V
 	public abstract fun monthNumber (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun monthNumber$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun year (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun year$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun yearTwoDigits (I)V
 }
 
@@ -588,12 +591,17 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeCom
 
 public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithTime : kotlinx/datetime/format/DateTimeFormatBuilder {
 	public abstract fun amPmHour (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun amPmHour$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithTime;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun amPmMarker (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun hour (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun hour$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithTime;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun minute (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun minute$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithTime;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun second (Lkotlinx/datetime/format/Padding;)V
-	public abstract fun secondFraction (I)V
+	public static synthetic fun second$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithTime;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+	public fun secondFraction (I)V
 	public abstract fun secondFraction (II)V
+	public static synthetic fun secondFraction$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithTime;IIILjava/lang/Object;)V
 	public abstract fun time (Lkotlinx/datetime/format/DateTimeFormat;)V
 }
 
@@ -609,8 +617,11 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithTime$Defaul
 public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset : kotlinx/datetime/format/DateTimeFormatBuilder {
 	public abstract fun offset (Lkotlinx/datetime/format/DateTimeFormat;)V
 	public abstract fun offsetHours (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun offsetHours$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun offsetMinutesOfHour (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun offsetMinutesOfHour$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public abstract fun offsetSecondsOfMinute (Lkotlinx/datetime/format/Padding;)V
+	public static synthetic fun offsetSecondsOfMinute$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset$DefaultImpls {
