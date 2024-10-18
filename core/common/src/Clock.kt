@@ -124,5 +124,20 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
     }
 }
 
+/**
+ * Creates a [Clock] that uses the [time mark at the moment of creation][TimeMark.markNow] to determine how [far][TimeMark.elapsedNow]
+ * the [current moment][Clock.now] is from the [origin].
+ *
+ * This clock stores the [TimeMark] at the moment of creation, so repeatedly creating [Clock]s from the same [TimeSource] results
+ * in different [Instant]s iff the time of the [TimeSource] was increased. To sync different [Clock]s, use the [origin]
+ * parameter.
+ *
+ * @sample kotlinx.datetime.test.samples.ClockSamples.timeSourceAsClock
+ */
+public fun TimeSource.asClock(origin: Instant): Clock = object : Clock {
+    private val startMark: TimeMark = markNow()
+    override fun now() = origin + startMark.elapsedNow()
+}
+
 @Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)

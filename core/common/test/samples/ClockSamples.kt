@@ -7,6 +7,8 @@ package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
 import kotlin.test.*
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TestTimeSource
 
 class ClockSamples {
     @Test
@@ -44,5 +46,20 @@ class ClockSamples {
         }
         check(clock.todayIn(TimeZone.UTC) == LocalDate(2020, 1, 1))
         check(clock.todayIn(TimeZone.of("America/New_York")) == LocalDate(2019, 12, 31))
+    }
+
+    @Test
+    fun timeSourceAsClock() {
+        // Creating a TimeSource
+        // When testing a Clock in combination of kotlinx-coroutines-test, use the testTimeSource of the TestDispatcher.
+        val timeSource = TestTimeSource()
+        // Creating a clock by setting the origin, here the epoch start
+        val clock = timeSource.asClock(origin = Instant.fromEpochSeconds(0))
+
+        check(Instant.fromEpochSeconds(0) == clock.now())
+
+        // Increasing the timeSource
+        timeSource += 1.seconds
+        check(Instant.fromEpochSeconds(1) == clock.now())
     }
 }
