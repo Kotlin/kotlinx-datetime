@@ -10,7 +10,6 @@ import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
 
-@ExperimentalTime
 class ClockTest {
     @Test
     fun timeSourceAsClock() {
