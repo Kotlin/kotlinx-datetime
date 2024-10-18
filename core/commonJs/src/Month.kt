@@ -7,19 +7,4 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.JSJoda.Month as jsMonth
 
-public actual enum class Month {
-    JANUARY,
-    FEBRUARY,
-    MARCH,
-    APRIL,
-    MAY,
-    JUNE,
-    JULY,
-    AUGUST,
-    SEPTEMBER,
-    OCTOBER,
-    NOVEMBER,
-    DECEMBER;
-}
-
 internal fun jsMonth.toMonth(): Month = Month(this.value())
