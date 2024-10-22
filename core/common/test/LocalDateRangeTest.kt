@@ -216,19 +216,18 @@ class LocalDateRangeTest {
 
     @Test
     fun reversed() {
-        assertContentEquals(
+        assertEquals(
             Jan_05_2000 downTo Jan_01_2000,
             (Jan_01_2000..Jan_05_2000).reversed()
         )
-        assertContentEquals(
+        assertEquals(
             Jan_01_2000..Jan_05_2000,
             (Jan_05_2000 downTo Jan_01_2000).reversed()
         )
-        assertContentEquals(
-            Jan_01_2000..Jan_01_2000,
+        assertEquals(
+            Jan_01_2000 downTo Jan_01_2000,
             (Jan_01_2000..Jan_01_2000).reversed()
         )
-
     }
 
     @Test
