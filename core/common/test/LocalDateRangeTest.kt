@@ -279,4 +279,34 @@ class LocalDateRangeTest {
         assertEquals(3, (Jan_05_2000 downTo Jan_01_2000).step(2, DateTimeUnit.DAY).size)
         assertEquals(2, (Jan_05_2000 downTo Jan_02_2000).step(2, DateTimeUnit.DAY).size)
     }
+
+    @Test
+    fun equalityAndHashCode() {
+        assertEquals(
+            Jan_01_2000..Jan_05_2000,
+            (Jan_01_2000..Jan_05_2000).step(1, DateTimeUnit.DAY)
+        )
+        assertEquals(
+            (Jan_01_2000..Jan_05_2000).hashCode(),
+            ((Jan_01_2000..Jan_05_2000).step(1, DateTimeUnit.DAY)).hashCode()
+        )
+
+        assertEquals(
+            (Jan_01_2000..Jan_05_2000).step(7, DateTimeUnit.DAY),
+            (Jan_01_2000..Jan_05_2000).step(1, DateTimeUnit.WEEK)
+        )
+        assertEquals(
+            (Jan_01_2000..Jan_05_2000).step(7, DateTimeUnit.DAY).hashCode(),
+            (Jan_01_2000..Jan_05_2000).step(1, DateTimeUnit.WEEK).hashCode()
+        )
+
+        assertEquals(
+            (Jan_05_2000 downTo Jan_01_2000).step(7, DateTimeUnit.DAY),
+            (Jan_05_2000 downTo Jan_01_2000).step(1, DateTimeUnit.WEEK)
+        )
+        assertEquals(
+            (Jan_05_2000 downTo Jan_01_2000).step(7, DateTimeUnit.DAY).hashCode(),
+            (Jan_05_2000 downTo Jan_01_2000).step(1, DateTimeUnit.WEEK).hashCode()
+        )
+    }
 }
