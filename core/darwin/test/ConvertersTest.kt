@@ -6,6 +6,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
+import kotlinx.datetime.internal.NANOS_PER_ONE
 import platform.Foundation.*
 import kotlin.math.*
 import kotlin.random.*
@@ -13,33 +14,36 @@ import kotlin.test.*
 
 class ConvertersTest {
 
-    private val dateFormatter = NSDateFormatter()
-    private val locale = NSLocale.localeWithLocaleIdentifier("en_US_POSIX")
-    private val gregorian = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierGregorian)!!
+    private val isoCalendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)!!
+    @OptIn(UnsafeNumber::class)
     private val utc = NSTimeZone.timeZoneForSecondsFromGMT(0)
 
-    init {
-        dateFormatter.locale = locale
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
-        dateFormatter.calendar = gregorian
-        dateFormatter.timeZone = utc
+    @Test
+    fun testToFromNSDateNow() {
+        // as of writing, the max difference in such round-trips across 10^8 iterations was 120 nanoseconds,
+        // so we allow for four times that
+        repeat(10) {
+            val now = Clock.System.now()
+            assertEqualUpToHalfMicrosecond(now, now.toNSDate().toKotlinInstant())
+        }
+        repeat(10) {
+            val nowInSwift = NSDate()
+            assertEqualUpToHalfMicrosecond(nowInSwift, nowInSwift.toKotlinInstant().toNSDate())
+        }
     }
 
     @Test
     fun testToFromNSDate() {
-        // The first day on the Gregorian calendar. The day before it is 1582-10-04 in the Julian calendar.
-        val gregorianCalendarStart = Instant.parse("1582-10-15T00:00:00Z").toEpochMilliseconds()
-        val minBoundMillis = (NSDate.distantPast.timeIntervalSince1970 * 1000 + 0.5).toLong()
-        val maxBoundMillis = (NSDate.distantFuture.timeIntervalSince1970 * 1000 - 0.5).toLong()
+        val secondsBound = NSDate.distantPast.timeIntervalSince1970.toLong() until
+            NSDate.distantFuture.timeIntervalSince1970.toLong()
         repeat(STRESS_TEST_ITERATIONS) {
-            val millis = Random.nextLong(minBoundMillis, maxBoundMillis)
-            val instant = Instant.fromEpochMilliseconds(millis)
-            val date = instant.toNSDate()
-            // Darwin's date printer dynamically adjusts to switching between calendars, while our Instant does not.
-            if (millis >= gregorianCalendarStart) {
-                assertEquals(instant, Instant.parse(dateFormatter.stringFromDate(date)))
-            }
-            assertEquals(instant, date.toKotlinInstant())
+            val seconds = Random.nextLong(secondsBound)
+            val nanos = Random.nextInt(0, NANOS_PER_ONE)
+            val instant = Instant.fromEpochSeconds(seconds, nanos)
+            // at most 6 microseconds difference was observed in 10^8 iterations
+            assertEqualUpToTenMicroseconds(instant, instant.toNSDate().toKotlinInstant())
+            // while here, no difference at all was observed
+            assertEqualUpToOneNanosecond(instant.toNSDate(), instant.toNSDate().toKotlinInstant().toNSDate())
         }
     }
 
@@ -79,32 +83,60 @@ class ConvertersTest {
 
     @Test
     fun localDateToNSDateComponentsTest() {
-        val date = LocalDate.parse("2019-02-04")
+        val date = LocalDate(2019, 2, 4)
         val components = date.toNSDateComponents()
         components.timeZone = utc
-        val nsDate = gregorian.dateFromComponents(components)!!
-        val formatter = NSDateFormatter()
-        formatter.timeZone = utc
-        formatter.dateFormat = "yyyy-MM-dd"
+        val nsDate = isoCalendar.dateFromComponents(components)!!
+        val formatter = NSDateFormatter().apply {
+            timeZone = utc
+            dateFormat = "yyyy-MM-dd"
+        }
         assertEquals("2019-02-04", formatter.stringFromDate(nsDate))
     }
 
     @Test
     fun localDateTimeToNSDateComponentsTest() {
-        val str = "2019-02-04T23:59:30.543"
-        val dateTime = LocalDateTime.parse(str)
+        val dateTime = LocalDate(2019, 2, 4).atTime(23, 59, 30, 123456000)
         val components = dateTime.toNSDateComponents()
         components.timeZone = utc
-        val nsDate = gregorian.dateFromComponents(components)!!
-        assertEquals(str + "Z", dateFormatter.stringFromDate(nsDate))
+        val nsDate = isoCalendar.dateFromComponents(components)!!
+        assertEqualUpToHalfMicrosecond(dateTime.toInstant(TimeZone.UTC), nsDate.toKotlinInstant())
     }
 
-    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+    @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
         val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
         assertEquals(hours * 3600 + minutes * 60, nsTimeZone.secondsFromGMT.convert())
         assertIs<FixedOffsetTimeZone>(kotlinTimeZone)
         assertEquals(timeZone.offset, kotlinTimeZone.offset)
+    }
+
+    private fun assertEqualUpToTenMicroseconds(instant1: Instant, instant2: Instant) {
+        if ((instant1 - instant2).inWholeMicroseconds.absoluteValue > 10) {
+            throw AssertionError("Expected $instant1 to be equal to $instant2 up to 10 microseconds")
+        }
+    }
+
+    private fun assertEqualUpToHalfMicrosecond(instant1: Instant, instant2: Instant) {
+        if ((instant1 - instant2).inWholeNanoseconds.absoluteValue > 500) {
+            throw AssertionError("Expected $instant1 to be equal to $instant2 up to 0.5 microseconds")
+        }
+    }
+
+    private fun assertEqualUpToHalfMicrosecond(date1: NSDate, date2: NSDate) {
+        val difference = abs(date1.timeIntervalSinceDate(date2) * 1000000)
+        if (difference > 0.5) {
+            throw AssertionError("Expected $date1 to be equal to $date2 up to 0.5 microseconds, " +
+                    "but the difference was $difference microseconds")
+        }
+    }
+
+    private fun assertEqualUpToOneNanosecond(date1: NSDate, date2: NSDate) {
+        val difference = abs(date1.timeIntervalSinceDate(date2) * 1000000000)
+        if (difference > 1) {
+            throw AssertionError("Expected $date1 to be equal to $date2 up to 1 nanosecond, " +
+                    "but the difference was $difference microseconds")
+        }
     }
 }
