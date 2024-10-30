@@ -17,9 +17,9 @@ private fun removeLeadingZerosFromLongYearForm(input: String, minStringLengthAft
     if (input.length < failingYearStringLength + minStringLengthAfterYear || input[0] !in "+-") return input
     // the year is in the long form, so we need to remove the leading zeros
     // find the `-` that separates the year from the month
-    val yearEnd = input.indexOf('-', 1).takeIf { it != -1 }
+    val yearEnd = input.indexOf('-', 1)
     // if the year is too short, no need to remove the leading zeros, and if the string is malformed, just leave it
-    if (yearEnd == null || yearEnd < failingYearStringLength) return input
+    if (yearEnd < 0 || yearEnd < failingYearStringLength) return input
     // how many leading zeroes are there?
     var leadingZeros = 0
     while (input[1 + leadingZeros] == '0') leadingZeros++ // no overflow, we know `-` is there
