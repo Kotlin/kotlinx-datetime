@@ -141,7 +141,7 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
 
 internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
     val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
-    val localEpochDay = localSecond.floorDiv(SECONDS_PER_DAY.toLong()).toInt()
+    val localEpochDay = localSecond.floorDiv(SECONDS_PER_DAY.toLong())
     val secsOfDay = localSecond.mod(SECONDS_PER_DAY.toLong()).toInt()
     val date: LocalDate = LocalDate.fromEpochDays(localEpochDay) // may throw
     val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)

@@ -114,9 +114,10 @@ class DateTimePeriodTest {
 
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P") }
 
-        // overflow of `Int.MAX_VALUE` months
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P2000000000Y") }
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y2147483640M") }
+        // overflow of `Long.MAX_VALUE` months
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P768614336404564651Y") }
+        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y9223372036854775805M") }
+
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("PT+-2H") }
 
         // too large a number in a field

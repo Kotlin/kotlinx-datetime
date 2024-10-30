@@ -37,7 +37,7 @@ internal class JulianDayOfYear(val zeroBasedDayOfYear: Int) : DateOfYear {
         }
     }
     override fun toLocalDate(year: Int): LocalDate =
-        LocalDate(year, 1, 1).plusDays(zeroBasedDayOfYear)
+        LocalDate(year, 1, 1).plusDays(zeroBasedDayOfYear.toLong())
 
     override fun toString(): String = "JulianDayOfYear($zeroBasedDayOfYear)"
 }
@@ -52,7 +52,7 @@ internal fun JulianDayOfYearSkippingLeapDate(dayOfYear: Int) : DateOfYear {
     // In this form, the `dayOfYear` corresponds exactly to a specific month and day.
     // For example, `dayOfYear = 60` is always 1st March, even in leap years.
     // We take a non-leap year, as in that case, this is the same as JulianDayOfYear, so regular addition works.
-    val date = LocalDate(2011, 1, 1).plusDays(dayOfYear - 1)
+    val date = LocalDate(2011, 1, 1).plusDays(dayOfYear.toLong() - 1)
     return MonthDayOfYear(date.month, MonthDayOfYear.TransitionDay.ExactlyDayOfMonth(date.dayOfMonth))
 }
 

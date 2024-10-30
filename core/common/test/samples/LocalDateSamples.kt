@@ -33,7 +33,7 @@ class LocalDateSamples {
     fun fromAndToEpochDays() {
         // Converting LocalDate values to the number of days since 1970-01-01 and back
         check(LocalDate.fromEpochDays(0) == LocalDate(1970, Month.JANUARY, 1))
-        val randomEpochDay = Random.nextInt(-50_000..50_000)
+        val randomEpochDay = Random.nextLong(-50_000L..50_000L)
         val randomDate = LocalDate.fromEpochDays(randomEpochDay)
         check(randomDate.toEpochDays() == randomEpochDay)
     }
@@ -112,9 +112,9 @@ class LocalDateSamples {
     @Test
     fun toEpochDays() {
         // Converting LocalDate values to the number of days since 1970-01-01
-        check(LocalDate(2024, Month.APRIL, 16).toEpochDays() == 19829)
-        check(LocalDate(1970, Month.JANUARY, 1).toEpochDays() == 0)
-        check(LocalDate(1969, Month.DECEMBER, 25).toEpochDays() == -7)
+        check(LocalDate(2024, Month.APRIL, 16).toEpochDays() == 19829L)
+        check(LocalDate(1970, Month.JANUARY, 1).toEpochDays() == 0L)
+        check(LocalDate(1969, Month.DECEMBER, 25).toEpochDays() == -7L)
     }
 
     @Test
@@ -212,7 +212,7 @@ class LocalDateSamples {
         val startDate = LocalDate(2023, Month.JANUARY, 2)
         val endDate = LocalDate(2024, Month.APRIL, 1)
         val differenceInMonths = startDate.until(endDate, DateTimeUnit.MONTH)
-        check(differenceInMonths == 14)
+        check(differenceInMonths == 14L)
         // one year, two months, and 30 days, rounded toward zero.
     }
 

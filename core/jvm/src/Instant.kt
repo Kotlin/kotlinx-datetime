@@ -111,7 +111,7 @@ public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
         val thisZdt = atZone(timeZone)
         return with(period) {
             thisZdt
-                    .run { if (totalMonths != 0) plusMonths(totalMonths.toLong()) else this }
+                    .run { if (totalMonths != 0L) plusMonths(totalMonths) else this }
                     .run { if (days != 0) plusDays(days.toLong()) else this }
                     .run { if (totalNanoseconds != 0L) plusNanos(totalNanoseconds) else this }
         }.toInstant().let(::Instant)
@@ -164,10 +164,7 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
     val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
 
-    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
-        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
-    }
-    return buildDateTimePeriod(months.toInt(), days.toInt(), nanoseconds)
+    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
