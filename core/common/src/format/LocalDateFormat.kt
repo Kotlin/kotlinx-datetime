@@ -279,8 +279,10 @@ internal class IncompleteLocalDate(
         other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
             dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek && dayOfYear == other.dayOfYear
 
-    override fun hashCode(): Int =
-        year.hashCode() + monthNumber.hashCode() + dayOfMonth.hashCode() + isoDayOfWeek.hashCode() +
+    override fun hashCode(): Int = year.hashCode() * 923521 +
+            monthNumber.hashCode() * 29791 +
+            dayOfMonth.hashCode() * 961 +
+            isoDayOfWeek.hashCode() * 31 +
             dayOfYear.hashCode()
 
     override fun toString(): String =
