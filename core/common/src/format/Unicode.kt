@@ -293,7 +293,13 @@ internal sealed interface UnicodeFormat {
 
             class DayOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'D'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = unsupportedDirective("day-of-year")
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
+                    when (formatLength) {
+                        1 -> builder.dayOfYear(Padding.NONE)
+                        3 -> builder.dayOfYear(Padding.ZERO)
+                        else -> unknownLength()
+                    }
+                }
             }
 
             class MonthOfYear(override val formatLength: Int) : DateBased() {

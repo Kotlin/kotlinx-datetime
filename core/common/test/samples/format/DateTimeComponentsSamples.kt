@@ -143,6 +143,27 @@ class DateTimeComponentsSamples {
     }
 
     @Test
+    fun dayOfYear() {
+        // Formatting and parsing a date with the day of the year in complex scenarios
+        val format = DateTimeComponents.Format {
+            year(); dayOfYear()
+        }
+        val formattedDate = format.format {
+            setDate(LocalDate(2023, 2, 13))
+            check(year == 2023)
+            check(dayOfYear == 44)
+        }
+        check(formattedDate == "2023044")
+        val parsedDate = format.parse("2023044")
+        check(parsedDate.toLocalDate() == LocalDate(2023, 2, 13))
+        check(parsedDate.year == 2023)
+        check(parsedDate.dayOfYear == 44)
+        check(parsedDate.month == null)
+        check(parsedDate.dayOfMonth == null)
+        check(parsedDate.dayOfWeek == null)
+    }
+
+    @Test
     fun date() {
         // Formatting and parsing a date in complex scenarios
         val format = DateTimeComponents.Format {
@@ -154,6 +175,7 @@ class DateTimeComponentsSamples {
             check(month == Month.JANUARY)
             check(dayOfMonth == 2)
             check(dayOfWeek == DayOfWeek.MONDAY)
+            check(dayOfYear == 2)
         }
         check(formattedDate == "2023-01-02")
         val parsedDate = format.parse("2023-01-02")
@@ -162,6 +184,7 @@ class DateTimeComponentsSamples {
         check(parsedDate.month == Month.JANUARY)
         check(parsedDate.dayOfMonth == 2)
         check(parsedDate.dayOfWeek == null)
+        check(parsedDate.dayOfYear == null)
     }
 
     @Test
