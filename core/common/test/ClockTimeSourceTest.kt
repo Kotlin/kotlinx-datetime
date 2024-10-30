@@ -11,7 +11,8 @@ import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
 
-@Suppress("DEPRECATION_ERROR")
+@OptIn(ExperimentalTime::class)
+@Suppress("DEPRECATION")
 class ClockTimeSourceTest {
     @Test
     fun arithmetic() {
