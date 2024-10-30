@@ -467,33 +467,16 @@ class InstantRangeTest {
 
     @Test
     fun epochMillisecondsClamping() {
-        // toEpochMilliseconds()/fromEpochMilliseconds()
-        // assuming that ranges of Long (representing a number of milliseconds) and Instant are not just overlapping,
-        // but one is included in the other.
-        if (Instant.MAX.epochSeconds > Long.MAX_VALUE / 1000) {
-            /* Any number of milliseconds in Long is representable as an Instant */
-            for (instant in largePositiveInstants) {
-                assertEquals(Long.MAX_VALUE, instant.toEpochMilliseconds(), "$instant")
-            }
-            for (instant in largeNegativeInstants) {
-                assertEquals(Long.MIN_VALUE, instant.toEpochMilliseconds(), "$instant")
-            }
-            for (milliseconds in largePositiveLongs + largeNegativeLongs) {
-                assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
-                        "$milliseconds")
-            }
-        } else {
-            /* Any Instant is representable as a number of milliseconds in Long */
-            for (milliseconds in largePositiveLongs) {
-                assertEquals(Instant.MAX, Instant.fromEpochMilliseconds(milliseconds), "$milliseconds")
-            }
-            for (milliseconds in largeNegativeLongs) {
-                assertEquals(Instant.MIN, Instant.fromEpochMilliseconds(milliseconds), "$milliseconds")
-            }
-            for (instant in largePositiveInstants + smallInstants + largeNegativeInstants) {
-                assertEquals(instant.epochSeconds,
-                        Instant.fromEpochMilliseconds(instant.toEpochMilliseconds()).epochSeconds, "$instant")
-            }
+        /* Any number of milliseconds in Long is representable as an Instant */
+        for (instant in largePositiveInstants) {
+            assertEquals(Long.MAX_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (instant in largeNegativeInstants) {
+            assertEquals(Long.MIN_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (milliseconds in largePositiveLongs + largeNegativeLongs) {
+            assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
+                    "$milliseconds")
         }
     }
 

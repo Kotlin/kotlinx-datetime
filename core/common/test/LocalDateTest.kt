@@ -173,8 +173,8 @@ class LocalDateTest {
             val (unit, length) = interval
             val start = LocalDate.parse(v1)
             val end = LocalDate.parse(v2)
-            assertEquals(length, start.until(end, unit), "$v2 - $v1 = $length($unit)")
-            assertEquals(-length, end.until(start, unit), "$v1 - $v2 = -$length($unit)")
+            assertEquals(length.toLong(), start.until(end, unit), "$v2 - $v1 = $length($unit)")
+            assertEquals(-length.toLong(), end.until(start, unit), "$v1 - $v2 = -$length($unit)")
             when (unit) {
                 DateTimeUnit.YEAR -> assertEquals(length, start.yearsUntil(end))
                 DateTimeUnit.MONTH -> assertEquals(length, start.monthsUntil(end))
@@ -231,28 +231,18 @@ class LocalDateTest {
     }
 
     @Test
-    fun unitsUntilClamping() {
-        val diffInYears = LocalDate.MIN.until(LocalDate.MAX, DateTimeUnit.YEAR)
-        if (diffInYears > Int.MAX_VALUE / 365) {
-            assertEquals(Int.MAX_VALUE, LocalDate.MIN.until(LocalDate.MAX, DateTimeUnit.DAY))
-            assertEquals(Int.MIN_VALUE, LocalDate.MAX.until(LocalDate.MIN, DateTimeUnit.DAY))
-        }
-    }
-    @Test
     fun fromEpochDays() {
         /** This test uses [LocalDate.next] and [LocalDate.previous] and not [LocalDate.plus] because, on Native,
          * [LocalDate.plus] is implemented via [LocalDate.toEpochDays]/[LocalDate.fromEpochDays], and so it's better to
          * test those independently. */
-        if (LocalDate.fromEpochDays(0).daysUntil(LocalDate.MIN) > Int.MIN_VALUE) {
-            assertEquals(LocalDate.MIN, LocalDate.fromEpochDays(LocalDate.MIN.toEpochDays()))
-            assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(LocalDate.MIN.toEpochDays() - 1) }
-            assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(Int.MIN_VALUE) }
-        }
-        if (LocalDate.fromEpochDays(0).daysUntil(LocalDate.MAX) < Int.MAX_VALUE) {
-            assertEquals(LocalDate.MAX, LocalDate.fromEpochDays(LocalDate.MAX.toEpochDays()))
-            assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(LocalDate.MAX.toEpochDays() + 1) }
-            assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(Int.MAX_VALUE) }
-        }
+        assertEquals(LocalDate.MIN, LocalDate.fromEpochDays(LocalDate.MIN.toEpochDays()))
+        assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(LocalDate.MIN.toEpochDays() - 1) }
+        assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(Long.MIN_VALUE) }
+
+        assertEquals(LocalDate.MAX, LocalDate.fromEpochDays(LocalDate.MAX.toEpochDays()))
+        assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(LocalDate.MAX.toEpochDays() + 1) }
+        assertFailsWith<IllegalArgumentException> { LocalDate.fromEpochDays(Long.MAX_VALUE) }
+
         val eraBeginning = -678941 - 40587
         assertEquals(LocalDate(1970, 1, 1), LocalDate.fromEpochDays(0))
         assertEquals(LocalDate(0, 1, 1), LocalDate.fromEpochDays(eraBeginning))
@@ -278,12 +268,12 @@ class LocalDateTest {
         val startOfEra = -678941 - 40587
         var date = LocalDate(0, 1, 1)
         for (i in startOfEra..699999) {
-            assertEquals(i, date.toEpochDays())
+            assertEquals(i.toLong(), date.toEpochDays())
             date = date.next
         }
         date = LocalDate(0, 1, 1)
         for (i in startOfEra downTo -2000000 + 1) {
-            assertEquals(i, date.toEpochDays())
+            assertEquals(i.toLong(), date.toEpochDays())
             date = date.previous
         }
         assertEquals(-40587, LocalDate(1858, 11, 17).toEpochDays())
