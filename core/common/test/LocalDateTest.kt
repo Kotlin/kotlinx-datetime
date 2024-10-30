@@ -62,6 +62,10 @@ class LocalDateTest {
         checkParsedComponents("-10000-01-01", -10000, 1, 1)
         checkParsedComponents("+123456-01-01", 123456, 1, 1)
         checkParsedComponents("-123456-01-01", -123456, 1, 1)
+        for (i in 1..30) {
+            checkComponents(LocalDate.parse("+${"0".repeat(i)}2024-01-01"), 2024, 1, 1)
+            checkComponents(LocalDate.parse("-${"0".repeat(i)}2024-01-01"), -2024, 1, 1)
+        }
     }
 
     @Test

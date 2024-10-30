@@ -28,6 +28,11 @@ class LocalDateTimeTest {
         assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("x") }
         assertFailsWith<DateTimeFormatException> { "+1000000000-03-26T04:00:00".toLocalDateTime() }
 
+        for (i in 1..30) {
+            checkComponents(LocalDateTime.parse("+${"0".repeat(i)}2024-01-01T23:59"), 2024, 1, 1, 23, 59)
+            checkComponents(LocalDateTime.parse("-${"0".repeat(i)}2024-01-01T23:59:03"), -2024, 1, 1, 23, 59, 3)
+        }
+
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
          */
