@@ -5,11 +5,21 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlinx.datetime.internal.JSJoda.ZoneRulesProvider
+import kotlin.js.unsafeCast
 
-internal actual fun getAvailableZoneIdsSet(): Set<String> = buildSet {
-    val ids = ZoneId.getAvailableZoneIds().unsafeCast<JsArray<JsString>>()
-    for (i in 0 until ids.length) {
-        add(ids[i].toString())
+private fun getZones(rulesProvider: JsAny): JsAny = js("rulesProvider.getTzdbData().zones")
+private fun getLinks(rulesProvider: JsAny): JsAny = js("rulesProvider.getTzdbData().links")
+
+internal actual fun readTzdb(): Pair<List<String>, List<String>> {
+    val zones = getZones(ZoneRulesProvider as JsAny)
+    val links = getLinks(ZoneRulesProvider as JsAny)
+    return zones.unsafeCast<JsArray<JsString>>().toList() to links.unsafeCast<JsArray<JsString>>().toList()
+}
+
+private fun JsArray<JsString>.toList(): List<String> = buildList {
+    for (i in 0 until toList@length) {
+        add(this@toList[i].toString())
     }
 }
 
