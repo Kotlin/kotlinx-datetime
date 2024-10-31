@@ -5,16 +5,17 @@
 
 package kotlinx.datetime.internal
 
-internal expect fun getAvailableZoneIdsSet(): Set<String>
+// a pair of ZoneRulesProvider.asDynamic().getTzdbData().zones and ZoneRulesProvider.asDynamic().getTzdbData().links
+internal expect fun readTzdb(): Pair<List<String>, List<String>>
 
 public expect interface InteropInterface
 
 @OptIn(ExperimentalMultiplatform::class)
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.FILE)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
 @OptionalExpectation
 public expect annotation class JsNonModule()
 
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.FILE)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
 public expect annotation class JsModule(val import: String)

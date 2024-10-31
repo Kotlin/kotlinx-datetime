@@ -4,10 +4,12 @@
  */
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlinx.datetime.internal.JSJoda.ZoneRulesProvider
 
-internal actual fun getAvailableZoneIdsSet(): Set<String> =
-    ZoneId.getAvailableZoneIds().unsafeCast<Array<String>>().toSet()
+internal actual fun readTzdb(): Pair<List<String>, List<String>> {
+    val tzdbData = ZoneRulesProvider.asDynamic().getTzdbData()
+    return tzdbData.zones.unsafeCast<Array<String>>().toList() to tzdbData.links.unsafeCast<Array<String>>().toList()
+}
 
 public actual external interface InteropInterface
 
