@@ -92,13 +92,7 @@ class LocalDateRangeSamples {
     fun random() {
         // Getting a random element from a LocalDateProgression
         check((LocalDate(2000, 1, 1)..LocalDate(2000, 1, 5)).random() in LocalDate(2000, 1, 1)..LocalDate(2000, 1, 5))
-        check(
-            (LocalDate(2000, 1, 1)..LocalDate(2000, 1, 5)).random(Random(123456)) in LocalDate(2000, 1, 1)..LocalDate(
-                2000,
-                1,
-                5
-            )
-        )
+        check((LocalDate(2000, 1, 1)..LocalDate(2000, 1, 5)).random(Random(123456)) in LocalDate(2000, 1, 1)..LocalDate(2000, 1, 5))
         check((LocalDate(2000, 1, 5)..LocalDate(2000, 1, 1)).randomOrNull() == null)
         check((LocalDate(2000, 1, 5)..LocalDate(2000, 1, 1)).randomOrNull(Random(123456)) == null)
     }
