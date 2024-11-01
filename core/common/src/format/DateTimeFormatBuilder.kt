@@ -91,6 +91,13 @@ public sealed interface DateTimeFormatBuilder {
         public fun dayOfWeek(names: DayOfWeekNames)
 
         /**
+         * A day-of-year number, from 1 to 366.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOfYear
+         */
+        public fun dayOfYear(padding: Padding = Padding.ZERO)
+
+        /**
          * An existing [DateTimeFormat] for the date part.
          *
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.date

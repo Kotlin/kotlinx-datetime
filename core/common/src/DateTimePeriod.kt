@@ -260,6 +260,7 @@ public sealed class DateTimePeriod {
             var minutes = 0
             var seconds = 0
             var nanoseconds = 0
+            var someComponentParsed = false
             while (true) {
                 if (i >= text.length) {
                     if (state == START)
@@ -270,6 +271,8 @@ public sealed class DateTimePeriod {
                         in Int.MIN_VALUE..Int.MAX_VALUE -> n.toInt()
                         else -> parseException("The total number of days under 'D' and 'W' designators should fit into an Int", 0)
                     }
+                    if (!someComponentParsed)
+                        parseException("At least one component is required, but none were found", 0)
                     return DateTimePeriod(years, months, daysTotal, hours, minutes, seconds, nanoseconds.toLong())
                 }
                 if (state == START) {
@@ -316,6 +319,7 @@ public sealed class DateTimePeriod {
                     }
                     i += 1
                 }
+                someComponentParsed = true
                 number *= localSign
                 if (i == text.length)
                     parseException("Expected a designator after the numerical value", i)
