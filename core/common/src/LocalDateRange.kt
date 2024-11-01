@@ -73,9 +73,9 @@ internal constructor(internal val longProgression: LongProgression) : Collection
     override fun containsAll(elements: Collection<LocalDate>): Boolean = elements.all(::contains)
 
     /**
-     * Returns true iff [element] is a member of the progression.
+     * Returns true iff [value] is a member of the progression.
      */
-    override fun contains(element: LocalDate): Boolean = longProgression.contains(element.toEpochDaysLong())
+    override fun contains(value: LocalDate): Boolean = longProgression.contains(value.toEpochDaysLong())
 
     override fun equals(other: Any?): Boolean = other is LocalDateProgression && longProgression == other.longProgression
 
@@ -260,7 +260,7 @@ private fun LongProgression.randomOrNull(random: Random = Random) : Long? = if (
 // this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).step(5).contains(2)` returns `false`
 // incorrectly https://www.wolframalpha.com/input?i=-2%5E63+%2B+1844674407370955162+*+5),
 // but for the range of epoch days in LocalDate it's good enough
-private fun LongProgression.contains(element: Long) : Boolean = element in (if(step > 0) first..last else last..first) && (element - first) % step == 0L
+private fun LongProgression.contains(value: Long) : Boolean = value in (if(step > 0) first..last else last..first) && (value - first) % step == 0L
 
 // this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
 // but for the range of epoch days in LocalDate it's good enough
