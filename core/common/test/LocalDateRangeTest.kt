@@ -246,11 +246,15 @@ class LocalDateRangeTest {
         assertFalse { Jan_01_2000 in Jan_02_2000 downTo Jan_05_2000 }
         assertFalse { Jan_24_2000 in Jan_05_2000 downTo Jan_02_2000 }
 
+        assertFalse { (Jan_01_2000..Jan_05_2000).contains(Any()) }
+
         assertTrue { (Jan_01_2000..Jan_01_2000).containsAll(listOf(Jan_01_2000)) }
         assertTrue { (Jan_01_2000..Jan_05_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000, Jan_05_2000)) }
 
         assertFalse { (Jan_01_2000..Jan_01_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000)) }
         assertFalse { (Jan_01_2000..Jan_05_2000).containsAll(listOf(Jan_01_2000, Jan_02_2000, Jan_05_2000, Jan_24_2000)) }
+
+        assertFalse { ((Jan_01_2000..Jan_05_2000) as Collection<*>).containsAll(listOf(Any())) }
 
     }
 

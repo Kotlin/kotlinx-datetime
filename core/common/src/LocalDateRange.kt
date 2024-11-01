@@ -70,12 +70,18 @@ internal constructor(internal val longProgression: LongProgression) : Collection
     /**
      * Returns true iff every element in [elements] is a member of the progression.
      */
-    override fun containsAll(elements: Collection<LocalDate>): Boolean = elements.all(::contains)
+    override fun containsAll(elements: Collection<LocalDate>): Boolean =
+        (elements as Collection<*>).all { it is LocalDate && contains(it) }
 
     /**
      * Returns true iff [value] is a member of the progression.
      */
-    override fun contains(value: LocalDate): Boolean = longProgression.contains(value.toEpochDaysLong())
+    override fun contains(value: LocalDate): Boolean {
+        @Suppress("USELESS_CAST")
+        if ((value as Any?) !is LocalDate) return false
+
+        return longProgression.contains(value.toEpochDaysLong())
+    }
 
     override fun equals(other: Any?): Boolean = other is LocalDateProgression && longProgression == other.longProgression
 
@@ -126,7 +132,12 @@ public class LocalDateRange(start: LocalDate, endInclusive: LocalDate) : LocalDa
      * i.e. [value] is between [start] and [endInclusive].
      */
     @Suppress("ConvertTwoComparisonsToRangeCheck")
-    override fun contains(value: LocalDate): Boolean = first <= value && value <= last
+    override fun contains(value: LocalDate): Boolean {
+        @Suppress("USELESS_CAST")
+        if ((value as Any?) !is LocalDate) return false
+
+        return first <= value && value <= last
+    }
 
     /**
      * Returns true iff there are no dates contained within the range.
