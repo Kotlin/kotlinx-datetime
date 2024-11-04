@@ -249,7 +249,9 @@ public infix fun LocalDate.downTo(that: LocalDate) : LocalDateProgression = Loca
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.random
  */
-public fun LocalDateProgression.random(random: Random = Random) : LocalDate = longProgression.random(random).let(LocalDate.Companion::fromEpochDays)
+public fun LocalDateProgression.random(random: Random = Random): LocalDate =
+    if (isEmpty()) throw NoSuchElementException("Cannot get random in empty range: $this")
+    else longProgression.random(random).let(LocalDate.Companion::fromEpochDays)
 
 /**
  * Returns a random [LocalDate] within the bounds of the [LocalDateProgression] or null if the progression is empty.
