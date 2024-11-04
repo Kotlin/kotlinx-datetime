@@ -7,13 +7,18 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZone
 import platform.posix.*
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
+internal actual fun timeZoneById(zoneId: String): TimeZone =
+    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+
+internal actual fun getAvailableZoneIds(): Set<String> =
+    tzdb.getOrThrow().availableTimeZoneIds()
 
 private val tzdb = runCatching { TzdbBionic() }
 
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> = memScoped {
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> = memScoped {
     val name = readSystemProperty("persist.sys.timezone")
         ?: throw IllegalStateException("The system property 'persist.sys.timezone' should contain the system timezone")
     return name to null

@@ -20,11 +20,11 @@ public actual open class TimeZone internal constructor() {
 
         public actual fun currentSystemDefault(): TimeZone {
             // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            val (name, rules) = currentSystemDefaultZone()
-            return if (rules == null) {
+            val (name, zone) = currentSystemDefaultZone()
+            return if (zone == null) {
                 of(name)
             } else {
-                RegionTimeZone(rules, name)
+                zone
             }
         }
 
@@ -35,6 +35,9 @@ public actual open class TimeZone internal constructor() {
             // TODO: normalize aliases?
             if (zoneId == "Z") {
                 return UTC
+            }
+            if (zoneId == "SYSTEM") {
+                return currentSystemDefault()
             }
             if (zoneId.length == 1) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
@@ -67,14 +70,14 @@ public actual open class TimeZone internal constructor() {
                 throw IllegalTimeZoneException(e)
             }
             return try {
-                RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
+                timeZoneById(zoneId)
             } catch (e: Exception) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
             }
         }
 
         public actual val availableZoneIds: Set<String>
-            get() = systemTzdb.availableTimeZoneIds()
+            get() = getAvailableZoneIds()
     }
 
     public actual open val id: String
