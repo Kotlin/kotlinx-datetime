@@ -15,10 +15,10 @@ internal actual fun readTzdb(): Pair<List<String>, List<String>>? = try {
     jsTry {
         val zones = getZones(ZoneRulesProvider as JsAny)
         val links = getLinks(ZoneRulesProvider as JsAny)
-        return zones.unsafeCast<JsArray<JsString>>().toList() to links.unsafeCast<JsArray<JsString>>().toList()
+        zones.unsafeCast<JsArray<JsString>>().toList() to links.unsafeCast<JsArray<JsString>>().toList()
     }
 } catch (_: Throwable) {
-    return null
+    null
 }
 
 private fun JsArray<JsString>.toList(): List<String> = buildList {

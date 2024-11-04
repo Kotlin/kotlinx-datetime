@@ -11,11 +11,7 @@ import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-private val tzdb: Result<TimeZoneDatabase> = runCatching { parseTzdb() }
-
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
-
-private fun parseTzdb(): TimeZoneDatabase {
+private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
      * References:
      * - https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/timezone/src/MomentZoneRulesProvider.js#L78-L94
@@ -71,7 +67,7 @@ private fun parseTzdb(): TimeZoneDatabase {
     fun List<Long>.partialSums(): List<Long> = scanWithoutInitial(0, Long::plus)
 
     val zones = mutableMapOf<String, TimeZoneRules>()
-    val (zonesPacked, linksPacked) = readTzdb() ?: return EmptyTimeZoneDatabase
+    val (zonesPacked, linksPacked) = readTzdb() ?: return@runCatching null
     for (zone in zonesPacked) {
         val components = zone.split('|')
         val offsets = components[2].split(' ').map { unpackBase60(it) }
@@ -92,7 +88,7 @@ private fun parseTzdb(): TimeZoneDatabase {
             zones[components[1]] = rules
         }
     }
-    return object : TimeZoneDatabase {
+    object : TimeZoneDatabase {
         override fun rulesForId(id: String): TimeZoneRules =
             zones[id] ?: throw IllegalTimeZoneException("Unknown time zone: $id")
 
@@ -100,24 +96,57 @@ private fun parseTzdb(): TimeZoneDatabase {
     }
 }
 
-private object EmptyTimeZoneDatabase : TimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRules = when (id) {
-        "SYSTEM" -> TimeZoneRules(
-            transitionEpochSeconds = emptyList(),
-            offsets = listOf(UtcOffset.ZERO),
-            recurringZoneRules = null
-        ) // TODO: that's not correct, we need to use `Date()`'s offset
-        else -> throw IllegalTimeZoneException("JSJoda timezone database is not available")
+private object SystemTimeZone: TimeZone() {
+    override val id: String get() = "SYSTEM"
+
+    /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/LocalDate.js#L1404-L1416 +
+    * https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L69-L71 */
+    override fun atStartOfDay(date: LocalDate): Instant = atZone(date.atTime(LocalTime.MIN)).toInstant()
+
+    /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L21-L24 */
+    override fun offsetAtImpl(instant: Instant): UtcOffset =
+        UtcOffset(minutes = -Date(instant.toEpochMilliseconds().toDouble()).getTimezoneOffset().toInt())
+
+    /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L49-L55 */
+    override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime {
+        val epochMilli = dateTime.toInstant(UTC).toEpochMilliseconds()
+        val offsetInMinutesBeforePossibleTransition = Date(epochMilli.toDouble()).getTimezoneOffset().toInt()
+        val epochMilliSystemZone = epochMilli +
+                offsetInMinutesBeforePossibleTransition * SECONDS_PER_MINUTE * MILLIS_PER_ONE
+        val offsetInMinutesAfterPossibleTransition = Date(epochMilliSystemZone.toDouble()).getTimezoneOffset().toInt()
+        val offset = UtcOffset(minutes = -offsetInMinutesAfterPossibleTransition)
+        return ZonedDateTime(dateTime, this, offset)
     }
 
-    override fun availableTimeZoneIds(): Set<String> = emptySet()
+    override fun equals(other: Any?): Boolean = other === this
+
+    override fun hashCode(): Int = id.hashCode()
 }
 
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
-    ZoneId.systemDefault().id() to null
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
+    val id = ZoneId.systemDefault().id()
+    return if (id == "SYSTEM") id to SystemTimeZone
+    else id to null
+}
+
+internal actual fun timeZoneById(zoneId: String): TimeZone {
+    val id = if (zoneId == "SYSTEM") {
+        val (name, zone) = currentSystemDefaultZone()
+        if (zone != null) return zone
+        name
+    } else zoneId
+    val rules = tzdb.getOrThrow()?.rulesForId(id)
+    if (rules != null) return RegionTimeZone(rules, id)
+    throw IllegalTimeZoneException("js-joda timezone database is not available")
+}
+
+internal actual fun getAvailableZoneIds(): Set<String> =
+    tzdb.getOrThrow()?.availableTimeZoneIds() ?: setOf("UTC")
 
 internal actual fun currentTime(): Instant = Instant.fromEpochMilliseconds(Date().getTime().toLong())
 
 internal external class Date() {
+    constructor(milliseconds: Double)
     fun getTime(): Double
+    fun getTimezoneOffset(): Double
 }
