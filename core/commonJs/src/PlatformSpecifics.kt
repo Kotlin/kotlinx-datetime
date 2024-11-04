@@ -6,7 +6,7 @@
 package kotlinx.datetime.internal
 
 // a pair of ZoneRulesProvider.asDynamic().getTzdbData().zones and ZoneRulesProvider.asDynamic().getTzdbData().links
-internal expect fun readTzdb(): Pair<List<String>, List<String>>
+internal expect fun readTzdb(): Pair<List<String>, List<String>>?
 
 public expect interface InteropInterface
 
