@@ -101,7 +101,7 @@ private fun parseTzdb(): TimeZoneDatabase {
 }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
-    ZoneId.systemDefault().id() to null
+    ZoneId.systemDefault().id() to null // TODO: make this function with SYSTEM
 
 internal actual fun currentTime(): Instant = Instant.fromEpochMilliseconds(Date().getTime().toLong())
 

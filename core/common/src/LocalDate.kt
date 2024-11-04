@@ -350,8 +350,6 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
  * - Negative or zero if this date is later than the other.
  * - Exactly zero if this date is equal to the other.
  *
- * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int.
- *
  * @see LocalDate.minus for the same operation with the order of arguments reversed.
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.periodUntil
  */
@@ -473,7 +471,7 @@ public fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.minus
  */
-public fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-value.toLong(), unit)
+public fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-(value.toLong()), unit)
 
 /**
  * Returns a [LocalDate] that results from adding the [value] number of the specified [unit] to this date.
