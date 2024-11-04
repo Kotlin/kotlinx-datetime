@@ -5,14 +5,6 @@
 
 package kotlinx.datetime
 
-private fun checkExceptionName(exception: JsAny, name: String): Boolean =
-    js("exception.name === name")
-
-internal actual fun Throwable.hasJsExceptionName(name: String): Boolean {
-    val cause = (this as? JsException)?.jsException ?: return false
-    return checkExceptionName(cause, name)
-}
-
 private fun withCaughtJsException(body: () -> Unit): JsAny? = js("""{
     try {
         body();
@@ -29,7 +21,7 @@ internal class JsException(val jsException: JsAny): Throwable() {
         get() = getExceptionMessage(jsException)
 }
 
-internal actual inline fun <reified T : Any> jsTry(crossinline body: () -> T): T {
+internal inline fun <reified T : Any> jsTry(crossinline body: () -> T): T {
     var result: T? = null
     val exception = withCaughtJsException {
         result = body()

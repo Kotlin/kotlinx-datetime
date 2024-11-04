@@ -71,7 +71,7 @@ private fun parseTzdb(): TimeZoneDatabase {
     fun List<Long>.partialSums(): List<Long> = scanWithoutInitial(0, Long::plus)
 
     val zones = mutableMapOf<String, TimeZoneRules>()
-    val (zonesPacked, linksPacked) = readTzdb()
+    val (zonesPacked, linksPacked) = readTzdb() ?: return EmptyTimeZoneDatabase
     for (zone in zonesPacked) {
         val components = zone.split('|')
         val offsets = components[2].split(' ').map { unpackBase60(it) }
@@ -100,8 +100,21 @@ private fun parseTzdb(): TimeZoneDatabase {
     }
 }
 
+private object EmptyTimeZoneDatabase : TimeZoneDatabase {
+    override fun rulesForId(id: String): TimeZoneRules = when (id) {
+        "SYSTEM" -> TimeZoneRules(
+            transitionEpochSeconds = emptyList(),
+            offsets = listOf(UtcOffset.ZERO),
+            recurringZoneRules = null
+        ) // TODO: that's not correct, we need to use `Date()`'s offset
+        else -> throw IllegalTimeZoneException("JSJoda timezone database is not available")
+    }
+
+    override fun availableTimeZoneIds(): Set<String> = emptySet()
+}
+
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
-    ZoneId.systemDefault().id() to null // TODO: make this function with SYSTEM
+    ZoneId.systemDefault().id() to null
 
 internal actual fun currentTime(): Instant = Instant.fromEpochMilliseconds(Date().getTime().toLong())
 
