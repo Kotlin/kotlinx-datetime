@@ -76,7 +76,6 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
             (unpackBase60(it) * SECONDS_PER_MINUTE * MILLIS_PER_ONE).roundToLong() / // minutes to milliseconds
                     MILLIS_PER_ONE // but we only need seconds
         }
-        println("Zone ${components[0]}: $offsets with ${components[2]} raw data")
         zones[components[0]] = TimeZoneRules(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.partialSums().take<Long>(indices.size - 1),
             offsets = indices.map { UtcOffset(null, null, -(offsets[it] * 60).roundToInt()) },

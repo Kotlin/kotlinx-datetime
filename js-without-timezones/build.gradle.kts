@@ -8,26 +8,11 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 
-val mainJavaToolchainVersion: String by project
-
-java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
-}
-
 kotlin {
-
     js {
         nodejs {
         }
-        compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
-                metaInfo = true
-            }
-        }
     }
-
 
     wasmJs {
         nodejs {
@@ -40,12 +25,6 @@ kotlin {
         val suffix = name.substring(suffixIndex).toLowerCase(Locale.ROOT).takeIf { it != "main" }
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
-    }
-
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
-        }
     }
 
     sourceSets {

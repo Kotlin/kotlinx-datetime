@@ -13,6 +13,7 @@ import kotlinx.datetime.serializers.DateTimePeriodComponentSerializer
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlinx.serialization.Serializable
+import kotlin.text.toLong
 
 /**
  * A difference between two [instants][Instant], decomposed into date and time components.
@@ -448,7 +449,8 @@ public class DatePeriod internal constructor(
      * (like "yearly" or "quarterly"), please consider using a multiple of [DateTimeUnit.DateBased] instead.
      * For example, instead of `DatePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
      *
-     * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
+     * @throws IllegalArgumentException if the total number of years
+     * (together with full years in [months]) overflows an [Int].
      * @sample kotlinx.datetime.test.samples.DatePeriodSamples.construction
      */
     public constructor(years: Int = 0, months: Int = 0, days: Int = 0): this(totalMonths(years, months), days)
@@ -499,7 +501,11 @@ private class DateTimePeriodImpl(
     override val totalNanoseconds: Long,
 ) : DateTimePeriod()
 
-private fun totalMonths(years: Int, months: Int): Long = years.toLong() * 12 + months.toLong()
+private fun totalMonths(years: Int, months: Int): Long = (years.toLong() * 12 + months.toLong()).also {
+    require(it / 12 in Int.MIN_VALUE..Int.MAX_VALUE) {
+        "The total number of years in $years years and $months months overflows an Int"
+    }
+}
 
 private fun totalNanoseconds(hours: Int, minutes: Int, seconds: Int, nanoseconds: Long): Long {
     val totalMinutes: Long = hours.toLong() * 60 + minutes
@@ -536,9 +542,10 @@ internal fun buildDateTimePeriod(totalMonths: Long = 0, days: Int = 0, totalNano
  * (like "yearly" or "quarterly"), please consider using a multiple of [DateTimeUnit] instead.
  * For example, instead of `DateTimePeriod(months = 6)`, one can use `DateTimeUnit.MONTH * 6`.
  *
- * @throws IllegalArgumentException if the total number of months in [years] and [months] overflows an [Int].
- * @throws IllegalArgumentException if the total number of months in [hours], [minutes], [seconds] and [nanoseconds]
- * overflows a [Long].
+ * @throws IllegalArgumentException if the total number of years
+ * (together with full years in [months]) overflows an [Int].
+ * @throws IllegalArgumentException if the total number of nanoseconds in
+ * [hours], [minutes], [seconds] and [nanoseconds] overflows a [Long].
  * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.constructorFunction
  */
 public fun DateTimePeriod(

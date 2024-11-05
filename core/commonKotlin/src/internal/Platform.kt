@@ -8,7 +8,6 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 
-// RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
 internal expect fun timeZoneById(zoneId: String): TimeZone
 
 internal expect fun getAvailableZoneIds(): Set<String>

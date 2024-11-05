@@ -12,10 +12,10 @@ public expect interface InteropInterface
 
 @OptIn(ExperimentalMultiplatform::class)
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
+@Target(AnnotationTarget.FILE)
 @OptionalExpectation
 public expect annotation class JsNonModule()
 
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
+@Target(AnnotationTarget.FILE)
 public expect annotation class JsModule(val import: String)

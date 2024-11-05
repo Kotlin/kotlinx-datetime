@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
@@ -268,9 +269,8 @@ class InstantTest {
         val offset3 = instant3.offsetIn(zone)
         assertEquals(offset1, offset3)
 
-        // TODO: fails on JS
-        // // without the minus, this test fails on JVM
-        // (Instant.MAX - (2 * 365).days).offsetIn(zone)
+        // without the minus, this test fails on JVM
+        (Instant.MAX - (2 * 365).days).offsetIn(zone)
     }
 
     @Test
@@ -313,7 +313,9 @@ class InstantTest {
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)
-                    println("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
+                    throw AssertionError(
+                        "start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2"
+                    )
             }
         }
     }
