@@ -114,7 +114,7 @@ class DateTimePeriodTest {
 
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P") }
 
-        // overflow of `Long.MAX_VALUE` months
+        // overflow of `Int.MAX_VALUE` years
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P768614336404564651Y") }
         assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y9223372036854775805M") }
 
