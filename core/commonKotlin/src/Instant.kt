@@ -182,7 +182,7 @@ private class UnboundedLocalDateTime(
         val epochSeconds = run {
             // org.threeten.bp.LocalDate#toEpochDay
             val epochDays = run {
-                val y = year
+                val y = year.toLong()
                 var total = 365 * y
                 if (y >= 0) {
                     total += (y + 3) / 4 - (y + 99) / 100 + (y + 399) / 400
@@ -211,10 +211,12 @@ private class UnboundedLocalDateTime(
         return Instant.fromEpochSeconds(epochSeconds, nanosecond)
     }
 
+    override fun toString(): String = "UnboundedLocalDateTime($year-$month-$day $hour:$minute:$second.$nanosecond)"
+
     companion object {
         fun fromInstant(instant: Instant, offsetSeconds: Int): UnboundedLocalDateTime {
             val localSecond: Long = instant.epochSeconds + offsetSeconds
-            val epochDays = localSecond.floorDiv(SECONDS_PER_DAY.toLong()).toInt()
+            val epochDays = localSecond.floorDiv(SECONDS_PER_DAY.toLong())
             val secsOfDay = localSecond.mod(SECONDS_PER_DAY.toLong()).toInt()
             val year: Int
             val month: Int
@@ -225,13 +227,13 @@ private class UnboundedLocalDateTime(
                 // find the march-based year
                 zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
 
-                var adjust = 0
+                var adjust = 0L
                 if (zeroDay < 0) { // adjust negative years to positive for calculation
                     val adjustCycles = (zeroDay + 1) / DAYS_PER_CYCLE - 1
                     adjust = adjustCycles * 400
                     zeroDay += -adjustCycles * DAYS_PER_CYCLE
                 }
-                var yearEst = ((400 * zeroDay.toLong() + 591) / DAYS_PER_CYCLE).toInt()
+                var yearEst = ((400 * zeroDay.toLong() + 591) / DAYS_PER_CYCLE)
                 var doyEst = zeroDay - (365 * yearEst + yearEst / 4 - yearEst / 100 + yearEst / 400)
                 if (doyEst < 0) { // fix estimate
                     yearEst--
@@ -239,13 +241,13 @@ private class UnboundedLocalDateTime(
                 }
                 yearEst += adjust // reset any negative year
 
-                val marchDoy0 = doyEst
+                val marchDoy0 = doyEst.toInt()
 
                 // convert march-based values back to january-based
                 val marchMonth0 = (marchDoy0 * 5 + 2) / 153
                 month = (marchMonth0 + 2) % 12 + 1
                 day = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
-                year = yearEst + marchMonth0 / 10
+                year = (yearEst + marchMonth0 / 10).toInt()
             }
             val hours = (secsOfDay / SECONDS_PER_HOUR)
             val secondWithoutHours = secsOfDay - hours * SECONDS_PER_HOUR
