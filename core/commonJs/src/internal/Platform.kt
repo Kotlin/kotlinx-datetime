@@ -36,7 +36,7 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
             when (char) {
                 in '0'..'9' -> char - '0'
                 in 'a'..'z' -> char - 'a' + 10
-                in 'A'..'Z' -> char - 'A' + 36
+                in 'A'..'X' -> char - 'A' + 36
                 else -> throw IllegalArgumentException("Invalid character: $char")
             }
 
@@ -76,9 +76,10 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
             (unpackBase60(it) * SECONDS_PER_MINUTE * MILLIS_PER_ONE).roundToLong() / // minutes to milliseconds
                     MILLIS_PER_ONE // but we only need seconds
         }
+        println("Zone ${components[0]}: $offsets with ${components[2]} raw data")
         zones[components[0]] = TimeZoneRules(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.partialSums().take<Long>(indices.size - 1),
-            offsets = indices.map { UtcOffset(null, -offsets[it].roundToInt(), null) },
+            offsets = indices.map { UtcOffset(null, null, -(offsets[it] * 60).roundToInt()) },
             recurringZoneRules = null
         )
     }
@@ -132,13 +133,14 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
 internal actual fun timeZoneById(zoneId: String): TimeZone {
     val id = if (zoneId == "SYSTEM") {
         val (name, zone) = currentSystemDefaultZone()
-        if (zone != null) return zone
+        zone?.let { return it }
         name
     } else zoneId
-    val rules = tzdb.getOrThrow()?.rulesForId(id)
-    if (rules != null) return RegionTimeZone(rules, id)
+    rulesForId(id)?.let { return RegionTimeZone(it, id) }
     throw IllegalTimeZoneException("js-joda timezone database is not available")
 }
+
+internal fun rulesForId(zoneId: String): TimeZoneRules? = tzdb.getOrThrow()?.rulesForId(zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
     tzdb.getOrThrow()?.availableTimeZoneIds() ?: setOf("UTC")
