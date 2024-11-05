@@ -14,7 +14,7 @@ class InstantIsoStringsTest {
     @Test
     fun parseDates() {
         fun Int.zeroPadded(digits: Int): String = when {
-            this >= 0 -> "${toString().padStart(digits, '0')}"
+            this >= 0 -> toString().padStart(digits, '0')
             else -> "-${absoluteValue.toString().padStart(digits, '0')}"
         }
         fun localDateToString(year: Int, month: Int, day: Int) =
@@ -50,8 +50,8 @@ class InstantIsoStringsTest {
 
     @Test
     fun parseIsoString() {
-        for ((str, seconds, nanos) in arrayOf(
-            // all components are taken into accout
+        for ((str, seconds, nanos) in arrayOf<Triple<String, Long, Int>>(
+            // all components are taken into account
             Triple("1970-01-01T00:00:00Z", 0, 0),
             Triple("1970-01-01T00:00:00.000000001Z", 0, 1),
             Triple("1970-01-01T00:00:00.100Z", 0, 100000000),
@@ -173,13 +173,34 @@ class InstantIsoStringsTest {
             Triple("+83082-01-04T20:18:56.409867424Z", 2559647852336, 409867424),
             Triple("-916839-09-12T22:45:39.091941363Z", -28994789466861, 91941363),
             Triple("-147771-05-07T08:31:34.950238979Z", -4725358615706, 950238979),
+            // random enormous values queried from java.time
+            Triple("+639727757-10-17T17:26:30.359003681Z", 20187795978609990, 359003681),
+            Triple("-375448814-11-11T03:04:48.637504595Z", -11848082341899312, 637504595),
+            Triple("+99162559-10-16T11:21:05.057717803Z", 3129205972303265, 57717803),
+            Triple("-826813174-05-22T21:35:39.018693830Z", -26091765799784661, 18693830),
+            Triple("+254125623-04-28T11:42:22.659957596Z", 8019367929949342, 659957596),
+            Triple("+540978343-01-03T20:31:36.945404442Z", 17071565436102696, 945404442),
+            Triple("+988277529-06-06T13:25:41.942771350Z", 31186964391657941, 942771350),
+            Triple("+566487909-09-04T08:09:46.007490076Z", 17876569606963786, 7490076),
+            Triple("+442225124-02-16T18:23:29.975096773Z", 13955214848034209, 975096773),
+            Triple("-399250586-02-19T22:58:29.585918917Z", -12599193741267691, 585918917),
+            Triple("-190217791-04-28T00:49:29.270751921Z", -6002755857213031, 270751921),
+            Triple("-716173704-05-24T22:05:33.639928802Z", -22600321355469267, 639928802),
+            Triple("+910504788-10-26T05:23:43.517192887Z", 28732693749312223, 517192887),
+            Triple("+515896807-08-17T06:36:25.012343642Z", 16280068627982185, 12343642),
+            Triple("-623794742-03-20T17:09:07.396143995Z", -19685122891483853, 396143995),
+            Triple("-416781718-10-06T01:41:32.866307162Z", -13152422812544308, 866307162),
+            Triple("+287346593-09-30T23:30:55.109337183Z", 9067720499134255, 109337183),
+            Triple("-819839065-09-06T07:25:58.953784983Z", -25871684167672442, 953784983),
+            Triple("+673467211-06-05T02:15:40.712392732Z", 21252510297310540, 712392732),
+            Triple("+982441727-04-13T12:12:06.776817565Z", 31002804263391126, 776817565),
         )) {
             val instant = parseInstant(str)
             assertEquals(
-                seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds(),
+                Instant.fromEpochSeconds(seconds, nanos), instant,
                 "Parsed $instant from $str, with Unix time = `$seconds + 10^-9 * $nanos`"
             )
-            assertEquals(str, formatIso(instant))
+            assertEquals(str, displayInstant(instant))
         }
         // non-canonical strings are parsed as well, but formatted differently
         for ((str, seconds, nanos) in arrayOf(
@@ -338,7 +359,7 @@ class InstantIsoStringsTest {
         strings.forEach { (str, strInZ) ->
             val instant = parseInstant(str)
             assertEquals(parseInstant(strInZ), instant, str)
-            assertEquals(strInZ, formatIso(instant), str)
+            assertEquals(strInZ, displayInstant(instant), str)
         }
         assertInvalidFormat { parseInstant("2020-01-01T00:01:01+18:01") }
         assertInvalidFormat { parseInstant("2020-01-01T00:01:01+1801") }
@@ -378,10 +399,12 @@ class InstantIsoStringsTest {
     }
 
     private fun parseInstant(isoString: String): Instant {
+        // return Instant.parse(isoString)
         return parseIso(isoString)
     }
 
     private fun displayInstant(instant: Instant): String {
+        // return instant.toString()
         return formatIso(instant)
     }
 }
