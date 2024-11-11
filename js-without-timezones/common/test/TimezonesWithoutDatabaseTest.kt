@@ -7,6 +7,8 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlin.test.*
+import kotlinx.datetime.test.JSJoda.ZoneId as jtZoneId
+import kotlinx.datetime.test.JSJoda.Instant as jtInstant
 
 class TimezonesWithoutDatabaseTest {
     @Test
@@ -23,6 +25,28 @@ class TimezonesWithoutDatabaseTest {
         assertEquals(Instant.DISTANT_FUTURE, Instant.DISTANT_FUTURE.toLocalDateTime(tz).toInstant(tz))
         val today = now.toLocalDateTime(tz).date
         assertEquals(today.atTime(0, 0).toInstant(tz), today.atStartOfDayIn(tz))
+    }
+
+    @Test
+    fun systemSameAsJoda() {
+        val tz = TimeZone.currentSystemDefault()
+        val jodaTz = jtZoneId.systemDefault()
+        assertEquals(jodaTz.toString(), tz.id)
+        val range = Instant.DISTANT_PAST.toEpochMilliseconds()..Instant.DISTANT_FUTURE.toEpochMilliseconds()
+        repeat(1000) {
+            val epochMilli = range.random()
+            val instant = Instant.fromEpochMilliseconds(epochMilli)
+            val jodaInstant = jtInstant.ofEpochMilli(epochMilli.toDouble())
+            val localDateTime = instant.toLocalDateTime(tz)
+            val jodaLocalDateTime = jodaInstant.atZone(jodaTz)
+            assertEquals(jodaLocalDateTime.year(), localDateTime.year)
+            assertEquals(jodaLocalDateTime.monthValue(), localDateTime.monthNumber)
+            assertEquals(jodaLocalDateTime.dayOfMonth(), localDateTime.dayOfMonth)
+            assertEquals(jodaLocalDateTime.hour(), localDateTime.hour)
+            assertEquals(jodaLocalDateTime.minute(), localDateTime.minute)
+            assertEquals(jodaLocalDateTime.second(), localDateTime.second)
+            assertEquals(jodaLocalDateTime.nano(), localDateTime.nanosecond.toDouble())
+        }
     }
 
     @Test
