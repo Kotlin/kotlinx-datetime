@@ -80,7 +80,7 @@ public fun LocalDate.toNSDateComponents(): NSDateComponents {
 }
 
 /**
- * Converts the given [LocalDate] to [NSDateComponents].
+ * Converts the given [LocalDateTime] to [NSDateComponents].
  *
  * Of all the fields, only the bare minimum required for uniquely identifying the date and time are set.
  */
@@ -90,5 +90,17 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
     components.minute = minute.convert()
     components.second = second.convert()
     components.nanosecond = nanosecond.convert()
+    return components
+}
+
+/**
+ * Converts the given [YearMonth] to [NSDateComponents].
+ *
+ * Of all the fields, only the bare minimum required for uniquely identifying the year and month are set.
+ */
+public fun YearMonth.toNSDateComponents(): NSDateComponents {
+    val components = NSDateComponents()
+    components.year = year.convert()
+    components.month = monthNumber.convert()
     return components
 }

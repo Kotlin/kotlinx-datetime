@@ -212,4 +212,22 @@ class ConvertersTest {
         DayOfWeek.entries.forEach(::test)
         assertEquals(DayOfWeek.MONDAY, java.time.DayOfWeek.MONDAY.toKotlinDayOfWeek())
     }
+
+    @Test
+    fun yearMonth() {
+        fun test(year: Int, month: Int) {
+            val ktYearMonth = YearMonth(year, month)
+            val jtYearMonth = java.time.YearMonth.of(year, month)
+
+            assertEquals(ktYearMonth, jtYearMonth.toKotlinYearMonth())
+            assertEquals(jtYearMonth, ktYearMonth.toJavaYearMonth())
+
+            assertEquals(ktYearMonth, jtYearMonth.toString().let(YearMonth::parse))
+            assertEquals(jtYearMonth, ktYearMonth.toString().let(java.time.YearMonth::parse))
+        }
+
+        repeat(STRESS_TEST_ITERATIONS) {
+            test(Random.nextInt(-10000, 10000), (1..12).random())
+        }
+    }
 }

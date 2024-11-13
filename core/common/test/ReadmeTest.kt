@@ -117,10 +117,10 @@ class ReadmeTest {
 
     @Test
     fun testParsingAndFormattingPartialCompoundOrOutOfBoundsData() {
-        val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
-            .parse("2024-01")
-        assertEquals(2024, yearMonth.year)
-        assertEquals(1, yearMonth.monthNumber)
+        val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); dayOfMonth() }
+            .parse("12/25")
+        assertEquals(25, monthDay.dayOfMonth)
+        assertEquals(12, monthDay.monthNumber)
 
         val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
             .parse("2023-01-07T23:16:15.53+02:00")
