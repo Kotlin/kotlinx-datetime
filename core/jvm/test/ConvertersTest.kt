@@ -26,7 +26,7 @@ class ConvertersTest {
             assertEquals(ktInstant, jtInstant.toKotlinInstant())
             assertEquals(jtInstant, ktInstant.toJavaInstant())
 
-            assertEquals(ktInstant, jtInstant.toString().toInstant())
+            assertEquals(ktInstant, jtInstant.toString().let(Instant::parse))
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 
@@ -66,7 +66,7 @@ class ConvertersTest {
             assertEquals(ktDateTime, jtDateTime.toKotlinLocalDateTime())
             assertEquals(jtDateTime, ktDateTime.toJavaLocalDateTime())
 
-            assertEquals(ktDateTime, jtDateTime.toString().toLocalDateTime())
+            assertEquals(ktDateTime, jtDateTime.toString().let(LocalDateTime::parse))
             assertEquals(jtDateTime, ktDateTime.toString().let(JTLocalDateTime::parse))
         }
 
@@ -83,7 +83,7 @@ class ConvertersTest {
             assertEquals(ktTime, jtTime.toKotlinLocalTime())
             assertEquals(jtTime, ktTime.toJavaLocalTime())
 
-            assertEquals(ktTime, jtTime.toString().toLocalTime())
+            assertEquals(ktTime, jtTime.toString().let(LocalTime::parse))
             assertEquals(jtTime, ktTime.toString().let(JTLocalTime::parse))
         }
 
@@ -100,7 +100,7 @@ class ConvertersTest {
             assertEquals(ktDate, jtDate.toKotlinLocalDate())
             assertEquals(jtDate, ktDate.toJavaLocalDate())
 
-            assertEquals(ktDate, jtDate.toString().toLocalDate())
+            assertEquals(ktDate, jtDate.toString().let(LocalDate::parse))
             assertEquals(jtDate, ktDate.toString().let(JTLocalDate::parse))
         }
 
@@ -186,5 +186,23 @@ class ConvertersTest {
         test("+08")
         test("+08")
         test("-103030")
+    }
+
+    @Test
+    fun yearMonth() {
+        fun test(year: Int, month: Int) {
+            val ktYearMonth = YearMonth(year, month)
+            val jtYearMonth = java.time.YearMonth.of(year, month)
+
+            assertEquals(ktYearMonth, jtYearMonth.toKotlinYearMonth())
+            assertEquals(jtYearMonth, ktYearMonth.toJavaYearMonth())
+
+            assertEquals(ktYearMonth, jtYearMonth.toString().let(YearMonth::parse))
+            assertEquals(jtYearMonth, ktYearMonth.toString().let(java.time.YearMonth::parse))
+        }
+
+        repeat(STRESS_TEST_ITERATIONS) {
+            test(Random.nextInt(-10000, 10000), (1..12).random())
+        }
     }
 }

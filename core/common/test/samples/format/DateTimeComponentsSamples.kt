@@ -143,6 +143,24 @@ class DateTimeComponentsSamples {
     }
 
     @Test
+    fun yearMonth() {
+        // Formatting and parsing a year-month in complex scenarios
+        val format = DateTimeComponents.Format {
+            year(); char('-'); monthNumber()
+        }
+        val formattedYearMonth = format.format {
+            setYearMonth(YearMonth(2023, Month.FEBRUARY))
+            check(year == 2023)
+            check(month == Month.FEBRUARY)
+        }
+        check(formattedYearMonth == "2023-02")
+        val parsedYearMonth = format.parse("2023-02")
+        check(parsedYearMonth.toYearMonth() == YearMonth(2023, Month.FEBRUARY))
+        check(parsedYearMonth.year == 2023)
+        check(parsedYearMonth.month == Month.FEBRUARY)
+    }
+
+    @Test
     fun dayOfYear() {
         // Formatting and parsing a date with the day of the year in complex scenarios
         val format = DateTimeComponents.Format {
@@ -303,6 +321,15 @@ class DateTimeComponentsSamples {
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val offset = parsed.toUtcOffset()
         check(offset == UtcOffset(3, 0))
+    }
+
+    @Test
+    fun toYearMonth() {
+        // Obtaining a YearMonth from the parsed data
+        val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
+        val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
+        val yearMonth = parsed.toYearMonth()
+        check(yearMonth == YearMonth(1994, Month.NOVEMBER))
     }
 
     @Test
