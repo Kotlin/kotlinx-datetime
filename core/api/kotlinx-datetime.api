@@ -26,6 +26,7 @@ public final class kotlinx/datetime/ConvertersKt {
 	public static final fun toJavaLocalTime (Lkotlinx/datetime/LocalTime;)Ljava/time/LocalTime;
 	public static final fun toJavaMonth (Lkotlinx/datetime/Month;)Ljava/time/Month;
 	public static final fun toJavaPeriod (Lkotlinx/datetime/DatePeriod;)Ljava/time/Period;
+	public static final fun toJavaYearMonth (Lkotlinx/datetime/YearMonth;)Ljava/time/YearMonth;
 	public static final fun toJavaZoneId (Lkotlinx/datetime/TimeZone;)Ljava/time/ZoneId;
 	public static final fun toJavaZoneOffset (Lkotlinx/datetime/FixedOffsetTimeZone;)Ljava/time/ZoneOffset;
 	public static final fun toJavaZoneOffset (Lkotlinx/datetime/UtcOffset;)Ljava/time/ZoneOffset;
@@ -39,6 +40,7 @@ public final class kotlinx/datetime/ConvertersKt {
 	public static final fun toKotlinMonth (Ljava/time/Month;)Lkotlinx/datetime/Month;
 	public static final fun toKotlinTimeZone (Ljava/time/ZoneId;)Lkotlinx/datetime/TimeZone;
 	public static final fun toKotlinUtcOffset (Ljava/time/ZoneOffset;)Lkotlinx/datetime/UtcOffset;
+	public static final fun toKotlinYearMonth (Ljava/time/YearMonth;)Lkotlinx/datetime/YearMonth;
 	public static final fun toKotlinZoneOffset (Ljava/time/ZoneOffset;)Lkotlinx/datetime/FixedOffsetTimeZone;
 }
 
@@ -615,6 +617,51 @@ public final class kotlinx/datetime/UtcOffsetKt {
 	public static final fun format (Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 }
 
+public final class kotlinx/datetime/YearMonth : java/lang/Comparable {
+	public static final field Companion Lkotlinx/datetime/YearMonth$Companion;
+	public fun <init> (II)V
+	public fun <init> (ILkotlinx/datetime/Month;)V
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun compareTo (Lkotlinx/datetime/YearMonth;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFirstDay ()Lkotlinx/datetime/LocalDate;
+	public final fun getLastDay ()Lkotlinx/datetime/LocalDate;
+	public final fun getMonth ()Lkotlinx/datetime/Month;
+	public final fun getNumberOfDays ()I
+	public final fun getYear ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/YearMonth$Companion {
+	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/YearMonth;
+	public static synthetic fun parse$default (Lkotlinx/datetime/YearMonth$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/YearMonth;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class kotlinx/datetime/YearMonth$Formats {
+	public static final field INSTANCE Lkotlinx/datetime/YearMonth$Formats;
+	public final fun getISO ()Lkotlinx/datetime/format/DateTimeFormat;
+}
+
+public final class kotlinx/datetime/YearMonthKt {
+	public static final fun format (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
+	public static final fun getYearMonth (Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/YearMonth;
+	public static final fun minus (Lkotlinx/datetime/YearMonth;ILkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonth;
+	public static final fun minus (Lkotlinx/datetime/YearMonth;JLkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonth;
+	public static final fun minusMonth (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonth;
+	public static final fun minusYear (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonth;
+	public static final fun monthsUntil (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;)I
+	public static final fun onDay (Lkotlinx/datetime/YearMonth;I)Lkotlinx/datetime/LocalDate;
+	public static final fun plus (Lkotlinx/datetime/YearMonth;ILkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonth;
+	public static final fun plus (Lkotlinx/datetime/YearMonth;JLkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonth;
+	public static final fun plusMonth (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonth;
+	public static final fun plusYear (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonth;
+	public static final fun until (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/DateTimeUnit$MonthBased;)J
+	public static final fun yearsUntil (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;)I
+}
+
 public final class kotlinx/datetime/format/AmPmMarker : java/lang/Enum {
 	public static final field AM Lkotlinx/datetime/format/AmPmMarker;
 	public static final field PM Lkotlinx/datetime/format/AmPmMarker;
@@ -668,11 +715,13 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public final fun setTime (Lkotlinx/datetime/LocalTime;)V
 	public final fun setTimeZoneId (Ljava/lang/String;)V
 	public final fun setYear (Ljava/lang/Integer;)V
+	public final fun setYearMonth (Lkotlinx/datetime/YearMonth;)V
 	public final fun toInstantUsingOffset ()Lkotlinx/datetime/Instant;
 	public final fun toLocalDate ()Lkotlinx/datetime/LocalDate;
 	public final fun toLocalDateTime ()Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalTime ()Lkotlinx/datetime/LocalTime;
 	public final fun toUtcOffset ()Lkotlinx/datetime/UtcOffset;
+	public final fun toYearMonth ()Lkotlinx/datetime/YearMonth;
 }
 
 public final class kotlinx/datetime/format/DateTimeComponents$Companion {
@@ -706,16 +755,12 @@ public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder {
 	public abstract fun chars (Ljava/lang/String;)V
 }
 
-public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate : kotlinx/datetime/format/DateTimeFormatBuilder {
+public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate : kotlinx/datetime/format/DateTimeFormatBuilder$WithYearMonth {
 	public abstract fun date (Lkotlinx/datetime/format/DateTimeFormat;)V
 	public abstract fun day (Lkotlinx/datetime/format/Padding;)V
 	public abstract fun dayOfMonth (Lkotlinx/datetime/format/Padding;)V
 	public abstract fun dayOfWeek (Lkotlinx/datetime/format/DayOfWeekNames;)V
 	public abstract fun dayOfYear (Lkotlinx/datetime/format/Padding;)V
-	public abstract fun monthName (Lkotlinx/datetime/format/MonthNames;)V
-	public abstract fun monthNumber (Lkotlinx/datetime/format/Padding;)V
-	public abstract fun year (Lkotlinx/datetime/format/Padding;)V
-	public abstract fun yearTwoDigits (I)V
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate$DefaultImpls {
@@ -723,8 +768,6 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDate$Defaul
 	public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;)V
 	public static synthetic fun dayOfMonth$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun dayOfYear$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
-	public static synthetic fun monthNumber$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
-	public static synthetic fun year$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 }
 
 public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime : kotlinx/datetime/format/DateTimeFormatBuilder$WithDate, kotlinx/datetime/format/DateTimeFormatBuilder$WithTime {
@@ -777,6 +820,19 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset$D
 	public static synthetic fun offsetHours$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun offsetMinutesOfHour$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun offsetSecondsOfMinute$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+}
+
+public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithYearMonth : kotlinx/datetime/format/DateTimeFormatBuilder {
+	public abstract fun monthName (Lkotlinx/datetime/format/MonthNames;)V
+	public abstract fun monthNumber (Lkotlinx/datetime/format/Padding;)V
+	public abstract fun year (Lkotlinx/datetime/format/Padding;)V
+	public abstract fun yearMonth (Lkotlinx/datetime/format/DateTimeFormat;)V
+	public abstract fun yearTwoDigits (I)V
+}
+
+public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithYearMonth$DefaultImpls {
+	public static synthetic fun monthNumber$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithYearMonth;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+	public static synthetic fun year$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithYearMonth;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilderKt {
@@ -1137,5 +1193,23 @@ public final class kotlinx/datetime/serializers/UtcOffsetSerializer : kotlinx/se
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/UtcOffset;)V
+}
+
+public final class kotlinx/datetime/serializers/YearMonthComponentSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/YearMonthComponentSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/YearMonth;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/YearMonth;)V
+}
+
+public final class kotlinx/datetime/serializers/YearMonthIso8601Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/YearMonthIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/YearMonth;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/YearMonth;)V
 }
 
