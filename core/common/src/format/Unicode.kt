@@ -123,6 +123,13 @@ public fun DateTimeFormatBuilder.byUnicodePattern(pattern: String) {
                         format.addToFormat(builder)
                     }
 
+                    is UnicodeFormat.Directive.YearMonthBased -> {
+                        require(builder is DateTimeFormatBuilder.WithYearMonth) {
+                            "A year-month-based directive $format was used in a format builder that doesn't support year-month components"
+                        }
+                        format.addToFormat(builder)
+                    }
+
                     is UnicodeFormat.Directive.DateBased -> {
                         require(builder is DateTimeFormatBuilder.WithDate) {
                             "A date-based directive $format was used in a format builder that doesn't support date components"
@@ -247,17 +254,21 @@ internal sealed interface UnicodeFormat {
 
         override fun hashCode(): Int = formatLetter.hashCode() * 31 + formatLength
 
-        sealed class DateBased : Directive() {
-            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithDate)
-
-            class Era(override val formatLength: Int) : DateBased() {
-                override val formatLetter = 'G'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = localizedDirective()
+        sealed class YearMonthBased : DateBased() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth)
+            override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
+                val downcastedBuilder: DateTimeFormatBuilder.WithYearMonth = builder
+                addToFormat(downcastedBuilder)
             }
 
-            class Year(override val formatLength: Int) : DateBased() {
+            class Era(override val formatLength: Int) : YearMonthBased() {
+                override val formatLetter = 'G'
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) = localizedDirective()
+            }
+
+            class Year(override val formatLength: Int) : YearMonthBased() {
                 override val formatLetter = 'u'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) {
                     when (formatLength) {
                         1 -> builder.year(padding = Padding.NONE)
                         2 -> builder.yearTwoDigits(baseYear = 2000)
@@ -268,9 +279,9 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class YearOfEra(override val formatLength: Int) : DateBased() {
+            class YearOfEra(override val formatLength: Int) : YearMonthBased() {
                 override val formatLetter = 'y'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = when (formatLength) {
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) = when (formatLength) {
                     1 -> builder.yearOfEra(padding = Padding.NONE)
                     2 -> builder.yearOfEraTwoDigits(baseYear = 2000)
                     3 -> unsupportedPadding(formatLength)
@@ -279,17 +290,68 @@ internal sealed interface UnicodeFormat {
                 }
             }
 
-            class CyclicYearName(override val formatLength: Int) : DateBased() {
+            class CyclicYearName(override val formatLength: Int) : YearMonthBased() {
                 override val formatLetter = 'U'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) = unsupportedDirective("cyclic-year")
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) = unsupportedDirective("cyclic-year")
             }
 
             // https://cldr.unicode.org/development/development-process/design-proposals/pattern-character-for-related-year
-            class RelatedGregorianYear(override val formatLength: Int) : DateBased() {
+            class RelatedGregorianYear(override val formatLength: Int) : YearMonthBased() {
                 override val formatLetter = 'r'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) =
                     unsupportedDirective("related-gregorian-year")
             }
+
+            class MonthOfYear(override val formatLength: Int) : YearMonthBased() {
+                override val formatLetter = 'M'
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) {
+                    when (formatLength) {
+                        1 -> builder.monthNumber(Padding.NONE)
+                        2 -> builder.monthNumber(Padding.ZERO)
+                        3, 4, 5 -> localizedDirective()
+                        else -> unknownLength()
+                    }
+                }
+            }
+
+            class StandaloneMonthOfYear(override val formatLength: Int) : YearMonthBased() {
+                override val formatLetter = 'L'
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) {
+                    when (formatLength) {
+                        1 -> builder.monthNumber(Padding.NONE)
+                        2 -> builder.monthNumber(Padding.ZERO)
+                        3, 4, 5 -> localizedDirective()
+                        else -> unknownLength()
+                    }
+                }
+            }
+
+            class QuarterOfYear(override val formatLength: Int) : YearMonthBased() {
+                override val formatLetter = 'Q'
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) {
+                    when (formatLength) {
+                        1, 2 -> unsupportedDirective("quarter-of-year")
+                        3, 4, 5 -> localizedDirective()
+                        else -> unknownLength()
+                    }
+                }
+            }
+
+            class StandaloneQuarterOfYear(override val formatLength: Int) : YearMonthBased() {
+                override val formatLetter = 'q'
+                override fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth) {
+                    when (formatLength) {
+                        1, 2 -> unsupportedDirective("standalone-quarter-of-year")
+                        3, 4, 5 -> localizedDirective()
+                        else -> unknownLength()
+                    }
+                }
+            }
+
+        }
+
+        sealed class DateBased : Directive() {
+            abstract fun addToFormat(builder: DateTimeFormatBuilder.WithDate)
 
             class DayOfYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'D'
@@ -297,30 +359,6 @@ internal sealed interface UnicodeFormat {
                     when (formatLength) {
                         1 -> builder.dayOfYear(Padding.NONE)
                         3 -> builder.dayOfYear(Padding.ZERO)
-                        else -> unknownLength()
-                    }
-                }
-            }
-
-            class MonthOfYear(override val formatLength: Int) : DateBased() {
-                override val formatLetter = 'M'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
-                    when (formatLength) {
-                        1 -> builder.monthNumber(Padding.NONE)
-                        2 -> builder.monthNumber(Padding.ZERO)
-                        3, 4, 5 -> localizedDirective()
-                        else -> unknownLength()
-                    }
-                }
-            }
-
-            class StandaloneMonthOfYear(override val formatLength: Int) : DateBased() {
-                override val formatLetter = 'L'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
-                    when (formatLength) {
-                        1 -> builder.monthNumber(Padding.NONE)
-                        2 -> builder.monthNumber(Padding.ZERO)
-                        3, 4, 5 -> localizedDirective()
                         else -> unknownLength()
                     }
                 }
@@ -341,27 +379,6 @@ internal sealed interface UnicodeFormat {
                     unsupportedDirective("modified-julian-day")
             }
 
-            class QuarterOfYear(override val formatLength: Int) : DateBased() {
-                override val formatLetter = 'Q'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
-                    when (formatLength) {
-                        1, 2 -> unsupportedDirective("quarter-of-year")
-                        3, 4, 5 -> localizedDirective()
-                        else -> unknownLength()
-                    }
-                }
-            }
-
-            class StandaloneQuarterOfYear(override val formatLength: Int) : DateBased() {
-                override val formatLetter = 'q'
-                override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
-                    when (formatLength) {
-                        1, 2 -> unsupportedDirective("standalone-quarter-of-year")
-                        3, 4, 5 -> localizedDirective()
-                        else -> unknownLength()
-                    }
-                }
-            }
 
             class WeekBasedYear(override val formatLength: Int) : DateBased() {
                 override val formatLetter = 'Y'
@@ -401,7 +418,6 @@ internal sealed interface UnicodeFormat {
                 override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) =
                     unsupportedDirective("day-of-week-in-month")
             }
-
         }
 
         sealed class TimeBased : Directive() {
@@ -582,16 +598,16 @@ internal sealed interface UnicodeFormat {
 private class UnknownUnicodeDirective(override val formatLetter: Char, override val formatLength: Int) : UnicodeFormat.Directive()
 
 private fun unicodeDirective(char: Char, formatLength: Int): UnicodeFormat = when (char) {
-    'G' -> UnicodeFormat.Directive.DateBased.Era(formatLength)
-    'y' -> UnicodeFormat.Directive.DateBased.YearOfEra(formatLength)
+    'G' -> UnicodeFormat.Directive.YearMonthBased.Era(formatLength)
+    'y' -> UnicodeFormat.Directive.YearMonthBased.YearOfEra(formatLength)
+    'u' -> UnicodeFormat.Directive.YearMonthBased.Year(formatLength)
+    'U' -> UnicodeFormat.Directive.YearMonthBased.CyclicYearName(formatLength)
+    'r' -> UnicodeFormat.Directive.YearMonthBased.RelatedGregorianYear(formatLength)
+    'Q' -> UnicodeFormat.Directive.YearMonthBased.QuarterOfYear(formatLength)
+    'q' -> UnicodeFormat.Directive.YearMonthBased.StandaloneQuarterOfYear(formatLength)
+    'M' -> UnicodeFormat.Directive.YearMonthBased.MonthOfYear(formatLength)
+    'L' -> UnicodeFormat.Directive.YearMonthBased.StandaloneMonthOfYear(formatLength)
     'Y' -> UnicodeFormat.Directive.DateBased.WeekBasedYear(formatLength)
-    'u' -> UnicodeFormat.Directive.DateBased.Year(formatLength)
-    'U' -> UnicodeFormat.Directive.DateBased.CyclicYearName(formatLength)
-    'r' -> UnicodeFormat.Directive.DateBased.RelatedGregorianYear(formatLength)
-    'Q' -> UnicodeFormat.Directive.DateBased.QuarterOfYear(formatLength)
-    'q' -> UnicodeFormat.Directive.DateBased.StandaloneQuarterOfYear(formatLength)
-    'M' -> UnicodeFormat.Directive.DateBased.MonthOfYear(formatLength)
-    'L' -> UnicodeFormat.Directive.DateBased.StandaloneMonthOfYear(formatLength)
     'w' -> UnicodeFormat.Directive.DateBased.WeekOfWeekBasedYear(formatLength)
     'W' -> UnicodeFormat.Directive.DateBased.WeekOfMonth(formatLength)
     'd' -> UnicodeFormat.Directive.DateBased.DayOfMonth(formatLength)

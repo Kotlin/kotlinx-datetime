@@ -186,8 +186,20 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     }
 
     /**
+     * Writes the contents of the specified [yearMonth] to this [DateTimeComponents].
+     * The [yearMonth] is written to the [year] and [monthNumber] fields.
+     *
+     * If any of the fields are already set, they will be overwritten.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.yearMonth
+     */
+    public fun setYearMonth(yearMonth: YearMonth) {
+        contents.date.yearMonth.populateFrom(yearMonth)
+    }
+
+    /**
      * Writes the contents of the specified [localDate] to this [DateTimeComponents].
-     * The [localDate] is written to the [year], [monthNumber], [day], and [dayOfWeek] fields.
+     * The [localDate] is written to the [year], [monthNumber], [day], [dayOfWeek], and [dayOfYear] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      *
@@ -421,6 +433,18 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     public fun toUtcOffset(): UtcOffset = contents.offset.toUtcOffset()
 
     /**
+     * Builds a [YearMonth] from the fields in this [DateTimeComponents].
+     *
+     * This method uses the following fields:
+     * * [year]
+     * * [monthNumber]
+     *
+     * @throws IllegalArgumentException if any of the fields is missing or invalid.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toYearMonth
+     */
+    public fun toYearMonth(): YearMonth = contents.date.yearMonth.toYearMonth()
+
+    /**
      * Builds a [LocalDate] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
@@ -428,6 +452,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * * [monthNumber]
      * * [day]
      *
+     * Alternatively, the following fields can be used:
+     * * [year]
+     * * [dayOfYear]
+     *
+     * If both sets of fields are specified, they are checked for consistency.
      * Also, [dayOfWeek] is checked for consistency with the other fields.
      *
      * @throws IllegalArgumentException if any of the fields is missing or invalid.
