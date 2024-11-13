@@ -10,6 +10,7 @@ import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalTime::class)
 class ClockTimeSourceTest {
@@ -82,5 +83,42 @@ class ClockTimeSourceTest {
 
         assertFailsWith<IllegalArgumentException> { markFuture - Duration.INFINITE }
         assertFailsWith<IllegalArgumentException> { markPast + Duration.INFINITE }
+    }
+
+    @Test
+    fun timeSourceAsClock() {
+        val timeSource = TestTimeSource()
+        val clock = timeSource.asClock(origin = Instant.fromEpochSeconds(0))
+
+        assertEquals(Instant.fromEpochSeconds(0), clock.now())
+        assertEquals(Instant.fromEpochSeconds(0), clock.now())
+
+        timeSource += 1.seconds
+        assertEquals(Instant.fromEpochSeconds(1), clock.now())
+        assertEquals(Instant.fromEpochSeconds(1), clock.now())
+    }
+
+    @Test
+    fun syncMultipleClocksFromTimeSource() {
+        val timeSource = TestTimeSource()
+        val clock1 = timeSource.asClock(origin = Instant.fromEpochSeconds(0))
+
+        assertEquals(0, clock1.now().epochSeconds)
+
+        timeSource += 1.seconds
+        assertEquals(1, clock1.now().epochSeconds)
+
+        val clock2 = timeSource.asClock(origin = Instant.fromEpochSeconds(1))
+        assertEquals(clock1.now(), clock2.now())
+
+        timeSource += 1.seconds
+        assertEquals(2, clock1.now().epochSeconds)
+        assertEquals(clock1.now(), clock2.now())
+
+        val clock3 = timeSource.asClock(origin = clock2.now())
+        timeSource += 1.seconds
+        assertEquals(3, clock3.now().epochSeconds)
+        assertEquals(clock1.now(), clock2.now())
+        assertEquals(clock1.now(), clock3.now())
     }
 }
