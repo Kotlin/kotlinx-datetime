@@ -94,8 +94,8 @@ public class MonthNames(
 }
 
 private fun MonthNames.toKotlinCode(): String = when (this.names) {
-    MonthNames.ENGLISH_FULL.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_FULL.name}"
-    MonthNames.ENGLISH_ABBREVIATED.names -> "MonthNames.${DayOfWeekNames.Companion::ENGLISH_ABBREVIATED.name}"
+    MonthNames.ENGLISH_FULL.names -> "MonthNames.${MonthNames.Companion::ENGLISH_FULL.name}"
+    MonthNames.ENGLISH_ABBREVIATED.names -> "MonthNames.${MonthNames.Companion::ENGLISH_ABBREVIATED.name}"
     else -> names.joinToString(", ", "MonthNames(", ")", transform = String::toKotlinCode)
 }
 
