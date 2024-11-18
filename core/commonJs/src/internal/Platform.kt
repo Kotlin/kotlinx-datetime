@@ -8,8 +8,6 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.internal.JSJoda.ZoneId
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
@@ -25,49 +23,56 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         in 'A'..'X' -> char - 'A' + 36
         else -> throw IllegalArgumentException("Invalid character: $char")
     }
-    fun unpackBase60(string: String): Double {
+    /** converts a base60 number of minutes to a whole number of seconds */
+    fun base60MinutesInSeconds(string: String): Long {
         var i = 0
         var parts = string.split('.')
-        val whole = parts[0]
-        var multiplier = 1.0
-        var out = 0.0
-        var sign = 1
 
         // handle negative numbers
-        if (string.startsWith('-')) {
+        val sign = if (string.startsWith('-')) {
             i = 1
-            sign = -1
+            -1
+        } else {
+            1
         }
 
-        // handle digits before the decimal
+        var wholeMinutes: Long = 0
+        val whole = parts[0]
+        // handle digits before the decimal (whole minutes)
         for (ix in i..whole.lastIndex) {
-            out = 60 * out + charCodeToInt(whole[ix])
+            wholeMinutes = 60 * wholeMinutes + charCodeToInt(whole[ix])
         }
 
-        // handle digits after the decimal
-        parts.getOrNull(1)?.let { fractional ->
-            for (c in fractional) {
-                multiplier = multiplier / 60.0
-                out += charCodeToInt(c) * multiplier
+        // handle digits after the decimal (seconds and less)
+        val seconds = parts.getOrNull(1)?.let { fractional ->
+            when (fractional.length) {
+                1 -> charCodeToInt(fractional[0]) // single digit, representing seconds
+                0 -> 0 // actually no fractional part
+                else -> {
+                    charCodeToInt(fractional[0]) + charCodeToInt(fractional[1]).let {
+                        if (it >= 30) 1 else 0 // rounding the seconds digit
+                    }
+                }
             }
-        }
+        } ?: 0
 
-        return out * sign
+        return (wholeMinutes * SECONDS_PER_MINUTE + seconds) * sign
     }
 
     val zones = mutableMapOf<String, TimeZoneRules>()
     val (zonesPacked, linksPacked) = readTzdb() ?: return@runCatching null
     for (zone in zonesPacked) {
         val components = zone.split('|')
-        val offsets = components[2].split(' ').map { unpackBase60(it) }
-        val indices = components[3].map { charCodeToInt(it) }
-        val lengthsOfPeriodsWithOffsets = components[4].split(' ').map {
-            (unpackBase60(it) * SECONDS_PER_MINUTE * MILLIS_PER_ONE).roundToLong() / // minutes to milliseconds
-                    MILLIS_PER_ONE // but we only need seconds
+        val offsets = components[2].split(' ').map {
+            UtcOffset(null, null, -base60MinutesInSeconds(it).toInt())
         }
+        val indices = components[3].map { charCodeToInt(it) }
+        val lengthsOfPeriodsWithOffsets = components[4].split(' ').map(::base60MinutesInSeconds)
         zones[components[0]] = TimeZoneRules(
-            transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).take<Long>(indices.size - 1),
-            offsets = indices.map { UtcOffset(null, null, -(offsets[it] * 60).roundToInt()) },
+            transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).let {
+                if (it.size == indices.size - 1) it else it.take<Long>(indices.size - 1)
+            },
+            offsets = indices.map { offsets[it] },
             recurringZoneRules = null
         )
     }
