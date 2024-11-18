@@ -84,6 +84,11 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
 
     public actual fun toEpochDays(): Long = value.toEpochDay()
+
+    @PublishedApi
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @LowPriorityInOverloadResolution
+    internal fun toEpochDays(): Int = value.toEpochDay().clampToInt()
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
@@ -149,6 +154,12 @@ public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
     is DateTimeUnit.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months)
     is DateTimeUnit.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days)
 }
+
+@PublishedApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@LowPriorityInOverloadResolution
+internal fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int =
+    until(other, unit).clampToInt()
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.DAYS).clampToInt()
