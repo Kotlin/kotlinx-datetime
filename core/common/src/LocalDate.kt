@@ -365,8 +365,6 @@ public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * - Positive or zero if this date is later than the other.
  * - Exactly zero if this date is equal to the other.
  *
- * @throws DateTimeArithmeticException if the number of months between the two dates exceeds an Int.
- *
  * @see LocalDate.periodUntil for the same operation with the order of arguments reversed.
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusDate
  */

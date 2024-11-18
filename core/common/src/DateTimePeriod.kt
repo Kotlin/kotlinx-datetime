@@ -13,7 +13,6 @@ import kotlinx.datetime.serializers.DateTimePeriodComponentSerializer
 import kotlin.math.*
 import kotlin.time.Duration
 import kotlinx.serialization.Serializable
-import kotlin.text.toLong
 
 /**
  * A difference between two [instants][Instant], decomposed into date and time components.
