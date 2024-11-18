@@ -14,14 +14,21 @@ import kotlin.math.roundToLong
 private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
      * References:
+     * - <https://momentjs.com/timezone/docs/#/data-formats/packed-format/>
      * - https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/timezone/src/MomentZoneRulesProvider.js#L78-L94
      * - https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/timezone/src/unpack.js
      * - <https://momentjs.com/timezone/docs/#/zone-object/>
      */
+    fun charCodeToInt(char: Char): Int = when (char) {
+        in '0'..'9' -> char - '0'
+        in 'a'..'z' -> char - 'a' + 10
+        in 'A'..'X' -> char - 'A' + 36
+        else -> throw IllegalArgumentException("Invalid character: $char")
+    }
     fun unpackBase60(string: String): Double {
         var i = 0
         var parts = string.split('.')
-        var whole = parts[0]
+        val whole = parts[0]
         var multiplier = 1.0
         var out = 0.0
         var sign = 1
@@ -31,14 +38,6 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
             i = 1
             sign = -1
         }
-
-        fun charCodeToInt(char: Char): Int =
-            when (char) {
-                in '0'..'9' -> char - '0'
-                in 'a'..'z' -> char - 'a' + 10
-                in 'A'..'X' -> char - 'A' + 36
-                else -> throw IllegalArgumentException("Invalid character: $char")
-            }
 
         // handle digits before the decimal
         for (ix in i..whole.lastIndex) {
@@ -56,28 +55,18 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         return out * sign
     }
 
-    fun <T, R> List<T>.scanWithoutInitial(initial: R, operation: (acc: R, T) -> R): List<R> = buildList {
-        var accumulator = initial
-        for (element in this@scanWithoutInitial) {
-            accumulator = operation(accumulator, element)
-            add(accumulator)
-        }
-    }
-
-    fun List<Long>.partialSums(): List<Long> = scanWithoutInitial(0, Long::plus)
-
     val zones = mutableMapOf<String, TimeZoneRules>()
     val (zonesPacked, linksPacked) = readTzdb() ?: return@runCatching null
     for (zone in zonesPacked) {
         val components = zone.split('|')
         val offsets = components[2].split(' ').map { unpackBase60(it) }
-        val indices = components[3].map { it - '0' }
+        val indices = components[3].map { charCodeToInt(it) }
         val lengthsOfPeriodsWithOffsets = components[4].split(' ').map {
             (unpackBase60(it) * SECONDS_PER_MINUTE * MILLIS_PER_ONE).roundToLong() / // minutes to milliseconds
                     MILLIS_PER_ONE // but we only need seconds
         }
         zones[components[0]] = TimeZoneRules(
-            transitionEpochSeconds = lengthsOfPeriodsWithOffsets.partialSums().take<Long>(indices.size - 1),
+            transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).take<Long>(indices.size - 1),
             offsets = indices.map { UtcOffset(null, null, -(offsets[it] * 60).roundToInt()) },
             recurringZoneRules = null
         )
