@@ -28,12 +28,11 @@ internal interface DateOfYear {
 
 /**
  * The day of year, in the 0..365 range. During leap years, 29th February is counted as the 60th day of the year.
- * The number 366 is not supported, as outside the leap years, there are only 365 days in a year.
  */
 internal class JulianDayOfYear(val zeroBasedDayOfYear: Int) : DateOfYear {
     init {
         require(zeroBasedDayOfYear in 0..365) {
-            "Expected a value in 1..365 for the Julian day-of-year, but got $zeroBasedDayOfYear"
+            "Expected a value in 0..365 for the Julian day-of-year, but got $zeroBasedDayOfYear"
         }
     }
     override fun toLocalDate(year: Int): LocalDate =
