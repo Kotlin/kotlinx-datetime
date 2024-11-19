@@ -4,7 +4,6 @@
  */
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlinx.datetime.internal.JSJoda.ZoneRulesProvider
 import kotlin.js.unsafeCast
 

@@ -21,11 +21,7 @@ public actual open class TimeZone internal constructor() {
         public actual fun currentSystemDefault(): TimeZone {
             // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
             val (name, zone) = currentSystemDefaultZone()
-            return if (zone == null) {
-                of(name)
-            } else {
-                zone
-            }
+            return zone ?: of(name)
         }
 
         public actual val UTC: FixedOffsetTimeZone = UtcOffset.ZERO.asTimeZone()
