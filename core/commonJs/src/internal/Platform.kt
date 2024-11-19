@@ -25,22 +25,23 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     }
     /** converts a base60 number of minutes to a whole number of seconds */
     fun base60MinutesInSeconds(string: String): Long {
-        var i = 0
-        var parts = string.split('.')
+        val parts = string.split('.')
 
         // handle negative numbers
-        val sign = if (string.startsWith('-')) {
-            i = 1
-            -1
+        val sign: Int
+        val minuteNumberStart: Int
+        if (string.startsWith('-')) {
+            minuteNumberStart = 1
+            sign = -1
         } else {
-            1
+            minuteNumberStart = 0
+            sign = 1
         }
 
-        var wholeMinutes: Long = 0
-        val whole = parts[0]
         // handle digits before the decimal (whole minutes)
-        for (ix in i..whole.lastIndex) {
-            wholeMinutes = 60 * wholeMinutes + charCodeToInt(whole[ix])
+        val whole = parts[0]
+        val wholeMinutes: Long = (minuteNumberStart..whole.lastIndex).map { charCodeToInt(whole[it]) }.fold(0L) {
+            acc, digit -> 60 * acc + digit
         }
 
         // handle digits after the decimal (seconds and less)
