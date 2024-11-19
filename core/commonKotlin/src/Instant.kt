@@ -192,7 +192,7 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedDateTimeFailing(timeZone)
-            .run { if (totalMonths != 0L) plus(totalMonths.toLong(), DateTimeUnit.MONTH) else this }
+            .run { if (totalMonths != 0L) plus(totalMonths, DateTimeUnit.MONTH) else this }
             .run { if (days != 0) plus(days.toLong(), DateTimeUnit.DAY) else this }
         withDate.toInstant()
             .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
@@ -212,11 +212,8 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
     plus(-value.toLong(), unit, timeZone)
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
     when (unit) {
-        is DateTimeUnit.DateBased -> {
-            if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)
-                throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
+        is DateTimeUnit.DateBased ->
             toZonedDateTimeFailing(timeZone).plus(value, unit).toInstant()
-        }
         is DateTimeUnit.TimeBased ->
             check(timeZone).plus(value, unit).check(timeZone)
     }
