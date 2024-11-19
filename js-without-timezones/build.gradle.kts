@@ -4,8 +4,13 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import java.util.Locale
 
 plugins {
-    id("kotlin-multiplatform")
-    id("org.jetbrains.kotlinx.kover")
+    id("kotlinx.team.infra") version "0.4.0-dev-81"
+    kotlin("multiplatform") version "1.9.21"
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
 }
 
 kotlin {
@@ -30,7 +35,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":kotlinx-datetime"))
+                api("org.jetbrains.kotlinx:kotlinx-datetime:$version")
             }
         }
 
@@ -40,4 +45,18 @@ kotlin {
             }
         }
     }
+}
+
+// Disable NPM to NodeJS nightly compatibility check.
+// Drop this when NodeJs version that supports latest Wasm become stable
+tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
+}
+
+// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
+// check it here:
+// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
+with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
+    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary" 
 }

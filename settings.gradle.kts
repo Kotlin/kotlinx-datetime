@@ -20,6 +20,4 @@ include(":timezones/full")
 project(":timezones/full").name = "kotlinx-datetime-zoneinfo"
 include(":serialization")
 project(":serialization").name = "kotlinx-datetime-serialization"
-include(":js-without-timezones")
-project(":js-without-timezones").name = "kotlinx-datetime-js-without-timezones"
 include(":benchmarks")
