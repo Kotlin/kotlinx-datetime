@@ -93,3 +93,12 @@ public fun UtcOffset.toJavaZoneOffset(): java.time.ZoneOffset = this.zoneOffset
  */
 public fun java.time.ZoneOffset.toKotlinUtcOffset(): UtcOffset = UtcOffset(this)
 
+/**
+ * Converts this [kotlinx.datetime.YearMonth][YearMonth] value to a [java.time.YearMonth][java.time.YearMonth] value.
+ */
+public fun YearMonth.toJavaYearMonth(): java.time.YearMonth = java.time.YearMonth.of(year, month.number)
+
+/**
+ * Converts this [java.time.YearMonth][java.time.YearMonth] value to a [kotlinx.datetime.YearMonth][YearMonth] value.
+ */
+public fun java.time.YearMonth.toKotlinYearMonth(): YearMonth = YearMonth(year, month)
