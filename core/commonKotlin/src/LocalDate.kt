@@ -23,23 +23,29 @@ private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
 @Serializable(with = LocalDateIso8601Serializer::class)
-public actual class LocalDate actual constructor(public actual val year: Int, public actual val monthNumber: Int, public actual val dayOfMonth: Int) : Comparable<LocalDate> {
+public actual class LocalDate actual constructor(public actual val year: Int, month: Int, public actual val day: Int) : Comparable<LocalDate> {
+
+    private val _month: Int = month
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    public actual val monthNumber: Int get() = _month
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    public actual val dayOfMonth: Int get() = day
 
     init {
         // org.threeten.bp.LocalDate#create
         require(isValidYear(year)) { "Invalid date: the year is out of range" }
-        require(monthNumber in 1..12) { "Invalid date: month must be a number between 1 and 12, got $monthNumber" }
-        require(dayOfMonth in 1..31) { "Invalid date: day of month must be a number between 1 and 31, got $dayOfMonth" }
-        if (dayOfMonth > 28 && dayOfMonth > monthNumber.monthLength(isLeapYear(year))) {
-            if (dayOfMonth == 29) {
+        require(_month in 1..12) { "Invalid date: month must be a number between 1 and 12, got $_month" }
+        require(day in 1..31) { "Invalid date: day of month must be a number between 1 and 31, got $day" }
+        if (day > 28 && day > _month.monthLength(isLeapYear(year))) {
+            if (day == 29) {
                 throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
             } else {
-                throw IllegalArgumentException("Invalid date '${month.name} $dayOfMonth'")
+                throw IllegalArgumentException("Invalid date '${Month(month)} $day'")
             }
         }
     }
 
-    public actual constructor(year: Int, month: Month, dayOfMonth: Int) : this(year, month.number, dayOfMonth)
+    public actual constructor(year: Int, month: Month, day: Int) : this(year, month.number, day)
 
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate = format.parse(input)
@@ -102,7 +108,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     // org.threeten.bp.LocalDate#toEpochDay
     public actual fun toEpochDays(): Int {
         val y = year
-        val m = monthNumber
+        val m = _month
         var total = 0
         total += 365 * y
         if (y >= 0) {
@@ -111,7 +117,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
             total -= y / -4 - y / -100 + y / -400
         }
         total += ((367 * m - 362) / 12)
-        total += dayOfMonth - 1
+        total += day - 1
         if (m > 2) {
             total--
             if (!isLeapYear(year)) {
@@ -122,7 +128,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     }
 
     public actual val month: Month
-        get() = Month(monthNumber)
+        get() = Month(_month)
 
     // org.threeten.bp.LocalDate#getDayOfWeek
     public actual val dayOfWeek: DayOfWeek
@@ -133,7 +139,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
 
     // org.threeten.bp.LocalDate#getDayOfYear
     public actual val dayOfYear: Int
-        get() = month.firstDayOfYear(isLeapYear(year)) + dayOfMonth - 1
+        get() = month.firstDayOfYear(isLeapYear(year)) + day - 1
 
     // Several times faster than using `compareBy`
     actual override fun compareTo(other: LocalDate): Int {
@@ -141,11 +147,11 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         if (y != 0) {
             return y
         }
-        val m = monthNumber.compareTo(other.monthNumber)
+        val m = _month.compareTo(other._month)
         if (m != 0) {
             return m
         }
-        return dayOfMonth.compareTo(other.dayOfMonth)
+        return day.compareTo(other.day)
     }
 
     // org.threeten.bp.LocalDate#resolvePreviousValid
@@ -166,11 +172,11 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         if (monthsToAdd == 0) {
             return this
         }
-        val monthCount = year * 12 + (monthNumber - 1)
+        val monthCount = year * 12 + (_month - 1)
         val calcMonths = safeAdd(monthCount, monthsToAdd)
         val newYear = calcMonths.floorDiv(12)
         val newMonth = calcMonths.mod(12) + 1
-        return resolvePreviousValid(newYear, newMonth, dayOfMonth)
+        return resolvePreviousValid(newYear, newMonth, day)
     }
 
     // org.threeten.bp.LocalDate#plusDays
@@ -188,8 +194,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
     // org.threeten.bp.LocalDate#hashCode
     override fun hashCode(): Int {
         val yearValue = year
-        val monthValue: Int = monthNumber
-        val dayValue: Int = dayOfMonth
+        val monthValue: Int = _month
+        val dayValue: Int = day
         return yearValue and -0x800 xor (yearValue shl 11) + (monthValue shl 6) + dayValue
     }
 
@@ -243,12 +249,12 @@ public actual fun LocalDate.daysUntil(other: LocalDate): Int =
     other.toEpochDays() - this.toEpochDays()
 
 // org.threeten.bp.LocalDate#getProlepticMonth
-internal val LocalDate.prolepticMonth get() = (year * 12) + (monthNumber - 1)
+internal val LocalDate.prolepticMonth get() = (year * 12) + (month.number - 1)
 
 // org.threeten.bp.LocalDate#monthsUntil
 public actual fun LocalDate.monthsUntil(other: LocalDate): Int {
-    val packed1 = prolepticMonth * 32 + dayOfMonth
-    val packed2 = other.prolepticMonth * 32 + other.dayOfMonth
+    val packed1 = prolepticMonth * 32 + day
+    val packed2 = other.prolepticMonth * 32 + other.day
     return (packed2 - packed1) / 32
 }
 

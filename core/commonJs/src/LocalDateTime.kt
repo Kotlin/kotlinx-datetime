@@ -15,24 +15,27 @@ import kotlinx.datetime.internal.JSJoda.LocalDateTime as jtLocalDateTime
 @Serializable(with = LocalDateTimeIso8601Serializer::class)
 public actual class LocalDateTime internal constructor(internal val value: jtLocalDateTime) : Comparable<LocalDateTime> {
 
-    public actual constructor(year: Int, monthNumber: Int, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+    public actual constructor(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(try {
-                jsTry { jtLocalDateTime.of(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond) }
+                jsTry { jtLocalDateTime.of(year, month, day, hour, minute, second, nanosecond) }
             } catch (e: Throwable) {
                 if (e.isJodaDateTimeException()) throw IllegalArgumentException(e)
                 throw e
             })
 
-    public actual constructor(year: Int, month: Month, dayOfMonth: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-            this(year, month.number, dayOfMonth, hour, minute, second, nanosecond)
+    public actual constructor(year: Int, month: Month, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
+            this(year, month.number, day, hour, minute, second, nanosecond)
 
     public actual constructor(date: LocalDate, time: LocalTime) :
             this(jsTry { jtLocalDateTime.of(date.value, time.value) })
 
     public actual val year: Int get() = value.year()
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
     public actual val monthNumber: Int get() = value.monthValue()
     public actual val month: Month get() = value.month().toMonth()
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
     public actual val dayOfMonth: Int get() = value.dayOfMonth()
+    public actual val day: Int get() = value.dayOfMonth()
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek().toDayOfWeek()
     public actual val dayOfYear: Int get() = value.dayOfYear()
 
