@@ -82,6 +82,9 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
             return LocalDate(yearEst, month, dom)
         }
 
+        internal actual fun fromEpochDays(epochDays: Long): LocalDate =
+            fromEpochDays(epochDays.clampToInt())
+
         internal actual val MIN = LocalDate(YEAR_MIN, 1, 1)
         internal actual val MAX = LocalDate(YEAR_MAX, 12, 31)
 
@@ -120,6 +123,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
         }
         return total - DAYS_0000_TO_1970
     }
+
+    internal actual fun toEpochDaysLong(): Long = toEpochDays().toLong()
 
     public actual val month: Month
         get() = Month(monthNumber)
@@ -195,6 +200,10 @@ public actual class LocalDate actual constructor(public actual val year: Int, pu
 
     // org.threeten.bp.LocalDate#toString
     actual override fun toString(): String = format(Formats.ISO)
+
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))

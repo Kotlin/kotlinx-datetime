@@ -93,6 +93,15 @@ public expect class LocalDate : Comparable<LocalDate> {
         public fun fromEpochDays(epochDays: Int): LocalDate
 
         /**
+         * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
+         *
+         * @throws IllegalArgumentException if the result exceeds the platform-specific boundaries of [LocalDate].
+         * @see LocalDate.toEpochDaysLong
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.fromAndToEpochDays
+         */
+        internal fun fromEpochDays(epochDays: Long): LocalDate
+
+        /**
          * Creates a new format for parsing and formatting [LocalDate] values.
          *
          * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
@@ -239,6 +248,16 @@ public expect class LocalDate : Comparable<LocalDate> {
     public fun toEpochDays(): Int
 
     /**
+     * Returns the number of days since the epoch day `1970-01-01`.
+     *
+     * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+     *
+     * @see LocalDate.fromEpochDays
+     * @sample kotlinx.datetime.test.samples.LocalDateSamples.toEpochDays
+     */
+    internal fun toEpochDaysLong(): Long
+
+    /**
      * Compares `this` date with the [other] date.
      * Returns zero if this date represents the same day as the other (meaning they are equal to one other),
      * a negative number if this date is earlier than the other,
@@ -257,6 +276,20 @@ public expect class LocalDate : Comparable<LocalDate> {
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.toStringSample
      */
     public override fun toString(): String
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], inclusive.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeTo(that: LocalDate): LocalDateRange
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], exclusive. i.e. from this to (that - 1 day)
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeUntil(that: LocalDate) : LocalDateRange
 }
 
 /**
