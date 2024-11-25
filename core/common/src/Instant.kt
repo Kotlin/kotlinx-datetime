@@ -56,8 +56,8 @@ import kotlin.time.*
  * ```
  *
  * For values very far in the past or the future, this conversion may fail.
- * The specific range of values that can be converted to [LocalDateTime] is platform-specific, but at least
- * [DISTANT_PAST], [DISTANT_FUTURE], and all values between them can be converted to [LocalDateTime].
+ * The specific range of values that can be converted to [LocalDateTime] is unspecified, but at least
+ * [DISTANT_PAST], [DISTANT_FUTURE], and all values between them are included in that range.
  *
  * #### Date or time separately
  *
@@ -225,7 +225,8 @@ public expect class Instant : Comparable<Instant> {
      *
      * Any fractional part of a millisecond is rounded toward zero to the whole number of milliseconds.
      *
-     * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+     * If the result does not fit in [Long],
+     * returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
      *
      * @see fromEpochMilliseconds
      * @sample kotlinx.datetime.test.samples.InstantSamples.toEpochMilliseconds
@@ -238,7 +239,7 @@ public expect class Instant : Comparable<Instant> {
      * If the [duration] is positive, the returned instant is later than this instant.
      * If the [duration] is negative, the returned instant is earlier than this instant.
      *
-     * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+     * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
      *
      * **Pitfall**: [Duration.Companion.days] are multiples of 24 hours and are not calendar-based.
      * Consider using the [plus] overload that accepts a multiple of a [DateTimeUnit] instead for calendar-based
@@ -255,7 +256,7 @@ public expect class Instant : Comparable<Instant> {
      * If the [duration] is positive, the returned instant is earlier than this instant.
      * If the [duration] is negative, the returned instant is later than this instant.
      *
-     * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+     * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
      *
      * **Pitfall**: [Duration.Companion.days] are multiples of 24 hours and are not calendar-based.
      * Consider using the [minus] overload that accepts a multiple of a [DateTimeUnit] instead for calendar-based
@@ -319,8 +320,7 @@ public expect class Instant : Comparable<Instant> {
         /**
          * Returns an [Instant] that is [epochMilliseconds] number of milliseconds from the epoch instant `1970-01-01T00:00:00Z`.
          *
-         * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
-         * In any case, it is guaranteed that instants between [DISTANT_PAST] and [DISTANT_FUTURE] can be represented.
+         * Every value of [epochMilliseconds] is guaranteed to be representable as an [Instant].
          *
          * Note that [Instant] also supports nanosecond precision via [fromEpochSeconds].
          *
@@ -333,7 +333,7 @@ public expect class Instant : Comparable<Instant> {
          * Returns an [Instant] that is the [epochSeconds] number of seconds from the epoch instant `1970-01-01T00:00:00Z`
          * and the [nanosecondAdjustment] number of nanoseconds from the whole second.
          *
-         * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+         * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
          * In any case, it is guaranteed that instants between [DISTANT_PAST] and [DISTANT_FUTURE] can be represented.
          *
          * [fromEpochMilliseconds] is a similar function for when input data only has millisecond precision.
@@ -348,7 +348,7 @@ public expect class Instant : Comparable<Instant> {
          * Returns an [Instant] that is the [epochSeconds] number of seconds from the epoch instant `1970-01-01T00:00:00Z`
          * and the [nanosecondAdjustment] number of nanoseconds from the whole second.
          *
-         * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+         * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
          * In any case, it is guaranteed that instants between [DISTANT_PAST] and [DISTANT_FUTURE] can be represented.
          *
          * [fromEpochMilliseconds] is a similar function for when input data only has millisecond precision.
@@ -389,7 +389,7 @@ public expect class Instant : Comparable<Instant> {
          * An instant value that is far in the past.
          *
          * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be [converted][Instant.toLocalDateTime] to
-         * [LocalDateTime] without exceptions in every time zone on all supported platforms.
+         * [LocalDateTime] without exceptions in every time zone.
          *
          * [isDistantPast] returns true for this value and all earlier ones.
          */
@@ -399,7 +399,7 @@ public expect class Instant : Comparable<Instant> {
          * An instant value that is far in the future.
          *
          * All instants in the range `DISTANT_PAST..DISTANT_FUTURE` can be [converted][Instant.toLocalDateTime] to
-         * [LocalDateTime] without exceptions in every time zone on all supported platforms.
+         * [LocalDateTime] without exceptions in every time zone.
          *
          * [isDistantFuture] returns true for this value and all later ones.
          */
@@ -467,7 +467,7 @@ public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Inst
 public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
     /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
     any other component means that `plus` will throw due to the minimum value of the numeric type overflowing the
-    platform-specific limits. */
+    `Instant` limits. */
     if (period.totalNanoseconds != Long.MIN_VALUE) {
         val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -totalNanoseconds) }
         plus(negatedPeriod, timeZone)
@@ -487,7 +487,6 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * - Exactly zero if this instant is equal to the other.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
- *     Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntil
  */
 public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
@@ -526,7 +525,7 @@ public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
             NANOS_PER_ONE.toLong(),
             (other.nanosecondsOfSecond - nanosecondsOfSecond).toLong(),
             unit.nanoseconds)
-    } catch (e: ArithmeticException) {
+    } catch (_: ArithmeticException) {
         if (this < other) Long.MAX_VALUE else Long.MIN_VALUE
     }
 
@@ -577,7 +576,6 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * - Exactly zero if this instant is equal to the other.
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
- *   Or (only on the JVM) if the number of months between the two dates exceeds an Int.
  * @see Instant.periodUntil
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstantInZone
  */
@@ -613,7 +611,7 @@ public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  *
  * The returned instant is later than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  */
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
@@ -624,7 +622,7 @@ public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
  *
  * The returned instant is earlier than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  */
 @Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
 public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
@@ -669,7 +667,7 @@ public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  *
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
@@ -682,7 +680,7 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  *
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */
@@ -730,7 +728,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  *
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
@@ -742,7 +740,7 @@ public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * The return value is clamped to the platform-specific boundaries for [Instant] if the result exceeds them.
+ * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  *
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */

@@ -79,17 +79,10 @@ public actual constructor(public actual val date: LocalDate, public actual val t
         secs -= offset.totalSeconds
         return secs
     }
-
-    /**
-     * @throws IllegalArgumentException if the result exceeds the boundaries
-     * @throws ArithmeticException if arithmetic overflow occurs
-     */
-    internal fun plus(value: Int, unit: DateTimeUnit.DateBased): LocalDateTime =
-        LocalDateTime(date.plus(value, unit), time)
 }
 
 // org.threeten.bp.LocalDateTime#until
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Int {
+internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
     var endDate: LocalDate = other.date
     if (endDate > date && other.time < time) {
         endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
@@ -97,8 +90,8 @@ internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBa
         endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
     }
     return when (unit) {
-        is DateTimeUnit.MonthBased -> date.monthsUntil(endDate) / unit.months
-        is DateTimeUnit.DayBased -> date.daysUntil(endDate) / unit.days
+        is DateTimeUnit.MonthBased -> date.until(endDate, DateTimeUnit.MONTH) / unit.months
+        is DateTimeUnit.DayBased -> date.until(endDate, DateTimeUnit.DAY) / unit.days
     }
 }
 
@@ -127,7 +120,7 @@ internal fun LocalDateTime.plusSeconds(seconds: Int): LocalDateTime
         totalNanos.floorDiv(NANOS_PER_DAY) // max 2 days
     val newNanoOfDay: Long = totalNanos.mod(NANOS_PER_DAY)
     val newTime: LocalTime = if (newNanoOfDay == currentNanoOfDay) time else LocalTime.ofNanoOfDay(newNanoOfDay)
-    return LocalDateTime(date.plusDays(totalDays.toInt()), newTime)
+    return LocalDateTime(date.plusDays(totalDays), newTime)
 }
 
 private val ISO_DATETIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
