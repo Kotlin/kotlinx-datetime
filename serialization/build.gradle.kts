@@ -8,6 +8,7 @@ plugins {
 
 val mainJavaToolchainVersion: String by project
 val serializationVersion: String by project
+val jodaTimezoneVersion: String by project
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
@@ -97,14 +98,14 @@ kotlin {
         val jsMain by getting
         val jsTest by getting {
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", jodaTimezoneVersion))
             }
         }
 
         val wasmJsMain by getting
         val wasmJsTest by getting {
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", jodaTimezoneVersion))
             }
         }
 
