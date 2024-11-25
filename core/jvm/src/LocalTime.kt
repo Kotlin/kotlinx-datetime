@@ -15,8 +15,9 @@ import java.time.format.DateTimeParseException
 import java.time.LocalTime as jtLocalTime
 
 @Serializable(with = LocalTimeIso8601Serializer::class)
-public actual class LocalTime internal constructor(internal val value: jtLocalTime) :
-    Comparable<LocalTime> {
+public actual class LocalTime internal constructor(
+    internal val value: jtLocalTime
+) : Comparable<LocalTime>, java.io.Serializable {
 
     public actual constructor(hour: Int, minute: Int, second: Int, nanosecond: Int) :
             this(
@@ -89,4 +90,6 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
 
     }
+
+    private fun writeReplace(): Any = Ser(Ser.TIME_TAG, this)
 }
