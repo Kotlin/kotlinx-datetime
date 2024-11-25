@@ -13,6 +13,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalTime::class)
+@Suppress("DEPRECATION")
 class ClockTimeSourceTest {
     @Test
     fun arithmetic() {
