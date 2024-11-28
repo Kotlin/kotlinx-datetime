@@ -234,8 +234,6 @@ public class Instant internal constructor(
      * Returns zero if this instant represents the same moment as the other (meaning they are equal to one another),
      * a negative number if this instant is earlier than the other,
      * and a positive number if this instant is later than the other.
-     *
-     * @sample kotlinx.datetime.test.samples.InstantSamples.compareToSample
      */
     public override operator fun compareTo(other: Instant): Int {
         val s = epochSeconds.compareTo(other.epochSeconds)
@@ -262,6 +260,8 @@ public class Instant internal constructor(
      * where the component for seconds is 60, and for any day, it's possible to observe 23:59:59.
      *
      * @see parse
+     *
+     * @sample kotlinx.datetime.test.samples.InstantSamples.toStringSample
      */
     public override fun toString(): String = formatIso(this)
 
@@ -748,7 +748,7 @@ private const val NANOS_PER_MILLI = 1_000_000
 private const val MILLIS_PER_ONE = 1_000
 
 // org.threeten.bp.chrono.IsoChronology#isLeapYear
-private fun isLeapYear(year: Int): Boolean {
+internal fun isLeapYear(year: Int): Boolean {
     val prolepticYear: Long = year.toLong()
     return prolepticYear and 3 == 0L && (prolepticYear % 100 != 0L || prolepticYear % 400 == 0L)
 }
