@@ -372,7 +372,7 @@ class InstantIsoStringsTest {
             Instant.DISTANT_FUTURE,
             Instant.DISTANT_PAST,
             Instant.fromEpochSeconds(0, 0),
-            Instant.parse("2020-01-02T03:04:05.6789Z"),
+            parseInstant("2020-01-02T03:04:05.6789Z"),
             Instant.MAX,
             Instant.MIN,
         )
@@ -392,7 +392,7 @@ class InstantIsoStringsTest {
                 if (instant == Instant.MAX && offsetSeconds < 0 ||
                     instant == Instant.MIN && offsetSeconds > 0
                 ) continue
-                val newInstant = Instant.parse("${instant.toString().dropLast(1)}$offsetString")
+                val newInstant = parseInstant("${instant.toString().dropLast(1)}$offsetString")
                 assertEquals(newInstant, instant.minus(offsetSeconds.seconds))
             }
         }

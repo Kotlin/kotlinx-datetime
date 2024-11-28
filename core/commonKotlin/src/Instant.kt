@@ -282,8 +282,11 @@ internal fun parseIso(isoString: String): Instant {
         ++i
     }
     val year = when {
-        i > yearStart + 9 -> {
-            parseFailure("Expected at most 9 digits for the year number, got ${i - yearStart}")
+        i > yearStart + 10 -> {
+            parseFailure("Expected at most 10 digits for the year number, got ${i - yearStart}")
+        }
+        i == yearStart + 10 && s[yearStart] >= '2' -> {
+            parseFailure("Expected at most 9 digits for the year number or year 1000000000, got ${i - yearStart}")
         }
         i - yearStart < 4 -> {
             parseFailure("The year number must be padded to 4 digits, got ${i - yearStart} digits")
