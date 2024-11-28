@@ -13,6 +13,7 @@ java {
 }
 
 kotlin {
+    explicitApi()
 
     // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
     // Tier 1
