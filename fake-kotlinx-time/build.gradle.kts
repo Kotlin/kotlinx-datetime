@@ -13,6 +13,7 @@ java {
 }
 
 kotlin {
+    explicitApi()
     infra {
         target("linuxX64")
         target("linuxArm64")
