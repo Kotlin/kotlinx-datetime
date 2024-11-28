@@ -23,3 +23,5 @@ project(":serialization").name = "kotlinx-datetime-serialization"
 include(":js-without-timezones")
 project(":js-without-timezones").name = "kotlinx-datetime-js-without-timezones"
 include(":benchmarks")
+
+include(":fake-kotlinx-time")
