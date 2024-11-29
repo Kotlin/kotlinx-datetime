@@ -1,0 +1,57 @@
+// Klib ABI Dump
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm32Hfp, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, wasmWasi, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:fake-kotlinx-time>
+abstract interface kotlinx.time/Clock { // kotlinx.time/Clock|null[0]
+    abstract fun now(): kotlinx.time/Instant // kotlinx.time/Clock.now|now(){}[0]
+
+    final object Companion // kotlinx.time/Clock.Companion|null[0]
+
+    final object System : kotlinx.time/Clock { // kotlinx.time/Clock.System|null[0]
+        final fun now(): kotlinx.time/Instant // kotlinx.time/Clock.System.now|now(){}[0]
+    }
+}
+
+final class kotlinx.time/Instant : kotlin/Comparable<kotlinx.time/Instant> { // kotlinx.time/Instant|null[0]
+    final val epochSeconds // kotlinx.time/Instant.epochSeconds|{}epochSeconds[0]
+        final fun <get-epochSeconds>(): kotlin/Long // kotlinx.time/Instant.epochSeconds.<get-epochSeconds>|<get-epochSeconds>(){}[0]
+    final val nanosecondsOfSecond // kotlinx.time/Instant.nanosecondsOfSecond|{}nanosecondsOfSecond[0]
+        final fun <get-nanosecondsOfSecond>(): kotlin/Int // kotlinx.time/Instant.nanosecondsOfSecond.<get-nanosecondsOfSecond>|<get-nanosecondsOfSecond>(){}[0]
+
+    final fun compareTo(kotlinx.time/Instant): kotlin/Int // kotlinx.time/Instant.compareTo|compareTo(kotlinx.time.Instant){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.time/Instant.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.time/Instant.hashCode|hashCode(){}[0]
+    final fun minus(kotlin.time/Duration): kotlinx.time/Instant // kotlinx.time/Instant.minus|minus(kotlin.time.Duration){}[0]
+    final fun minus(kotlinx.time/Instant): kotlin.time/Duration // kotlinx.time/Instant.minus|minus(kotlinx.time.Instant){}[0]
+    final fun plus(kotlin.time/Duration): kotlinx.time/Instant // kotlinx.time/Instant.plus|plus(kotlin.time.Duration){}[0]
+    final fun toEpochMilliseconds(): kotlin/Long // kotlinx.time/Instant.toEpochMilliseconds|toEpochMilliseconds(){}[0]
+    final fun toString(): kotlin/String // kotlinx.time/Instant.toString|toString(){}[0]
+
+    final object Companion { // kotlinx.time/Instant.Companion|null[0]
+        final val DISTANT_FUTURE // kotlinx.time/Instant.Companion.DISTANT_FUTURE|{}DISTANT_FUTURE[0]
+            final fun <get-DISTANT_FUTURE>(): kotlinx.time/Instant // kotlinx.time/Instant.Companion.DISTANT_FUTURE.<get-DISTANT_FUTURE>|<get-DISTANT_FUTURE>(){}[0]
+        final val DISTANT_PAST // kotlinx.time/Instant.Companion.DISTANT_PAST|{}DISTANT_PAST[0]
+            final fun <get-DISTANT_PAST>(): kotlinx.time/Instant // kotlinx.time/Instant.Companion.DISTANT_PAST.<get-DISTANT_PAST>|<get-DISTANT_PAST>(){}[0]
+
+        final fun fromEpochMilliseconds(kotlin/Long): kotlinx.time/Instant // kotlinx.time/Instant.Companion.fromEpochMilliseconds|fromEpochMilliseconds(kotlin.Long){}[0]
+        final fun fromEpochSeconds(kotlin/Long, kotlin/Int): kotlinx.time/Instant // kotlinx.time/Instant.Companion.fromEpochSeconds|fromEpochSeconds(kotlin.Long;kotlin.Int){}[0]
+        final fun fromEpochSeconds(kotlin/Long, kotlin/Long =...): kotlinx.time/Instant // kotlinx.time/Instant.Companion.fromEpochSeconds|fromEpochSeconds(kotlin.Long;kotlin.Long){}[0]
+        final fun now(): kotlinx.time/Instant // kotlinx.time/Instant.Companion.now|now(){}[0]
+        final fun parse(kotlin/CharSequence): kotlinx.time/Instant // kotlinx.time/Instant.Companion.parse|parse(kotlin.CharSequence){}[0]
+    }
+}
+
+final val kotlinx.time/isDistantFuture // kotlinx.time/isDistantFuture|@kotlinx.time.Instant{}isDistantFuture[0]
+    final fun (kotlinx.time/Instant).<get-isDistantFuture>(): kotlin/Boolean // kotlinx.time/isDistantFuture.<get-isDistantFuture>|<get-isDistantFuture>@kotlinx.time.Instant(){}[0]
+final val kotlinx.time/isDistantPast // kotlinx.time/isDistantPast|@kotlinx.time.Instant{}isDistantPast[0]
+    final fun (kotlinx.time/Instant).<get-isDistantPast>(): kotlin/Boolean // kotlinx.time/isDistantPast.<get-isDistantPast>|<get-isDistantPast>@kotlinx.time.Instant(){}[0]
+
+// Targets: [js]
+final fun (kotlin.js/Date).kotlinx.time/toKotlinInstant(): kotlinx.time/Instant // kotlinx.time/toKotlinInstant|toKotlinInstant@kotlin.js.Date(){}[0]
+
+// Targets: [js]
+final fun (kotlinx.time/Instant).kotlinx.time/toJSDate(): kotlin.js/Date // kotlinx.time/toJSDate|toJSDate@kotlinx.time.Instant(){}[0]
