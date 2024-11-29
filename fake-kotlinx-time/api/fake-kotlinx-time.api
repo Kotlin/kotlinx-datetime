@@ -1,0 +1,49 @@
+public abstract interface class kotlinx/time/Clock {
+	public static final field Companion Lkotlinx/time/Clock$Companion;
+	public abstract fun now ()Lkotlinx/time/Instant;
+}
+
+public final class kotlinx/time/Clock$Companion {
+}
+
+public final class kotlinx/time/Clock$System : kotlinx/time/Clock {
+	public static final field INSTANCE Lkotlinx/time/Clock$System;
+	public fun now ()Lkotlinx/time/Instant;
+}
+
+public final class kotlinx/time/ConvertersKt {
+	public static final fun toJavaInstant (Lkotlinx/time/Instant;)Ljava/time/Instant;
+	public static final fun toKotlinInstant (Ljava/time/Instant;)Lkotlinx/time/Instant;
+}
+
+public final class kotlinx/time/Instant : java/lang/Comparable {
+	public static final field Companion Lkotlinx/time/Instant$Companion;
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun compareTo (Lkotlinx/time/Instant;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEpochSeconds ()J
+	public final fun getNanosecondsOfSecond ()I
+	public fun hashCode ()I
+	public final fun minus-5sfh64U (Lkotlinx/time/Instant;)J
+	public final fun minus-LRDsOJo (J)Lkotlinx/time/Instant;
+	public final fun plus-LRDsOJo (J)Lkotlinx/time/Instant;
+	public final fun toEpochMilliseconds ()J
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/time/Instant$Companion {
+	public final fun fromEpochMilliseconds (J)Lkotlinx/time/Instant;
+	public final fun fromEpochSeconds (JI)Lkotlinx/time/Instant;
+	public final fun fromEpochSeconds (JJ)Lkotlinx/time/Instant;
+	public static synthetic fun fromEpochSeconds$default (Lkotlinx/time/Instant$Companion;JJILjava/lang/Object;)Lkotlinx/time/Instant;
+	public final fun getDISTANT_FUTURE ()Lkotlinx/time/Instant;
+	public final fun getDISTANT_PAST ()Lkotlinx/time/Instant;
+	public final fun now ()Lkotlinx/time/Instant;
+	public final fun parse (Ljava/lang/CharSequence;)Lkotlinx/time/Instant;
+}
+
+public final class kotlinx/time/InstantKt {
+	public static final fun isDistantFuture (Lkotlinx/time/Instant;)Z
+	public static final fun isDistantPast (Lkotlinx/time/Instant;)Z
+}
+
