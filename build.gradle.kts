@@ -2,6 +2,7 @@ plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-81"
     kotlin("multiplatform") apply false
     id("org.jetbrains.kotlinx.kover") version "0.8.0-Beta2"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.3"
 }
 
 infra {
@@ -56,4 +57,11 @@ kover {
 dependencies {
     kover(project(":kotlinx-datetime"))
     kover(project(":kotlinx-datetime-serialization"))
+}
+
+apiValidation {
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib {
+        enabled = true
+    }
 }
