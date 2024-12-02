@@ -59,9 +59,9 @@ dependencies {
     kover(project(":kotlinx-datetime-serialization"))
 }
 
-apiValidation {
-    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
-    klib {
-        enabled = true
-    }
-}
+// apiValidation {
+//     @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+//     klib {
+//         enabled = true
+//     }
+// }

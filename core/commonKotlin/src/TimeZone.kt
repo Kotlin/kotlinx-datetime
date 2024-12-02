@@ -12,6 +12,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
+import kotlinx.time.Instant
 
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor() {
@@ -151,7 +152,7 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
     timeZone.localDateTimeToInstant(this)
 
 public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
-    Instant(this.toEpochSecond(offset), this.nanosecond)
+    Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
 
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
     timeZone.atStartOfDay(this)

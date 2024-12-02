@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
+import kotlinx.time.Clock
 import kotlin.random.*
 import kotlin.test.*
 
