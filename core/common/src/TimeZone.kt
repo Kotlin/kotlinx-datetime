@@ -10,6 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
+import kotlinx.time.Instant
 
 /**
  * A time zone, provides the conversion between [Instant] and [LocalDateTime] values
@@ -127,6 +128,24 @@ public expect open class TimeZone {
     public fun Instant.toLocalDateTime(): LocalDateTime
 
     /**
+     * Return the civil datetime value that this instant has in the time zone provided as an implicit receiver.
+     *
+     * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
+     * is not necessarily so.
+     *
+     * @see LocalDateTime.toInstant
+     * @see Instant.offsetIn
+     * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toLocalDateTimeWithTwoReceivers
+     */
+    @Suppress("DEPRECATION")
+    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
+    )
+    public fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime
+
+    /**
      * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
      *
      * Note that the conversion is not always well-defined. There can be the following possible situations:
@@ -141,7 +160,13 @@ public expect open class TimeZone {
      * @see Instant.toLocalDateTime
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
      */
-    public fun LocalDateTime.toInstant(): Instant
+    @Suppress("DEPRECATION_ERROR")
+    public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+    @PublishedApi
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    internal fun LocalDateTime.toInstant(): kotlinx.datetime.Instant
 }
 
 /**
@@ -195,6 +220,14 @@ public typealias ZoneOffset = FixedOffsetTimeZone
  */
 public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
 
+@Suppress("DEPRECATION")
+@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("this.offsetAt(instant.toStdlibInstant())")
+)
+public fun TimeZone.offsetAt(instant: kotlinx.datetime.Instant): UtcOffset =
+    offsetAt(instant.toStdlibInstant())
+
 /**
  * Returns a civil datetime value that this instant has in the specified [timeZone].
  *
@@ -207,6 +240,14 @@ public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.instantToLocalDateTime
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
+
+@Suppress("DEPRECATION")
+@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime(timeZone)")
+)
+public fun kotlinx.datetime.Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
+    toStdlibInstant().toLocalDateTime(timeZone)
 
 /**
  * Returns a civil datetime value that this instant has in the specified [UTC offset][offset].
@@ -221,6 +262,14 @@ public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
  */
 internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
 
+@Suppress("DEPRECATION")
+@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime(offset)")
+)
+public fun kotlinx.datetime.Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime =
+    toStdlibInstant().toLocalDateTime(offset)
+
 /**
  * Finds the offset from UTC the specified [timeZone] has at this instant of physical time.
  *
@@ -234,6 +283,14 @@ internal expect fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime
  */
 public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
         timeZone.offsetAt(this)
+
+@Suppress("DEPRECATION")
+@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("this.toStdlibInstant().offsetIn(timeZone)")
+)
+public fun kotlinx.datetime.Instant.offsetIn(timeZone: TimeZone): UtcOffset =
+    timeZone.offsetAt(toStdlibInstant())
 
 /**
  * Returns an instant that corresponds to this civil datetime value in the specified [timeZone].
@@ -250,7 +307,14 @@ public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  * @see Instant.toLocalDateTime
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInZone
  */
-public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
+@Suppress("DEPRECATION_ERROR")
+public expect fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+@PublishedApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal fun LocalDateTime.toInstant(timeZone: TimeZone): kotlinx.datetime.Instant =
+    toInstant(timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that corresponds to this civil datetime value that happens at the specified [UTC offset][offset].
@@ -258,7 +322,14 @@ public expect fun LocalDateTime.toInstant(timeZone: TimeZone): Instant
  * @see Instant.toLocalDateTime
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInOffset
  */
-public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
+@Suppress("DEPRECATION_ERROR")
+public expect fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+@PublishedApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal fun LocalDateTime.toInstant(offset: UtcOffset): kotlinx.datetime.Instant =
+    toInstant(offset).toDeprecatedInstant()
 
 /**
  * Returns an instant that corresponds to the start of this date in the specified [timeZone].
@@ -273,4 +344,11 @@ public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
-public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant
+@Suppress("DEPRECATION_ERROR")
+public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+@PublishedApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal fun LocalDate.atStartOfDayIn(timeZone: TimeZone): kotlinx.datetime.Instant =
+    atStartOfDayIn(timeZone).toDeprecatedInstant()

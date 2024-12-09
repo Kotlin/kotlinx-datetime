@@ -6,7 +6,8 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.Clock
+import kotlinx.time.Clock
+import kotlinx.time.Instant
 import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.hours
@@ -50,8 +51,8 @@ class LocalDateTimeTest {
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
-        assertFailsWith<DateTimeArithmeticException> { (Instant.MAX - 3.days).toLocalDateTime(TimeZone.UTC) }
-        assertFailsWith<DateTimeArithmeticException> { (Instant.MIN + 6.hours).toLocalDateTime(TimeZone.UTC) }
+        assertFailsWith<DateTimeArithmeticException> { (Instant.fromEpochSeconds(Long.MAX_VALUE) - 3.days).toLocalDateTime(TimeZone.UTC) }
+        assertFailsWith<DateTimeArithmeticException> { (Instant.fromEpochSeconds(Long.MIN_VALUE) + 6.hours).toLocalDateTime(TimeZone.UTC) }
     }
 
     @Test
@@ -67,7 +68,7 @@ class LocalDateTimeTest {
         val instant = Instant.parse("2019-10-01T18:43:15.100500Z")
         val datetime = instant.toLocalDateTime(TimeZone.UTC)
         checkComponents(datetime, 2019, 10, 1, 18, 43, 15, 100500000)
-        assertFailsWith<DateTimeArithmeticException> { Instant.MAX.toLocalDateTime(TimeZone.UTC) }
+        assertFailsWith<DateTimeArithmeticException> { Instant.fromEpochSeconds(Long.MAX_VALUE).toLocalDateTime(TimeZone.UTC) }
     }
 
     @Test

@@ -2,6 +2,8 @@
  * Copyright 2019-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+
+@file:Suppress("DEPRECATION")
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
@@ -10,7 +12,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
 
-class InstantSerializationTest {
+class DeprecatedInstantSerializationTest {
 
     private fun iso8601Serialization(serializer: KSerializer<Instant>) {
         for ((instant, json) in listOf(

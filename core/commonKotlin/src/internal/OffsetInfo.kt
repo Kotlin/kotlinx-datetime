@@ -6,6 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
+import kotlinx.time.Instant
 
 internal sealed interface OffsetInfo {
     data class Gap(
@@ -43,4 +44,3 @@ internal fun OffsetInfo(transitionInstant: Instant, offsetBefore: UtcOffset, off
     } else {
         OffsetInfo.Overlap(transitionInstant, offsetBefore, offsetAfter)
     }
-

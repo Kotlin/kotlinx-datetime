@@ -14,6 +14,8 @@ import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
 import java.time.ZoneOffset as JTZoneOffset
+import kotlinx.time.Instant
+import kotlinx.time.*
 
 class ConvertersTest {
 

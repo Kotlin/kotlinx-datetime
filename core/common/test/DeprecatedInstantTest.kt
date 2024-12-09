@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:Suppress("DEPRECATION")
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
@@ -16,12 +17,8 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.time.Clock
-import kotlinx.time.Instant
-import kotlinx.time.isDistantFuture
-import kotlinx.time.isDistantPast
 
-class InstantTest {
+class DeprecatedInstantTest {
 
     @Test
     fun testNow() {
@@ -63,6 +60,99 @@ class InstantTest {
         println(now.toLocalDateTime(TimeZone.currentSystemDefault()))
     }
 
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
+    @Test
+    fun parseIsoString() {
+        val instants = arrayOf(
+            Triple("1970-01-01T00:00:00Z", 0, 0),
+            Triple("1970-01-01t00:00:00Z", 0, 0),
+            Triple("1970-01-01T00:00:00z", 0, 0),
+            Triple("1970-01-01T00:00:00.0Z", 0, 0),
+            Triple("1970-01-01T00:00:00.000000000Z", 0, 0),
+            Triple("1970-01-01T00:00:00.000000001Z", 0, 1),
+            Triple("1970-01-01T00:00:00.100000000Z", 0, 100000000),
+            Triple("1970-01-01T00:00:01Z", 1, 0),
+            Triple("1970-01-01T00:01:00Z", 60, 0),
+            Triple("1970-01-01T00:01:01Z", 61, 0),
+            Triple("1970-01-01T00:01:01.000000001Z", 61, 1),
+            Triple("1970-01-01T01:00:00.000000000Z", 3600, 0),
+            Triple("1970-01-01T01:01:01.000000001Z", 3661, 1),
+            Triple("1970-01-02T01:01:01.100000000Z", 90061, 100000000))
+        instants.forEach {
+            val (str, seconds, nanos) = it
+            val instant = Instant.parse(str)
+            assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
+        }
+
+        assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")}
+        assertInvalidFormat { Instant.parse("1970-01-01T24:00:00Z")}
+        assertInvalidFormat { Instant.parse("1970-01-01T23:59Z")}
+        assertInvalidFormat { Instant.parse("x") }
+        assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
+        // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
+        assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
+    }
+
+    @Test
+    fun parseStringsWithOffsets() {
+        val strings = arrayOf(
+            Pair("2020-01-01T00:01:01.02+18:00", "2019-12-31T06:01:01.020Z"),
+            Pair("2020-01-01T00:01:01.123456789-17:59:59", "2020-01-01T18:01:00.123456789Z"),
+            Pair("2020-01-01T00:01:01.010203040+17:59:59", "2019-12-31T06:01:02.010203040Z"),
+            Pair("2020-01-01T00:01:01.010203040+17:59", "2019-12-31T06:02:01.010203040Z"),
+            Pair("2020-01-01T00:01:01+00", "2020-01-01T00:01:01Z"),
+        )
+        strings.forEach { (str, strInZ) ->
+            val instant = Instant.parse(str)
+            assertEquals(Instant.parse(strInZ), instant, str)
+            assertEquals(strInZ, instant.toString(), str)
+        }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+18:01") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+1801") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+0") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+000000") }
+
+        val instants = listOf(
+            Instant.DISTANT_FUTURE,
+            Instant.DISTANT_PAST,
+            Instant.fromEpochSeconds(0, 0))
+
+        val offsetStrings = listOf(
+            "Z",
+            "+03:12:14",
+            "-03:12:14",
+            "+02:35",
+            "-02:35",
+            "+04",
+            "-04",
+        )
+
+        val offsetFormat = UtcOffset.Format {
+            optional("Z") {
+                offsetHours()
+                optional {
+                    char(':'); offsetMinutesOfHour()
+                    optional { char(':'); offsetSecondsOfMinute() }
+                }
+            }
+        }
+        val offsets = offsetStrings.map { UtcOffset.parse(it, offsetFormat) }
+
+        for (instant in instants) {
+            for (offsetIx in offsets.indices) {
+                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offsets[offsetIx])
+                val offsetString = offsets[offsetIx].toString()
+                assertEquals(offsetString, offsetString.commonSuffixWith(str))
+                assertEquals(instant, Instant.parse(str, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET))
+                assertEquals(instant, Instant.parse(str))
+            }
+        }
+    }
+
     @Test
     fun instantCalendarArithmetic() {
         val zone = TimeZone.of("Europe/Berlin")
@@ -83,7 +173,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone).toDeprecatedInstant()
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -224,7 +314,9 @@ class InstantTest {
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)
-                    fail("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
+                    throw AssertionError(
+                        "start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2"
+                    )
             }
         }
     }
@@ -339,9 +431,9 @@ class InstantTest {
         val distantFutureString = "+100000-01-01T00:00:00Z"
         val distantPastString = "-100001-12-31T23:59:59.999999999Z"
         assertEquals(distantFutureString, Instant.DISTANT_FUTURE.toString())
-        assertEquals(Instant.DISTANT_FUTURE, distantFutureString.let(Instant::parse))
+        assertEquals(Instant.DISTANT_FUTURE, distantFutureString.toInstant())
         assertEquals(distantPastString, Instant.DISTANT_PAST.toString())
-        assertEquals(Instant.DISTANT_PAST, distantPastString.let(Instant::parse))
+        assertEquals(Instant.DISTANT_PAST, distantPastString.toInstant())
         assertTrue(Instant.DISTANT_PAST.isDistantPast)
         assertTrue(Instant.DISTANT_FUTURE.isDistantFuture)
         assertFalse(Instant.DISTANT_PAST.isDistantFuture)
@@ -358,10 +450,10 @@ class InstantTest {
 
 }
 
-class InstantRangeTest {
+class DeprecatedInstantRangeTest {
     private val UTC = TimeZone.UTC
-    private val maxValidInstant = LocalDateTime.MAX.toInstant(UTC)
-    private val minValidInstant = LocalDateTime.MIN.toInstant(UTC)
+    private val maxValidInstant = LocalDateTime.MAX.toInstant(UTC).toDeprecatedInstant()
+    private val minValidInstant = LocalDateTime.MIN.toInstant(UTC).toDeprecatedInstant()
 
     private val largePositiveLongs = listOf(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE - 50)
     private val largeNegativeLongs = listOf(Long.MIN_VALUE, Long.MIN_VALUE + 1, Long.MIN_VALUE + 50)
@@ -469,13 +561,10 @@ class InstantRangeTest {
             assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.YEAR, UTC) }
         }
         for (instant in smallInstants) {
-            fun roundTrip(value: Long, unit: DateTimeUnit) {
-                assertEquals(instant, instant.plus(value, unit, UTC).minus(value, unit, UTC))
-            }
-            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.DAY)
-            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.DAY)
-            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.MONTH)
-            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.MONTH)
+            instant.plus(2 * Int.MAX_VALUE.toLong(), DateTimeUnit.DAY, UTC)
+            instant.plus(2 * Int.MIN_VALUE.toLong(), DateTimeUnit.DAY, UTC)
+            instant.plus(2 * Int.MAX_VALUE.toLong(), DateTimeUnit.MONTH, UTC)
+            instant.plus(2 * Int.MIN_VALUE.toLong(), DateTimeUnit.MONTH, UTC)
         }
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
@@ -549,9 +638,3 @@ class InstantRangeTest {
         assertEquals(max.epochSeconds - min.epochSeconds, (max - min).inWholeSeconds)
     }
 }
-
-private val maxInstant = Instant.fromEpochSeconds(Long.MAX_VALUE)
-private val minInstant = Instant.fromEpochSeconds(Long.MIN_VALUE)
-
-internal val Instant.Companion.MAX get() = maxInstant
-internal val Instant.Companion.MIN get() = minInstant

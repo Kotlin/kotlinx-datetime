@@ -13,6 +13,9 @@ import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
+import kotlinx.time.Instant
+import kotlinx.time.toJavaInstant
+import kotlinx.time.toKotlinInstant
 
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {
@@ -21,7 +24,23 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-    public actual fun LocalDateTime.toInstant(): Instant = toInstant(this@TimeZone)
+
+    @Suppress("DEPRECATION_ERROR")
+    public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant = toInstant(this@TimeZone)
+
+    @Suppress("DEPRECATION")
+    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
+    )
+    public actual fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime =
+        toStdlibInstant().toLocalDateTime()
+
+    @PublishedApi
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
+        toInstant(this@TimeZone).toDeprecatedInstant()
 
     actual override fun equals(other: Any?): Boolean =
             (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
@@ -74,26 +93,29 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
 }
 
 public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
-        zoneId.rules.getOffset(instant.value).let(::UtcOffset)
+        zoneId.rules.getOffset(instant.toJavaInstant()).let(::UtcOffset)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
-    java.time.LocalDateTime.ofInstant(this.value, timeZone.zoneId).let(::LocalDateTime)
+    java.time.LocalDateTime.ofInstant(this.toJavaInstant(), timeZone.zoneId).let(::LocalDateTime)
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    java.time.LocalDateTime.ofInstant(this.value, offset.zoneOffset).let(::LocalDateTime)
+    java.time.LocalDateTime.ofInstant(this.toJavaInstant(), offset.zoneOffset).let(::LocalDateTime)
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }
 
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
-        this.value.atZone(timeZone.zoneId).toInstant().let(::Instant)
+@Suppress("DEPRECATION_ERROR")
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
+        this.value.atZone(timeZone.zoneId).toInstant().toKotlinInstant()
 
-public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
-        this.value.toInstant(offset.zoneOffset).let(::Instant)
+@Suppress("DEPRECATION_ERROR")
+public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
+        this.value.toInstant(offset.zoneOffset).toKotlinInstant()
 
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
-        this.value.atStartOfDay(timeZone.zoneId).toInstant().let(::Instant)
+@Suppress("DEPRECATION_ERROR")
+public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
+        this.value.atStartOfDay(timeZone.zoneId).toInstant().toKotlinInstant()

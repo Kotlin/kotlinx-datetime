@@ -7,6 +7,8 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlin.test.*
+import kotlinx.time.Instant
+import kotlinx.time.Clock
 
 class TimezonesWithoutDatabaseTest {
     @Test
