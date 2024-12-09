@@ -283,7 +283,7 @@ internal fun parseIso(isoString: String): Instant {
     }
     val year = when {
         i > yearStart + 10 -> {
-            parseFailure("Expected at most 10 digits for the year number, got ${i - yearStart}")
+            parseFailure("Expected at most 10 digits for the year number, got ${i - yearStart} digits")
         }
         i == yearStart + 10 && s[yearStart] >= '2' -> {
             parseFailure("Expected at most 9 digits for the year number or year 1000000000, got ${i - yearStart}")
@@ -311,10 +311,10 @@ internal fun parseIso(isoString: String): Instant {
     expect("'T' or 't'", i + 6) { it == 'T' || it == 't' }
     expect("':'", i + 9) { it == ':' }
     expect("':'", i + 12) { it == ':' }
-    for (j in listOf(1, 2, 4, 5, 7, 8, 10, 11, 13, 14)) {
+    for (j in asciiDigitPositionsInIsoStringAfterYear) {
         expect("an ASCII digit", i + j) { it in '0'..'9' }
     }
-    fun twoDigitNumber(index: Int) = s[index].code * 10 + s[index + 1].code - '0'.code * 11
+    fun twoDigitNumber(index: Int) = (s[index] - '0') * 10 + (s[index + 1] - '0')
     val month = twoDigitNumber(i + 1)
     val day = twoDigitNumber(i + 4)
     val hour = twoDigitNumber(i + 7)
@@ -350,11 +350,11 @@ internal fun parseIso(isoString: String): Instant {
             val offsetStrLength = s.length - i
             if (offsetStrLength % 3 != 0) { parseFailure("Invalid UTC offset string '${s.substring(i)}'") }
             if (offsetStrLength > 9) { parseFailure("The UTC offset string '${s.substring(i)}' is too long") }
-            for (j in listOf(3, 6)) {
+            for (j in colonsInIsoOffsetString) {
                 if (s.getOrNull(i + j) ?: break != ':')
                     parseFailure("Expected ':' at index ${i + j}, got '${s[i + j]}'")
             }
-            for (j in listOf(1, 2, 4, 5, 7, 8)) {
+            for (j in asciiDigitsInIsoOffsetString) {
                 if (s.getOrNull(i + j) ?: break !in '0'..'9')
                     parseFailure("Expected a digit at index ${i + j}, got '${s[i + j]}'")
             }
@@ -381,6 +381,10 @@ internal fun parseIso(isoString: String): Instant {
     if (second > 59) { parseFailure("Expected second-of-minute in 0..59, got $second") }
     return UnboundedLocalDateTime(year, month, day, hour, minute, second, nanosecond).toInstant(offsetSeconds)
 }
+
+private val asciiDigitPositionsInIsoStringAfterYear by lazy { listOf(1, 2, 4, 5, 7, 8, 10, 11, 13, 14) }
+private val colonsInIsoOffsetString by lazy { listOf(3, 6) }
+private val asciiDigitsInIsoOffsetString by lazy { listOf(1, 2, 4, 5, 7, 8) }
 
 internal fun formatIso(instant: Instant): String = buildString {
     val ldt = UnboundedLocalDateTime.fromInstant(instant, 0)
@@ -422,7 +426,7 @@ internal fun formatIso(instant: Instant): String = buildString {
         while (ldt.nanosecond % POWERS_OF_TEN[zerosToStrip + 1] == 0) {
             ++zerosToStrip
         }
-        zerosToStrip -= (zerosToStrip.mod(3)) // rounding down to a multiple of 3
+        zerosToStrip -= zerosToStrip % 3 // rounding down to a multiple of 3
         val numberToOutput = ldt.nanosecond / POWERS_OF_TEN[zerosToStrip]
         append((numberToOutput + POWERS_OF_TEN[9 - zerosToStrip]).toString().substring(1))
     }
