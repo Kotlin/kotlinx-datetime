@@ -313,9 +313,7 @@ class InstantTest {
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)
-                    throw AssertionError(
-                        "start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2"
-                    )
+                    fail("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
             }
         }
     }
@@ -560,10 +558,13 @@ class InstantRangeTest {
             assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.YEAR, UTC) }
         }
         for (instant in smallInstants) {
-            instant.plus(2 * Int.MAX_VALUE.toLong(), DateTimeUnit.DAY, UTC)
-            instant.plus(2 * Int.MIN_VALUE.toLong(), DateTimeUnit.DAY, UTC)
-            instant.plus(2 * Int.MAX_VALUE.toLong(), DateTimeUnit.MONTH, UTC)
-            instant.plus(2 * Int.MIN_VALUE.toLong(), DateTimeUnit.MONTH, UTC)
+            fun roundTrip(value: Long, unit: DateTimeUnit) {
+                assertEquals(instant, instant.plus(value, unit, UTC).minus(value, unit, UTC))
+            }
+            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.DAY)
+            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.DAY)
+            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.MONTH)
+            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.MONTH)
         }
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)

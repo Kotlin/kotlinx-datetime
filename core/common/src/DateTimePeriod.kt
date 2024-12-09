@@ -465,7 +465,7 @@ public class DatePeriod internal constructor(
 
     /** The number of nanoseconds in this period. Always equal to zero. */
     override val nanoseconds: Int get() = 0
-    override val totalNanoseconds: Long get() = 0
+    internal override val totalNanoseconds: Long get() = 0
 
     public companion object {
         /**
@@ -495,9 +495,9 @@ public class DatePeriod internal constructor(
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(
-    override val totalMonths: Long,
+    internal override val totalMonths: Long,
     override val days: Int,
-    override val totalNanoseconds: Long,
+    internal override val totalNanoseconds: Long,
 ) : DateTimePeriod()
 
 private fun totalMonths(years: Int, months: Int): Long = (years.toLong() * 12 + months.toLong()).also {

@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
  * is `2020-08-31` everywhere): see various [LocalDate.plus] and [LocalDate.minus] functions, as well
  * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
  *
- * The range of supported years is at least is enough to represent dates of all instants between
+ * The range of supported years is at least enough to represent dates of all instants between
  * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
  *
  * ### Arithmetic operations
@@ -168,7 +168,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      * The components [monthNumber] and [dayOfMonth] are 1-based.
      *
      * The supported ranges of components:
-     * - [year] the range is at least is enough to represent dates of all instants between
+     * - [year] the range is at least enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [monthNumber] `1..12`
      * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
