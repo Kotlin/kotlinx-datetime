@@ -12,6 +12,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
+import kotlinx.time.Instant
 
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor() {
@@ -80,7 +81,20 @@ public actual open class TimeZone internal constructor() {
         get() = error("Should be overridden")
 
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
-    public actual fun LocalDateTime.toInstant(): Instant = localDateTimeToInstant(this)
+    public actual fun LocalDateTime.toInstant(deprecationMarker: DeprecationMarker): Instant =
+        localDateTimeToInstant(this)
+
+    @PublishedApi
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION_ERROR")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    internal actual fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime =
+        toNewInstant().toLocalDateTime()
+
+    @PublishedApi
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION_ERROR")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
+        toInstant(this@TimeZone).toDeprecatedInstant()
 
     internal open fun atStartOfDay(date: LocalDate): Instant = error("Should be overridden") //value.atStartOfDay(date)
     internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
@@ -147,13 +161,13 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
     return LocalDateTime(date, time)
 }
 
-public actual fun LocalDateTime.toInstant(timeZone: TimeZone): Instant =
+public actual fun LocalDateTime.toInstant(timeZone: TimeZone, deprecationMarker: DeprecationMarker): Instant =
     timeZone.localDateTimeToInstant(this)
 
-public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
-    Instant(this.toEpochSecond(offset), this.nanosecond)
+public actual fun LocalDateTime.toInstant(offset: UtcOffset, deprecationMarker: DeprecationMarker): Instant =
+    Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
 
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant =
+public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, deprecationMarker: DeprecationMarker): Instant =
     timeZone.atStartOfDay(this)
 
 private val lenientOffsetFormat = UtcOffsetFormat.build {

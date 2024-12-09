@@ -8,6 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlinx.time.Instant
 
 private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
@@ -139,10 +140,7 @@ internal fun rulesForId(zoneId: String): TimeZoneRules? = tzdb.getOrThrow()?.rul
 internal actual fun getAvailableZoneIds(): Set<String> =
     tzdb.getOrThrow()?.availableTimeZoneIds() ?: setOf("UTC")
 
-internal actual fun currentTime(): Instant = Instant.fromEpochMilliseconds(Date().getTime().toLong())
-
 internal external class Date() {
     constructor(milliseconds: Double)
-    fun getTime(): Double
     fun getTimezoneOffset(): Double
 }

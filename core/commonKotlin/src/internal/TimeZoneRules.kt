@@ -5,8 +5,11 @@
 
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.*
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.*
+import kotlinx.time.Instant
 
 internal class TimeZoneRules(
     /**
