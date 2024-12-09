@@ -7,16 +7,21 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
+internal actual fun timeZoneById(zoneId: String): TimeZone =
+    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+
+internal actual fun getAvailableZoneIds(): Set<String> =
+    tzdb.getOrThrow().availableTimeZoneIds()
 
 private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 
 internal expect fun defaultTzdbPath(): String
 
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
     /* The framework has its own cache of the system timezone. Calls to
     [NSTimeZone systemTimeZone] do not reflect changes to the system timezone
     and instead just return the cached value. Thus, to acquire the current

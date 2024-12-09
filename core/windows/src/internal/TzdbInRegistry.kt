@@ -86,7 +86,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         windowsToRules.containsKey(it.value)
     }.keys
 
-    internal fun currentSystemDefault(): Pair<String, TimeZoneRules> = memScoped {
+    internal fun currentSystemDefault(): Pair<String, TimeZone> = memScoped {
         val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
         val result = GetDynamicTimeZoneInformation(dtzi.ptr)
         check(result != TIME_ZONE_ID_INVALID) { "The current system time zone is invalid: ${getLastWindowsError()}" }
@@ -95,12 +95,13 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                 ?: throw IllegalStateException("Unknown time zone name '$windowsName'")
         val tz = windowsToRules[windowsName]
         check(tz != null) { "The system time zone is set to a value rules for which are not known: '$windowsName'" }
-        ianaTzName to if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>()) {
+        val rules = if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>()) {
             tz
         } else {
             // the user explicitly disabled DST transitions, so
             TimeZoneRules(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), RecurringZoneRules(emptyList()))
         }
+        return ianaTzName to RegionTimeZone(rules, ianaTzName)
     }
 }
 

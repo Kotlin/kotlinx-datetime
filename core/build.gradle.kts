@@ -174,6 +174,17 @@ kotlin {
             }
         }
 
+        val commonKotlinMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+            }
+        }
+
+        val commonKotlinTest by creating {
+            dependsOn(commonTest.get())
+        }
+
         val jvmMain by getting {
         }
 
@@ -181,7 +192,7 @@ kotlin {
         }
 
         val commonJsMain by creating {
-            dependsOn(commonMain.get())
+            dependsOn(commonKotlinMain)
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
@@ -189,7 +200,7 @@ kotlin {
         }
 
         val commonJsTest by creating {
-            dependsOn(commonTest.get())
+            dependsOn(commonKotlinTest)
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
@@ -209,17 +220,6 @@ kotlin {
 
         val wasmJsTest by getting {
             dependsOn(commonJsTest)
-        }
-
-        val commonKotlinMain by creating {
-            dependsOn(commonMain.get())
-            dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-            }
-        }
-
-        val commonKotlinTest by creating {
-            dependsOn(commonTest.get())
         }
 
         val nativeMain by getting {
