@@ -14,6 +14,8 @@ import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
 import java.time.ZoneOffset as JTZoneOffset
+import kotlinx.time.Instant
+import kotlinx.time.*
 
 class ConvertersTest {
 
@@ -26,7 +28,7 @@ class ConvertersTest {
             assertEquals(ktInstant, jtInstant.toKotlinInstant())
             assertEquals(jtInstant, ktInstant.toJavaInstant())
 
-            assertEquals(ktInstant, jtInstant.toString().toInstant())
+            assertEquals(ktInstant, jtInstant.toString().let(Instant::parse))
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 

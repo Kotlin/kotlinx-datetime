@@ -9,6 +9,8 @@ import kotlinx.datetime.*
 import kotlin.test.*
 import kotlinx.datetime.test.JSJoda.ZoneId as jtZoneId
 import kotlinx.datetime.test.JSJoda.Instant as jtInstant
+import kotlinx.time.Instant
+import kotlinx.time.Clock
 
 class TimezonesWithoutDatabaseTest {
     @Test

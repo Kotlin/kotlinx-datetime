@@ -7,6 +7,8 @@ package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
 import kotlin.test.*
+import kotlinx.time.Clock
+import kotlinx.time.Instant
 
 class ClockSamples {
     @Test

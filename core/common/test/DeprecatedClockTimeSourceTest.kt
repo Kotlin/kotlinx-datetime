@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:Suppress("DEPRECATION_ERROR")
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
@@ -10,11 +11,9 @@ import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
-import kotlinx.time.Clock
-import kotlinx.time.Instant
 
 @OptIn(ExperimentalTime::class)
-class ClockTimeSourceTest {
+class DeprecatedClockTimeSourceTest {
     @Test
     fun arithmetic() {
         val timeSource = Clock.System.asTimeSource()
