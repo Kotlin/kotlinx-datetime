@@ -188,6 +188,7 @@ kotlin {
         commonMain {
             dependencies {
                 compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                api(project(":fake-kotlinx-time"))
             }
         }
 

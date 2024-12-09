@@ -10,6 +10,7 @@ import kotlinx.datetime.format.*
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 import kotlin.test.*
+import kotlinx.time.Instant
 
 class DateTimeComponentsFormatTest {
     @Test

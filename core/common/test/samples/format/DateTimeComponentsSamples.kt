@@ -8,6 +8,7 @@ package kotlinx.datetime.test.samples.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
+import kotlinx.time.Instant
 
 class DateTimeComponentsSamples {
 
