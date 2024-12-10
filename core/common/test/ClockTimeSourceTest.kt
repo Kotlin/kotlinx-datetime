@@ -10,6 +10,8 @@ import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlinx.time.Clock
+import kotlinx.time.Instant
 
 @OptIn(ExperimentalTime::class)
 class ClockTimeSourceTest {
@@ -43,7 +45,7 @@ class ClockTimeSourceTest {
         clock.instant -= 2.days
         assertEquals(-1.days, mark.elapsedNow())
 
-        clock.instant = Instant.MAX
+        clock.instant = Instant.fromEpochSeconds(Long.MAX_VALUE)
         assertEquals(Duration.INFINITE, mark.elapsedNow())
     }
 

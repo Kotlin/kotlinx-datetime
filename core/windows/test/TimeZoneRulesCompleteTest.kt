@@ -13,6 +13,7 @@ import kotlinx.datetime.internal.*
 import platform.windows.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.time.Instant
 
 class TimeZoneRulesCompleteTest {
 

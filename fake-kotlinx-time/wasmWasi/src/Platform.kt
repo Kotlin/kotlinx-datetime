@@ -3,9 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.internal
+package kotlinx.time
 
-import kotlinx.datetime.Instant
 import kotlin.wasm.WasmImport
 import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 import kotlin.wasm.unsafe.withScopedMemoryAllocator
