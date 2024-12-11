@@ -286,7 +286,7 @@ internal fun parseIso(isoString: String): Instant {
             parseFailure("Expected at most 10 digits for the year number, got ${i - yearStart} digits")
         }
         i == yearStart + 10 && s[yearStart] >= '2' -> {
-            parseFailure("Expected at most 9 digits for the year number or year 1000000000, got ${i - yearStart}")
+            parseFailure("Expected at most 9 digits for the year number or year 1000000000, got ${i - yearStart} digits")
         }
         i - yearStart < 4 -> {
             parseFailure("The year number must be padded to 4 digits, got ${i - yearStart} digits")
