@@ -301,9 +301,9 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.dayOfWeek
      */
     public var dayOfWeek: DayOfWeek?
-        get() = contents.date.isoDayOfWeek?.let { DayOfWeek(it) }
+        get() = contents.date.dayOfWeek?.let { DayOfWeek(it) }
         set(value) {
-            contents.date.isoDayOfWeek = value?.isoDayNumber
+            contents.date.dayOfWeek = value?.isoDayNumber
         }
 
     /**
@@ -366,28 +366,28 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * True if the offset is negative.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.offset
      */
-    public var offsetIsNegative: Boolean? by contents.offset::isNegative
+    public var offsetIsNegative: Boolean? by contents.offset::offsetIsNegative
 
     /**
      * The total amount of full hours in the UTC offset, in the range [0; 18].
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.offset
      */
-    public var offsetHours: Int? by TwoDigitNumber(contents.offset::totalHoursAbs)
+    public var offsetHours: Int? by TwoDigitNumber(contents.offset::offsetHours)
 
     /**
      * The amount of minutes that don't add to a whole hour in the UTC offset, in the range [0; 59].
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.offset
      */
-    public var offsetMinutesOfHour: Int? by TwoDigitNumber(contents.offset::minutesOfHour)
+    public var offsetMinutesOfHour: Int? by TwoDigitNumber(contents.offset::offsetMinutesOfHour)
 
     /**
      * The amount of seconds that don't add to a whole minute in the UTC offset, in the range [0; 59].
      * @throws IllegalArgumentException during assignment if the value is outside the `0..99` range.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.offset
      */
-    public var offsetSecondsOfMinute: Int? by TwoDigitNumber(contents.offset::secondsOfMinute)
+    public var offsetSecondsOfMinute: Int? by TwoDigitNumber(contents.offset::offsetSecondsOfMinute)
 
     /**
      * The timezone identifier, for example, "Europe/Berlin".

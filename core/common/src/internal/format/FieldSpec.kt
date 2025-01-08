@@ -30,9 +30,10 @@ internal interface Accessor<in Object, Field>: AssignableField<Object, Field> {
 /**
  * An implementation of [Accessor] for a mutable property of an object.
  */
-internal class PropertyAccessor<Object, Field>(private val property: KMutableProperty1<Object, Field?>): Accessor<Object, Field> {
-    override val name: String get() = property.name
-
+internal class PropertyAccessor<Object, Field>(
+    private val property: KMutableProperty1<Object, Field?>,
+    override val name: String = property.name
+): Accessor<Object, Field> {
     override fun trySetWithoutReassigning(container: Object, newValue: Field): Field? {
         val oldValue = property.get(container)
         return when {

@@ -7,10 +7,11 @@ package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 import kotlin.test.*
 
 class DateTimeComponentsFormatTest {
-
     @Test
     fun testErrorHandling() {
         val format = DateTimeComponents.Formats.RFC_1123
@@ -196,6 +197,56 @@ class DateTimeComponentsFormatTest {
         }.parse(input)
         assertNull(bagWithAlternative.second)
         assertNull(bagWithAlternative.nanosecond)
+    }
+
+    @Test
+    fun testFormattingWithUnsetFields() {
+        class PropertyAndItsValue<Target, Value>(val property: KMutableProperty1<Target, Value>, val value: Value) {
+            fun set(target: Target) {
+                property.set(target, value)
+            }
+        }
+        val fields = listOf<PropertyAndItsValue<DateTimeComponents, *>>(
+            PropertyAndItsValue(DateTimeComponents::timeZoneId, "Europe/Berlin"),
+            PropertyAndItsValue(DateTimeComponents::year, 2020),
+            PropertyAndItsValue(DateTimeComponents::monthNumber, 3),
+            PropertyAndItsValue(DateTimeComponents::dayOfMonth, 16),
+            PropertyAndItsValue(DateTimeComponents::dayOfWeek, DayOfWeek.MONDAY),
+            PropertyAndItsValue(DateTimeComponents::dayOfYear, 76),
+            PropertyAndItsValue(DateTimeComponents::hour, 23),
+            PropertyAndItsValue(DateTimeComponents::hourOfAmPm, 11),
+            PropertyAndItsValue(DateTimeComponents::amPm, AmPmMarker.PM),
+            PropertyAndItsValue(DateTimeComponents::minute, 59),
+            PropertyAndItsValue(DateTimeComponents::second, 45),
+            PropertyAndItsValue(DateTimeComponents::nanosecond, 123_456_789),
+            PropertyAndItsValue(DateTimeComponents::offsetHours, 3),
+            PropertyAndItsValue(DateTimeComponents::offsetMinutesOfHour, 30),
+            PropertyAndItsValue(DateTimeComponents::offsetSecondsOfMinute, 15),
+        )
+        val formatWithEverything = DateTimeComponents.Format {
+            timeZoneId()
+            dateTime(LocalDateTime.Formats.ISO)
+            char(' ')
+            dayOfWeek(DayOfWeekNames.ENGLISH_FULL)
+            char(' ')
+            dayOfYear()
+            char(' ')
+            amPmHour(); char(' '); amPmMarker("AM", "PM")
+            char(' ')
+            offset(UtcOffset.Formats.ISO)
+        }
+        for (index in fields.indices) {
+            try {
+                formatWithEverything.format {
+                    for (i in fields.indices) {
+                        if (i != index) fields[i].set(this)
+                    }
+                }
+                fail("No error if the field ${fields[index].property.name} is unset")
+            } catch (e: IllegalStateException) {
+                assertTrue(e.message!!.contains(fields[index].property.name), "Error message '$e' does not contain ${fields[index].property.name}")
+            }
+        }
     }
 
     @OptIn(FormatStringsInDatetimeFormats::class)

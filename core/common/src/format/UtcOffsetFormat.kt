@@ -11,10 +11,10 @@ import kotlinx.datetime.internal.format.parser.Copyable
 import kotlin.math.*
 
 internal interface UtcOffsetFieldContainer {
-    var isNegative: Boolean?
-    var totalHoursAbs: Int?
-    var minutesOfHour: Int?
-    var secondsOfMinute: Int?
+    var offsetIsNegative: Boolean?
+    var offsetHours: Int?
+    var offsetMinutesOfHour: Int?
+    var offsetSecondsOfMinute: Int?
 }
 
 internal interface AbstractWithOffsetBuilder : DateTimeFormatBuilder.WithUtcOffset {
@@ -127,26 +127,26 @@ internal fun DateTimeFormatBuilder.WithUtcOffset.isoOffset(
 
 private object OffsetFields {
     private val sign = object : FieldSign<UtcOffsetFieldContainer> {
-        override val isNegative = PropertyAccessor(UtcOffsetFieldContainer::isNegative)
+        override val isNegative = PropertyAccessor(UtcOffsetFieldContainer::offsetIsNegative)
         override fun isZero(obj: UtcOffsetFieldContainer): Boolean =
-            (obj.totalHoursAbs ?: 0) == 0 && (obj.minutesOfHour ?: 0) == 0 && (obj.secondsOfMinute ?: 0) == 0
+            (obj.offsetHours ?: 0) == 0 && (obj.offsetMinutesOfHour ?: 0) == 0 && (obj.offsetSecondsOfMinute ?: 0) == 0
     }
     val totalHoursAbs = UnsignedFieldSpec(
-        PropertyAccessor(UtcOffsetFieldContainer::totalHoursAbs),
+        PropertyAccessor(UtcOffsetFieldContainer::offsetHours),
         defaultValue = 0,
         minValue = 0,
         maxValue = 18,
         sign = sign,
     )
     val minutesOfHour = UnsignedFieldSpec(
-        PropertyAccessor(UtcOffsetFieldContainer::minutesOfHour),
+        PropertyAccessor(UtcOffsetFieldContainer::offsetMinutesOfHour),
         defaultValue = 0,
         minValue = 0,
         maxValue = 59,
         sign = sign,
     )
     val secondsOfMinute = UnsignedFieldSpec(
-        PropertyAccessor(UtcOffsetFieldContainer::secondsOfMinute),
+        PropertyAccessor(UtcOffsetFieldContainer::offsetSecondsOfMinute),
         defaultValue = 0,
         minValue = 0,
         maxValue = 59,
@@ -155,39 +155,39 @@ private object OffsetFields {
 }
 
 internal class IncompleteUtcOffset(
-    override var isNegative: Boolean? = null,
-    override var totalHoursAbs: Int? = null,
-    override var minutesOfHour: Int? = null,
-    override var secondsOfMinute: Int? = null,
+    override var offsetIsNegative: Boolean? = null,
+    override var offsetHours: Int? = null,
+    override var offsetMinutesOfHour: Int? = null,
+    override var offsetSecondsOfMinute: Int? = null,
 ) : UtcOffsetFieldContainer, Copyable<IncompleteUtcOffset> {
 
     fun toUtcOffset(): UtcOffset {
-        val sign = if (isNegative == true) -1 else 1
+        val sign = if (offsetIsNegative == true) -1 else 1
         return UtcOffset(
-            totalHoursAbs?.let { it * sign }, minutesOfHour?.let { it * sign }, secondsOfMinute?.let { it * sign }
+            offsetHours?.let { it * sign }, offsetMinutesOfHour?.let { it * sign }, offsetSecondsOfMinute?.let { it * sign }
         )
     }
 
     fun populateFrom(offset: UtcOffset) {
-        isNegative = offset.totalSeconds < 0
+        offsetIsNegative = offset.totalSeconds < 0
         val totalSecondsAbs = offset.totalSeconds.absoluteValue
-        totalHoursAbs = totalSecondsAbs / 3600
-        minutesOfHour = (totalSecondsAbs / 60) % 60
-        secondsOfMinute = totalSecondsAbs % 60
+        offsetHours = totalSecondsAbs / 3600
+        offsetMinutesOfHour = (totalSecondsAbs / 60) % 60
+        offsetSecondsOfMinute = totalSecondsAbs % 60
     }
 
     override fun equals(other: Any?): Boolean =
-        other is IncompleteUtcOffset && isNegative == other.isNegative && totalHoursAbs == other.totalHoursAbs &&
-            minutesOfHour == other.minutesOfHour && secondsOfMinute == other.secondsOfMinute
+        other is IncompleteUtcOffset && offsetIsNegative == other.offsetIsNegative && offsetHours == other.offsetHours &&
+            offsetMinutesOfHour == other.offsetMinutesOfHour && offsetSecondsOfMinute == other.offsetSecondsOfMinute
 
     override fun hashCode(): Int =
-        isNegative.hashCode() + totalHoursAbs.hashCode() + minutesOfHour.hashCode() + secondsOfMinute.hashCode()
+        offsetIsNegative.hashCode() + offsetHours.hashCode() + offsetMinutesOfHour.hashCode() + offsetSecondsOfMinute.hashCode()
 
     override fun copy(): IncompleteUtcOffset =
-        IncompleteUtcOffset(isNegative, totalHoursAbs, minutesOfHour, secondsOfMinute)
+        IncompleteUtcOffset(offsetIsNegative, offsetHours, offsetMinutesOfHour, offsetSecondsOfMinute)
 
     override fun toString(): String =
-        "${isNegative?.let { if (it) "-" else "+" } ?: " "}${totalHoursAbs ?: "??"}:${minutesOfHour ?: "??"}:${secondsOfMinute ?: "??"}"
+        "${offsetIsNegative?.let { if (it) "-" else "+" } ?: " "}${offsetHours ?: "??"}:${offsetMinutesOfHour ?: "??"}:${offsetSecondsOfMinute ?: "??"}"
 }
 
 internal class UtcOffsetWholeHoursDirective(private val padding: Padding) :
