@@ -478,6 +478,33 @@ external object JsJodaTimeZoneModule
 private val jsJodaTz = JsJodaTimeZoneModule
 ```
 
+#### Note about time zones in Wasm/JS
+
+Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
+
+In your Gradle build script, add the following dependency:
+
+```kotlin
+kotlin {
+    sourceSets {
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(npm("@js-joda/timezone", "2.3.0"))
+            }
+        }
+    }
+}
+```
+
+and after that add the following initialization code in your project:
+
+```kotlin
+@JsModule("@js-joda/timezone")
+external object JsJodaTimeZoneModule
+
+private val jsJodaTz = JsJodaTimeZoneModule
+```
+
 #### Note about time zones in Wasm/WASI
 
 By default, there's only one time zone available in Kotlin/Wasm WASI: the `UTC` time zone with a fixed offset.
