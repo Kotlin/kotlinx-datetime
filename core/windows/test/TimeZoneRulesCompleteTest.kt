@@ -79,8 +79,20 @@ class TimeZoneRulesCompleteTest {
                         }
                         val mismatches = buildList {
                             // check historical data
-                            for (transition in rules.transitionEpochSeconds) {
-                                checkTransition(Instant.fromEpochSeconds(transition))
+                            if (windowsName == "Central Brazilian Standard Time") {
+                                // This one reports transitions on Jan 1st for years 1970..2003, but the registry contains transitions
+                                // on the first Thursday of January.
+                                // Neither of these is correct: https://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil
+                                for (transition in rules.transitionEpochSeconds) {
+                                    val instant = Instant.fromEpochSeconds(transition)
+                                    if (instant.toLocalDateTime(TimeZone.UTC).year >= 2004) {
+                                        checkTransition(instant)
+                                    }
+                                }
+                            } else {
+                                for (transition in rules.transitionEpochSeconds) {
+                                    checkTransition(Instant.fromEpochSeconds(transition))
+                                }
                             }
                             // check recurring rules
                             if (windowsName !in strangeTimeZones) {
@@ -95,7 +107,7 @@ class TimeZoneRulesCompleteTest {
                                 val firstTransitionYear = Instant.fromEpochSeconds(
                                     rules.transitionEpochSeconds.firstOrNull() ?: 0 // arbitrary time
                                 ).toLocalDateTime(TimeZone.UTC).year
-                                val yearsToCheck = ((firstTransitionYear - 15)..<firstTransitionYear) +
+                                val yearsToCheck = (maxOf(firstTransitionYear - 15, 1970)..<firstTransitionYear) +
                                         ((lastTransitionYear + 1)..(lastTransitionYear + 15))
                                 for (year in yearsToCheck) {
                                     val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
@@ -184,8 +196,9 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
     )
 
 private val strangeTimeZones = listOf(
+    // These report transitions in the future that are not in the registry:
     "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
-    "Paraguay Standard Time"
+    "Paraguay Standard Time",
 )
 
 private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate: (Instant) -> Boolean): Instant {
