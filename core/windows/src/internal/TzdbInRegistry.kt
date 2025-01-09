@@ -342,7 +342,7 @@ private class PerYearZoneRulesDataWithTransitions(
             ", the transitions: $daylightTransitionTime, $standardTransitionTime"
 }
 
-private fun getLastWindowsError(): String = memScoped {
+internal fun getLastWindowsError(): String = memScoped {
     val buf = alloc<CArrayPointerVar<WCHARVar>>()
     FormatMessage!!(
             (FORMAT_MESSAGE_ALLOCATE_BUFFER or FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_IGNORE_INSERTS).toUInt(),

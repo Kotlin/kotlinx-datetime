@@ -53,6 +53,7 @@ class TimeZoneRulesCompleteTest {
             }
             val issues = mutableListOf<IncompatibilityWithWindowsRegistry>()
             var i: DWORD = 0u
+            val currentYear = Clock.System.todayIn(TimeZone.UTC).year
             while (true) {
                 when (val dwResult: Int = EnumDynamicTimeZoneInformation(i++, dtzi.ptr).toInt()) {
                     ERROR_NO_MORE_ITEMS -> break
@@ -95,30 +96,15 @@ class TimeZoneRulesCompleteTest {
                                 }
                             }
                             // check recurring rules
-                            if (windowsName !in strangeTimeZones) {
-                                // we skip checking these time zones because Windows does something arbitrary with them
-                                // after 2030. For example, Morocco DST transitions are linked to the month of Ramadan,
-                                // and after 2030, Windows doesn't seem to calculate Ramadan properly, but also, it doesn't
-                                // follow the rules stored in the registry. Odd, but it doesn't seem worth it trying to
-                                // reverse engineer results that aren't even correct.
-                                val lastTransitionYear = Instant.fromEpochSeconds(
-                                    rules.transitionEpochSeconds.lastOrNull() ?: 1715000000 // arbitrary time
-                                ).toLocalDateTime(TimeZone.UTC).year
-                                val firstTransitionYear = Instant.fromEpochSeconds(
-                                    rules.transitionEpochSeconds.firstOrNull() ?: 0 // arbitrary time
-                                ).toLocalDateTime(TimeZone.UTC).year
-                                val yearsToCheck = (maxOf(firstTransitionYear - 15, 1970)..<firstTransitionYear) +
-                                        ((lastTransitionYear + 1)..(lastTransitionYear + 15))
-                                for (year in yearsToCheck) {
-                                    val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
-                                    if (rulesForYear.isEmpty()) {
-                                        checkAtInstant(
-                                            LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
-                                        )
-                                    } else {
-                                        for (rule in rulesForYear) {
-                                            checkTransition(rule.transitionDateTime)
-                                        }
+                            for (year in 1970..currentYear + 1) {
+                                val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
+                                if (rulesForYear.isEmpty()) {
+                                    checkAtInstant(
+                                        LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
+                                    )
+                                } else {
+                                    for (rule in rulesForYear) {
+                                        checkTransition(rule.transitionDateTime)
                                     }
                                 }
                             }
@@ -166,7 +152,8 @@ private fun Instant.toLocalDateTime(
     outputBuffer: CPointer<SYSTEMTIME>
 ): LocalDateTime {
     toLocalDateTime(TimeZone.UTC).toSystemTime(inputBuffer)
-    SystemTimeToTzSpecificLocalTimeEx(tzinfo.ptr, inputBuffer, outputBuffer)
+    val result = SystemTimeToTzSpecificLocalTimeEx(tzinfo.ptr, inputBuffer, outputBuffer)
+    check(result != 0) { "SystemTimeToTzSpecificLocalTimeEx failed: ${getLastWindowsError()}" }
     return outputBuffer.pointed.toLocalDateTime()
 }
 
@@ -194,12 +181,6 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
         second = wSecond.convert(),
         nanosecond = wMilliseconds.convert<Int>() * (NANOS_PER_ONE / MILLIS_PER_ONE)
     )
-
-private val strangeTimeZones = listOf(
-    // These report transitions in the future that are not in the registry:
-    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
-    "Paraguay Standard Time",
-)
 
 private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate: (Instant) -> Boolean): Instant {
     var low = instant1
