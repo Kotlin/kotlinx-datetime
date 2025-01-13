@@ -107,7 +107,6 @@ kotlin {
             kotlinOptions {
                 sourceMap = true
                 moduleKind = "umd"
-                metaInfo = true
             }
         }
 //        compilations["main"].apply {
@@ -424,13 +423,6 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
             remoteUrl.set(URL("https://github.com/kotlin/kotlinx-datetime/tree/latest-release"))
             remoteLineSuffix.set("#L")
         }
-    }
-}
-
-// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
-tasks.configureEach {
-    if (name == "compileCommonJsMainKotlinMetadata") {
-        enabled = false
     }
 }
 
