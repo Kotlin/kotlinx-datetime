@@ -3,6 +3,15 @@ pluginManagement {
         maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         mavenCentral()
         gradlePluginPortal()
+
+        // !! infrastructure for builds as a Kotlin user project
+        val optionalKotlinArtifactsRepo = providers.gradleProperty("kotlin_repo_url").orNull
+        if (optionalKotlinArtifactsRepo != null) {
+            maven(url = optionalKotlinArtifactsRepo)
+            logger.info(
+                "[ktDT-as-KUP] Registered '$optionalKotlinArtifactsRepo' as a plugin Maven repository"
+            )
+        }
     }
     val dokkaVersion: String by settings
     val benchmarksVersion: String by settings
