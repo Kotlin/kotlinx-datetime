@@ -1,3 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
+
 plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-81"
     kotlin("multiplatform") apply false
@@ -21,18 +27,16 @@ val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVe
 
 allprojects {
     repositories {
-        addTrainRepositories(project)
         mavenCentral()
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        // outputs the compiler version to logs so we can check whether the train configuration applied
-        kotlinOptions.freeCompilerArgs += "-version"
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
+
+        // !! infrastructure for builds as a Kotlin user project
+        val optionalKotlinArtifactsRepo = providers.gradleProperty("kotlin_repo_url").orNull
+        if (optionalKotlinArtifactsRepo != null) {
+            maven(url = optionalKotlinArtifactsRepo)
+            logger.info(
+                "[ktDT-as-KUP] Registered '$optionalKotlinArtifactsRepo' as a dependency Maven repository for '${path}'"
+            )
+        }
     }
 }
 
@@ -56,4 +60,44 @@ kover {
 dependencies {
     kover(project(":kotlinx-datetime"))
     kover(project(":kotlinx-datetime-serialization"))
+}
+
+// !! infrastructure for builds as a Kotlin user project
+subprojects {
+    tasks.withType<KotlinCompilationTask<*>>().configureEach {
+        compilerOptions {
+            // output kotlin.git-searchable names of reported diagnostics
+            freeCompilerArgs.add("-Xrender-internal-diagnostic-names")
+
+            with(providers) {
+                gradleProperty("kotlin_language_version").orNull?.let { optionalOverridingKotlinLV ->
+                    languageVersion.set(KotlinVersion.fromVersion(optionalOverridingKotlinLV))
+                    logger.info(
+                        "[ktDT-as-KUP] Overrode the Kotlin language version with $optionalOverridingKotlinLV for '$path'"
+                    )
+                }
+                gradleProperty("kotlin_api_version").orNull?.let { optionalOverridingKotlinAPIV ->
+                    apiVersion.set(KotlinVersion.fromVersion(optionalOverridingKotlinAPIV))
+                    logger.info(
+                        "[ktDT-as-KUP] Overrode the Kotlin API version with $optionalOverridingKotlinAPIV for '$path'"
+                    )
+                }
+            }
+        }
+    }
+    tasks.withType<KotlinJvmCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xjvm-default=disable")
+        }
+    }
+    tasks.withType<KotlinNativeCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xpartial-linkage-loglevel=error")
+        }
+    }
+    tasks.withType<Kotlin2JsCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xpartial-linkage-loglevel=error")
+        }
+    }
 }
