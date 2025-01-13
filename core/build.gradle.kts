@@ -412,13 +412,6 @@ dokka {
     }
 }
 
-// Disable intermediate sourceSet compilation because we do not need js-wasmJs artifact
-tasks.configureEach {
-    if (name == "compileCommonJsMainKotlinMetadata") {
-        enabled = false
-    }
-}
-
 // Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
 // check it here:
 // https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
