@@ -6,6 +6,8 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.format.*
 import kotlin.test.*
 import kotlin.time.*
