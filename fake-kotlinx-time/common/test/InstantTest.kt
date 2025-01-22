@@ -1,13 +1,217 @@
 /*
- * Copyright 2019-2024 JetBrains s.r.o. and contributors.
+ * Copyright 2019-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime
+package kotlinx.time.test
 
+import kotlinx.time.*
 import kotlin.math.absoluteValue
-import kotlin.time.Duration.Companion.seconds
+import kotlin.random.*
 import kotlin.test.*
+import kotlin.time.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
+
+class InstantTest {
+
+    @Test
+    fun testNow() {
+        val instant = Clock.System.now()
+        val millis = instant.toEpochMilliseconds()
+
+        assertTrue(millis > 1_500_000_000_000L)
+
+        println(instant)
+        println(instant.toEpochMilliseconds())
+
+        val millisInstant = Instant.fromEpochMilliseconds(millis)
+
+        assertEquals(millis, millisInstant.toEpochMilliseconds())
+
+        val notEqualInstant = Instant.fromEpochMilliseconds(millis + 1)
+        assertNotEquals(notEqualInstant, instant)
+    }
+
+    @Test
+    fun instantArithmetic() {
+        val instant = Clock.System.now().toEpochMilliseconds().let { Instant.fromEpochMilliseconds(it) } // round to millis
+        val diffMillis = Random.nextLong(1000, 1_000_000_000)
+        val diff = diffMillis.milliseconds
+
+        val nextInstant = (instant.toEpochMilliseconds() + diffMillis).let { Instant.fromEpochMilliseconds(it) }
+
+        assertEquals(diff, nextInstant - instant)
+        assertEquals(nextInstant, instant + diff)
+        assertEquals(instant, nextInstant - diff)
+
+        println("this: $instant, next: $nextInstant, diff: ${diff.toIsoString()}")
+    }
+
+    @Test
+    fun addingMultiplesOf2_32() {
+        val pow2_32 = 1L shl 32
+        val instant1 = Instant.fromEpochSeconds(0)
+        val instant2 = instant1.plus(pow2_32.nanoseconds)
+        assertEquals(pow2_32 / NANOS_PER_ONE, instant2.epochSeconds)
+        assertEquals(pow2_32 % NANOS_PER_ONE, instant2.nanosecondsOfSecond.toLong())
+
+        val instant3 = instant1.plus(pow2_32.seconds)
+        assertEquals(pow2_32, instant3.epochSeconds)
+    }
+
+    /* Based on the ThreeTenBp project.
+     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+     */
+    @Test
+    fun nanosecondAdjustment() {
+        for (i in -2..2L) {
+            for (j in 0..9) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
+            }
+            for (j in -10..-1) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
+                assertEquals(i - 1, t.epochSeconds)
+                assertEquals(j + 1000000000, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
+            }
+            for (j in 999_999_990..999_999_999) {
+                val t: Instant = Instant.fromEpochSeconds(i, j)
+                val t2: Instant = Instant.fromEpochSeconds(i, j.toLong())
+                assertEquals(i, t.epochSeconds)
+                assertEquals(j, t.nanosecondsOfSecond)
+                assertEquals(t, t2)
+            }
+        }
+        val t = Instant.fromEpochSeconds(0, Int.MAX_VALUE)
+        assertEquals((Int.MAX_VALUE / 1_000_000_000).toLong(), t.epochSeconds)
+        assertEquals(Int.MAX_VALUE % 1_000_000_000, t.nanosecondsOfSecond)
+        val t2 = Instant.fromEpochSeconds(0, Long.MAX_VALUE)
+        assertEquals(Long.MAX_VALUE / 1_000_000_000, t2.epochSeconds)
+        assertEquals((Long.MAX_VALUE % 1_000_000_000).toInt(), t2.nanosecondsOfSecond)
+    }
+
+    @Test
+    fun distantPastAndFuture() {
+        val distantFutureString = "+100000-01-01T00:00:00Z"
+        val distantPastString = "-100001-12-31T23:59:59.999999999Z"
+        assertEquals(distantFutureString, Instant.DISTANT_FUTURE.toString())
+        assertEquals(Instant.DISTANT_FUTURE, Instant.parse(distantFutureString))
+        assertEquals(distantPastString, Instant.DISTANT_PAST.toString())
+        assertEquals(Instant.DISTANT_PAST, Instant.parse(distantPastString))
+        assertTrue(Instant.DISTANT_PAST.isDistantPast)
+        assertTrue(Instant.DISTANT_FUTURE.isDistantFuture)
+        assertFalse(Instant.DISTANT_PAST.isDistantFuture)
+        assertFalse(Instant.DISTANT_FUTURE.isDistantPast)
+        assertFalse((Instant.DISTANT_PAST + 1.nanoseconds).isDistantPast)
+        assertFalse((Instant.DISTANT_FUTURE - 1.nanoseconds).isDistantFuture)
+        assertTrue((Instant.DISTANT_PAST - 1.nanoseconds).isDistantPast)
+        assertTrue((Instant.DISTANT_FUTURE + 1.nanoseconds).isDistantFuture)
+        assertTrue(Instant.MAX.isDistantFuture)
+        assertFalse(Instant.MAX.isDistantPast)
+        assertTrue(Instant.MIN.isDistantPast)
+        assertFalse(Instant.MIN.isDistantFuture)
+    }
+
+}
+
+class InstantRangeTest {
+    private val largePositiveLongs = listOf(Long.MAX_VALUE, Long.MAX_VALUE - 1, Long.MAX_VALUE - 50)
+    private val largeNegativeLongs = listOf(Long.MIN_VALUE, Long.MIN_VALUE + 1, Long.MIN_VALUE + 50)
+
+    private val largePositiveInstants = listOf(Instant.MAX, Instant.MAX - 1.seconds, Instant.MAX - 50.seconds)
+    private val largeNegativeInstants = listOf(Instant.MIN, Instant.MIN + 1.seconds, Instant.MIN + 50.seconds)
+
+    private val smallInstants = listOf(
+        Instant.fromEpochMilliseconds(0),
+        Instant.fromEpochMilliseconds(1003),
+        Instant.fromEpochMilliseconds(253112)
+    )
+
+
+    @Test
+    fun epochMillisecondsClamping() {
+        /* Any number of milliseconds in Long is representable as an Instant */
+        for (instant in largePositiveInstants) {
+            assertEquals(Long.MAX_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (instant in largeNegativeInstants) {
+            assertEquals(Long.MIN_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (milliseconds in largePositiveLongs + largeNegativeLongs) {
+            assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
+                    "$milliseconds")
+        }
+    }
+
+    @Test
+    fun epochSecondsClamping() {
+        // fromEpochSeconds
+        // On all platforms Long.MAX_VALUE of seconds is not a valid instant.
+        for (seconds in largePositiveLongs) {
+            assertEquals(Instant.MAX, Instant.fromEpochSeconds(seconds, 35))
+        }
+        for (seconds in largeNegativeLongs) {
+            assertEquals(Instant.MIN, Instant.fromEpochSeconds(seconds, 35))
+        }
+        for (instant in largePositiveInstants + smallInstants + largeNegativeInstants) {
+            assertEquals(instant, Instant.fromEpochSeconds(instant.epochSeconds, instant.nanosecondsOfSecond.toLong()))
+        }
+    }
+
+    @Test
+    fun durationArithmeticClamping() {
+        val longDurations = listOf(Duration.INFINITE)
+
+        for (duration in longDurations) {
+            for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+                assertEquals(Instant.MAX, instant + duration)
+            }
+            for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+                assertEquals(Instant.MIN, instant - duration)
+            }
+        }
+        assertEquals(Instant.MAX, (Instant.MAX - 4.seconds) + 5.seconds)
+        assertEquals(Instant.MIN, (Instant.MIN + 10.seconds) - 12.seconds)
+    }
+
+    @Test
+    fun timeBasedUnitArithmeticOutOfRange() {
+        // Instant.plus(Long, DateTimeUnit.TimeBased)
+        // Arithmetic overflow
+        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+            assertEquals(Instant.MAX, instant.plus(Long.MAX_VALUE.seconds))
+            assertEquals(Instant.MIN, instant.plus(Long.MIN_VALUE.seconds))
+        }
+        // Overflow of Instant boundaries
+        for (instant in smallInstants + largeNegativeInstants + largePositiveInstants) {
+            assertEquals(Instant.MAX, instant.plus((Instant.MAX.epochSeconds - instant.epochSeconds + 1).seconds))
+            assertEquals(Instant.MIN, instant.plus((Instant.MIN.epochSeconds - instant.epochSeconds - 1).seconds))
+        }
+    }
+
+    // https://github.com/Kotlin/kotlinx-datetime/issues/263
+    @Test
+    fun addSmallDurationsToLargeInstants() {
+        for (smallDuration in listOf(1.nanoseconds, 999_999.nanoseconds, 1.seconds - 1.nanoseconds)) {
+            assertEquals(expected = Instant.MAX, actual = Instant.MAX + smallDuration)
+            assertEquals(expected = Instant.MIN, actual = Instant.MIN - smallDuration)
+        }
+    }
+
+    @Test
+    fun subtractInstants() {
+        val max = Instant.fromEpochSeconds(31494816403199L)
+        val min = Instant.fromEpochSeconds(-31619119219200L)
+        assertEquals(max.epochSeconds - min.epochSeconds, (max - min).inWholeSeconds)
+    }
+}
 
 class InstantIsoStringsTest {
 
@@ -17,15 +221,18 @@ class InstantIsoStringsTest {
             this >= 0 -> toString().padStart(digits, '0')
             else -> "-${absoluteValue.toString().padStart(digits, '0')}"
         }
+
         fun localDateToString(year: Int, month: Int, day: Int) =
             "${year.zeroPadded(4)}-${month.zeroPadded(2)}-${day.zeroPadded(2)}"
+
         // only works for 1-4-digit years
         fun assertMonthBoundariesAreCorrect(year: Int, month: Int, lastDayOfMonth: Int) {
             val validString = "${localDateToString(year, month, lastDayOfMonth)}T23:59:59Z"
             val invalidString = "${localDateToString(year, month, lastDayOfMonth + 1)}T23:59:59Z"
-            parseInstant(validString) // shouldn't throw
-            assertInvalidFormat(invalidString) { parseInstant(invalidString) }
+            Instant.parse(validString) // shouldn't throw
+            assertInvalidFormat(invalidString) { Instant.parse(invalidString) }
         }
+
         val nonLeapYears = listOf(
             1970, 1971, 1973, 1974, 1975, 2021, 2022, 2023, 2100, 1100, 1, 2, 3, 5, -1, -2, -1971, 100, -100
         )
@@ -195,12 +402,12 @@ class InstantIsoStringsTest {
             Triple("+673467211-06-05T02:15:40.712392732Z", 21252510297310540, 712392732),
             Triple("+982441727-04-13T12:12:06.776817565Z", 31002804263391126, 776817565),
         )) {
-            val instant = parseInstant(str)
+            val instant = Instant.parse(str)
             assertEquals(
                 Instant.fromEpochSeconds(seconds, nanos), instant,
                 "Parsed $instant from $str, with Unix time = `$seconds + 10^-9 * $nanos`"
             )
-            assertEquals(str, displayInstant(instant))
+            assertEquals(str, instant.toString())
         }
         // non-canonical strings are parsed as well, but formatted differently
         for ((str, seconds, nanos) in arrayOf(
@@ -210,7 +417,7 @@ class InstantIsoStringsTest {
             // current time
             Triple("2024-07-15T16:06:29.461245691+02:00", 1721052389, 461245691),
         )) {
-            val instant = parseInstant(str)
+            val instant = Instant.parse(str)
             assertEquals(
                 seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds(),
                 "Parsed $instant from $str, with Unix time = `$seconds + 10^-9 * $nanos`"
@@ -341,10 +548,10 @@ class InstantIsoStringsTest {
             "1970-02-03T04:05:06.123456789+01:2:60",
             "1970-02-03T04:05:06.123456789+01:12:6",
         )) {
-            assertInvalidFormat(nonIsoString) { parseInstant(nonIsoString) }
+            assertInvalidFormat(nonIsoString) { Instant.parse(nonIsoString) }
         }
         // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
-        assertInvalidFormat { parseInstant  ("+1000000001-12-31T23:59:59.000000000Z") }
+        assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
     }
 
     @Test
@@ -357,22 +564,22 @@ class InstantIsoStringsTest {
             Pair("2020-01-01T00:01:01+00", "2020-01-01T00:01:01Z"),
         )
         strings.forEach { (str, strInZ) ->
-            val instant = parseInstant(str)
-            assertEquals(parseInstant(strInZ), instant, str)
-            assertEquals(strInZ, displayInstant(instant), str)
+            val instant = Instant.parse(str)
+            assertEquals(Instant.parse(strInZ), instant, str)
+            assertEquals(strInZ, instant.toString(), str)
         }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01+18:01") }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01+1801") }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01+0") }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01+") }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01") }
-        assertInvalidFormat { parseInstant("2020-01-01T00:01:01+000000") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+18:01") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+1801") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+0") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01") }
+        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+000000") }
 
         val instants = listOf(
             Instant.DISTANT_FUTURE,
             Instant.DISTANT_PAST,
             Instant.fromEpochSeconds(0, 0),
-            parseInstant("2020-01-02T03:04:05.6789Z"),
+            Instant.parse("2020-01-02T03:04:05.6789Z"),
             Instant.MAX,
             Instant.MIN,
         )
@@ -392,29 +599,10 @@ class InstantIsoStringsTest {
                 if (instant == Instant.MAX && offsetSeconds < 0 ||
                     instant == Instant.MIN && offsetSeconds > 0
                 ) continue
-                val newInstant = parseInstant("${instant.toString().dropLast(1)}$offsetString")
+                val newInstant = Instant.parse("${instant.toString().dropLast(1)}$offsetString")
                 assertEquals(newInstant, instant.minus(offsetSeconds.seconds))
             }
         }
     }
 
-    private fun parseInstant(isoString: String): Instant {
-        // return Instant.parse(isoString)
-        return parseIso(isoString)
-    }
-
-    private fun displayInstant(instant: Instant): String {
-        // return instant.toString()
-        return formatIso(instant)
-    }
-}
-
-
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@kotlin.internal.InlineOnly
-private fun <T> assertInvalidFormat(message: String? = null, f: () -> T) {
-    assertFailsWith<IllegalArgumentException>(message) {
-        val result = f()
-        fail(result.toString())
-    }
 }

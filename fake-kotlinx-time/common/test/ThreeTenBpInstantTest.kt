@@ -6,9 +6,9 @@
  * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
  */
 
-package kotlinx.datetime.test
+package kotlinx.time.test
 
-import kotlinx.datetime.*
+import kotlinx.time.*
 import kotlin.test.*
 
 class ThreeTenBpInstantTest {
