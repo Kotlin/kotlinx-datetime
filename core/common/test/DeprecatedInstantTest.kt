@@ -11,7 +11,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
-import kotlin.time.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds

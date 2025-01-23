@@ -13,9 +13,9 @@ import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
-import kotlinx.time.Instant
-import kotlinx.time.toJavaInstant
-import kotlinx.time.toKotlinInstant
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 
 @Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor(internal val zoneId: ZoneId) {

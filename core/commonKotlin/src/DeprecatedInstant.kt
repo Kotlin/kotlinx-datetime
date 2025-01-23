@@ -35,7 +35,7 @@ private const val MAX_SECOND = 31556889864403199L // +1000000000-12-31T23:59:59Z
 
 @Deprecated(
     "Use kotlin.time.Instant instead",
-    ReplaceWith("kotlinx.time.Instant", "kotlinx.time.Instant"),
+    ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
     level = DeprecationLevel.WARNING
 )
 @Serializable(with = InstantIso8601Serializer::class)
@@ -153,7 +153,7 @@ public actual class Instant internal constructor(
         internal actual val MIN = Instant(MIN_SECOND, 0)
         internal actual val MAX = Instant(MAX_SECOND, 999_999_999)
 
-        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.datetime.Clock"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlin.time.Clock"), level = DeprecationLevel.ERROR)
         public actual fun now(): Instant = Clock.System.now()
 
         // org.threeten.bp.Instant#ofEpochMilli

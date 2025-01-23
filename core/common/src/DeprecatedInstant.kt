@@ -22,20 +22,20 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 /**
- * Creates a [kotlinx.time.Instant] (the standard library version of `Instant`) identical to `this`.
+ * Creates a [kotlin.time.Instant] (the standard library version of `Instant`) identical to `this`.
  */
-public fun Instant.toStdlibInstant(): kotlinx.time.Instant =
-    kotlinx.time.Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
+public fun Instant.toStdlibInstant(): kotlin.time.Instant =
+    kotlin.time.Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
 
 /**
  * Creates a [kotlinx.datetime.Instant] identical to the version of `Instant` from the standard library.
  */
-public fun kotlinx.time.Instant.toDeprecatedInstant(): Instant =
+public fun kotlin.time.Instant.toDeprecatedInstant(): Instant =
     Instant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
 
 @Deprecated(
     "Use kotlin.time.Instant instead",
-    ReplaceWith("kotlinx.time.Instant", "kotlinx.time.Instant"),
+    ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
     level = DeprecationLevel.WARNING
 )
 @Serializable(with = InstantIso8601Serializer::class)
@@ -191,7 +191,7 @@ public expect class Instant : Comparable<Instant> {
 
 
     public companion object {
-        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.time.Clock"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlin.time.Clock"), level = DeprecationLevel.ERROR)
         public fun now(): Instant
 
         /**
@@ -294,7 +294,7 @@ public expect class Instant : Comparable<Instant> {
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlinx.time.isDistantPast")
+    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlin.time.isDistantPast")
 )
 public val Instant.isDistantPast: Boolean
     get() = this <= Instant.DISTANT_PAST
@@ -306,7 +306,7 @@ public val Instant.isDistantPast: Boolean
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlinx.time.isDistantFuture")
+    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlin.time.isDistantFuture")
 )
 public val Instant.isDistantFuture: Boolean
     get() = this >= Instant.DISTANT_FUTURE

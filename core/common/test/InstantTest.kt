@@ -16,10 +16,10 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.time.Clock
-import kotlinx.time.Instant
-import kotlinx.time.isDistantFuture
-import kotlinx.time.isDistantPast
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.time.isDistantFuture
+import kotlin.time.isDistantPast
 
 class InstantTest {
 

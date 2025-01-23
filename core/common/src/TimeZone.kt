@@ -10,7 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 /**
  * A time zone, provides the conversion between [Instant] and [LocalDateTime] values

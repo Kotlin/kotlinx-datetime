@@ -9,8 +9,8 @@
 package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlin.test.*
-import kotlinx.time.Clock
-import kotlinx.time.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class TimeZoneTest {
 

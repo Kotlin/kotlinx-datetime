@@ -10,7 +10,7 @@ package kotlinx.datetime
 import kotlinx.cinterop.*
 import kotlinx.datetime.internal.NANOS_PER_ONE
 import platform.Foundation.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 /**
  * Converts the [Instant] to an instance of [NSDate].

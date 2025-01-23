@@ -11,8 +11,8 @@ import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.time.Clock
-import kotlinx.time.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 @Suppress("DEPRECATION")

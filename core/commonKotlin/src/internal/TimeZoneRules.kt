@@ -9,7 +9,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 internal class TimeZoneRules(
     /**

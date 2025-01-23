@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.internal.JSJoda.ZoneId
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 private val tzdb: Result<TimeZoneDatabase?> = runCatching {
     /**

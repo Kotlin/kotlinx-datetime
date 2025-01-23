@@ -8,9 +8,9 @@
 package kotlinx.datetime
 
 import kotlin.time.*
-import kotlinx.time.Clock
-import kotlinx.time.Instant
-import kotlinx.time.isDistantFuture
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.time.isDistantFuture
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.time.Duration.Companion.seconds

@@ -12,7 +12,7 @@ import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 /**
  * A collection of datetime fields used specifically for parsing and formatting.

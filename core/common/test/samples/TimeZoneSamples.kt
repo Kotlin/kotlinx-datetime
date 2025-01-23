@@ -8,8 +8,8 @@ package kotlinx.datetime.test.samples
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
-import kotlinx.time.Instant
-import kotlinx.time.Clock
+import kotlin.time.Instant
+import kotlin.time.Clock
 
 class TimeZoneSamples {
 

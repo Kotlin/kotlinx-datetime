@@ -8,7 +8,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: TimeZone, val offset: UtcOffset) {
     /**

@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @Deprecated(
     "Use kotlin.time.Instant instead",
-    ReplaceWith("kotlinx.time.Instant", "kotlinx.time.Instant"),
+    ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
     level = DeprecationLevel.WARNING
 )
 @Serializable(with = InstantIso8601Serializer::class)
@@ -98,7 +98,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
     actual override fun toString(): String = value.toString()
 
     public actual companion object {
-        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlinx.time.Clock"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use Clock.System.now() instead", ReplaceWith("Clock.System.now()", "kotlin.time.Clock"), level = DeprecationLevel.ERROR)
         public actual fun now(): Instant =
             Instant(Clock.systemUTC().instant())
 

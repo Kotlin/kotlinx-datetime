@@ -10,7 +10,7 @@ package kotlinx.datetime
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlin.time.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 

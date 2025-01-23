@@ -17,23 +17,23 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
 /**
- * Creates a [kotlinx.time.Clock] (the standard library version of `Clock`) delegating to `this`.
+ * Creates a [kotlin.time.Clock] (the standard library version of `Clock`) delegating to `this`.
  */
-public fun Clock.toStdlibClock(): kotlinx.time.Clock =
+public fun Clock.toStdlibClock(): kotlin.time.Clock =
     (this as? DateTimeClock)?.clock ?: StdlibClock(this)
 
 /**
  * Creates a [kotlinx.datetime.Clock] delegating to the version of `Clock` from the standard library.
  */
-public fun kotlinx.time.Clock.toDeprecatedClock(): Clock =
+public fun kotlin.time.Clock.toDeprecatedClock(): Clock =
     (this as? StdlibClock)?.clock ?: DateTimeClock(this)
 
-private class DateTimeClock(val clock: kotlinx.time.Clock): kotlinx.datetime.Clock {
+private class DateTimeClock(val clock: kotlin.time.Clock): kotlinx.datetime.Clock {
     override fun now(): Instant = clock.now().toDeprecatedInstant()
 }
 
-private class StdlibClock(val clock: Clock): kotlinx.time.Clock {
-    override fun now(): kotlinx.time.Instant = clock.now().toStdlibInstant()
+private class StdlibClock(val clock: Clock): kotlin.time.Clock {
+    override fun now(): kotlin.time.Instant = clock.now().toStdlibInstant()
 }
 
 /**
@@ -48,7 +48,7 @@ private class StdlibClock(val clock: Clock): kotlinx.time.Clock {
  */
 @Deprecated(
     "Use kotlin.time.Clock instead",
-    ReplaceWith("kotlinx.time.Clock", "kotlinx.time.Clock"),
+    ReplaceWith("kotlin.time.Clock", "kotlin.time.Clock"),
     level = DeprecationLevel.WARNING
 )
 public interface Clock {
@@ -85,7 +85,7 @@ public interface Clock {
      * @sample kotlinx.datetime.test.samples.ClockSamples.dependencyInjection
      */
     public object System : Clock {
-        override fun now(): Instant = kotlinx.time.Clock.System.now().toDeprecatedInstant()
+        override fun now(): Instant = kotlin.time.Clock.System.now().toDeprecatedInstant()
     }
 
     /** A companion object used purely for namespacing. */
