@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
@@ -35,54 +36,78 @@ java {
 kotlin {
     explicitApi()
 
-    infra {
-        common("tzfile") {
-            // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
-            common("tzdbOnFilesystem") {
-                common("linux") {
-                    // Tier 1
-                    target("linuxX64")
-                    // Tier 2
-                    target("linuxArm64")
-                    // Tier 4 (deprecated, but still in demand)
-                    target("linuxArm32Hfp")
+    // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    iosArm64()
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
+    // Tier 3
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX86()
+    androidNativeX64()
+    mingwX64()
+    watchosDeviceArm64()
+    // Deprecated
+    @Suppress("DEPRECATION") linuxArm32Hfp()
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        group("common") {
+        group("commonKotlin") {
+            group("native") {
+                group("tzfile") {
+                    group("tzdbOnFilesystem") {
+                        group("linux") {
+                            withLinux()
+                        }
+                        group("darwin") {
+                            group("darwinDevices") {
+                                withMacosX64()
+                                withMacosArm64()
+                                withWatchosX64()
+                                withWatchosArm32()
+                                withWatchosArm64()
+                                withTvosX64()
+                                withTvosArm64()
+                                withIosArm64()
+                                withWatchosDeviceArm64()
+                            }
+                            group("darwinSimulator") {
+                                withIosSimulatorArm64()
+                                withIosX64()
+                                withWatchosSimulatorArm64()
+                                withTvosSimulatorArm64()
+                            }
+                        }
+                    }
+                    group("androidNative") {
+                        withAndroidNative()
+                    }
                 }
-                common("darwin") {
-                    common("darwinDevices") {
-                        // Tier 1
-                        target("macosX64")
-                        target("macosArm64")
-                        // Tier 2
-                        target("watchosX64")
-                        target("watchosArm32")
-                        target("watchosArm64")
-                        target("tvosX64")
-                        target("tvosArm64")
-                        target("iosArm64")
-                        // Tier 3
-                        target("watchosDeviceArm64")
-                    }
-                    common("darwinSimulator") {
-                        // Tier 1
-                        target("iosSimulatorArm64")
-                        target("iosX64")
-                        // Tier 2
-                        target("watchosSimulatorArm64")
-                        target("tvosSimulatorArm64")
-                    }
+                group("windows") {
+                    withMingw()
                 }
             }
-            common("androidNative") {
-                target("androidNativeArm32")
-                target("androidNativeArm64")
-                target("androidNativeX86")
-                target("androidNativeX64")
+            withWasmWasi()
+        }
+        group("commonJs") {
+            withJs()
+            withWasmJs()
+        }
             }
-        }
-        // Tier 3
-        common("windows") {
-            target("mingwX64")
-        }
     }
 
     jvm {
@@ -107,7 +132,6 @@ kotlin {
             kotlinOptions {
                 sourceMap = true
                 moduleKind = "umd"
-                metaInfo = true
             }
         }
 //        compilations["main"].apply {
@@ -161,6 +185,7 @@ kotlin {
             }
         }
     }
+
     sourceSets {
         commonMain {
             dependencies {
@@ -174,77 +199,29 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
-        }
-
-        val jvmTest by getting {
-        }
-
-        val commonJsMain by creating {
-            dependsOn(commonMain.get())
+        val commonJsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", "3.2.0"))
             }
         }
 
-        val commonJsTest by creating {
-            dependsOn(commonTest.get())
+        val commonJsTest by getting {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        val jsMain by getting {
-            dependsOn(commonJsMain)
-        }
-
-        val jsTest by getting {
-            dependsOn(commonJsTest)
-        }
-
-        val wasmJsMain by getting {
-            dependsOn(commonJsMain)
-        }
-
-        val wasmJsTest by getting {
-            dependsOn(commonJsTest)
-        }
-
-        val commonKotlinMain by creating {
-            dependsOn(commonMain.get())
+        val commonKotlinMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
-        val commonKotlinTest by creating {
-            dependsOn(commonTest.get())
-        }
-
-        val nativeMain by getting {
-            dependsOn(commonKotlinMain)
-        }
-
-        val nativeTest by getting {
-            dependsOn(commonKotlinTest)
-        }
-
-        val wasmWasiMain by getting {
-            dependsOn(commonKotlinMain)
-        }
-
         val wasmWasiTest by getting {
-            dependsOn(commonKotlinTest)
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
-        }
-
-        val darwinMain by getting {
-        }
-
-        val darwinTest by getting {
         }
     }
 }
