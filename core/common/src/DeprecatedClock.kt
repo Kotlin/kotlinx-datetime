@@ -28,7 +28,7 @@ import kotlin.time.TimeSource
  */
 @Deprecated(
     "Use kotlin.time.Clock instead",
-    ReplaceWith("kotlinx.time.Clock", "kotlinx.time.Clock"),
+    ReplaceWith("kotlin.time.Clock", "kotlin.time.Clock"),
     level = DeprecationLevel.WARNING
 )
 public interface Clock {
@@ -65,7 +65,7 @@ public interface Clock {
      * @sample kotlinx.datetime.test.samples.ClockSamples.dependencyInjection
      */
     public object System : Clock {
-        override fun now(): Instant = kotlinx.time.Clock.System.now().toDeprecatedInstant()
+        override fun now(): Instant = kotlin.time.Clock.System.now().toDeprecatedInstant()
     }
 
     /** A companion object used purely for namespacing. */

@@ -11,7 +11,7 @@ import kotlinx.datetime.internal.*
 import platform.posix.*
 import kotlin.io.encoding.*
 import kotlin.test.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 class TimeZoneRulesCompleteTest {
     @OptIn(ExperimentalEncodingApi::class)

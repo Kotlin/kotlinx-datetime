@@ -11,9 +11,9 @@ import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
 import java.time.DateTimeException
 import java.time.temporal.*
-import kotlinx.time.Instant
-import kotlinx.time.toJavaInstant
-import kotlinx.time.toKotlinInstant
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 

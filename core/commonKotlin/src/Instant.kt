@@ -9,7 +9,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 

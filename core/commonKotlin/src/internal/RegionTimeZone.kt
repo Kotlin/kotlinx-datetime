@@ -6,7 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
 

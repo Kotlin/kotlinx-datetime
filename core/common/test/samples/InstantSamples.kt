@@ -10,10 +10,10 @@ import kotlinx.datetime.format.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
-import kotlinx.time.Clock
-import kotlinx.time.Instant
-import kotlinx.time.isDistantFuture
-import kotlinx.time.isDistantPast
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.time.isDistantFuture
+import kotlin.time.isDistantPast
 
 class InstantSamples {
 

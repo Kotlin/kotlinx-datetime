@@ -14,8 +14,8 @@ import platform.windows.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.time.Instant
-import kotlinx.time.Clock
+import kotlin.time.Instant
+import kotlin.time.Clock
 
 class TimeZoneRulesCompleteTest {
 

@@ -8,7 +8,7 @@ package kotlinx.datetime.test.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
-import kotlinx.time.Clock
+import kotlin.time.Clock
 
 class DateTimeComponentsTest {
     @Test

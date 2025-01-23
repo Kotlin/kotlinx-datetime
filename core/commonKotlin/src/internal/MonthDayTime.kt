@@ -6,7 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
-import kotlinx.time.Instant
+import kotlin.time.Instant
 
 /**
  * A rule expressing how to create a date in a given year.
