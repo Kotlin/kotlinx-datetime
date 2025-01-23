@@ -14,25 +14,32 @@ java {
 }
 
 kotlin {
-    infra {
-        target("linuxX64")
-        target("linuxArm64")
-        target("linuxArm32Hfp")
-        target("mingwX64")
-        target("macosX64")
-        target("macosArm64")
-        target("iosX64")
-        target("iosArm64")
-        target("iosSimulatorArm64")
-        target("watchosArm32")
-        target("watchosArm64")
-        target("watchosX64")
-        target("watchosSimulatorArm64")
-        target("watchosDeviceArm64")
-        target("tvosArm64")
-        target("tvosX64")
-        target("tvosSimulatorArm64")
-    }
+    // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    iosArm64()
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
+    // Tier 3
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX86()
+    androidNativeX64()
+    mingwX64()
+    watchosDeviceArm64()
+    // Deprecated
+    @Suppress("DEPRECATION") linuxArm32Hfp()
 
     jvm {
         attributes {
@@ -47,7 +54,6 @@ kotlin {
             kotlinOptions {
                 sourceMap = true
                 moduleKind = "umd"
-                metaInfo = true
             }
         }
     }
