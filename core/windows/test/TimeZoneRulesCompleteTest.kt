@@ -25,6 +25,7 @@ class TimeZoneRulesCompleteTest {
         memScoped {
             val inputSystemtime = alloc<SYSTEMTIME>()
             val outputSystemtime = alloc<SYSTEMTIME>()
+            val tzi = alloc<TIME_ZONE_INFORMATION>()
             val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
             fun offsetAtAccordingToWindows(instant: Instant): Int {
                 val ldtAccordingToWindows =
@@ -96,17 +97,15 @@ class TimeZoneRulesCompleteTest {
                                 }
                             }
                             // check recurring rules
-                            if (windowsName !in timeZonesWithBrokenRecurringRules) {
-                                for (year in 1970..currentYear + 1) {
-                                    val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
-                                    if (rulesForYear.isEmpty()) {
-                                        checkAtInstant(
-                                            LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
-                                        )
-                                    } else {
-                                        for (rule in rulesForYear) {
-                                            checkTransition(rule.transitionDateTime)
-                                        }
+                            for (year in 1970..currentYear + 15) {
+                                val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
+                                if (rulesForYear.isEmpty()) {
+                                    checkAtInstant(
+                                        LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
+                                    )
+                                } else {
+                                    for (rule in rulesForYear) {
+                                        checkTransition(rule.transitionDateTime)
                                     }
                                 }
                             }
@@ -149,12 +148,19 @@ class TimeZoneRulesCompleteTest {
                                     RegCloseKey(hKey.value)
                                 }
                             }
+                            val dataOnAffectedYears: List<Pair<List<OffsetInfo>, String>> = memScoped {
+                                val SIZE_BYTES = sizeOf<TIME_ZONE_INFORMATION>().toInt()
+                                val temporaryTzinfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                mismatchYears.map { year ->
+                                    val result = GetTimeZoneInformationForYear(year.convert(), dtzi.ptr, temporaryTzinfoBuffer.reinterpret())
+                                    check(result != 0) { "GetTimeZoneInformationForYear failed: ${getLastWindowsError()}" }
+                                    transitionsAccordingToWindows(year) to temporaryTzinfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                }
+                            }
                             issues.add(
                                 IncompatibilityWithWindowsRegistry(
                                 timeZoneName = windowsName,
-                                dataOnAffectedYears = mismatchYears.flatMap {
-                                    transitionsAccordingToWindows(it)
-                                },
+                                dataOnAffectedYears = dataOnAffectedYears,
                                 recurringRules = rawData,
                                 historicData = historicData,
                                 mismatches = mismatches,
@@ -172,7 +178,7 @@ class TimeZoneRulesCompleteTest {
 private fun Instant.toLocalDateTime(
     tzinfo: DYNAMIC_TIME_ZONE_INFORMATION,
     inputBuffer: CPointer<SYSTEMTIME>,
-    outputBuffer: CPointer<SYSTEMTIME>
+    outputBuffer: CPointer<SYSTEMTIME>,
 ): LocalDateTime {
     toLocalDateTime(TimeZone.UTC).toSystemTime(inputBuffer)
     val result = SystemTimeToTzSpecificLocalTimeEx(tzinfo.ptr, inputBuffer, outputBuffer)
@@ -225,7 +231,7 @@ private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate:
 
 private data class IncompatibilityWithWindowsRegistry(
     val timeZoneName: String,
-    val dataOnAffectedYears: List<OffsetInfo>,
+    val dataOnAffectedYears: List<Pair<List<OffsetInfo>, String>>,
     val recurringRules: String,
     val historicData: List<Pair<Int, String>>,
     val mismatches: List<Mismatch>,
