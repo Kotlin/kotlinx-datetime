@@ -96,15 +96,17 @@ class TimeZoneRulesCompleteTest {
                                 }
                             }
                             // check recurring rules
-                            for (year in 1970..currentYear + 1) {
-                                val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
-                                if (rulesForYear.isEmpty()) {
-                                    checkAtInstant(
-                                        LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
-                                    )
-                                } else {
-                                    for (rule in rulesForYear) {
-                                        checkTransition(rule.transitionDateTime)
+                            if (windowsName !in timeZonesWithBrokenRecurringRules) {
+                                for (year in 1970..currentYear + 1) {
+                                    val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
+                                    if (rulesForYear.isEmpty()) {
+                                        checkAtInstant(
+                                            LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
+                                        )
+                                    } else {
+                                        for (rule in rulesForYear) {
+                                            checkTransition(rule.transitionDateTime)
+                                        }
                                     }
                                 }
                             }
@@ -202,6 +204,10 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
         second = wSecond.convert(),
         nanosecond = wMilliseconds.convert<Int>() * (NANOS_PER_ONE / MILLIS_PER_ONE)
     )
+
+private val timeZonesWithBrokenRecurringRules = listOf(
+    "Paraguay Standard Time"
+)
 
 private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate: (Instant) -> Boolean): Instant {
     var low = instant1
