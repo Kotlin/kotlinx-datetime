@@ -126,16 +126,37 @@ class TimeZoneRulesCompleteTest {
                                     RegCloseKey(hKey.value)
                                 }
                             }
+                            val historicData = memScoped {
+                                val hKey = alloc<HKEYVar>()
+                                RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName\\Dynamic DST", 0u, KEY_READ.toUInt(), hKey.ptr)
+                                try {
+                                    val dwordBuffer = alloc<DWORDVar>()
+                                    val cbDataBuffer = alloc<DWORDVar>().apply { value = sizeOf<DWORDVar>().convert() }
+                                    RegQueryValueExW(hKey.value!!, "FirstEntry", null, null, dwordBuffer.ptr.reinterpret(), cbDataBuffer.ptr)
+                                    val firstEntry = dwordBuffer.value.toInt()
+                                    RegQueryValueExW(hKey.value!!, "LastEntry", null, null, dwordBuffer.ptr.reinterpret(), cbDataBuffer.ptr)
+                                    val lastEntry = dwordBuffer.value.toInt()
+                                    val SIZE_BYTES = 44
+                                    val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                    cbDataBuffer.value = SIZE_BYTES.convert()
+                                    (firstEntry..lastEntry).map { year ->
+                                        RegQueryValueExW(hKey.value!!, year.toString(), null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                        year to zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                    }
+                                } finally {
+                                    RegCloseKey(hKey.value)
+                                }
+                            }
                             issues.add(
                                 IncompatibilityWithWindowsRegistry(
                                 timeZoneName = windowsName,
                                 dataOnAffectedYears = mismatchYears.flatMap {
                                     transitionsAccordingToWindows(it)
                                 },
-                                registryData = rawData,
+                                recurringRules = rawData,
+                                historicData = historicData,
                                 mismatches = mismatches,
-                            )
-                            )
+                            ))
                         }
                     }
                     else -> error("Unexpected error code $dwResult")
@@ -199,7 +220,8 @@ private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate:
 private data class IncompatibilityWithWindowsRegistry(
     val timeZoneName: String,
     val dataOnAffectedYears: List<OffsetInfo>,
-    val registryData: String,
+    val recurringRules: String,
+    val historicData: List<Pair<Int, String>>,
     val mismatches: List<Mismatch>,
 )
 
