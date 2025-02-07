@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.6.2
+
+- Add the Wasm/WASI target support ([#366](https://github.com/Kotlin/kotlinx-datetime/pull/366)). Thanks, @igoriakovlev!
+- Add `TimeSource.asClock` ([#164](https://github.com/Kotlin/kotlinx-datetime/pull/164)). Thanks, @hfhbd!
+- Implement parsing and formatting day-of-year ([#414](https://github.com/Kotlin/kotlinx-datetime/issues/414))
+- Improve the precision of `NSDate` to `Instant` conversions ([#427](https://github.com/Kotlin/kotlinx-datetime/issues/427))
+- Deprecate `DatePeriod.plus` and `DateTimePeriod.plus` with a warning ([#381](https://github.com/Kotlin/kotlinx-datetime/issues/381))
+- Deprecate `Clock.asTimeSource` with a warning ([#372](https://github.com/Kotlin/kotlinx-datetime/issues/372))
+- Fix a bug in `module-info` preventing using `kotlinx.datetime.format` together with JPMS ([#438](https://github.com/Kotlin/kotlinx-datetime/pull/438)). Thanks, @cdelabou!
+- Small tweaks and fixes.
+
 ## 0.6.1
 
 - Prohibit parsing non-ASCII digits as numbers in `DateTimeFormat` ([#405](https://github.com/Kotlin/kotlinx-datetime/issues/405))
