@@ -12,6 +12,7 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import platform.windows.*
 import kotlin.test.*
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 
 class TimeZoneRulesCompleteTest {
@@ -25,7 +26,34 @@ class TimeZoneRulesCompleteTest {
             val inputSystemtime = alloc<SYSTEMTIME>()
             val outputSystemtime = alloc<SYSTEMTIME>()
             val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
+            fun offsetAtAccordingToWindows(instant: Instant): Int {
+                val ldtAccordingToWindows =
+                    instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
+                return (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds.toInt()
+            }
+            fun transitionsAccordingToWindows(year: Int): List<OffsetInfo> = buildList {
+                var lastInstant = LocalDate(year, Month.JANUARY, 1)
+                    .atTime(0, 0).toInstant(UtcOffset.ZERO)
+                var lastOffsetAccordingToWindows = offsetAtAccordingToWindows(lastInstant)
+                repeat(LocalDate(year, Month.DECEMBER, 31).dayOfYear - 1) {
+                    val instant = lastInstant + 24.hours
+                    val offset = offsetAtAccordingToWindows(instant)
+                    if (lastOffsetAccordingToWindows != offset) {
+                        add(OffsetInfo(
+                            binarySearchInstant(lastInstant, instant) {
+                                offset == offsetAtAccordingToWindows(it)
+                            },
+                            UtcOffset(seconds = lastOffsetAccordingToWindows),
+                            UtcOffset(seconds = offset)
+                        ))
+                        lastOffsetAccordingToWindows = offset
+                    }
+                    lastInstant = instant
+                }
+            }
+            val issues = mutableListOf<IncompatibilityWithWindowsRegistry>()
             var i: DWORD = 0u
+            val currentYear = Clock.System.todayIn(TimeZone.UTC).year
             while (true) {
                 when (val dwResult: Int = EnumDynamicTimeZoneInformation(i++, dtzi.ptr).toInt()) {
                     ERROR_NO_MORE_ITEMS -> break
@@ -40,79 +68,103 @@ class TimeZoneRulesCompleteTest {
                             continue
                         }
                         val rules = tzdb.rulesForId(id)
-                        fun checkAtInstant(instant: Instant) {
+                        fun MutableList<Mismatch>.checkAtInstant(instant: Instant) {
                             val ldt = instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                             val offset = rules.infoAtInstant(instant)
                             val ourLdt = instant.toLocalDateTime(offset)
-                            if (ldt != ourLdt) {
-                                val offsetsAccordingToWindows = buildList {
-                                    var date = LocalDate(ldt.year, Month.JANUARY, 1)
-                                    while (date.year == ldt.year) {
-                                        val instant = date.atTime(0, 0).toInstant(UtcOffset.ZERO)
-                                        val ldtAccordingToWindows =
-                                            instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
-                                        val offsetAccordingToWindows =
-                                            (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds
-                                        add(date to offsetAccordingToWindows)
-                                        date = date.plus(1, DateTimeUnit.DAY)
-                                    }
-                                }
-                                val rawData = memScoped {
-                                    val hKey = alloc<HKEYVar>()
-                                    RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", 0u, KEY_READ.toUInt(), hKey.ptr)
-                                    try {
-                                        val cbDataBuffer = alloc<DWORDVar>()
-                                        val SIZE_BYTES = 44
-                                        val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
-                                        cbDataBuffer.value = SIZE_BYTES.convert()
-                                        RegQueryValueExW(hKey.value, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
-                                        zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
-                                    } finally {
-                                        RegCloseKey(hKey.value)
-                                    }
-                                }
-                                throw AssertionError(
-                                    "Expected $ldt, got $ourLdt in zone $windowsName at $instant (our guess at the offset is $offset)." +
-                                    "The rules are $rules, and the offsets throughout the year according to Windows are: $offsetsAccordingToWindows; the raw data for the recurring rules is $rawData"
-                                )
-                            }
+                            if (ldt != ourLdt) add(Mismatch(ourLdt, ldt, instant))
                         }
-                        fun checkTransition(instant: Instant) {
+                        fun MutableList<Mismatch>.checkTransition(instant: Instant) {
                             checkAtInstant(instant - 2.milliseconds)
                             checkAtInstant(instant)
                         }
-                        // check historical data
-                        for (transition in rules.transitionEpochSeconds) {
-                            checkTransition(Instant.fromEpochSeconds(transition))
-                        }
-                        // check recurring rules
-                        if (windowsName !in strangeTimeZones) {
-                            // we skip checking these time zones because Windows does something arbitrary with them
-                            // after 2030. For example, Morocco DST transitions are linked to the month of Ramadan,
-                            // and after 2030, Windows doesn't seem to calculate Ramadan properly, but also, it doesn't
-                            // follow the rules stored in the registry. Odd, but it doesn't seem worth it trying to
-                            // reverse engineer results that aren't even correct.
-                            val lastTransition = Instant.fromEpochSeconds(
-                                rules.transitionEpochSeconds.lastOrNull() ?: 1715000000 // arbitrary time
-                            )
-                            val lastTransitionYear = lastTransition.toLocalDateTime(TimeZone.UTC).year
-                            for (year in lastTransitionYear + 1..lastTransitionYear + 15) {
-                                val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
-                                if (rulesForYear.isEmpty()) {
-                                    checkAtInstant(
-                                        LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
-                                    )
-                                } else {
-                                    for (rule in rulesForYear) {
-                                        checkTransition(rule.transitionDateTime)
+                        val mismatches = buildList {
+                            // check historical data
+                            if (windowsName == "Central Brazilian Standard Time") {
+                                // This one reports transitions on Jan 1st for years 1970..2003, but the registry contains transitions
+                                // on the first Thursday of January.
+                                // Neither of these is correct: https://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil
+                                for (transition in rules.transitionEpochSeconds) {
+                                    val instant = Instant.fromEpochSeconds(transition)
+                                    if (instant.toLocalDateTime(TimeZone.UTC).year >= 2004) {
+                                        checkTransition(instant)
+                                    }
+                                }
+                            } else {
+                                for (transition in rules.transitionEpochSeconds) {
+                                    checkTransition(Instant.fromEpochSeconds(transition))
+                                }
+                            }
+                            // check recurring rules
+                            if (windowsName !in timeZonesWithBrokenRecurringRules) {
+                                for (year in 1970..currentYear + 1) {
+                                    val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
+                                    if (rulesForYear.isEmpty()) {
+                                        checkAtInstant(
+                                            LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
+                                        )
+                                    } else {
+                                        for (rule in rulesForYear) {
+                                            checkTransition(rule.transitionDateTime)
+                                        }
                                     }
                                 }
                             }
+                        }
+                        if (mismatches.isNotEmpty()) {
+                            val mismatchYears =
+                                mismatches.map { it.instant.toLocalDateTime(TimeZone.UTC).year }.distinct()
+                            val rawData = memScoped {
+                                val hKey = alloc<HKEYVar>()
+                                RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName", 0u, KEY_READ.toUInt(), hKey.ptr)
+                                try {
+                                    val cbDataBuffer = alloc<DWORDVar>()
+                                    val SIZE_BYTES = 44
+                                    val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                    cbDataBuffer.value = SIZE_BYTES.convert()
+                                    RegQueryValueExW(hKey.value, "TZI", null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                    zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                } finally {
+                                    RegCloseKey(hKey.value)
+                                }
+                            }
+                            val historicData = memScoped {
+                                val hKey = alloc<HKEYVar>()
+                                RegOpenKeyExW(HKEY_LOCAL_MACHINE!!, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\$windowsName\\Dynamic DST", 0u, KEY_READ.toUInt(), hKey.ptr)
+                                try {
+                                    val dwordBuffer = alloc<DWORDVar>()
+                                    val cbDataBuffer = alloc<DWORDVar>().apply { value = sizeOf<DWORDVar>().convert() }
+                                    RegQueryValueExW(hKey.value!!, "FirstEntry", null, null, dwordBuffer.ptr.reinterpret(), cbDataBuffer.ptr)
+                                    val firstEntry = dwordBuffer.value.toInt()
+                                    RegQueryValueExW(hKey.value!!, "LastEntry", null, null, dwordBuffer.ptr.reinterpret(), cbDataBuffer.ptr)
+                                    val lastEntry = dwordBuffer.value.toInt()
+                                    val SIZE_BYTES = 44
+                                    val zoneInfoBuffer = allocArray<BYTEVar>(SIZE_BYTES)
+                                    cbDataBuffer.value = SIZE_BYTES.convert()
+                                    (firstEntry..lastEntry).map { year ->
+                                        RegQueryValueExW(hKey.value!!, year.toString(), null, null, zoneInfoBuffer, cbDataBuffer.ptr)
+                                        year to zoneInfoBuffer.readBytes(SIZE_BYTES).toHexString()
+                                    }
+                                } finally {
+                                    RegCloseKey(hKey.value)
+                                }
+                            }
+                            issues.add(
+                                IncompatibilityWithWindowsRegistry(
+                                timeZoneName = windowsName,
+                                dataOnAffectedYears = mismatchYears.flatMap {
+                                    transitionsAccordingToWindows(it)
+                                },
+                                recurringRules = rawData,
+                                historicData = historicData,
+                                mismatches = mismatches,
+                            ))
                         }
                     }
                     else -> error("Unexpected error code $dwResult")
                 }
             }
+            if (issues.isNotEmpty()) throw AssertionError(issues.toString())
         }
     }
 }
@@ -123,7 +175,8 @@ private fun Instant.toLocalDateTime(
     outputBuffer: CPointer<SYSTEMTIME>
 ): LocalDateTime {
     toLocalDateTime(TimeZone.UTC).toSystemTime(inputBuffer)
-    SystemTimeToTzSpecificLocalTimeEx(tzinfo.ptr, inputBuffer, outputBuffer)
+    val result = SystemTimeToTzSpecificLocalTimeEx(tzinfo.ptr, inputBuffer, outputBuffer)
+    check(result != 0) { "SystemTimeToTzSpecificLocalTimeEx failed: ${getLastWindowsError()}" }
     return outputBuffer.pointed.toLocalDateTime()
 }
 
@@ -152,7 +205,34 @@ private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
         nanosecond = wMilliseconds.convert<Int>() * (NANOS_PER_ONE / MILLIS_PER_ONE)
     )
 
-private val strangeTimeZones = listOf(
-    "Morocco Standard Time", "West Bank Standard Time", "Iran Standard Time", "Syria Standard Time",
+private val timeZonesWithBrokenRecurringRules = listOf(
     "Paraguay Standard Time"
+)
+
+private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate: (Instant) -> Boolean): Instant {
+    var low = instant1
+    var high = instant2
+    while (low < high) {
+        val mid = low + (high - low) / 2
+        if (predicate(mid)) {
+            high = mid
+        } else {
+            low = mid + 1.milliseconds
+        }
+    }
+    return low
+}
+
+private data class IncompatibilityWithWindowsRegistry(
+    val timeZoneName: String,
+    val dataOnAffectedYears: List<OffsetInfo>,
+    val recurringRules: String,
+    val historicData: List<Pair<Int, String>>,
+    val mismatches: List<Mismatch>,
+)
+
+private data class Mismatch(
+    val ourGuess: LocalDateTime,
+    val windowsGuess: LocalDateTime,
+    val instant: Instant,
 )

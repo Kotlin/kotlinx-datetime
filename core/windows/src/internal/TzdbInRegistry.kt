@@ -166,8 +166,11 @@ private fun HKEYVar.readHistoricDataFromRegistry(
     withRegistryKey(tzHKey, "Dynamic DST", { emptyList() }) { dynDstHKey ->
         val firstEntry = dwordBuffer.readValue(dynDstHKey, "FirstEntry")
         val lastEntry = dwordBuffer.readValue(dynDstHKey, "LastEntry")
-        (firstEntry..lastEntry).map { year ->
-            year to zoneRulesBuffer.readZoneRules(dynDstHKey, year.toString())
+        val registryData = (firstEntry..lastEntry).map { year ->
+            zoneRulesBuffer.readZoneRules(dynDstHKey, year.toString())
+        }
+        (1970..lastEntry).map { year ->
+            year to registryData[(year - firstEntry).coerceAtLeast(0)]
         }
     }
 
@@ -339,7 +342,7 @@ private class PerYearZoneRulesDataWithTransitions(
             ", the transitions: $daylightTransitionTime, $standardTransitionTime"
 }
 
-private fun getLastWindowsError(): String = memScoped {
+internal fun getLastWindowsError(): String = memScoped {
     val buf = alloc<CArrayPointerVar<WCHARVar>>()
     FormatMessage!!(
             (FORMAT_MESSAGE_ALLOCATE_BUFFER or FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_IGNORE_INSERTS).toUInt(),
