@@ -9,6 +9,7 @@ infra {
     }
     publishing {
         include(":kotlinx-datetime")
+        include(":kotlinx-datetime-zoneinfo")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
         sonatype {
             libraryStagingRepoDescription = project.name
