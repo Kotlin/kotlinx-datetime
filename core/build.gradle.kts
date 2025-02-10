@@ -173,9 +173,6 @@ kotlin {
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
-        }
         if (konanTarget.family == Family.MINGW) {
             compilations["test"].cinterops {
                 create("modern_api") {
