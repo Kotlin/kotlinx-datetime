@@ -77,12 +77,6 @@ kotlin {
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
     }
 
-    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["test"].kotlinOptions {
-            freeCompilerArgs += listOf("-trw")
-        }
-    }
-
     sourceSets {
         commonMain {
             dependencies {
