@@ -236,15 +236,15 @@ class DateTimeComponentsFormatTest {
             offset(UtcOffset.Formats.ISO)
         }
         for (index in fields.indices) {
-            try {
+            val propertyName = fields[index].property.name 
+            assertFailsWith<IllegalStateException>("No error if the field $propertyName is unset") {
                 formatWithEverything.format {
                     for (i in fields.indices) {
                         if (i != index) fields[i].set(this)
                     }
                 }
-                fail("No error if the field ${fields[index].property.name} is unset")
-            } catch (e: IllegalStateException) {
-                assertTrue(e.message!!.contains(fields[index].property.name), "Error message '$e' does not contain ${fields[index].property.name}")
+            }.let {
+                assertTrue(it.message!!.contains(fields[index].property.name), "Error message '$it' does not contain $propertyName")
             }
         }
     }
