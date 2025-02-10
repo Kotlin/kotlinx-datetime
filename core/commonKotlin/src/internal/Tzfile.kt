@@ -6,6 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.optional
 
 internal class TzFileData(
     val leapSecondRules: List<LeapSecondRule>,
@@ -204,8 +205,34 @@ private fun BinaryDataReader.readPosixTzString(): PosixTzString? {
     fun readName(): String? {
         if (c == '\n') return null
         val name = StringBuilder()
+        /* This check is a workaround for a bug in our tzdb processor used in kotlinx-datetime-zoneinfo.
+        In 2024b+, the tzdb includes the `%z` directive instead of the timezone abbreviations in cases where the
+        abbreviation can be inferred from the offset
+        (https://lists.iana.org/hyperkitty/list/tz-announce@iana.org/thread/IZ7AO6WRE3W3TWBL5IR6PMQUL433BQIE/):
+        instead of writing "abbreviation = -03, offset = -3", they now write "abbreviation = %z, offset = -3".
+        The first-party tzdb compiler zic knows how to support this:
+        https://github.com/eggert/tz/blob/271a5784a59e454b659d85948b5e65c17c11516a/zic.8#L590-L602
+        The compiler we're using (`tubular_time_tzdb`) doesn't seem to, though, and generates invalid POSIX strings.
+        This is a quick and dirty workaround. A proper solution would be to have correct data in `-zoneinfo`, but
+        it doesn't matter if we publish broken tzdb info now, as we are not planning on supporting consuming old tzdb
+        versions from new library versions, so the workaround can be removed as soon as the `-zoneinfo` artifact is
+        fixed. */
+        if (c == '%') {
+            c = readAsciiChar()
+            check(c == 'z') { "Invalid directive %$c in the timezone name abbreviation" }
+            c = readAsciiChar()
+            return GENERATE_NAME
+        }
         if (c == '<') {
             c = readAsciiChar()
+            if (c == '%') {
+                c = readAsciiChar()
+                check(c == 'z') { "Invalid directive %$c in the timezone name abbreviation" }
+                c = readAsciiChar()
+                check(c == '>') { "<%z> expected, got %$c" }
+                c = readAsciiChar()
+                return GENERATE_NAME
+            }
             while (c != '>') {
                 check(c.isLetterOrDigit() || c == '-' || c == '+') { "Invalid char '$c' in the std name in POSIX TZ string" }
                 name.append(c)
@@ -218,7 +245,7 @@ private fun BinaryDataReader.readPosixTzString(): PosixTzString? {
                 c = readAsciiChar()
             }
         }
-        check(name.isNotEmpty()) { "Empty std name in POSIX TZ string" }
+        check(name.isNotEmpty()) { "Empty std name in POSIX TZ string: got $c" }
         return name.toString()
     }
 
@@ -341,13 +368,29 @@ private fun BinaryDataReader.readPosixTzString(): PosixTzString? {
 
     val std = readName() ?: return null
     val stdOffset = readOffset() ?: throw IllegalArgumentException("Could not parse the std offset in POSIX TZ string")
-    val dst = readName() ?: return PosixTzString(std to stdOffset, null, null)
+    val stdName = if (std === GENERATE_NAME) ISO_OFFSET_BASIC_NO_Z.format(stdOffset) else std
+    val dst = readName() ?: return PosixTzString(stdName to stdOffset, null, null)
     val dstOffset = readOffset() ?: UtcOffset(seconds = stdOffset.totalSeconds + 3600)
+    val dstName = if (dst === GENERATE_NAME) ISO_OFFSET_BASIC_NO_Z.format(dstOffset) else dst
     val startDate = readDate() ?: return PosixTzString(std to stdOffset, dst to dstOffset, null)
     val startTime = readTime() ?: MonthDayTime.TransitionLocaltime(2, 0, 0)
     val endDate = readDate() ?: throw IllegalArgumentException("Could not parse the end date in POSIX TZ string")
     val endTime = readTime() ?: MonthDayTime.TransitionLocaltime(2, 0, 0)
     val start = MonthDayTime(startDate, startTime, MonthDayTime.OffsetResolver.WallClockOffset)
     val end = MonthDayTime(endDate, endTime, MonthDayTime.OffsetResolver.WallClockOffset)
-    return PosixTzString(std to stdOffset, dst to dstOffset, start to end)
+    return PosixTzString(stdName to stdOffset, dstName to dstOffset, start to end)
+}
+
+private const val GENERATE_NAME = "%z"
+
+private val ISO_OFFSET_BASIC_NO_Z by lazy {
+    UtcOffset.Format {
+        offsetHours()
+        optional {
+            offsetMinutesOfHour()
+            optional {
+                offsetSecondsOfMinute()
+            }
+        }
+    }
 }
