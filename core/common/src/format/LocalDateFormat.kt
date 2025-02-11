@@ -200,7 +200,7 @@ internal interface DateFieldContainer {
     var year: Int?
     var monthNumber: Int?
     var dayOfMonth: Int?
-    var isoDayOfWeek: Int?
+    var dayOfWeek: Int?
     var dayOfYear: Int?
 }
 
@@ -208,7 +208,7 @@ private object DateFields {
     val year = GenericFieldSpec(PropertyAccessor(DateFieldContainer::year))
     val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
     val dayOfMonth = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfMonth), minValue = 1, maxValue = 31)
-    val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::isoDayOfWeek), minValue = 1, maxValue = 7)
+    val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfWeek), minValue = 1, maxValue = 7)
     val dayOfYear = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfYear), minValue = 1, maxValue = 366)
 }
 
@@ -219,7 +219,7 @@ internal class IncompleteLocalDate(
     override var year: Int? = null,
     override var monthNumber: Int? = null,
     override var dayOfMonth: Int? = null,
-    override var isoDayOfWeek: Int? = null,
+    override var dayOfWeek: Int? = null,
     override var dayOfYear: Int? = null,
 ) : DateFieldContainer, Copyable<IncompleteLocalDate> {
     fun toLocalDate(): LocalDate {
@@ -253,7 +253,7 @@ internal class IncompleteLocalDate(
                 }
             }
         }
-        isoDayOfWeek?.let {
+        dayOfWeek?.let {
             if (it != date.dayOfWeek.isoDayNumber) {
                 throw DateTimeFormatException(
                     "Can not create a LocalDate from the given input: " +
@@ -268,25 +268,25 @@ internal class IncompleteLocalDate(
         year = date.year
         monthNumber = date.monthNumber
         dayOfMonth = date.dayOfMonth
-        isoDayOfWeek = date.dayOfWeek.isoDayNumber
+        dayOfWeek = date.dayOfWeek.isoDayNumber
         dayOfYear = date.dayOfYear
     }
 
     override fun copy(): IncompleteLocalDate =
-        IncompleteLocalDate(year, monthNumber, dayOfMonth, isoDayOfWeek, dayOfYear)
+        IncompleteLocalDate(year, monthNumber, dayOfMonth, dayOfWeek, dayOfYear)
 
     override fun equals(other: Any?): Boolean =
         other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
-            dayOfMonth == other.dayOfMonth && isoDayOfWeek == other.isoDayOfWeek && dayOfYear == other.dayOfYear
+            dayOfMonth == other.dayOfMonth && dayOfWeek == other.dayOfWeek && dayOfYear == other.dayOfYear
 
     override fun hashCode(): Int = year.hashCode() * 923521 +
             monthNumber.hashCode() * 29791 +
             dayOfMonth.hashCode() * 961 +
-            isoDayOfWeek.hashCode() * 31 +
+            dayOfWeek.hashCode() * 31 +
             dayOfYear.hashCode()
 
     override fun toString(): String =
-        "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${isoDayOfWeek ?: "??"})"
+        "${year ?: "??"}-${monthNumber ?: "??"}-${dayOfMonth ?: "??"} (day of week is ${dayOfWeek ?: "??"})"
 }
 
 private class YearDirective(private val padding: Padding, private val isYearOfEra: Boolean = false) :

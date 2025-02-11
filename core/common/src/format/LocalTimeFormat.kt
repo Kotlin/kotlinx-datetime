@@ -43,7 +43,7 @@ private object TimeFields {
     val second =
         UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::second), minValue = 0, maxValue = 59, defaultValue = 0)
     val fractionOfSecond =
-        GenericFieldSpec(PropertyAccessor(TimeFieldContainer::fractionOfSecond), defaultValue = DecimalFraction(0, 9))
+        GenericFieldSpec(PropertyAccessor(TimeFieldContainer::fractionOfSecond, "nanosecond"), defaultValue = DecimalFraction(0, 9))
     val amPm = GenericFieldSpec(PropertyAccessor(TimeFieldContainer::amPm))
     val hourOfAmPm = UnsignedFieldSpec(PropertyAccessor(TimeFieldContainer::hourOfAmPm), minValue = 1, maxValue = 12)
 }
