@@ -6,12 +6,17 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.TimeZone
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdb.getOrThrow()
+internal actual fun timeZoneById(zoneId: String): TimeZone =
+    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+
+internal actual fun getAvailableZoneIds(): Set<String> =
+    tzdb.getOrThrow().availableTimeZoneIds()
 
 private val tzdb = runCatching { TzdbOnFilesystem() }
 
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
     // according to https://www.man7.org/linux/man-pages/man5/localtime.5.html, when there is no symlink, UTC is used
     val zonePath = currentSystemTimeZonePath ?: return "Z" to null
     val zoneId = zonePath.splitTimeZonePath()?.second?.toString()

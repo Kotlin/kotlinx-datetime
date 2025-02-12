@@ -13,7 +13,8 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
      * @throws IllegalArgumentException if the result exceeds the boundaries
      * @throws ArithmeticException if arithmetic overflow occurs
      */
-    internal fun plus(value: Int, unit: DateTimeUnit.DateBased): ZonedDateTime = dateTime.plus(value, unit).resolve()
+    internal fun plus(value: Long, unit: DateTimeUnit.DateBased): ZonedDateTime =
+        dateTime.date.plus(value, unit).atTime(dateTime.time).resolve()
 
     // Never throws in practice
     private fun LocalDateTime.resolve(): ZonedDateTime =
@@ -29,7 +30,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
 
     override fun equals(other: Any?): Boolean =
         this === other || other is ZonedDateTime &&
-            dateTime == other.dateTime && offset == other.offset && zone == other.zone
+                dateTime == other.dateTime && offset == other.offset && zone == other.zone
 
     override fun hashCode(): Int {
         return dateTime.hashCode() xor offset.hashCode() xor zone.hashCode().rotateLeft(3)
@@ -59,7 +60,7 @@ internal fun ZonedDateTime.toInstant(): Instant =
 internal fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit): Long =
     when (unit) {
         // if the time unit is date-based, the offsets are disregarded and only the dates and times are compared.
-        is DateTimeUnit.DateBased -> dateTime.until(other.dateTime, unit).toLong()
+        is DateTimeUnit.DateBased -> dateTime.until(other.dateTime, unit)
         // if the time unit is not date-based, we need to make sure that [other] is at the same offset as [this].
         is DateTimeUnit.TimeBased -> {
             val offsetDiff = offset.totalSeconds - other.offset.totalSeconds
