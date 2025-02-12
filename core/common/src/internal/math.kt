@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal
 
+import kotlin.math.sign
+
 internal fun Long.clampToInt(): Int =
         when {
             this > Int.MAX_VALUE -> Int.MAX_VALUE
@@ -16,6 +18,23 @@ internal expect fun safeMultiply(a: Long, b: Long): Long
 internal expect fun safeMultiply(a: Int, b: Int): Int
 internal expect fun safeAdd(a: Long, b: Long): Long
 internal expect fun safeAdd(a: Int, b: Int): Int
+
+internal fun safeMultiplyOrClamp(a: Long, b: Long): Long {
+    when (b) {
+        -1L -> {
+            if (a == Long.MIN_VALUE) {
+                return Long.MAX_VALUE
+            }
+            return -a
+        }
+        1L -> return a
+    }
+    val total = a * b
+    if (total / b != a) {
+        return if (a.sign == b.sign) Long.MAX_VALUE else Long.MIN_VALUE
+    }
+    return total
+}
 
 /** Multiplies two non-zero long values. */
 internal fun safeMultiplyOrZero(a: Long, b: Long): Long {
