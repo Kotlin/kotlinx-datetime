@@ -103,6 +103,18 @@ class ConvertersTest {
         assertEqualUpToHalfMicrosecond(dateTime.toInstant(TimeZone.UTC), nsDate.toKotlinInstant())
     }
 
+    @Test
+    fun yearMonthToNSDateComponentsTest() {
+        val yearMonth = YearMonth(2019, 2)
+        val components = yearMonth.toNSDateComponents().apply { timeZone = utc }
+        val nsDate = isoCalendar.dateFromComponents(components)!!
+        val formatter = NSDateFormatter().apply {
+            timeZone = utc
+            dateFormat = "yyyy-MM"
+        }
+        assertEquals("2019-02", formatter.stringFromDate(nsDate))
+    }
+
     @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
