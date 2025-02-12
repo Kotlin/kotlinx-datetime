@@ -1,0 +1,8 @@
+// Klib ABI Dump
+// Targets: [wasmWasi]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo>
