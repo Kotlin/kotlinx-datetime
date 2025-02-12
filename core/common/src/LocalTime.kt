@@ -10,6 +10,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.datetime.serializers.LocalTimeComponentSerializer
 import kotlinx.serialization.Serializable
+import kotlin.internal.*
 
 
 /**
@@ -364,8 +365,21 @@ public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
  *
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWiseMonthNumber
  */
-public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int = 0): LocalDateTime =
-    LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+public fun LocalTime.atDate(year: Int, month: Int, day: Int = 0): LocalDateTime =
+    LocalDateTime(year, month, day, hour, minute, second, nanosecond)
+
+/** @suppress */
+@Deprecated(
+    "Use the overload that accepts a 'month' and a 'day' instead",
+    ReplaceWith("this.atDate(year = year, month = monthNumber, day = dayOfMonth)"),
+    DeprecationLevel.WARNING
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@LowPriorityInOverloadResolution
+public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int, fakeArgument: Unit = Unit): LocalDateTime =
+    fakeArgument.let {
+        LocalDateTime(year, monthNumber, dayOfMonth, hour, minute, second, nanosecond)
+    }
 
 /**
  * Combines this time's components with the specified date components into a [LocalDateTime] value.
@@ -375,8 +389,21 @@ public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int = 0): L
  *
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWise
  */
-public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int = 0): LocalDateTime =
-    LocalDateTime(year, month, dayOfMonth, hour, minute, second, nanosecond)
+public fun LocalTime.atDate(year: Int, month: Month, day: Int = 0): LocalDateTime =
+    LocalDateTime(year, month, day, hour, minute, second, nanosecond)
+
+/** @suppress */
+@Deprecated(
+    "Use the overload that accepts a 'month' and a 'day' instead",
+    ReplaceWith("this.atDate(year = year, month = month, day = dayOfMonth)"),
+    DeprecationLevel.WARNING
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@LowPriorityInOverloadResolution
+public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int, fakeArgument: Unit = Unit): LocalDateTime =
+    fakeArgument.let {
+        LocalDateTime(year, month, dayOfMonth, hour, minute, second, nanosecond)
+    }
 
 /**
  * Combines this time's components with the specified [LocalDate] components into a [LocalDateTime] value.

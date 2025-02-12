@@ -22,7 +22,7 @@ class UnicodeSamples {
             DateTimeFormat.formatAsKotlinBuilderDsl(customFormat) == """
                 monthNumber()
                 char('/')
-                dayOfMonth()
+                day()
                 char(' ')
                 year()
             """.trimIndent()
