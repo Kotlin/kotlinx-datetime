@@ -152,14 +152,7 @@ public sealed class DateTimeUnit {
      * @see DateTimeUnit.MonthBased for specifically month-based units.
      */
     @Serializable(with = DateBasedDateTimeUnitSerializer::class)
-    public sealed class DateBased : DateTimeUnit() {
-        @Suppress("TOPLEVEL_TYPEALIASES_ONLY")
-        @Deprecated("Use DateTimeUnit.DayBased", ReplaceWith("DateTimeUnit.DayBased", "kotlinx.datetime.DateTimeUnit"))
-        public typealias DayBased = DateTimeUnit.DayBased
-        @Suppress("TOPLEVEL_TYPEALIASES_ONLY")
-        @Deprecated("Use DateTimeUnit.MonthBased", ReplaceWith("DateTimeUnit.MonthBased", "kotlinx.datetime.DateTimeUnit"))
-        public typealias MonthBased = DateTimeUnit.MonthBased
-    }
+    public sealed class DateBased : DateTimeUnit()
 
     /**
      * A [datetime unit][DateTimeUnit] equal to some number of calendar days.
