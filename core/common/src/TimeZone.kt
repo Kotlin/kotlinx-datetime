@@ -403,3 +403,7 @@ public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: 
 @kotlin.internal.LowPriorityInOverloadResolution
 internal fun LocalDate.atStartOfDayIn(timeZone: TimeZone): kotlinx.datetime.Instant =
     atStartOfDayIn(timeZone).toDeprecatedInstant()
+
+internal expect fun localDateTimeToInstant(
+    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset? = null
+): Instant

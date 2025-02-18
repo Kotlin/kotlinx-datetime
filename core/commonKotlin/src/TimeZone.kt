@@ -192,3 +192,7 @@ private val lenientOffsetFormat = UtcOffsetFormat.build {
         )
     }
 }
+
+internal actual fun localDateTimeToInstant(
+    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset?
+): Instant = timeZone.localDateTimeToInstant(dateTime, preferred)

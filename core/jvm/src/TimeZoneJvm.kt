@@ -120,3 +120,9 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
         this.value.atStartOfDay(timeZone.zoneId).toInstant().toKotlinInstant()
+
+internal actual fun localDateTimeToInstant(
+    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset?
+): Instant = java.time.ZonedDateTime.ofLocal(
+    dateTime.value, timeZone.zoneId, preferred?.zoneOffset
+).toInstant().toKotlinInstant()

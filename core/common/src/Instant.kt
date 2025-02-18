@@ -13,6 +13,8 @@ import kotlin.time.*
 import kotlin.time.Instant
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A shortcut for calling [DateTimeFormat.parse], followed by [DateTimeComponents.toInstantUsingOffset].
@@ -61,7 +63,37 @@ public fun Instant.Companion.parse(
  * [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusPeriod
  */
-public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant
+public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
+    with(period) {
+        val initialOffset = offsetIn(timeZone)
+        val initialLdt = toLocalDateTimeFailing(initialOffset)
+        val instantAfterMonths: Instant
+        val offsetAfterMonths: UtcOffset
+        val ldtAfterMonths: LocalDateTime
+        if (totalMonths != 0L) {
+            val unresolvedLdtWithMonths = initialLdt.plus(totalMonths, DateTimeUnit.MONTH)
+            instantAfterMonths = localDateTimeToInstant(unresolvedLdtWithMonths, timeZone, preferred = initialOffset)
+            offsetAfterMonths = instantAfterMonths.offsetIn(timeZone)
+            ldtAfterMonths = instantAfterMonths.toLocalDateTime(offsetAfterMonths)
+        } else {
+            instantAfterMonths = this@plus
+            offsetAfterMonths = initialOffset
+            ldtAfterMonths = initialLdt
+        }
+        val instantAfterMonthsAndDays = if (days != 0) {
+            val unresolvedLdtWithDays = ldtAfterMonths.plus(days, DateTimeUnit.DAY)
+            localDateTimeToInstant(unresolvedLdtWithDays, timeZone, preferred = offsetAfterMonths)
+        } else {
+            instantAfterMonths
+        }
+        instantAfterMonthsAndDays
+            .run { if (totalNanoseconds != 0L) plus(totalNanoseconds.nanoseconds).check(timeZone) else this }
+    }.check(timeZone)
+} catch (e: ArithmeticException) {
+    throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
+}
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
@@ -103,7 +135,25 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntil
  */
-public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
+public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+    val initialOffset = offsetIn(timeZone)
+    val initialLdt = toLocalDateTimeFailing(initialOffset)
+    val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
+
+    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
+    val unresolvedLdtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH)
+        // won't throw: thisLdt + months <= otherLdt, which is known to be valid
+    val instantWithMonths = localDateTimeToInstant(unresolvedLdtWithMonths, timeZone, preferred = initialOffset)
+    val offsetWithMonths = instantWithMonths.offsetIn(timeZone)
+    val ldtWithMonths = instantWithMonths.toLocalDateTime(offsetWithMonths)
+    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
+    val unresolvedLdtWithDays = ldtWithMonths.plus(days, DateTimeUnit.DAY)
+    val newInstant = localDateTimeToInstant(unresolvedLdtWithDays, timeZone, preferred = initialOffset)
+        // won't throw: thisLdt + days <= otherLdt
+    val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
+
+    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
+}
 
 /**
  * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
@@ -119,7 +169,15 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnit
  */
-public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
+public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+    when (unit) {
+        is DateTimeUnit.DateBased ->
+            toLocalDateTimeFailing(offsetIn(timeZone)).until(other.toLocalDateTimeFailing(other.offsetIn(timeZone)), unit)
+        is DateTimeUnit.TimeBased -> {
+            check(timeZone); other.check(timeZone)
+            until(other, unit)
+        }
+    }
 
 /**
  * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
@@ -206,7 +264,8 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
-public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(1L, unit, timeZone)
 
 /**
  * Returns an instant that is the result of subtracting one [unit] from this instant
@@ -255,7 +314,8 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
-public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(value.toLong(), unit, timeZone)
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
@@ -273,7 +333,8 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
-public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(-value.toLong(), unit, timeZone)
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
@@ -314,7 +375,21 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
-public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
+    when (unit) {
+        is DateTimeUnit.DateBased -> {
+            val initialOffset = offsetIn(timeZone)
+            val initialLdt = toLocalDateTimeFailing(initialOffset)
+            localDateTimeToInstant(initialLdt.plus(value, unit), timeZone, preferred = initialOffset)
+        }
+        is DateTimeUnit.TimeBased ->
+            check(timeZone).plus(value, unit).check(timeZone)
+    }
+} catch (e: ArithmeticException) {
+    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
+}
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
@@ -346,7 +421,17 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  *
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
-public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
+public fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    try {
+        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
+            plus(seconds.seconds).plus(nanoseconds.nanoseconds)
+        }
+    } catch (_: ArithmeticException) {
+        Instant.fromEpochSeconds(if (value > 0) Long.MAX_VALUE else Long.MIN_VALUE)
+    } catch (_: IllegalArgumentException) {
+        Instant.fromEpochSeconds(if (value > 0) Long.MAX_VALUE else Long.MIN_VALUE)
+    }
+
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant.
@@ -414,3 +499,37 @@ public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: Ut
 
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800
+
+private fun Instant.toLocalDateTimeFailing(offset: UtcOffset): LocalDateTime = try {
+    toLocalDateTime(offset)
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
+}
+
+/** Check that [Instant] fits in [LocalDateTime].
+ * This is done on the results of computations for consistency with other platforms.
+ */
+private fun Instant.check(zone: TimeZone): Instant = this@check.also {
+    toLocalDateTimeFailing(offsetIn(zone))
+}
+
+private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =
+    date.plus(value, unit).atTime(time)
+
+private fun LocalDateTime.plus(value: Int, unit: DateTimeUnit.DateBased) =
+    date.plus(value, unit).atTime(time)
+
+// org.threeten.bp.LocalDateTime#until
+internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
+    val otherDate = other.date
+    val delta = when {
+        otherDate > date && other.time < time -> -1 // addition won't throw: endDate - date >= 1
+        otherDate < date && other.time > time -> 1 // addition won't throw: date - endDate >= 1
+        else -> 0
+    }
+    val endDate = otherDate.plus(delta, DateTimeUnit.DAY)
+    return when (unit) {
+        is DateTimeUnit.MonthBased -> date.until(endDate, DateTimeUnit.MONTH) / unit.months
+        is DateTimeUnit.DayBased -> date.until(endDate, DateTimeUnit.DAY) / unit.days
+    }
+}

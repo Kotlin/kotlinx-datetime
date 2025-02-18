@@ -56,47 +56,4 @@ class ThreeTenBpLocalDateTimeTest {
             assertEquals(sec, t.second)
         }
     }
-
-    @Test
-    fun until() {
-        val data = arrayOf(
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00"), Pair(DateTimeUnit.NANOSECOND, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00"), Pair(DateTimeUnit.MINUTE, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00"), Pair(DateTimeUnit.HOUR, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00:01"), Pair(DateTimeUnit.NANOSECOND, 1000000000L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00:01"), Pair(DateTimeUnit.SECOND, 1L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00:01"), Pair(DateTimeUnit.MINUTE, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:00:01"), Pair(DateTimeUnit.HOUR, 0L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:01"), Pair(DateTimeUnit.NANOSECOND, 60000000000L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:01"), Pair(DateTimeUnit.SECOND, 60L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:01"), Pair(DateTimeUnit.MINUTE, 1L)),
-            Pair(Pair("2012-06-15T00:00", "2012-06-15T00:01"), Pair(DateTimeUnit.HOUR, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:39.499"), Pair(DateTimeUnit.SECOND, -1L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:39.500"), Pair(DateTimeUnit.SECOND, -1L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:39.501"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:40.499"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:40.500"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:40.501"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:41.499"), Pair(DateTimeUnit.SECOND, 0L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:41.500"), Pair(DateTimeUnit.SECOND, 1L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-15T12:30:41.501"), Pair(DateTimeUnit.SECOND, 1L)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:39.499"), Pair(DateTimeUnit.SECOND, 86400L - 2)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:39.500"), Pair(DateTimeUnit.SECOND, 86400L - 1)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:39.501"), Pair(DateTimeUnit.SECOND, 86400L - 1)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:40.499"), Pair(DateTimeUnit.SECOND, 86400L - 1)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:40.500"), Pair(DateTimeUnit.SECOND, 86400L + 0)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:40.501"), Pair(DateTimeUnit.SECOND, 86400L + 0)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:41.499"), Pair(DateTimeUnit.SECOND, 86400L + 0)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:41.500"), Pair(DateTimeUnit.SECOND, 86400L + 1)),
-            Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:41.501"), Pair(DateTimeUnit.SECOND, 86400L + 1)))
-        for ((values, interval) in data) {
-            val (v1, v2) = values
-            val dt1 = LocalDateTime.parse(v1)
-            val dt2 = LocalDateTime.parse(v2)
-            val (unit, length) = interval
-            assertEquals(length, dt1.until(dt2, unit))
-            assertEquals(-length, dt2.until(dt1, unit))
-        }
-    }
 }

@@ -84,28 +84,6 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 }
 
-// org.threeten.bp.LocalDateTime#until
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
-    var endDate: LocalDate = other.date
-    if (endDate > date && other.time < time) {
-        endDate = endDate.plusDays(-1) // won't throw: endDate - date >= 1
-    } else if (endDate < date && other.time > time) {
-        endDate = endDate.plusDays(1) // won't throw: date - endDate >= 1
-    }
-    return when (unit) {
-        is DateTimeUnit.MonthBased -> date.until(endDate, DateTimeUnit.MONTH) / unit.months
-        is DateTimeUnit.DayBased -> date.until(endDate, DateTimeUnit.DAY) / unit.days
-    }
-}
-
-// org.threeten.bp.LocalDateTime#until
-/** @throws ArithmeticException on arithmetic overflow. */
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.TimeBased): Long {
-    val daysUntil = date.daysUntil(other.date)
-    val timeUntil: Long = other.time.toNanosecondOfDay() - time.toNanosecondOfDay()
-    return multiplyAddAndDivide(daysUntil.toLong(), NANOS_PER_DAY, timeUntil, unit.nanoseconds)
-}
-
 // org.threeten.bp.LocalDateTime#plusWithOverflow
 /**
  * @throws IllegalArgumentException if the result exceeds the boundaries
