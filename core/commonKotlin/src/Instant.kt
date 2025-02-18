@@ -52,21 +52,6 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         if (epochSeconds > 0) Long.MAX_VALUE else Long.MIN_VALUE
     }
 
-    // org.threeten.bp.Instant#plus(long, long)
-    /**
-     * @throws ArithmeticException if arithmetic overflow occurs
-     * @throws IllegalArgumentException if the boundaries of Instant are overflown
-     */
-    internal fun plus(secondsToAdd: Long, nanosToAdd: Long): Instant {
-        if ((secondsToAdd or nanosToAdd) == 0L) {
-            return this
-        }
-        val newEpochSeconds: Long = safeAdd(safeAdd(epochSeconds, secondsToAdd), (nanosToAdd / NANOS_PER_ONE))
-        val newNanosToAdd = nanosToAdd % NANOS_PER_ONE
-        val nanoAdjustment = (nanosecondsOfSecond + newNanosToAdd) // safe int+NANOS_PER_ONE
-        return fromEpochSecondsThrowing(newEpochSeconds, nanoAdjustment)
-    }
-
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
         try {
             plus(secondsToAdd, nanosecondsToAdd.toLong())
@@ -119,7 +104,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
          * @throws ArithmeticException if arithmetic overflow occurs
          * @throws IllegalArgumentException if the boundaries of Instant are overflown
          */
-        private fun fromEpochSecondsThrowing(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
+        internal fun fromEpochSecondsThrowing(epochSeconds: Long, nanosecondAdjustment: Long): Instant {
             val secs = safeAdd(epochSeconds, nanosecondAdjustment.floorDiv(NANOS_PER_ONE.toLong()))
             val nos = nanosecondAdjustment.mod(NANOS_PER_ONE.toLong()).toInt()
             return Instant(secs, nos)
@@ -154,116 +139,6 @@ public actual class Instant internal constructor(public actual val epochSeconds:
 
 }
 
-private fun Instant.toLocalDateTimeFailing(offset: UtcOffset): LocalDateTime = try {
-    toLocalDateTimeImpl(offset)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
-}
-
-/** Check that [Instant] fits in [LocalDateTime].
- * This is done on the results of computations for consistency with other platforms.
- */
-private fun Instant.check(zone: TimeZone): Instant = this@check.also {
-    toLocalDateTimeFailing(offsetIn(zone))
-}
-
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
-    with(period) {
-        val initialOffset = offsetIn(timeZone)
-        val initialLdt = toLocalDateTimeFailing(initialOffset)
-        val instantAfterMonths: Instant
-        val offsetAfterMonths: UtcOffset
-        val ldtAfterMonths: LocalDateTime
-        if (totalMonths != 0L) {
-            val unresolvedLdtWithMonths = initialLdt.plus(totalMonths, DateTimeUnit.MONTH)
-            instantAfterMonths = timeZone.localDateTimeToInstant(unresolvedLdtWithMonths, initialOffset)
-            offsetAfterMonths = instantAfterMonths.offsetIn(timeZone)
-            ldtAfterMonths = instantAfterMonths.toLocalDateTimeFailing(offsetAfterMonths)
-        } else {
-            instantAfterMonths = this@plus
-            offsetAfterMonths = initialOffset
-            ldtAfterMonths = initialLdt
-        }
-        val instantAfterMonthsAndDays = if (days != 0) {
-            val unresolvedLdtWithDays = ldtAfterMonths.plus(days, DateTimeUnit.DAY)
-            timeZone.localDateTimeToInstant(unresolvedLdtWithDays, offsetAfterMonths)
-        } else {
-            instantAfterMonths
-        }
-        instantAfterMonthsAndDays
-            .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
-    }.check(timeZone)
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
-}
-
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
-public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(1L, unit, timeZone)
-public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(value.toLong(), unit, timeZone)
-public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(-value.toLong(), unit, timeZone)
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
-    when (unit) {
-        is DateTimeUnit.DateBased -> {
-            val initialOffset = offsetIn(timeZone)
-            val initialLdt = toLocalDateTimeFailing(initialOffset)
-            timeZone.localDateTimeToInstant(initialLdt.plus(value, unit), preferred = initialOffset)
-        }
-        is DateTimeUnit.TimeBased ->
-            check(timeZone).plus(value, unit).check(timeZone)
-    }
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
-}
-
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
-    try {
-        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
-            plus(seconds, nanoseconds)
-        }
-    } catch (_: ArithmeticException) {
-        if (value > 0) Instant.MAX else Instant.MIN
-    } catch (_: IllegalArgumentException) {
-        if (value > 0) Instant.MAX else Instant.MIN
-    }
-
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    val initialOffset = offsetIn(timeZone)
-    val initialLdt = toLocalDateTimeFailing(initialOffset)
-    val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
-
-    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
-    val unresolvedLdtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH)
-        // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val instantWithMonths = timeZone.localDateTimeToInstant(unresolvedLdtWithMonths, preferred = initialOffset)
-    val offsetWithMonths = instantWithMonths.offsetIn(timeZone)
-    val ldtWithMonths = instantWithMonths.toLocalDateTimeFailing(offsetWithMonths)
-    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
-    val unresolvedLdtWithDays = ldtWithMonths.plus(days, DateTimeUnit.DAY)
-    val newInstant = timeZone.localDateTimeToInstant(unresolvedLdtWithDays, preferred = initialOffset)
-        // won't throw: thisLdt + days <= otherLdt
-    val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
-
-    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
-}
-
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
-    when (unit) {
-        is DateTimeUnit.DateBased ->
-            toLocalDateTimeFailing(offsetIn(timeZone)).until(other.toLocalDateTimeFailing(other.offsetIn(timeZone)), unit)
-                .toLong()
-        is DateTimeUnit.TimeBased -> {
-            check(timeZone); other.check(timeZone)
-            until(other, unit)
-        }
-    }
-
 private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {
     date(ISO_DATE)
     alternativeParsing({
@@ -288,8 +163,13 @@ private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format
     )
 }
 
-private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =
-    date.plus(value, unit).atTime(time)
-
-private fun LocalDateTime.plus(value: Int, unit: DateTimeUnit.DateBased) =
-    date.plus(value, unit).atTime(time)
+// org.threeten.bp.Instant#plus(long, long)
+internal actual fun Instant.plus(secondsToAdd: Long, nanosToAdd: Long): Instant {
+    if ((secondsToAdd or nanosToAdd) == 0L) {
+        return this
+    }
+    val newEpochSeconds: Long = safeAdd(safeAdd(epochSeconds, secondsToAdd), (nanosToAdd / NANOS_PER_ONE))
+    val newNanosToAdd = nanosToAdd % NANOS_PER_ONE
+    val nanoAdjustment = (nanosecondsOfSecond + newNanosToAdd) // safe int+NANOS_PER_ONE
+    return Instant.fromEpochSecondsThrowing(newEpochSeconds, nanoAdjustment)
+}
