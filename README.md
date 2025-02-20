@@ -393,6 +393,39 @@ val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
 // 2021-03-29T02:16:20
 ```
 
+### Converting LocalDateTime back to Instant and UnambiguousInstant
+
+When local time changes to daylight savings and back, there are moments in time that are ambiguous or skipped.
+For instance, 2:30 AM is impossible on March 9th, 2025 in America/Chicago time zone.
+`UnambiguousInstant` provides this information:
+
+```kotlin
+val impossibleTime = LocalDateTime(2025, 3, 9, 2, 30)
+val actual = UnambiguousInstant.of(impossibleTime, TimeZone(ZoneId.of("America/Chicago")))
+assertEquals(UnambiguousInstant.Impossible, actual)
+```
+
+Likewise, there are moments that are ambiguous, like 1:30 AM on November 2nd, 2025 in America/Chicago time zone, 
+which happens twice, as we can see in the following code snippet.
+
+```kotlin
+val duplicateTime = LocalDateTime(2025, 11, 2, 1, 30)
+val actual = UnambiguousInstant.of(duplicateTime, TimeZone(ZoneId.of("America/Chicago")))
+val instant0 = duplicateTime.toInstant(timeZone = TimeZone(ZoneId.of("America/Chicago")))
+val instant1 = duplicateTime.toInstant(timeZone = TimeZone(ZoneId.of("America/Chicago")))
+    .plus(1, DateTimeUnit.HOUR)
+assertEquals(UnambiguousInstant.Duplicate(instant0, instant1), actual)
+```
+
+Yet most of the time there is no ambiguity and no gaps, as follows:
+
+```kotlin
+ val regularTime = LocalDateTime(2025, 2, 20, 2, 30)
+ val actual = UnambiguousInstant.of(regularTime, TimeZone(ZoneId.of("America/Chicago")))
+ val instant = regularTime.toInstant(timeZone = TimeZone(ZoneId.of("America/Chicago")))
+ assertEquals(UnambiguousInstant.Unique(instant), actual)
+```
+
 ## Implementation
 
 The implementation of datetime types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
