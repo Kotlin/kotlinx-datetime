@@ -68,12 +68,6 @@ subprojects {
     }
 }
 
-// Disable NPM to NodeJS nightly compatibility check.
-// Drop this when NodeJs version that supports latest Wasm become stable
-tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
-}
-
 kover {
     reports {
         verify {
