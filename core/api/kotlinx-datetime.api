@@ -268,12 +268,14 @@ public final class kotlinx/datetime/LocalDate : java/lang/Comparable {
 	public final fun getYear ()I
 	public fun hashCode ()I
 	public final fun toEpochDays ()I
+	public final fun toEpochDays ()J
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class kotlinx/datetime/LocalDate$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
 	public final fun fromEpochDays (I)Lkotlinx/datetime/LocalDate;
+	public final fun fromEpochDays (J)Lkotlinx/datetime/LocalDate;
 	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/LocalDate;
 	public final synthetic fun parse (Ljava/lang/String;)Lkotlinx/datetime/LocalDate;
 	public static synthetic fun parse$default (Lkotlinx/datetime/LocalDate$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/LocalDate;
@@ -296,6 +298,7 @@ public final class kotlinx/datetime/LocalDateJvmKt {
 	public static final fun plus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DatePeriod;)Lkotlinx/datetime/LocalDate;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun until (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DateTimeUnit$DateBased;)I
+	public static final fun until (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DateTimeUnit$DateBased;)J
 	public static final fun yearsUntil (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)I
 }
 
@@ -304,10 +307,12 @@ public final class kotlinx/datetime/LocalDateKt {
 	public static final fun atTime (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalTime;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atTime$default (Lkotlinx/datetime/LocalDate;IIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun format (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
+	public static final fun minus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;JLkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DatePeriod;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
+	public static final fun plus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun toLocalDate (Ljava/lang/String;)Lkotlinx/datetime/LocalDate;
 }
 
