@@ -195,10 +195,10 @@ class LocalDateFormatSamples {
         @Test
         fun constructionFromStrings() {
             // Constructing a custom set of day of week names for parsing and formatting by passing 7 strings
-            val myMonthNames = DayOfWeekNames(
+            val myDayOfWeekNames = DayOfWeekNames(
                 "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
             )
-            check(myMonthNames == DayOfWeekNames.ENGLISH_ABBREVIATED) // could just use the built-in one...
+            check(myDayOfWeekNames == DayOfWeekNames.ENGLISH_ABBREVIATED) // could just use the built-in one...
         }
 
         @Test
