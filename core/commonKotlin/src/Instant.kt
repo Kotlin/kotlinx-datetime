@@ -122,11 +122,7 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant {
             val epochSeconds = epochMilliseconds.floorDiv(MILLIS_PER_ONE.toLong())
             val nanosecondsOfSecond = (epochMilliseconds.mod(MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt()
-            return when {
-                epochSeconds < MIN_SECOND -> MIN
-                epochSeconds > MAX_SECOND -> MAX
-                else -> fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
-            }
+            return fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
         }
 
         /**
