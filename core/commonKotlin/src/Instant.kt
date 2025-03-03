@@ -29,25 +29,38 @@ public actual enum class DayOfWeek {
 /**
  * The minimum supported epoch second.
  */
-private const val MIN_SECOND = -31619119219200L // -1000000-01-01T00:00:00Z
+private const val MIN_SECOND = -31557014167219200L // -1000000000-01-01T00:00:00Z
 
 /**
  * The maximum supported epoch second.
  */
-private const val MAX_SECOND = 31494816403199L // +1000000-12-31T23:59:59
-
-private fun isValidInstantSecond(second: Long) = second >= MIN_SECOND && second <= MAX_SECOND
+private const val MAX_SECOND = 31556889864403199L // +1000000000-12-31T23:59:59
 
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     init {
-        require(isValidInstantSecond(epochSeconds)) { "Instant exceeds minimum or maximum instant" }
+        require(epochSeconds in MIN_SECOND..MAX_SECOND) { "Instant exceeds minimum or maximum instant" }
     }
 
     // org.threeten.bp.Instant#toEpochMilli
-    public actual fun toEpochMilliseconds(): Long =
-        epochSeconds * MILLIS_PER_ONE + nanosecondsOfSecond / NANOS_PER_MILLI
+    public actual fun toEpochMilliseconds(): Long = try {
+        if (epochSeconds >= 0) {
+            val millis = safeMultiply(epochSeconds, MILLIS_PER_ONE.toLong())
+            safeAdd(millis, (nanosecondsOfSecond / NANOS_PER_MILLI).toLong())
+        } else {
+            // prevent an overflow in seconds * 1000
+            // instead of going form the second farther away from 0
+            // going toward 0
+            // we go from the second closer to 0 away from 0
+            // that way we always stay in the valid long range
+            // seconds + 1 can not overflow because it is negative
+            val millis = safeMultiply(epochSeconds + 1, MILLIS_PER_ONE.toLong())
+            safeAdd(millis, (nanosecondsOfSecond / NANOS_PER_MILLI - MILLIS_PER_ONE).toLong())
+        }
+    } catch (_: ArithmeticException) {
+        if (epochSeconds > 0) Long.MAX_VALUE else Long.MIN_VALUE
+    }
 
     // org.threeten.bp.Instant#plus(long, long)
     /**
@@ -67,9 +80,9 @@ public actual class Instant internal constructor(public actual val epochSeconds:
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
         try {
             plus(secondsToAdd, nanosecondsToAdd.toLong())
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             if (duration.isPositive()) MAX else MIN
-        } catch (e: ArithmeticException) {
+        } catch (_: ArithmeticException) {
             if (duration.isPositive()) MAX else MIN
         }
     }
@@ -106,13 +119,11 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun now(): Instant = currentTime()
 
         // org.threeten.bp.Instant#ofEpochMilli
-        public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant =
-            if (epochMilliseconds < MIN_SECOND * MILLIS_PER_ONE) MIN
-            else if (epochMilliseconds > MAX_SECOND * MILLIS_PER_ONE) MAX
-            else Instant(
-                epochMilliseconds.floorDiv(MILLIS_PER_ONE.toLong()),
-                (epochMilliseconds.mod(MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt()
-            )
+        public actual fun fromEpochMilliseconds(epochMilliseconds: Long): Instant {
+            val epochSeconds = epochMilliseconds.floorDiv(MILLIS_PER_ONE.toLong())
+            val nanosecondsOfSecond = (epochMilliseconds.mod(MILLIS_PER_ONE.toLong()) * NANOS_PER_MILLI).toInt()
+            return fromEpochSeconds(epochSeconds, nanosecondsOfSecond)
+        }
 
         /**
          * @throws ArithmeticException if arithmetic overflow occurs
@@ -128,9 +139,9 @@ public actual class Instant internal constructor(public actual val epochSeconds:
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant =
             try {
                 fromEpochSecondsThrowing(epochSeconds, nanosecondAdjustment)
-            } catch (e: ArithmeticException) {
+            } catch (_: ArithmeticException) {
                 if (epochSeconds > 0) MAX else MIN
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 if (epochSeconds > 0) MAX else MIN
             }
 
@@ -177,8 +188,8 @@ private fun Instant.check(zone: TimeZone): Instant = this@check.also {
 public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val withDate = toZonedDateTimeFailing(timeZone)
-            .run { if (totalMonths != 0) plus(totalMonths, DateTimeUnit.MONTH) else this }
-            .run { if (days != 0) plus(days, DateTimeUnit.DAY) else this }
+            .run { if (totalMonths != 0L) plus(totalMonths, DateTimeUnit.MONTH) else this }
+            .run { if (days != 0) plus(days.toLong(), DateTimeUnit.DAY) else this }
         withDate.toInstant()
             .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
     }.check(timeZone)
@@ -197,11 +208,8 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
     plus(-value.toLong(), unit, timeZone)
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
     when (unit) {
-        is DateTimeUnit.DateBased -> {
-            if (value < Int.MIN_VALUE || value > Int.MAX_VALUE)
-                throw ArithmeticException("Can't add a Long date-based value, as it would cause an overflow")
-            toZonedDateTimeFailing(timeZone).plus(value.toInt(), unit).toInstant()
-        }
+        is DateTimeUnit.DateBased ->
+            toZonedDateTimeFailing(timeZone).plus(value, unit).toInstant()
         is DateTimeUnit.TimeBased ->
             check(timeZone).plus(value, unit).check(timeZone)
     }
@@ -216,9 +224,9 @@ public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Insta
         multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
             plus(seconds, nanoseconds)
         }
-    } catch (e: ArithmeticException) {
+    } catch (_: ArithmeticException) {
         if (value > 0) Instant.MAX else Instant.MIN
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         if (value > 0) Instant.MAX else Instant.MIN
     }
 
@@ -226,13 +234,13 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     var thisLdt = toZonedDateTimeFailing(timeZone)
     val otherLdt = other.toZonedDateTimeFailing(timeZone)
 
-    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH).toInt() // `until` on dates never fails
+    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
     thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY).toInt() // `until` on dates never fails
+    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
     thisLdt = thisLdt.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
     val nanoseconds = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
 
-    return buildDateTimePeriod(months, days, nanoseconds)
+    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =

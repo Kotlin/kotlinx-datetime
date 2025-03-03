@@ -6,6 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.TimeZone
 
 @RequiresOptIn
 internal annotation class InternalDateTimeApi
@@ -32,13 +33,15 @@ public fun initializeTimeZonesProvider(provider: TimeZonesProvider) {
 private var timeZonesProvider: TimeZonesProvider? = null
 
 @OptIn(InternalDateTimeApi::class)
-internal class TzdbOnData: TimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRules {
-        val data = timeZonesProvider?.zoneDataByName(id)
-            ?: throw IllegalTimeZoneException("TimeZones are not supported")
-        return readTzFile(data).toTimeZoneRules()
-    }
-
-    override fun availableTimeZoneIds(): Set<String> =
-        timeZonesProvider?.getTimeZones() ?: setOf("UTC")
+internal actual fun timeZoneById(zoneId: String): TimeZone {
+    val data = timeZonesProvider?.zoneDataByName(zoneId)
+        ?: throw IllegalTimeZoneException("TimeZones are not supported")
+    val rules = readTzFile(data).toTimeZoneRules()
+    return RegionTimeZone(rules, zoneId)
 }
+
+@OptIn(InternalDateTimeApi::class)
+internal actual fun getAvailableZoneIds(): Set<String> =
+    timeZonesProvider?.getTimeZones() ?: setOf("UTC")
+
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> = "UTC" to null

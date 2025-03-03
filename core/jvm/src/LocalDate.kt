@@ -15,6 +15,7 @@ import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
+import kotlin.internal.*
 
 @Serializable(with = LocalDateIso8601Serializer::class)
 public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
@@ -37,8 +38,14 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 
-        public actual fun fromEpochDays(epochDays: Int): LocalDate =
-            LocalDate(jtLocalDate.ofEpochDay(epochDays.toLong()))
+        public actual fun fromEpochDays(epochDays: Long): LocalDate =
+            try {
+                LocalDate(jtLocalDate.ofEpochDay(epochDays))
+            } catch (e: DateTimeException) {
+                throw IllegalArgumentException(e)
+            }
+
+        public actual fun fromEpochDays(epochDays: Int): LocalDate = fromEpochDays(epochDays.toLong())
 
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
@@ -76,18 +83,27 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
 
     actual override fun compareTo(other: LocalDate): Int = this.value.compareTo(other.value)
 
-    public actual fun toEpochDays(): Int = value.toEpochDay().clampToInt()
+    public actual fun toEpochDays(): Long = value.toEpochDay()
+
+    @PublishedApi
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @LowPriorityInOverloadResolution
+    internal fun toEpochDays(): Int = value.toEpochDay().clampToInt()
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1L, unit)
 
-public actual fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
-        plus(value.toLong(), unit)
+@PublishedApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@LowPriorityInOverloadResolution
+internal fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(value.toLong(), unit)
 
-public actual fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate =
-        plus(-value.toLong(), unit)
+@PublishedApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@LowPriorityInOverloadResolution
+internal fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-value.toLong(), unit)
 
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
         try {
@@ -116,7 +132,7 @@ private fun ofEpochDayChecked(epochDay: Long): java.time.LocalDate {
 public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate = try {
     with(period) {
         return@with value
-                .run { if (totalMonths != 0) plusMonths(totalMonths.toLong()) else this }
+                .run { if (totalMonths != 0L) plusMonths(totalMonths) else this }
                 .run { if (days != 0) plusDays(days.toLong()) else this }
 
     }.let(::LocalDate)
@@ -131,16 +147,19 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val months = startD.until(endD, ChronoUnit.MONTHS); startD = startD.plusMonths(months)
     val days = startD.until(endD, ChronoUnit.DAYS)
 
-    if (months > Int.MAX_VALUE || months < Int.MIN_VALUE) {
-        throw DateTimeArithmeticException("The number of months between $this and $other does not fit in an Int")
-    }
-    return DatePeriod(totalMonths = months.toInt(), days.toInt())
+    return DatePeriod(totalMonths = months, days.toInt())
 }
 
-public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int = when(unit) {
-    is DateTimeUnit.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months).clampToInt()
-    is DateTimeUnit.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days).clampToInt()
+public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Long = when(unit) {
+    is DateTimeUnit.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months)
+    is DateTimeUnit.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days)
 }
+
+@PublishedApi
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@LowPriorityInOverloadResolution
+internal fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Int =
+    until(other, unit).clampToInt()
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.DAYS).clampToInt()
@@ -149,4 +168,4 @@ public actual fun LocalDate.monthsUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.MONTHS).clampToInt()
 
 public actual fun LocalDate.yearsUntil(other: LocalDate): Int =
-        this.value.until(other.value, ChronoUnit.YEARS).clampToInt()
+        this.value.until(other.value, ChronoUnit.YEARS).toInt()

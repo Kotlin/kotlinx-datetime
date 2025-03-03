@@ -20,12 +20,8 @@ public actual open class TimeZone internal constructor() {
 
         public actual fun currentSystemDefault(): TimeZone {
             // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            val (name, rules) = currentSystemDefaultZone()
-            return if (rules == null) {
-                of(name)
-            } else {
-                RegionTimeZone(rules, name)
-            }
+            val (name, zone) = currentSystemDefaultZone()
+            return zone ?: of(name)
         }
 
         public actual val UTC: FixedOffsetTimeZone = UtcOffset.ZERO.asTimeZone()
@@ -35,6 +31,9 @@ public actual open class TimeZone internal constructor() {
             // TODO: normalize aliases?
             if (zoneId == "Z") {
                 return UTC
+            }
+            if (zoneId == "SYSTEM") {
+                return currentSystemDefault()
             }
             if (zoneId.length == 1) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
@@ -67,14 +66,14 @@ public actual open class TimeZone internal constructor() {
                 throw IllegalTimeZoneException(e)
             }
             return try {
-                RegionTimeZone(systemTzdb.rulesForId(zoneId), zoneId)
+                timeZoneById(zoneId)
             } catch (e: Exception) {
                 throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
             }
         }
 
         public actual val availableZoneIds: Set<String>
-            get() = systemTzdb.availableTimeZoneIds()
+            get() = getAvailableZoneIds()
     }
 
     public actual open val id: String
@@ -141,7 +140,7 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
 
 internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
     val localSecond: Long = epochSeconds + offset.totalSeconds // overflow caught later
-    val localEpochDay = localSecond.floorDiv(SECONDS_PER_DAY.toLong()).toInt()
+    val localEpochDay = localSecond.floorDiv(SECONDS_PER_DAY.toLong())
     val secsOfDay = localSecond.mod(SECONDS_PER_DAY.toLong()).toInt()
     val date: LocalDate = LocalDate.fromEpochDays(localEpochDay) // may throw
     val time: LocalTime = LocalTime.ofSecondOfDay(secsOfDay, nanosecondsOfSecond)

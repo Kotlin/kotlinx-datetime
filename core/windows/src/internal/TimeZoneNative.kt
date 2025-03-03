@@ -5,9 +5,15 @@
 
 package kotlinx.datetime.internal
 
-internal actual val systemTzdb: TimeZoneDatabase get() = tzdbInRegistry.getOrThrow()
+import kotlinx.datetime.TimeZone
 
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> =
+internal actual fun timeZoneById(zoneId: String): TimeZone =
+    RegionTimeZone(tzdbInRegistry.getOrThrow().rulesForId(zoneId), zoneId)
+
+internal actual fun getAvailableZoneIds(): Set<String> =
+    tzdbInRegistry.getOrThrow().availableTimeZoneIds()
+
+internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> =
     tzdbInRegistry.getOrThrow().currentSystemDefault()
 
 private val tzdbInRegistry = runCatching { TzdbInRegistry() }

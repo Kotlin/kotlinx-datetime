@@ -11,6 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
@@ -268,9 +269,8 @@ class InstantTest {
         val offset3 = instant3.offsetIn(zone)
         assertEquals(offset1, offset3)
 
-        // TODO: fails on JS
-        // // without the minus, this test fails on JVM
-        // (Instant.MAX - (2 * 365).days).offsetIn(zone)
+        // without the minus, this test fails on JVM
+        (Instant.MAX - (2 * 365).days).offsetIn(zone)
     }
 
     @Test
@@ -313,7 +313,7 @@ class InstantTest {
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)
-                    println("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
+                    fail("start: $instant1, end: $instant2, diff by instants: $diff1, diff by dates: $diff2")
             }
         }
     }
@@ -467,33 +467,16 @@ class InstantRangeTest {
 
     @Test
     fun epochMillisecondsClamping() {
-        // toEpochMilliseconds()/fromEpochMilliseconds()
-        // assuming that ranges of Long (representing a number of milliseconds) and Instant are not just overlapping,
-        // but one is included in the other.
-        if (Instant.MAX.epochSeconds > Long.MAX_VALUE / 1000) {
-            /* Any number of milliseconds in Long is representable as an Instant */
-            for (instant in largePositiveInstants) {
-                assertEquals(Long.MAX_VALUE, instant.toEpochMilliseconds(), "$instant")
-            }
-            for (instant in largeNegativeInstants) {
-                assertEquals(Long.MIN_VALUE, instant.toEpochMilliseconds(), "$instant")
-            }
-            for (milliseconds in largePositiveLongs + largeNegativeLongs) {
-                assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
-                        "$milliseconds")
-            }
-        } else {
-            /* Any Instant is representable as a number of milliseconds in Long */
-            for (milliseconds in largePositiveLongs) {
-                assertEquals(Instant.MAX, Instant.fromEpochMilliseconds(milliseconds), "$milliseconds")
-            }
-            for (milliseconds in largeNegativeLongs) {
-                assertEquals(Instant.MIN, Instant.fromEpochMilliseconds(milliseconds), "$milliseconds")
-            }
-            for (instant in largePositiveInstants + smallInstants + largeNegativeInstants) {
-                assertEquals(instant.epochSeconds,
-                        Instant.fromEpochMilliseconds(instant.toEpochMilliseconds()).epochSeconds, "$instant")
-            }
+        /* Any number of milliseconds in Long is representable as an Instant */
+        for (instant in largePositiveInstants) {
+            assertEquals(Long.MAX_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (instant in largeNegativeInstants) {
+            assertEquals(Long.MIN_VALUE, instant.toEpochMilliseconds(), "$instant")
+        }
+        for (milliseconds in largePositiveLongs + largeNegativeLongs) {
+            assertEquals(milliseconds, Instant.fromEpochMilliseconds(milliseconds).toEpochMilliseconds(),
+                    "$milliseconds")
         }
     }
 
@@ -573,6 +556,15 @@ class InstantRangeTest {
             assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.SECOND, UTC) }
             assertArithmeticFails("$instant") { instant.plus(Long.MAX_VALUE, DateTimeUnit.YEAR, UTC) }
             assertArithmeticFails("$instant") { instant.plus(Long.MIN_VALUE, DateTimeUnit.YEAR, UTC) }
+        }
+        for (instant in smallInstants) {
+            fun roundTrip(value: Long, unit: DateTimeUnit) {
+                assertEquals(instant, instant.plus(value, unit, UTC).minus(value, unit, UTC))
+            }
+            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.DAY)
+            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.DAY)
+            roundTrip(2L * Int.MAX_VALUE, DateTimeUnit.MONTH)
+            roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.MONTH)
         }
         // Overflowing a LocalDateTime in input
         maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
