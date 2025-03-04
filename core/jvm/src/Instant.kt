@@ -22,7 +22,7 @@ import java.time.Clock as jtClock
 @Serializable(with = InstantIso8601Serializer::class)
 public actual class Instant internal constructor(
     internal val value: jtInstant
-) : Comparable<Instant>, java.io.Serializable {
+) : Comparable<Instant> {
 
     public actual val epochSeconds: Long
         get() = value.epochSecond
@@ -100,8 +100,6 @@ public actual class Instant internal constructor(
         internal actual val MIN: Instant = Instant(jtInstant.MIN)
         internal actual val MAX: Instant = Instant(jtInstant.MAX)
     }
-
-    private fun writeReplace(): Any = Ser(Ser.INSTANT_TAG, this)
 }
 
 private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {

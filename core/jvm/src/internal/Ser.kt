@@ -16,11 +16,6 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
         out.writeByte(typeTag)
         val value = this.value
         when (typeTag) {
-            INSTANT_TAG -> {
-                value as Instant
-                out.writeLong(value.epochSeconds)
-                out.writeInt(value.nanosecondsOfSecond)
-            }
             DATE_TAG -> {
                 value as LocalDate
                 out.writeLong(value.value.toEpochDay())
@@ -45,8 +40,6 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
     override fun readExternal(`in`: ObjectInput) {
         typeTag = `in`.readByte().toInt()
         value = when (typeTag) {
-            INSTANT_TAG ->
-                Instant.fromEpochSeconds(`in`.readLong(), `in`.readInt())
             DATE_TAG ->
                 LocalDate(java.time.LocalDate.ofEpochDay(`in`.readLong()))
             TIME_TAG ->
@@ -66,7 +59,6 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
 
     companion object {
         private const val serialVersionUID: Long = 0L
-        const val INSTANT_TAG = 1
         const val DATE_TAG = 2
         const val TIME_TAG = 3
         const val DATE_TIME_TAG = 4

@@ -11,14 +11,6 @@ import kotlin.test.*
 class JvmSerializationTest {
 
     @Test
-    fun serializeInstant() {
-        roundTripSerialization(Instant.fromEpochSeconds(1234567890, 123456789))
-        roundTripSerialization(Instant.MIN)
-        roundTripSerialization(Instant.MAX)
-        expectedDeserialization(Instant.parse("+150000-04-30T12:30:25.555998Z"), "0d010000043fa44d82612123db30")
-    }
-
-    @Test
     fun serializeLocalTime() {
         roundTripSerialization(LocalTime(12, 34, 56, 789))
         roundTripSerialization(LocalTime.MIN)
