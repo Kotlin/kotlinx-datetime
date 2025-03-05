@@ -208,7 +208,7 @@ private object DateFields {
     val year = GenericFieldSpec(PropertyAccessor(DateFieldContainer::year))
     val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
     val dayOfMonth = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfMonth), minValue = 1, maxValue = 31)
-    val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfWeek), minValue = 1, maxValue = 7)
+    val dayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfWeek), minValue = 1, maxValue = 7)
     val dayOfYear = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfYear), minValue = 1, maxValue = 366)
 }
 
@@ -425,7 +425,7 @@ private class DayOfYearDirective(private val padding: Padding) :
 }
 
 private class DayOfWeekDirective(private val names: DayOfWeekNames) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.isoDayOfWeek, names.names, "dayOfWeekName") {
+    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.dayOfWeek, names.names, "dayOfWeekName") {
 
     override val builderRepresentation: String
         get() =
