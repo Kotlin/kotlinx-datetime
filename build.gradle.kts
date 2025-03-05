@@ -82,7 +82,7 @@ subprojects {
     }
     tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
-            freeCompilerArgs.add("-jvm-default=disable")
+            freeCompilerArgs.add("-Xjvm-default=disable")
         }
     }
     tasks.withType<KotlinNativeCompile>().configureEach {
