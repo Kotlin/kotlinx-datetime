@@ -18,7 +18,9 @@ import java.time.LocalDate as jtLocalDate
 import kotlin.internal.*
 
 @Serializable(with = LocalDateIso8601Serializer::class)
-public actual class LocalDate internal constructor(internal val value: jtLocalDate) : Comparable<LocalDate> {
+public actual class LocalDate internal constructor(
+    internal val value: jtLocalDate
+) : Comparable<LocalDate>, java.io.Serializable {
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate =
             if (format === Formats.ISO) {
@@ -89,6 +91,8 @@ public actual class LocalDate internal constructor(internal val value: jtLocalDa
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @LowPriorityInOverloadResolution
     internal fun toEpochDays(): Int = value.toEpochDay().clampToInt()
+
+    private fun writeReplace(): Any = Ser(Ser.DATE_TAG, this)
 }
 
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))

@@ -20,7 +20,9 @@ import java.time.Instant as jtInstant
 import java.time.Clock as jtClock
 
 @Serializable(with = InstantIso8601Serializer::class)
-public actual class Instant internal constructor(internal val value: jtInstant) : Comparable<Instant> {
+public actual class Instant internal constructor(
+    internal val value: jtInstant
+) : Comparable<Instant> {
 
     public actual val epochSeconds: Long
         get() = value.epochSecond
