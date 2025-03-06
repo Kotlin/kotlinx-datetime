@@ -29,6 +29,9 @@ allprojects {
         // outputs the compiler version to logs so we can check whether the train configuration applied
         kotlinOptions.freeCompilerArgs += "-version"
     }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+        compilerOptions { freeCompilerArgs.add("-Xjvm-default=disable") }
+    }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
         compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
     }
