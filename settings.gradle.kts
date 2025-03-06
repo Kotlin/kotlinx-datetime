@@ -6,9 +6,11 @@ pluginManagement {
     }
     val dokkaVersion: String by settings
     val benchmarksVersion: String by settings
+    val bcvVersion: String by settings
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
         id("me.champeau.jmh") version benchmarksVersion
+        id("org.jetbrains.kotlinx.binary-compatibility-validator") version bcvVersion
     }
 }
 

@@ -14,6 +14,7 @@ plugins {
     id("org.jetbrains.dokka")
     `maven-publish`
     id("org.jetbrains.kotlinx.kover")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 mavenPublicationsPom {
@@ -440,4 +441,11 @@ tasks.configureEach {
 with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
     nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
     nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+}
+
+apiValidation {
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib {
+        enabled = true
+    }
 }
