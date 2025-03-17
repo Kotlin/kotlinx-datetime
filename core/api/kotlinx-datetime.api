@@ -796,6 +796,15 @@ public final class kotlinx/datetime/serializers/DatePeriodIso8601Serializer : ko
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/DatePeriod;)V
 }
 
+public final class kotlinx/datetime/serializers/DatePeriodSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/DatePeriodSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/DatePeriod;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/DatePeriod;)V
+}
+
 public final class kotlinx/datetime/serializers/DateTimePeriodComponentSerializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/DateTimePeriodComponentSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
@@ -807,6 +816,15 @@ public final class kotlinx/datetime/serializers/DateTimePeriodComponentSerialize
 
 public final class kotlinx/datetime/serializers/DateTimePeriodIso8601Serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/DateTimePeriodIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/DateTimePeriod;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/DateTimePeriod;)V
+}
+
+public final class kotlinx/datetime/serializers/DateTimePeriodSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/DateTimePeriodSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/DateTimePeriod;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
@@ -850,6 +868,52 @@ public final class kotlinx/datetime/serializers/FixedOffsetTimeZoneSerializer : 
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/FixedOffsetTimeZone;)V
 }
 
+public abstract class kotlinx/datetime/serializers/FormattedInstantSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/Instant;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/Instant;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class kotlinx/datetime/serializers/FormattedLocalDateSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalDate;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDate;)V
+}
+
+public abstract class kotlinx/datetime/serializers/FormattedLocalDateTimeSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalDateTime;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDateTime;)V
+}
+
+public abstract class kotlinx/datetime/serializers/FormattedLocalTimeSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalTime;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalTime;)V
+}
+
+public abstract class kotlinx/datetime/serializers/FormattedUtcOffsetSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/UtcOffset;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/UtcOffset;)V
+}
+
 public final class kotlinx/datetime/serializers/InstantComponentSerializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/InstantComponentSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
@@ -861,6 +925,15 @@ public final class kotlinx/datetime/serializers/InstantComponentSerializer : kot
 
 public final class kotlinx/datetime/serializers/InstantIso8601Serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/InstantIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/Instant;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/Instant;)V
+}
+
+public final class kotlinx/datetime/serializers/InstantSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/InstantSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/Instant;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
@@ -886,6 +959,15 @@ public final class kotlinx/datetime/serializers/LocalDateIso8601Serializer : kot
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDate;)V
 }
 
+public final class kotlinx/datetime/serializers/LocalDateSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalDateSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalDate;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDate;)V
+}
+
 public final class kotlinx/datetime/serializers/LocalDateTimeComponentSerializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalDateTimeComponentSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
@@ -904,6 +986,15 @@ public final class kotlinx/datetime/serializers/LocalDateTimeIso8601Serializer :
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDateTime;)V
 }
 
+public final class kotlinx/datetime/serializers/LocalDateTimeSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalDateTimeSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalDateTime;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalDateTime;)V
+}
+
 public final class kotlinx/datetime/serializers/LocalTimeComponentSerializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalTimeComponentSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
@@ -915,6 +1006,15 @@ public final class kotlinx/datetime/serializers/LocalTimeComponentSerializer : k
 
 public final class kotlinx/datetime/serializers/LocalTimeIso8601Serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalTimeIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalTime;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/LocalTime;)V
+}
+
+public final class kotlinx/datetime/serializers/LocalTimeSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/LocalTimeSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/LocalTime;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
@@ -956,6 +1056,15 @@ public final class kotlinx/datetime/serializers/TimeZoneSerializer : kotlinx/ser
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/TimeZone;)V
+}
+
+public final class kotlinx/datetime/serializers/UtcOffsetIso8601Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/UtcOffsetIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/UtcOffset;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/UtcOffset;)V
 }
 
 public final class kotlinx/datetime/serializers/UtcOffsetSerializer : kotlinx/serialization/KSerializer {
