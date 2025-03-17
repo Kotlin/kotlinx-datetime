@@ -167,13 +167,13 @@ class DateTimeComponentsSamples {
     fun date() {
         // Formatting and parsing a date in complex scenarios
         val format = DateTimeComponents.Format {
-            year(); char('-'); monthNumber(); char('-'); dayOfMonth()
+            year(); char('-'); monthNumber(); char('-'); day()
         }
         val formattedDate = format.format {
             setDate(LocalDate(2023, 1, 2))
             check(year == 2023)
             check(month == Month.JANUARY)
-            check(dayOfMonth == 2)
+            check(day == 2)
             check(dayOfWeek == DayOfWeek.MONDAY)
             check(dayOfYear == 2)
         }
@@ -182,7 +182,7 @@ class DateTimeComponentsSamples {
         check(parsedDate.toLocalDate() == LocalDate(2023, 1, 2))
         check(parsedDate.year == 2023)
         check(parsedDate.month == Month.JANUARY)
-        check(parsedDate.dayOfMonth == 2)
+        check(parsedDate.day == 2)
         check(parsedDate.dayOfWeek == null)
         check(parsedDate.dayOfYear == null)
     }

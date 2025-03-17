@@ -130,12 +130,12 @@ public expect open class TimeZone {
      * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
      *
      * Note that the conversion is not always well-defined. There can be the following possible situations:
-     * - Only one instant has this datetime value in the [timeZone].
+     * - Only one instant has this datetime value in the time zone.
      *   In this case, the conversion is unambiguous.
-     * - No instant has this datetime value in the [timeZone].
+     * - No instant has this datetime value in the time zone.
      *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
      *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
-     * - Two possible instants can have these datetime components in the [timeZone].
+     * - Two possible instants can have these datetime components in the time zone.
      *   In this case, the earlier instant is returned.
      *
      * @see Instant.toLocalDateTime

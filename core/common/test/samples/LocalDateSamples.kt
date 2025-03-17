@@ -24,7 +24,7 @@ class LocalDateSamples {
         // Parsing LocalDate values using predefined and custom formats
         check(LocalDate.parse("2024-04-16") == LocalDate(2024, Month.APRIL, 16))
         val customFormat = LocalDate.Format {
-            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
+            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); day(); chars(", "); year()
         }
         check(LocalDate.parse("Apr 16, 2024", customFormat) == LocalDate(2024, Month.APRIL, 16))
     }
@@ -42,7 +42,7 @@ class LocalDateSamples {
     fun customFormat() {
         // Parsing and formatting LocalDate values using a custom format
         val customFormat = LocalDate.Format {
-            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
+            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); day(); chars(", "); year()
         }
         val date = customFormat.parse("Apr 16, 2024")
         check(date == LocalDate(2024, Month.APRIL, 16))
@@ -55,9 +55,9 @@ class LocalDateSamples {
         // Constructing a LocalDate value using its constructor
         val date = LocalDate(2024, 4, 16)
         check(date.year == 2024)
-        check(date.monthNumber == 4)
+        check(date.month.number == 4)
         check(date.month == Month.APRIL)
-        check(date.dayOfMonth == 16)
+        check(date.day == 16)
     }
 
     @Test
@@ -66,7 +66,7 @@ class LocalDateSamples {
         val date = LocalDate(2024, Month.APRIL, 16)
         check(date.year == 2024)
         check(date.month == Month.APRIL)
-        check(date.dayOfMonth == 16)
+        check(date.day == 16)
     }
 
     @Test
@@ -86,10 +86,10 @@ class LocalDateSamples {
     }
 
     @Test
-    fun dayOfMonth() {
+    fun day() {
         // Getting the day of the month
-        for (dayOfMonth in 1..30) {
-            check(LocalDate(2024, Month.APRIL, dayOfMonth).dayOfMonth == dayOfMonth)
+        for (day in 1..30) {
+            check(LocalDate(2024, Month.APRIL, day).day == day)
         }
     }
 
@@ -140,7 +140,7 @@ class LocalDateSamples {
         check(LocalDate(2024, 4, 16).toString() == "2024-04-16")
         check(LocalDate(2024, 4, 16).format(LocalDate.Formats.ISO) == "2024-04-16")
         val customFormat = LocalDate.Format {
-            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); dayOfMonth(); chars(", "); year()
+            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); day(); chars(", "); year()
         }
         check(LocalDate(2024, 4, 16).format(customFormat) == "Apr 16, 2024")
     }

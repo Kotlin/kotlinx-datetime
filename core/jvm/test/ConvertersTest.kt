@@ -61,7 +61,7 @@ class ConvertersTest {
     @Test
     fun localDateTime() {
         fun test(ktDateTime: LocalDateTime) {
-            val jtDateTime = with(ktDateTime) { JTLocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanosecond) }
+            val jtDateTime = with(ktDateTime) { JTLocalDateTime.of(year, month, day, hour, minute, second, nanosecond) }
 
             assertEquals(ktDateTime, jtDateTime.toKotlinLocalDateTime())
             assertEquals(jtDateTime, ktDateTime.toJavaLocalDateTime())
@@ -95,7 +95,7 @@ class ConvertersTest {
     @Test
     fun localDate() {
         fun test(ktDate: LocalDate) {
-            val jtDate = with(ktDate) { JTLocalDate.of(year, month, dayOfMonth) }
+            val jtDate = with(ktDate) { JTLocalDate.of(year, month, day) }
 
             assertEquals(ktDate, jtDate.toKotlinLocalDate())
             assertEquals(jtDate, ktDate.toJavaLocalDate())

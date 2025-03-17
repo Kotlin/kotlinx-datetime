@@ -245,7 +245,7 @@ class TimeZoneTest {
         }
     }
 
-    private fun LocalDateTime(year: Int, monthNumber: Int, dayOfMonth: Int) = LocalDateTime(year, monthNumber, dayOfMonth, 0, 0)
+    private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
 
 }
 

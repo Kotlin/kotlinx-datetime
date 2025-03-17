@@ -108,7 +108,7 @@ val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone
 ```
 
 A `LocalDateTime` instance exposes familiar components of the Gregorian calendar: 
-`year`, `month`, `dayOfMonth`, `hour`, and so on up to `nanosecond`.
+`year`, `month`, `day`, `hour`, and so on up to `nanosecond`.
 The property `dayOfWeek` shows what weekday that date is,
 and `dayOfYear` shows the day number since the beginning of a year.
 
@@ -210,7 +210,7 @@ can define their own format or use some of the predefined ones:
 val dateFormat = LocalDate.Format {
     monthNumber(padding = Padding.SPACE)
     char('/')
-    dayOfMonth()
+    day()
     char(' ')
     year()
 }

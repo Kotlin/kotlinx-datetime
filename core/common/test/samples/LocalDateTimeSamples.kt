@@ -14,9 +14,9 @@ class LocalDateTimeSamples {
     @Test
     fun alternativeConstruction() {
         // Constructing a LocalDateTime value by specifying its components
-        val dateTime1 = LocalDateTime(year = 2021, monthNumber = 3, dayOfMonth = 27, hour = 2, minute = 16, second = 20)
+        val dateTime1 = LocalDateTime(year = 2021, month = 3, day = 27, hour = 2, minute = 16, second = 20)
         val dateTime2 = LocalDateTime(
-            year = 2021, month = Month.MARCH, dayOfMonth = 27,
+            year = 2021, month = Month.MARCH, day = 27,
             hour = 2, minute = 16, second = 20, nanosecond = 0
         )
         check(dateTime1 == dateTime2)
@@ -71,21 +71,21 @@ class LocalDateTimeSamples {
         // Constructing a LocalDateTime value using its constructor
         val dateTime = LocalDateTime(
             year = 2024,
-            monthNumber = 2,
-            dayOfMonth = 15,
+            month = 2,
+            day = 15,
             hour = 16,
             minute = 48,
             second = 59,
-            nanosecond = 999_999_999,
+            nanosecond = 999_999_999
         )
         check(dateTime.date == LocalDate(2024, 2, 15))
         check(dateTime.time == LocalTime(16, 48, 59, 999_999_999))
         val dateTimeWithoutSeconds = LocalDateTime(
             year = 2024,
-            monthNumber = 2,
-            dayOfMonth = 15,
+            month = 2,
+            day = 15,
             hour = 16,
-            minute = 48,
+            minute = 48
         )
         check(dateTimeWithoutSeconds.date == LocalDate(2024, 2, 15))
         check(dateTimeWithoutSeconds.time == LocalTime(16, 48))
@@ -97,20 +97,20 @@ class LocalDateTimeSamples {
         val dateTime = LocalDateTime(
             year = 2024,
             month = Month.FEBRUARY,
-            dayOfMonth = 15,
+            day = 15,
             hour = 16,
             minute = 48,
             second = 59,
-            nanosecond = 999_999_999,
+            nanosecond = 999_999_999
         )
         check(dateTime.date == LocalDate(2024, Month.FEBRUARY, 15))
         check(dateTime.time == LocalTime(16, 48, 59, 999_999_999))
         val dateTimeWithoutSeconds = LocalDateTime(
             year = 2024,
             month = Month.FEBRUARY,
-            dayOfMonth = 15,
+            day = 15,
             hour = 16,
-            minute = 48,
+            minute = 48
         )
         check(dateTimeWithoutSeconds.date == LocalDate(2024, Month.FEBRUARY, 15))
         check(dateTimeWithoutSeconds.time == LocalTime(16, 48))
@@ -136,8 +136,7 @@ class LocalDateTimeSamples {
         val dateTime = LocalDateTime(date, time)
         check(dateTime.year == dateTime.date.year)
         check(dateTime.month == dateTime.date.month)
-        check(dateTime.monthNumber == dateTime.date.monthNumber)
-        check(dateTime.dayOfMonth == dateTime.date.dayOfMonth)
+        check(dateTime.day == dateTime.date.day)
         check(dateTime.dayOfWeek == dateTime.date.dayOfWeek)
         check(dateTime.dayOfYear == dateTime.date.dayOfYear)
     }

@@ -43,7 +43,7 @@ class DateTimeFormatSamples {
             // the input string is in the expected format, but the value is invalid
         }
         // to parse strings that have valid formats but invalid values, use `DateTimeComponents`:
-        check(DateTimeComponents.Format { date(LocalDate.Formats.ISO) }.parse("2021-02-40").dayOfMonth == 40)
+        check(DateTimeComponents.Format { date(LocalDate.Formats.ISO) }.parse("2021-02-40").day == 40)
     }
 
     @Test
@@ -55,7 +55,7 @@ class DateTimeFormatSamples {
         check(LocalDate.Formats.ISO.parseOrNull("2021-02-40") == null)
         // to parse strings that have valid formats but invalid values, use `DateTimeComponents`:
         val dateTimeComponentsFormat = DateTimeComponents.Format { date(LocalDate.Formats.ISO) }
-        check(dateTimeComponentsFormat.parseOrNull("2021-02-40")?.dayOfMonth == 40)
+        check(dateTimeComponentsFormat.parseOrNull("2021-02-40")?.day == 40)
     }
 
     @Test
@@ -70,7 +70,7 @@ class DateTimeFormatSamples {
             customFormatAsKotlinCode.contains("""
                 monthNumber()
                 char('/')
-                dayOfMonth()
+                day()
                 char(' ')
                 year()
             """.trimIndent())
@@ -86,7 +86,7 @@ class DateTimeFormatSamples {
                 chars(", ")
                 monthNumber(Padding.NONE)
                 char('/')
-                dayOfMonth(Padding.ZERO)
+                day(Padding.ZERO)
             }
             val leoFirstReignStart = LocalDate(457, 2, 7)
             check(leoFirstReignStart.format(format) == " 457, 2/07")
@@ -98,7 +98,7 @@ class DateTimeFormatSamples {
             val format = LocalDate.Format {
                 monthNumber(Padding.ZERO) // padding with zeros is the default, but can be explicitly specified
                 char('/')
-                dayOfMonth()
+                day()
                 char(' ')
                 year()
             }
@@ -119,7 +119,7 @@ class DateTimeFormatSamples {
             val format = LocalDate.Format {
                 monthNumber(Padding.NONE)
                 char('/')
-                dayOfMonth()
+                day()
                 char(' ')
                 year()
             }
@@ -136,7 +136,7 @@ class DateTimeFormatSamples {
             val format = LocalDate.Format {
                 monthNumber(Padding.SPACE)
                 char('/')
-                dayOfMonth()
+                day()
                 char(' ')
                 year()
             }

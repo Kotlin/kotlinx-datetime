@@ -9,6 +9,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.datetime.serializers.LocalDateTimeComponentSerializer
 import kotlinx.serialization.Serializable
+import kotlin.internal.*
 
 /**
  * The representation of a specific civil date and time without a reference to a particular time zone.
@@ -137,7 +138,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          *
          * // `08/30 18:43:13`, using a custom format:
          * LocalDateTime.Format {
-         *   monthNumber(); char('/'); dayOfMonth()
+         *   monthNumber(); char('/'); day()
          *   char(' ')
          *   hour(); char(':'); minute()
          *   optional { char(':'); second() }
@@ -145,7 +146,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * ```
          *
          * Only parsing and formatting of well-formed values is supported. If the input does not fit the boundaries
-         * (for example, [dayOfMonth] is 31 for February), consider using [DateTimeComponents.Format] instead.
+         * (for example, [day] is 31 for February), consider using [DateTimeComponents.Format] instead.
          *
          * There is a collection of predefined formats in [LocalDateTime.Formats].
          *
@@ -194,27 +195,27 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /**
      * Constructs a [LocalDateTime] instance from the given date and time components.
      *
-     * The components [monthNumber] and [dayOfMonth] are 1-based.
+     * The components [month] and [day] are 1-based.
      *
      * The supported ranges of components:
      * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
-     * - [monthNumber] `1..12`
-     * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
+     * - [month] `1..12`
+     * - [day] `1..31`, the upper bound can be less, depending on the month
      * - [hour] `0..23`
      * - [minute] `0..59`
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
      * @throws IllegalArgumentException if any parameter is out of range
-     * or if [dayOfMonth] is invalid for the given [monthNumber] and [year].
+     * or if [day] is invalid for the given [monthNumber] and [year].
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunctionWithMonthNumber
      */
     public constructor(
         year: Int,
-        monthNumber: Int,
-        dayOfMonth: Int,
+        month: Int,
+        day: Int,
         hour: Int,
         minute: Int,
         second: Int = 0,
@@ -228,21 +229,21 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
      *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
      * - [month] all values of the [Month] enum
-     * - [dayOfMonth] `1..31`, the upper bound can be less, depending on the month
+     * - [day] `1..31`, the upper bound can be less, depending on the month
      * - [hour] `0..23`
      * - [minute] `0..59`
      * - [second] `0..59`
      * - [nanosecond] `0..999_999_999`
      *
      * @throws IllegalArgumentException if any parameter is out of range,
-     * or if [dayOfMonth] is invalid for the given [month] and [year].
+     * or if [day] is invalid for the given [month] and [year].
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunction
      */
     public constructor(
         year: Int,
         month: Month,
-        dayOfMonth: Int,
+        day: Int,
         hour: Int,
         minute: Int,
         second: Int = 0,
@@ -263,11 +264,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public val year: Int
 
-    /**
-     * Returns the number-of-the-month (1..12) component of the [date].
-     *
-     * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
-     */
+    /** @suppress */
+    @Deprecated("Use the 'month' property instead", ReplaceWith("month.number"), level = DeprecationLevel.WARNING)
     public val monthNumber: Int
 
     /**
@@ -282,6 +280,10 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.dateComponents
      */
+    public val day: Int
+
+    /** @suppress */
+    @Deprecated("Use the 'day' property instead", ReplaceWith("day"), level = DeprecationLevel.WARNING)
     public val dayOfMonth: Int
 
     /**
@@ -382,6 +384,52 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      */
     public override fun toString(): String
 }
+
+/**
+ * @suppress
+ */
+@Deprecated(
+    "Use the constructor that accepts a 'month' and a 'day'",
+    ReplaceWith("LocalDateTime(year = year, month = monthNumber, day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@LowPriorityInOverloadResolution
+public fun LocalDateTime(
+    year: Int,
+    monthNumber: Int,
+    dayOfMonth: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): LocalDateTime = LocalDateTime(
+    year = year, month = monthNumber, day = dayOfMonth,
+    hour = hour, minute = minute, second = second, nanosecond = nanosecond
+)
+
+/**
+ * @suppress
+ */
+@Deprecated(
+    "Use the constructor that accepts a 'day'",
+    ReplaceWith("LocalDateTime(year = year, month = month, day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@LowPriorityInOverloadResolution
+public fun LocalDateTime(
+    year: Int,
+    month: Month,
+    dayOfMonth: Int,
+    hour: Int,
+    minute: Int,
+    second: Int = 0,
+    nanosecond: Int = 0,
+): LocalDateTime = LocalDateTime(
+    year = year, month = month, day = dayOfMonth,
+    hour = hour, minute = minute, second = second, nanosecond = nanosecond
+)
 
 /**
  * Formats this value using the given [format].
