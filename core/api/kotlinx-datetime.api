@@ -272,7 +272,7 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun yearsUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
 }
 
-public final class kotlinx/datetime/LocalDate : java/lang/Comparable {
+public final class kotlinx/datetime/LocalDate : java/io/Serializable, java/lang/Comparable {
 	public static final field Companion Lkotlinx/datetime/LocalDate$Companion;
 	public fun <init> (III)V
 	public fun <init> (ILjava/time/Month;I)V
@@ -342,7 +342,7 @@ public final class kotlinx/datetime/LocalDateKt {
 	public static final fun toLocalDate (Ljava/lang/String;)Lkotlinx/datetime/LocalDate;
 }
 
-public final class kotlinx/datetime/LocalDateTime : java/lang/Comparable {
+public final class kotlinx/datetime/LocalDateTime : java/io/Serializable, java/lang/Comparable {
 	public static final field Companion Lkotlinx/datetime/LocalDateTime$Companion;
 	public fun <init> (IIIIIII)V
 	public synthetic fun <init> (IIIIIIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -397,7 +397,7 @@ public final class kotlinx/datetime/LocalDateTimeKt {
 	public static final fun toLocalDateTime (Ljava/lang/String;)Lkotlinx/datetime/LocalDateTime;
 }
 
-public final class kotlinx/datetime/LocalTime : java/lang/Comparable {
+public final class kotlinx/datetime/LocalTime : java/io/Serializable, java/lang/Comparable {
 	public static final field Companion Lkotlinx/datetime/LocalTime$Companion;
 	public fun <init> (IIII)V
 	public synthetic fun <init> (IIIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -474,6 +474,21 @@ public final class kotlinx/datetime/MonthKt {
 	public static final fun getNumber (Lkotlinx/datetime/Month;)I
 }
 
+public final class kotlinx/datetime/Ser : java/io/Externalizable {
+	public static final field Companion Lkotlinx/datetime/Ser$Companion;
+	public static final field DATE_TAG I
+	public static final field DATE_TIME_TAG I
+	public static final field TIME_TAG I
+	public static final field UTC_OFFSET_TAG I
+	public fun <init> ()V
+	public fun <init> (ILjava/lang/Object;)V
+	public fun readExternal (Ljava/io/ObjectInput;)V
+	public fun writeExternal (Ljava/io/ObjectOutput;)V
+}
+
+public final class kotlinx/datetime/Ser$Companion {
+}
+
 public class kotlinx/datetime/TimeZone {
 	public static final field Companion Lkotlinx/datetime/TimeZone$Companion;
 	public fun equals (Ljava/lang/Object;)Z
@@ -501,7 +516,7 @@ public final class kotlinx/datetime/TimeZoneKt {
 	public static final fun toLocalDateTime (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDateTime;
 }
 
-public final class kotlinx/datetime/UtcOffset {
+public final class kotlinx/datetime/UtcOffset : java/io/Serializable {
 	public static final field Companion Lkotlinx/datetime/UtcOffset$Companion;
 	public fun <init> (Ljava/time/ZoneOffset;)V
 	public fun equals (Ljava/lang/Object;)Z
