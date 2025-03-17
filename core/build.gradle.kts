@@ -36,37 +36,15 @@ java {
 kotlin {
     explicitApi()
 
-    // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
-    // Tier 1
-    macosX64()
-    macosArm64()
-    iosSimulatorArm64()
-    iosX64()
-    iosArm64()
-    // Tier 2
-    linuxX64()
-    linuxArm64()
-    watchosSimulatorArm64()
-    watchosX64()
-    watchosArm32()
-    watchosArm64()
-    tvosSimulatorArm64()
-    tvosX64()
-    tvosArm64()
-    // Tier 3
-    androidNativeArm32()
-    androidNativeArm64()
-    androidNativeX86()
-    androidNativeX64()
-    mingwX64()
-    watchosDeviceArm64()
-    // Deprecated
-    @Suppress("DEPRECATION") linuxArm32Hfp()
-
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
             group("commonKotlin") {
+                group("commonJs") {
+                    withJs()
+                    withWasmJs()
+                }
+                withWasmWasi()
                 group("native") {
                     group("tzfile") {
                         group("tzdbOnFilesystem") {
@@ -101,11 +79,6 @@ kotlin {
                         withMingw()
                     }
                 }
-                group("commonJs") {
-                    withJs()
-                    withWasmJs()
-                }
-                withWasmWasi()
             }
         }
     }
@@ -154,6 +127,33 @@ kotlin {
     wasmWasi {
         nodejs()
     }
+
+    // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    iosArm64()
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
+    // Tier 3
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX86()
+    androidNativeX64()
+    mingwX64()
+    watchosDeviceArm64()
+    // Deprecated
+    @Suppress("DEPRECATION") linuxArm32Hfp()
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
