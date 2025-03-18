@@ -408,9 +408,7 @@ public final class kotlinx/datetime/LocalTimeKt {
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;ILjava/time/Month;I)Lkotlinx/datetime/LocalDateTime;
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;ILjava/time/Month;ILkotlin/Unit;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun atDate (Lkotlinx/datetime/LocalTime;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalDateTime;
-	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;IIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;IIILkotlin/Unit;ILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
-	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;ILjava/time/Month;IILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun atDate$default (Lkotlinx/datetime/LocalTime;ILjava/time/Month;ILkotlin/Unit;ILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun format (Lkotlinx/datetime/LocalTime;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 	public static final fun toLocalTime (Ljava/lang/String;)Lkotlinx/datetime/LocalTime;
