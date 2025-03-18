@@ -187,4 +187,14 @@ class ConvertersTest {
         test("+08")
         test("-103030")
     }
+
+    @Test
+    fun clock() {
+        val jtInstant = java.time.Instant.parse("2023-02-07T12:46:52.13Z")
+        val jtClock = java.time.Clock.fixed(jtInstant, ZoneId.of("UTC"))
+        val ktClock = jtClock.toKotlinClock()
+
+        assertEquals(jtClock.instant().epochSecond, ktClock.now().epochSeconds)
+        assertEquals(jtClock.instant().toEpochMilli(), ktClock.now().toEpochMilliseconds())
+    }
 }
