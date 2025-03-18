@@ -3,6 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:JvmName("LocalDateTimeKt")
+@file:JvmMultifileClass
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
@@ -10,6 +12,8 @@ import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.datetime.serializers.LocalDateTimeComponentSerializer
 import kotlinx.serialization.Serializable
 import kotlin.internal.*
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * The representation of a specific civil date and time without a reference to a particular time zone.

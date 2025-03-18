@@ -2,7 +2,8 @@
  * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-@file:JvmName("LocalDateTimeJvmKt")
+@file:JvmName("LocalDateTimeKt")
+@file:JvmMultifileClass
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
@@ -29,14 +30,38 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
     public actual constructor(date: LocalDate, time: LocalTime) :
             this(jtLocalDateTime.of(date.value, time.value))
 
+    @Deprecated(
+        "Use kotlinx.datetime.Month",
+        ReplaceWith("LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)")
+    )
+    public constructor(
+        year: Int,
+        month: java.time.Month,
+        dayOfMonth: Int,
+        hour: Int,
+        minute: Int,
+        second: Int = 0,
+        nanosecond: Int = 0
+    ) : this(
+        year,
+        month.toKotlinMonth(),
+        dayOfMonth,
+        hour,
+        minute,
+        second,
+        nanosecond
+    )
+
     public actual val year: Int get() = value.year
     @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month.toKotlinMonth()
+    @PublishedApi internal fun getMonth(): java.time.Month = value.month
     @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
     public actual val dayOfMonth: Int get() = value.dayOfMonth
     public actual val day: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
+    @PublishedApi internal fun getDayOfWeek(): java.time.DayOfWeek = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
 
     public actual val hour: Int get() = value.hour
@@ -87,10 +112,16 @@ public actual class LocalDateTime internal constructor(internal val value: jtLoc
 
 }
 
+/**
+ * @suppress
+ */
 @Deprecated(
-    "Use kotlinx.datetime.Month",
-    ReplaceWith("LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)")
+    "Use the constructor that accepts a 'day'",
+    ReplaceWith("LocalDateTime(year = year, month = month.toKotlinMonth(), day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
+    level = DeprecationLevel.WARNING
 )
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
 public fun LocalDateTime(
     year: Int,
     month: java.time.Month,
@@ -98,13 +129,8 @@ public fun LocalDateTime(
     hour: Int,
     minute: Int,
     second: Int = 0,
-    nanosecond: Int = 0
+    nanosecond: Int = 0,
 ): LocalDateTime = LocalDateTime(
-    year,
-    month.toKotlinMonth(),
-    dayOfMonth,
-    hour,
-    minute,
-    second,
-    nanosecond
+    year = year, month = month.toKotlinMonth(), day = dayOfMonth,
+    hour = hour, minute = minute, second = second, nanosecond = nanosecond
 )
