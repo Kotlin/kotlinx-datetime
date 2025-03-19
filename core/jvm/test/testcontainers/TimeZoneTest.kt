@@ -7,7 +7,6 @@ package testcontainers
 
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
@@ -16,19 +15,11 @@ class TimeZoneTest {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val dockerfilePath = "./jvm/test/testcontainers/%s/Dockerfile"
+    @Container
+    val originalContainer = createTimezoneTestContainer("original")
 
     @Container
-    val originalContainer = TimezoneTestContainer(
-        Paths.get(String.format(dockerfilePath, "original")),
-        "ubuntu-arctic-longyearbyen"
-    )
-
-    @Container
-    val modifiedContainer = TimezoneTestContainer(
-        Paths.get(String.format(dockerfilePath, "modified")),
-        "ubuntu-new-longyearbyen-modified"
-    )
+    val modifiedContainer = createTimezoneTestContainer("modified")
 
     @Test
     fun test() {
