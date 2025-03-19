@@ -7,15 +7,23 @@ package testcontainers
 
 import kotlinx.datetime.*
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.nio.file.Paths
+import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
 
 @Testcontainers
 class TimeZoneTest {
+
     @Test
     fun test() {
         val tz = TimeZone.currentSystemDefault()
         assertNotEquals(TimeZone.UTC, tz)
         println("System time zone: $tz")
+
+        val filePath = Paths.get("./jvm/test/testcontainers/original/Dockerfile")
+        val content = String(Files.readAllBytes(filePath), Charsets.UTF_8)
+        println("Dockerfile content: \n$content")
+
     }
 }
