@@ -16,15 +16,17 @@ class TimeZoneTest {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    private val dockerfilePath = "./jvm/test/testcontainers/%s/Dockerfile"
+
     @Container
     val originalContainer = TimezoneTestContainer(
-        Paths.get("./jvm/test/testcontainers/original/Dockerfile"),
+        Paths.get(String.format(dockerfilePath, "original")),
         "ubuntu-arctic-longyearbyen"
     )
 
     @Container
     val modifiedContainer = TimezoneTestContainer(
-        Paths.get("./jvm/test/testcontainers/modified/Dockerfile"),
+        Paths.get(String.format(dockerfilePath, "modified")),
         "ubuntu-new-longyearbyen-modified"
     )
 
