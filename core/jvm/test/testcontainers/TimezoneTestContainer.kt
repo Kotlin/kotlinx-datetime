@@ -21,7 +21,11 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
     }
 
     fun runTest(): ExecResult {
-        return execInContainer("bash", "-c", "chmod +x /app/test.kexe && /app/test.kexe")
+        return execInContainer(
+            "bash",
+            "-c",
+            "chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=kotlinx.datetime.test.TimeZoneTest.defaultTimeZoneTest"
+        )
     }
 }
 
