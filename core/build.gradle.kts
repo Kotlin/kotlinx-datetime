@@ -226,6 +226,8 @@ kotlin {
             dependencies {
                 implementation("org.testcontainers:testcontainers:1.19.7")
                 implementation("org.testcontainers:junit-jupiter:1.19.7")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+                runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
             }
         }
     }
@@ -234,6 +236,7 @@ kotlin {
 tasks {
     val jvmTest by existing(Test::class) {
         // maxHeapSize = "1024m"
+        useJUnitPlatform()
     }
 
     val compileJavaModuleInfo by registering(JavaCompile::class) {
