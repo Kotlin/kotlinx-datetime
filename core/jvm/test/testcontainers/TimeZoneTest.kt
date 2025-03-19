@@ -9,9 +9,12 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.nio.file.Paths
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 
 @Testcontainers
 class TimeZoneTest {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     @Container
     val originalContainer = TimezoneTestContainer(
@@ -29,7 +32,7 @@ class TimeZoneTest {
     fun test() {
         val originalExecResult = originalContainer.runTest()
         val modifiedExecResult = modifiedContainer.runTest()
-        println(originalExecResult.stdout)
-        println(modifiedExecResult.stdout)
+        logger.info("Original container stdout: ${originalExecResult.stdout}")
+        logger.info("Modified container stdout: ${modifiedExecResult.stdout}")
     }
 }
