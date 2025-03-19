@@ -221,6 +221,13 @@ kotlin {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
         }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation("org.testcontainers:testcontainers:1.19.7")
+                implementation("org.testcontainers:junit-jupiter:1.19.7")
+            }
+        }
     }
 }
 
