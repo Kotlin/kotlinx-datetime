@@ -5,6 +5,7 @@
 
 package testcontainers
 
+import org.junit.jupiter.api.BeforeAll
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.junit.jupiter.params.ParameterizedTest
@@ -13,8 +14,6 @@ import org.slf4j.LoggerFactory
 
 @Testcontainers
 class TimeZoneTest {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     @ParameterizedTest
     @MethodSource("containers")
@@ -27,6 +26,8 @@ class TimeZoneTest {
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(javaClass)
+
         @JvmStatic
         @Container
         val originalContainer = createTimezoneTestContainer("original")
@@ -38,6 +39,30 @@ class TimeZoneTest {
         @JvmStatic
         fun containers(): List<TimezoneTestContainer> {
             return listOf(originalContainer, modifiedContainer)
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun buildTestBinary() {
+            logger.info("Building test binary...")
+
+            val process = ProcessBuilder()
+                .command("../gradlew", "linkDebugTestLinuxArm64")
+                .redirectErrorStream(true)
+                .start()
+
+            process.inputStream.bufferedReader().use { reader ->
+                reader.lines().forEach { line ->
+                    logger.info("Build: {}", line)
+                }
+            }
+
+            val exitCode = process.waitFor()
+            if (exitCode != 0) {
+                throw IllegalStateException("Failed to build test binary: exit code $exitCode")
+            }
+
+            logger.info("Test binary built successfully")
         }
     }
 }
