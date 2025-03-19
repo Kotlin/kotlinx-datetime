@@ -20,8 +20,8 @@ class TimeZoneTest {
     fun test(container: TimezoneTestContainer) {
         val execResult = container.runTest()
 
-        logger.info("Container stdout: ${execResult.stdout}")
-        logger.info("Container stderr: ${execResult.stderr}")
+        logger.info("Container stdout:\n${execResult.stdout}")
+        logger.info("Container stderr:\n${execResult.stderr}")
         logger.info("Container exit code: ${execResult.exitCode}")
     }
 
