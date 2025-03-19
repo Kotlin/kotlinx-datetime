@@ -24,7 +24,7 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         return execInContainer(
             "bash",
             "-c",
-            "chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=kotlinx.datetime.test.TimeZoneTest.defaultTimeZoneTest"
+            "chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=kotlinx.datetime.test.TimeZoneLinuxNativeTest.*"
         )
     }
 }

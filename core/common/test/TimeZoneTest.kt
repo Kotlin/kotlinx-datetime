@@ -13,13 +13,6 @@ import kotlin.test.*
 class TimeZoneTest {
 
     @Test
-    fun defaultTimeZoneTest() {
-        val tz = TimeZone.currentSystemDefault()
-        println("TIMEZONE: $tz")
-        assertEquals(TimeZone.of("Europe/Oslo"), tz)
-    }
-
-    @Test
     fun utc() {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
         println(utc)
