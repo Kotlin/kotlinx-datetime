@@ -38,3 +38,6 @@ internal fun removeLeadingZerosFromLongYearFormLocalDate(input: String) =
 
 internal fun removeLeadingZerosFromLongYearFormLocalDateTime(input: String) =
     removeLeadingZerosFromLongYearForm(input.toString(), 12) // 12 = "-01-02T23:59".length
+
+internal fun removeLeadingZerosFromLongYearFormYearMonth(input: String) =
+    removeLeadingZerosFromLongYearForm(input.toString(), 3) // 3 = "-01".length
