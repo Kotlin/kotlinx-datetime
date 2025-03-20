@@ -21,24 +21,33 @@ private val tzdb = runCatching { TzdbOnFilesystem() }
 @OptIn(ExperimentalForeignApi::class)
 private fun getTimezoneFromEtcTimezone(): String? {
     val timezoneContent = Path.fromString("/etc/timezone").readBytes()?.toKString()?.trim() ?: return null
-    return chaseSymlinks("/usr/share/zoneinfo/$timezoneContent")?.splitTimeZonePath()?.second?.toString()
+    val zoneId = chaseSymlinks("/usr/share/zoneinfo/$timezoneContent")
+        ?.splitTimeZonePath()?.second?.toString()
+        ?: return null
+
+    val zoneInfoFile = Path.fromString("/usr/share/zoneinfo/$zoneId").readBytes() ?: return null
+    val etcLocaltime = Path.fromString("/etc/localtime").readBytes() ?: return null
+
+    if (!etcLocaltime.contentEquals(zoneInfoFile)) {
+        throw IllegalTimeZoneException(
+            "Timezone mismatch: /etc/timezone specifies " +
+                    "'${if (timezoneContent != zoneId) timezoneContent else zoneId}' " +
+                    "but /etc/localtime content differs from /usr/share/zoneinfo/$zoneId"
+        )
+    }
+
+    return zoneId
 }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
-    val zonePath = currentSystemTimeZonePath
-    if (zonePath != null) {
-        var zoneId = zonePath.splitTimeZonePath()?.second?.toString()
-        if (zoneId != null) {
-            return zoneId to null
-        } else {
-            zoneId = getTimezoneFromEtcTimezone()
-            if (zoneId != null) {
-                return zoneId to null
-            } else {
-                throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
-            }
-        }
+    val zonePath = currentSystemTimeZonePath ?: return "Z" to null
+    zonePath.splitTimeZonePath()?.second?.toString()?.let { zoneId ->
+        return zoneId to null
     }
 
-    return "Z" to null
+    getTimezoneFromEtcTimezone()?.let { zoneId ->
+        return zoneId to null
+    }
+
+    throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
 }
