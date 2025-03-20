@@ -18,7 +18,6 @@ class YearMonthTest {
 
     private fun checkComponents(value: YearMonth, year: Int, month: Int) {
         assertEquals(year, value.year)
-        assertEquals(month, value.monthNumber)
         assertEquals(Month(month), value.month)
 
         val fromComponents = YearMonth(year, month)

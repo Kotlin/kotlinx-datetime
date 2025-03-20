@@ -291,3 +291,10 @@ internal interface AbstractWithYearMonthBuilder : DateTimeFormatBuilder.WithYear
 }
 
 private val emptyIncompleteYearMonth = IncompleteYearMonth()
+
+// these are constants so that the formats are not recreated every time they are used
+internal val ISO_YEAR_MONTH by lazy {
+    YearMonthFormat.build {
+        year(); char('-'); monthNumber()
+    }
+}

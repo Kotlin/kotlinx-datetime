@@ -58,7 +58,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.YearMonthSamples.customFormat
  */
 @Serializable(with = YearMonthIso8601Serializer::class)
-public class YearMonth
+public expect class YearMonth
 /**
  * Constructs a [YearMonth] instance from the given year-month components.
  *
@@ -78,49 +78,37 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.year
      */
-    public val year: Int = year
-
-    /**
-     * Returns the number-of-the-month (1..12) component of the year-month.
-     *
-     * Shortcut for `month.number`.
-     */
-    internal val monthNumber: Int = month
-
-    init {
-        require(month in 1..12) { "Month must be in 1..12, but was $month" }
-        require(year in LocalDate.MIN.year..LocalDate.MAX.year) {
-            "Year $year is out of range: ${LocalDate.MIN.year}..${LocalDate.MAX.year}"
-        }
-    }
+    public val year: Int
 
     /**
      * Returns the month ([Month]) component of the year-month.
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.month
      */
-    public val month: Month get() = Month(monthNumber)
+    public val month: Month
 
     /**
      * Returns the first day of the year-month.
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.firstAndLastDay
      */
-    public val firstDay: LocalDate get() = onDay(1)
+    public val firstDay: LocalDate
 
     /**
      * Returns the last day of the year-month.
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.firstAndLastDay
      */
-    public val lastDay: LocalDate get() = onDay(numberOfDays)
+    public val lastDay: LocalDate
 
     /**
      * Returns the number of days in the year-month.
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.numberOfDays
      */
-    public val numberOfDays: Int get() = monthNumber.monthLength(isLeapYear(year))
+    public val numberOfDays: Int
+
+    internal val monthNumber: Int
 
     /**
      * Returns the range of days in the year-month.
@@ -138,7 +126,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      * @throws IllegalArgumentException if [year] is out of range.
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.constructorFunction
      */
-    public constructor(year: Int, month: Month): this(year, month.number)
+    public constructor(year: Int, month: Month)
 
     public companion object {
         /**
@@ -155,8 +143,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
          * @see YearMonth.format for formatting using a custom format.
          * @sample kotlinx.datetime.test.samples.YearMonthSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<YearMonth> = Formats.ISO): YearMonth =
-            format.parse(input)
+        public fun parse(input: CharSequence, format: DateTimeFormat<YearMonth> = Formats.ISO): YearMonth
 
         /**
          * Creates a new format for parsing and formatting [YearMonth] values.
@@ -167,8 +154,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
          * @sample kotlinx.datetime.test.samples.YearMonthSamples.customFormat
          */
         @Suppress("FunctionName")
-        public fun Format(block: DateTimeFormatBuilder.WithYearMonth.() -> Unit): DateTimeFormat<YearMonth> =
-            YearMonthFormat.build(block)
+        public fun Format(block: DateTimeFormatBuilder.WithYearMonth.() -> Unit): DateTimeFormat<YearMonth>
     }
 
     /**
@@ -194,9 +180,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
          *
          * @sample kotlinx.datetime.test.samples.YearMonthSamples.Formats.iso
          */
-        public val ISO: DateTimeFormat<YearMonth> = YearMonthFormat.build {
-            year(); char('-'); monthNumber()
-        }
+        public val ISO: DateTimeFormat<YearMonth>
     }
 
     /**
@@ -207,7 +191,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.compareToSample
      */
-    override fun compareTo(other: YearMonth): Int = compareValuesBy(this, other, YearMonth::year, YearMonth::month)
+    override fun compareTo(other: YearMonth): Int
 
     /**
      * Converts this year-month to the extended ISO 8601 string representation.
@@ -217,17 +201,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      * @see YearMonth.format for formatting using a custom format.
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.toStringSample
      */
-    override fun toString(): String = Formats.ISO.format(this)
-
-    /**
-     * @suppress
-     */
-    override fun equals(other: Any?): Boolean = other is YearMonth && year == other.year && month == other.month
-
-    /**
-     * @suppress
-     */
-    override fun hashCode(): Int = year * 31 + month.hashCode()
+    override fun toString(): String
 }
 
 /**
