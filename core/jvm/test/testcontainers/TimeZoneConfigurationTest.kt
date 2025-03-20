@@ -23,28 +23,40 @@ class TimeZoneConfigurationTest {
 
     @Test
     fun testDefaultContainerTimeZoneTests() {
-        logExecResult(defaultTimeZoneContainer.runTimeZoneTests())
+        assertExecSuccess(defaultTimeZoneContainer.runTimeZoneTests())
     }
 
     @Test
     fun testCustomContainerTimeZoneTests() {
-        logExecResult(customTimeZoneContainer.runTimeZoneTests())
+        assertExecSuccess(customTimeZoneContainer.runTimeZoneTests())
     }
 
     @Test
     fun testDefaultContainerAllTests() {
-        logExecResult(defaultTimeZoneContainer.runAllTests())
+        assertExecSuccess(defaultTimeZoneContainer.runAllTests())
     }
 
     @Test
     fun testCustomContainerAllTests() {
-        logExecResult(customTimeZoneContainer.runAllTests())
+        assertExecSuccess(customTimeZoneContainer.runAllTests())
     }
 
-    private fun logExecResult(execResult: ExecResult) {
+    private fun assertExecSuccess(execResult: ExecResult) {
         logger.info("Container stdout:\n${execResult.stdout}")
         logger.info("Container stderr:\n${execResult.stderr}")
         logger.info("Container exit code: ${execResult.exitCode}")
+
+        if (execResult.exitCode != 0) {
+            throw AssertionError(
+                """
+                |Command execution failed with exit code ${execResult.exitCode}.
+                |Stdout:
+                |${execResult.stdout}
+                |Stderr:
+                |${execResult.stderr}
+                """.trimMargin()
+            )
+        }
     }
 
     companion object {
