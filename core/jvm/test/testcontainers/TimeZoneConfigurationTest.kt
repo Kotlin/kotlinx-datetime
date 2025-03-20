@@ -48,6 +48,11 @@ class TimeZoneConfigurationTest {
         assertExecSuccess(container.execSymlinkTimeZoneTest())
     }
 
+    @Test
+    fun invalidTimezoneFormatTest() {
+        assertExecSuccess(container.execInvalidTimezoneFormatTest())
+    }
+
     private fun assertExecSuccess(execResult: ExecResult) {
         logger.info("Container stdout:\n${execResult.stdout}")
         logger.info("Container stderr:\n${execResult.stderr}")

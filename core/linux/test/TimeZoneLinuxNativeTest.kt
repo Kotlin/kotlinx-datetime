@@ -66,4 +66,14 @@ class TimeZoneLinuxNativeTest {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Paris"), tz)
     }
+
+    /**
+     * Tests that an invalid timezone format triggers an `IllegalTimeZoneException`.
+     */
+    @Test
+    fun invalidTimezoneFormatTest() = Testcontainers.runIfAvailable {
+        assertFailsWith<IllegalTimeZoneException> {
+            TimeZone.currentSystemDefault()
+        }
+    }
 }
