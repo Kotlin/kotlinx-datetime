@@ -9,32 +9,49 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.YearMonthIso8601Serializer
 import kotlinx.serialization.Serializable
+import java.time.DateTimeException
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.DateTimeParseException
+import java.time.format.SignStyle
+import java.time.YearMonth as jtYearMonth
 
 @Serializable(with = YearMonthIso8601Serializer::class)
-public actual class YearMonth
-public actual constructor(year: Int, month: Int) : Comparable<YearMonth>, java.io.Serializable {
-    public actual val year: Int = year
-    internal actual val monthNumber: Int = month
+public actual class YearMonth internal constructor(
+    internal val value: jtYearMonth
+) : Comparable<YearMonth>, java.io.Serializable {
+    public actual val year: Int get() = value.year
+    internal actual val monthNumber: Int get() = value.monthValue
 
-    init {
-        require(month in 1..12) { "Month must be in 1..12, but was $month" }
-        require(year in LocalDate.MIN.year..LocalDate.MAX.year) {
-            "Year $year is out of range: ${LocalDate.MIN.year}..${LocalDate.MAX.year}"
-        }
-    }
-
-    public actual val month: Month get() = Month(monthNumber)
-    public actual val firstDay: LocalDate get() = onDay(1)
-    public actual val lastDay: LocalDate get() = onDay(numberOfDays)
-    public actual val numberOfDays: Int get() = monthNumber.monthLength(isLeapYear(year))
+    public actual val month: Month get() = value.month.toKotlinMonth()
+    public actual val firstDay: LocalDate get() = LocalDate(value.atDay(1))
+    public actual val lastDay: LocalDate get() = LocalDate(value.atEndOfMonth())
+    public actual val numberOfDays: Int get() = value.lengthOfMonth()
 
     // val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
 
-    public actual constructor(year: Int, month: Month): this(year, month.number)
+    public actual constructor(year: Int, month: Int): this(try {
+        jtYearMonth.of(year, month)
+    } catch (e: DateTimeException) {
+        throw IllegalArgumentException(e)
+    })
+    public actual constructor(year: Int, month: Month): this(try {
+        jtYearMonth.of(year, month.toJavaMonth())
+    } catch (e: DateTimeException) {
+        throw IllegalArgumentException(e)
+    })
 
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<YearMonth>): YearMonth =
-            format.parse(input)
+            if (format === Formats.ISO) {
+                try {
+                    val sanitizedInput = removeLeadingZerosFromLongYearFormYearMonth(input.toString())
+                    jtYearMonth.parse(sanitizedInput).let(::YearMonth)
+                } catch (e: DateTimeParseException) {
+                    throw DateTimeFormatException(e)
+                }
+            } else {
+                format.parse(input)
+            }
 
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithYearMonth.() -> Unit): DateTimeFormat<YearMonth> =
@@ -45,14 +62,13 @@ public actual constructor(year: Int, month: Int) : Comparable<YearMonth>, java.i
         public actual val ISO: DateTimeFormat<YearMonth> get() = ISO_YEAR_MONTH
     }
 
-    actual override fun compareTo(other: YearMonth): Int =
-        compareValuesBy(this, other, YearMonth::year, YearMonth::month)
+    actual override fun compareTo(other: YearMonth): Int = value.compareTo(other.value)
 
-    actual override fun toString(): String = Formats.ISO.format(this)
+    actual override fun toString(): String = isoFormat.format(value)
 
-    override fun equals(other: Any?): Boolean = other is YearMonth && year == other.year && month == other.month
+    override fun equals(other: Any?): Boolean = this === other || other is YearMonth && value == other.value
 
-    override fun hashCode(): Int = year * 31 + month.hashCode()
+    override fun hashCode(): Int = value.hashCode()
 
     private fun writeReplace(): Any = Ser(Ser.YEAR_MONTH_TAG, this)
 }
@@ -63,4 +79,12 @@ internal fun YearMonth.Companion.fromEpochMonths(months: Long): YearMonth {
     val year = months.floorDiv(12) + 1970
     val month = months.mod(12) + 1
     return YearMonth(year.toInt(), month)
+}
+
+private val isoFormat by lazy {
+    DateTimeFormatterBuilder().parseCaseInsensitive()
+        .appendValue(java.time.temporal.ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+        .appendLiteral('-')
+        .appendValue(java.time.temporal.ChronoField.MONTH_OF_YEAR, 2)
+        .toFormatter()
 }
