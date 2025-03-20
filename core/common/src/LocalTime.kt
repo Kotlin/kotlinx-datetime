@@ -368,7 +368,7 @@ public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
  *
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWiseMonthNumber
  */
-public fun LocalTime.atDate(year: Int, month: Int, day: Int = 0): LocalDateTime =
+public fun LocalTime.atDate(year: Int, month: Int, day: Int): LocalDateTime =
     LocalDateTime(year, month, day, hour, minute, second, nanosecond)
 
 /** @suppress */
@@ -392,7 +392,7 @@ public fun LocalTime.atDate(year: Int, monthNumber: Int, dayOfMonth: Int, fakeAr
  *
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDateComponentWise
  */
-public fun LocalTime.atDate(year: Int, month: Month, day: Int = 0): LocalDateTime =
+public fun LocalTime.atDate(year: Int, month: Month, day: Int): LocalDateTime =
     LocalDateTime(year, month, day, hour, minute, second, nanosecond)
 
 /** @suppress */
