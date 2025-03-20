@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
 
@@ -16,10 +18,27 @@ internal actual fun getAvailableZoneIds(): Set<String> =
 
 private val tzdb = runCatching { TzdbOnFilesystem() }
 
+@OptIn(ExperimentalForeignApi::class)
+private fun getTimezoneFromEtcTimezone(): String? {
+    val timezoneContent = Path.fromString("/etc/timezone").readBytes()?.toKString()?.trim() ?: return null
+    return chaseSymlinks("/usr/share/zoneinfo/$timezoneContent")?.splitTimeZonePath()?.second?.toString()
+}
+
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
-    // according to https://www.man7.org/linux/man-pages/man5/localtime.5.html, when there is no symlink, UTC is used
-    val zonePath = currentSystemTimeZonePath ?: return "Z" to null
-    val zoneId = zonePath.splitTimeZonePath()?.second?.toString()
-        ?: throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
-    return zoneId to null
+    val zonePath = currentSystemTimeZonePath
+    if (zonePath != null) {
+        var zoneId = zonePath.splitTimeZonePath()?.second?.toString()
+        if (zoneId != null) {
+            return zoneId to null
+        } else {
+            zoneId = getTimezoneFromEtcTimezone()
+            if (zoneId != null) {
+                return zoneId to null
+            } else {
+                throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
+            }
+        }
+    }
+
+    return "Z" to null
 }
