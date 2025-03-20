@@ -43,6 +43,16 @@ class JvmSerializationTest {
     }
 
     @Test
+    fun serializeYearMonth() {
+        roundTripSerialization(YearMonth(2022, 1))
+        roundTripSerialization(YearMonth(1969, 7))
+        roundTripSerialization(YearMonth(-999999999, 1))
+        roundTripSerialization(YearMonth(999999999, 12))
+        expectedDeserialization(YearMonth(2024, 8), "090b000000000000028f")
+        expectedDeserialization(YearMonth(1970, 1), "090b0000000000000000")
+    }
+
+    @Test
     fun serializeTimeZone() {
         assertFailsWith<NotSerializableException> {
             roundTripSerialization(TimeZone.of("Europe/Moscow"))

@@ -101,6 +101,6 @@ public fun LocalDateTime.toNSDateComponents(): NSDateComponents {
 public fun YearMonth.toNSDateComponents(): NSDateComponents {
     val components = NSDateComponents()
     components.year = year.convert()
-    components.month = monthNumber.convert()
+    components.month = month.number.convert()
     return components
 }
