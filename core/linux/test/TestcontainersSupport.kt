@@ -16,6 +16,6 @@ object Testcontainers {
         get() = getenv("INSIDE_TESTCONTAINERS")?.toKString()?.toBoolean() == true
 
     inline fun runIfAvailable(block: () -> Unit) {
-        if (available) block() else println("Skipping test that requires testcontainers...")
+        if (available) block() else println("[----------] Skipping test that requires testcontainers...")
     }
 }
