@@ -545,6 +545,7 @@ public final class kotlinx/datetime/Ser : java/io/Externalizable {
 	public static final field DATE_TIME_TAG I
 	public static final field TIME_TAG I
 	public static final field UTC_OFFSET_TAG I
+	public static final field YEAR_MONTH_TAG I
 	public fun <init> ()V
 	public fun <init> (ILjava/lang/Object;)V
 	public fun readExternal (Ljava/io/ObjectInput;)V
@@ -617,7 +618,7 @@ public final class kotlinx/datetime/UtcOffsetKt {
 	public static final fun format (Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 }
 
-public final class kotlinx/datetime/YearMonth : java/lang/Comparable {
+public final class kotlinx/datetime/YearMonth : java/io/Serializable, java/lang/Comparable {
 	public static final field Companion Lkotlinx/datetime/YearMonth$Companion;
 	public fun <init> (II)V
 	public fun <init> (ILkotlinx/datetime/Month;)V

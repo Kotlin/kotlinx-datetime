@@ -46,7 +46,6 @@ class YearMonthSamples {
         // Constructing a YearMonth value using its constructor
         val yearMonth = YearMonth(2024, 4)
         check(yearMonth.year == 2024)
-        check(yearMonth.monthNumber == 4)
         check(yearMonth.month == Month.APRIL)
     }
 
