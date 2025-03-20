@@ -20,25 +20,30 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         withFileSystemBind(binaryDir, "/app", BindMode.READ_WRITE)
     }
 
-    fun runTimeZoneTests(): ExecResult {
-        return executeTest("--ktest_filter=kotlinx.datetime.test.TimeZoneLinuxNativeTest.*")
+    fun runDebianCopyTimeZoneTest(): ExecResult {
+        exec("rm /etc/localtime")
+        exec("cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime")
+        exec("echo 'Europe/Berlin' > /etc/timezone")
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.debianCopyTimeZoneTest")
     }
 
-    fun runAllTests(): ExecResult {
-        return executeTest()
+    fun runTimezoneMismatchTest(): ExecResult {
+        exec("rm -f /etc/localtime")
+        exec("cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime")
+        exec("echo 'Europe/Paris' > /etc/timezone")
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.timezoneMismatchTest")
     }
 
-    private fun executeTest(testFilter: String? = null): ExecResult {
-        val command = buildString {
-            append("chmod +x /app/test.kexe && /app/test.kexe")
-            testFilter?.also {
-                append(" ")
-                append(it)
-            }
-        }
-
-        return execInContainer("bash", "-c", command)
+    fun runMissingEtcTimezoneTest(): ExecResult {
+        exec("rm -f /etc/timezone")
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.missingEtcTimezoneTest")
     }
+
+    private fun execTest(testFilter: String): ExecResult {
+        return exec("chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=$testFilter")
+    }
+
+    private fun exec(command: String): ExecResult = execInContainer("bash", "-c", command)
 }
 
 fun createTimezoneTestContainer(configType: String): TimezoneTestContainer {
