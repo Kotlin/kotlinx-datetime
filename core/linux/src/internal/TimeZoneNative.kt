@@ -25,13 +25,16 @@ private fun getTimezoneFromEtcTimezone(): String? {
         ?.splitTimeZonePath()?.second?.toString()
         ?: return null
 
-    val zoneInfoFile = Path.fromString("/usr/share/zoneinfo/$zoneId").readBytes() ?: return null
-    val etcLocaltime = Path.fromString("/etc/localtime").readBytes() ?: return null
+    val zoneInfoBytes = Path.fromString("/usr/share/zoneinfo/$zoneId").readBytes() ?: return null
+    val localtimeBytes = Path.fromString("/etc/localtime").readBytes() ?: return null
 
-    if (!etcLocaltime.contentEquals(zoneInfoFile)) {
+    if (!localtimeBytes.contentEquals(zoneInfoBytes)) {
+        val displayTimezone = when (timezoneContent) {
+            zoneId -> "'$zoneId'"
+            else -> "'$timezoneContent' (resolved to '$zoneId')"
+        }
         throw IllegalTimeZoneException(
-            "Timezone mismatch: /etc/timezone specifies " +
-                    "'${if (timezoneContent != zoneId) timezoneContent else zoneId}' " +
+            "Timezone mismatch: /etc/timezone specifies $displayTimezone " +
                     "but /etc/localtime content differs from /usr/share/zoneinfo/$zoneId"
         )
     }
@@ -41,6 +44,7 @@ private fun getTimezoneFromEtcTimezone(): String? {
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
     val zonePath = currentSystemTimeZonePath ?: return "Z" to null
+
     zonePath.splitTimeZonePath()?.second?.toString()?.let { zoneId ->
         return zoneId to null
     }
