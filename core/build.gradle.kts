@@ -227,7 +227,6 @@ kotlin {
                 implementation("org.testcontainers:testcontainers:1.19.7")
                 implementation("org.testcontainers:junit-jupiter:1.19.7")
                 implementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-                implementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
                 runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
                 implementation("ch.qos.logback:logback-classic:1.2.13")
             }
