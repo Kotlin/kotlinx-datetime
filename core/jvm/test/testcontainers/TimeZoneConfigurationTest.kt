@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.slf4j.LoggerFactory
 
 @Testcontainers
-class TimeZoneTest {
+class TimeZoneConfigurationTest {
 
     @ParameterizedTest
     @MethodSource("containers")
@@ -26,7 +26,7 @@ class TimeZoneTest {
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(javaClass)
+        private val logger = LoggerFactory.getLogger(TimeZoneConfigurationTest::class.java)
 
         @JvmStatic
         @Container
