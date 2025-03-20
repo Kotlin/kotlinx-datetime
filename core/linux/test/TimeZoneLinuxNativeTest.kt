@@ -57,4 +57,13 @@ class TimeZoneLinuxNativeTest {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("UTC"), tz)
     }
+
+    /**
+     * Verifies behavior when /etc/localtime is a symlink to the correct timezone file.
+     */
+    @Test
+    fun symlinkTimeZoneTest() = Testcontainers.runIfAvailable {
+        val tz = TimeZone.currentSystemDefault()
+        assertEquals(TimeZone.of("Europe/Paris"), tz)
+    }
 }

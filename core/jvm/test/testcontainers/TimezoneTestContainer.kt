@@ -49,9 +49,15 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.allTimeZoneFilesMissingTest")
     }
 
+    fun execSymlinkTimeZoneTest(): ExecResult {
+        exec("rm -f /etc/localtime")
+        exec("ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime")
+        exec("echo 'Europe/Paris' > /etc/timezone")
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.symlinkTimeZoneTest")
+    }
+
     private fun execTest(testFilter: String): ExecResult =
         exec("chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=$testFilter")
-
 
     private fun exec(command: String): ExecResult = execInContainer("bash", "-c", command)
 }
