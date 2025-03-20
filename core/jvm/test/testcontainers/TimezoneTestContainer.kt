@@ -20,19 +20,31 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         withFileSystemBind(binaryDir, "/app", BindMode.READ_WRITE)
     }
 
-    fun runTest(): ExecResult {
-        return execInContainer(
-            "bash",
-            "-c",
-            "chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=kotlinx.datetime.test.TimeZoneLinuxNativeTest.*"
-        )
+    fun runTimeZoneTests(): ExecResult {
+        return executeTest("--ktest_filter=kotlinx.datetime.test.TimeZoneLinuxNativeTest.*")
+    }
+
+    fun runAllTests(): ExecResult {
+        return executeTest()
+    }
+
+    private fun executeTest(testFilter: String? = null): ExecResult {
+        val command = buildString {
+            append("chmod +x /app/test.kexe && /app/test.kexe")
+            testFilter?.also {
+                append(" ")
+                append(it)
+            }
+        }
+
+        return execInContainer("bash", "-c", command)
     }
 }
 
-fun createTimezoneTestContainer(typeName: String): TimezoneTestContainer {
+fun createTimezoneTestContainer(configType: String): TimezoneTestContainer {
     return TimezoneTestContainer(
-        Paths.get("./jvm/test/testcontainers/$typeName/Dockerfile"),
+        Paths.get("./jvm/test/testcontainers/$configType/Dockerfile"),
         "./build/bin/linuxArm64/debugTest/",
-        "ubuntu-arctic-longyearbyen-$typeName"
+        "ubuntu-arctic-longyearbyen-$configType"
     )
 }

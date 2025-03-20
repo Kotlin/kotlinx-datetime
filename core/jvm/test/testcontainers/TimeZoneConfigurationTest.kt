@@ -8,18 +8,40 @@ package testcontainers
 import org.junit.jupiter.api.BeforeAll
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import org.testcontainers.containers.Container.ExecResult
 
 @Testcontainers
 class TimeZoneConfigurationTest {
 
-    @ParameterizedTest
-    @MethodSource("containers")
-    fun test(container: TimezoneTestContainer) {
-        val execResult = container.runTest()
+    @Container
+    private val defaultTimeZoneContainer = createTimezoneTestContainer("default")
 
+    @Container
+    private val customTimeZoneContainer = createTimezoneTestContainer("custom")
+
+    @Test
+    fun testDefaultContainerTimeZoneTests() {
+        logExecResult(defaultTimeZoneContainer.runTimeZoneTests())
+    }
+
+    @Test
+    fun testCustomContainerTimeZoneTests() {
+        logExecResult(customTimeZoneContainer.runTimeZoneTests())
+    }
+
+    @Test
+    fun testDefaultContainerAllTests() {
+        logExecResult(defaultTimeZoneContainer.runAllTests())
+    }
+
+    @Test
+    fun testCustomContainerAllTests() {
+        logExecResult(customTimeZoneContainer.runAllTests())
+    }
+
+    private fun logExecResult(execResult: ExecResult) {
         logger.info("Container stdout:\n${execResult.stdout}")
         logger.info("Container stderr:\n${execResult.stderr}")
         logger.info("Container exit code: ${execResult.exitCode}")
@@ -27,19 +49,6 @@ class TimeZoneConfigurationTest {
 
     companion object {
         private val logger = LoggerFactory.getLogger(TimeZoneConfigurationTest::class.java)
-
-        @JvmStatic
-        @Container
-        val originalContainer = createTimezoneTestContainer("original")
-
-        @JvmStatic
-        @Container
-        val modifiedContainer = createTimezoneTestContainer("modified")
-
-        @JvmStatic
-        fun containers(): List<TimezoneTestContainer> {
-            return listOf(originalContainer, modifiedContainer)
-        }
 
         @JvmStatic
         @BeforeAll
