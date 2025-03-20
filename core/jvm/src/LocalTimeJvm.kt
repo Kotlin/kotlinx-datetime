@@ -2,7 +2,8 @@
  * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-@file:JvmName("LocalTimeJvmKt")
+@file:JvmName("LocalTimeKt")
+@file:JvmMultifileClass
 
 package kotlinx.datetime
 
@@ -90,3 +91,23 @@ public actual class LocalTime internal constructor(internal val value: jtLocalTi
 
     }
 }
+
+@Deprecated(
+    "Use kotlinx.datetime.Month",
+    ReplaceWith("atDate(year, month.toKotlinMonth(), dayOfMonth)")
+)
+public fun LocalTime.atDate(year: Int, month: java.time.Month, dayOfMonth: Int = 0): LocalDateTime =
+    atDate(year, month.toKotlinMonth(), dayOfMonth)
+
+/** @suppress */
+@Deprecated(
+    "Use the overload that accepts a 'month' and a 'day' instead",
+    ReplaceWith("this.atDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)"),
+    DeprecationLevel.WARNING
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+public fun LocalTime.atDate(year: Int, month: java.time.Month, dayOfMonth: Int, fakeArgument: Unit = Unit): LocalDateTime =
+    fakeArgument.let {
+        LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)
+    }

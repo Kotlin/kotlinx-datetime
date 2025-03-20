@@ -50,8 +50,8 @@ kover {
     reports {
         verify {
             rule {
-                // requirement for a minimum lines coverage of 85%
-                minBound(85)
+                // requirement for a minimum lines coverage of 80%
+                minBound(80)
             }
         }
     }

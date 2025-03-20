@@ -3,7 +3,13 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:JvmName("MonthKt")
+@file:JvmMultifileClass
+
 package kotlinx.datetime
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * The enumeration class representing the 12 months of the year.
@@ -14,7 +20,7 @@ package kotlinx.datetime
  *
  * @sample kotlinx.datetime.test.samples.MonthSamples.usage
  */
-public expect enum class Month {
+public enum class Month {
     /** January, month #01, with 31 days. */
     JANUARY,
 
@@ -69,6 +75,3 @@ public fun Month(number: Int): Month {
     require(number in 1..12)
     return Month.entries[number - 1]
 }
-
-
-// companion object members vs type aliasing to java.time.Month?

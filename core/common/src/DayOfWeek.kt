@@ -3,7 +3,12 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:JvmName("DayOfWeekKt")
+@file:JvmMultifileClass
 package kotlinx.datetime
+
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 /**
  * The enumeration class representing the days of the week.
@@ -13,7 +18,7 @@ package kotlinx.datetime
  *
  * @sample kotlinx.datetime.test.samples.DayOfWeekSamples.usage
  */
-public expect enum class DayOfWeek {
+public enum class DayOfWeek {
     MONDAY,
     TUESDAY,
     WEDNESDAY,

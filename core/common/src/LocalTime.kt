@@ -2,15 +2,18 @@
  * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+@file:JvmName("LocalTimeKt")
+@file:JvmMultifileClass
 
 package kotlinx.datetime
 
-import kotlinx.datetime.LocalDate.Companion.parse
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
 import kotlinx.datetime.serializers.LocalTimeComponentSerializer
 import kotlinx.serialization.Serializable
 import kotlin.internal.*
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**
