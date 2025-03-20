@@ -48,4 +48,13 @@ class TimeZoneLinuxNativeTest {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
+
+    /**
+     * Tests UTC fallback when all timezone files are missing
+     */
+    @Test
+    fun allTimeZoneFilesMissingTest() = Testcontainers.runIfAvailable {
+        val tz = TimeZone.currentSystemDefault()
+        assertEquals(TimeZone.of("UTC"), tz)
+    }
 }

@@ -38,6 +38,11 @@ class TimeZoneConfigurationTest {
         assertExecSuccess(container.execMissingEtcTimezoneTest())
     }
 
+    @Test
+    fun allTimeZoneFilesMissingTest() {
+        assertExecSuccess(container.execAllTimeZoneFilesMissingTest())
+    }
+
     private fun assertExecSuccess(execResult: ExecResult) {
         logger.info("Container stdout:\n${execResult.stdout}")
         logger.info("Container stderr:\n${execResult.stderr}")

@@ -43,6 +43,12 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.missingEtcTimezoneTest")
     }
 
+    fun execAllTimeZoneFilesMissingTest(): ExecResult {
+        exec("rm -f /etc/localtime")
+        exec("rm -f /etc/timezone")
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.allTimeZoneFilesMissingTest")
+    }
+
     private fun execTest(testFilter: String): ExecResult =
         exec("chmod +x /app/test.kexe && /app/test.kexe --ktest_filter=$testFilter")
 
