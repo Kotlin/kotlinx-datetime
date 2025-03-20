@@ -16,24 +16,26 @@ import org.testcontainers.containers.Container.ExecResult
 class TimeZoneConfigurationTest {
 
     @Container
-    private val timeZoneContainer = createTimezoneTestContainer("default")
+    private val container = createTimezoneTestContainer()
 
-    @Container
-    private val customTimeZoneContainer = createTimezoneTestContainer("custom")
+    @Test
+    fun defaultTimeZoneTest() {
+        assertExecSuccess(container.execDefaultTimeZoneTest())
+    }
 
     @Test
     fun debianCopyTimeZoneTest() {
-        assertExecSuccess(timeZoneContainer.runDebianCopyTimeZoneTest())
+        assertExecSuccess(container.execDebianCopyTimeZoneTest())
     }
 
     @Test
     fun timezoneMismatchTest() {
-        assertExecSuccess(timeZoneContainer.runTimezoneMismatchTest())
+        assertExecSuccess(container.execTimezoneMismatchTest())
     }
 
     @Test
     fun missingEtcTimezoneTest() {
-        assertExecSuccess(timeZoneContainer.runMissingEtcTimezoneTest())
+        assertExecSuccess(container.execMissingEtcTimezoneTest())
     }
 
     private fun assertExecSuccess(execResult: ExecResult) {

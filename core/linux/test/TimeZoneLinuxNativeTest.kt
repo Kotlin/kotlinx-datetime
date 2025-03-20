@@ -10,6 +10,10 @@ import kotlin.test.*
 
 class TimeZoneLinuxNativeTest {
 
+    /**
+     * Verifies that the default system time zone is recognized correctly
+     * and matches the expected value.
+     */
     @Test
     fun defaultTimeZoneTest() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
