@@ -5,6 +5,8 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
 
@@ -16,10 +18,40 @@ internal actual fun getAvailableZoneIds(): Set<String> =
 
 private val tzdb = runCatching { TzdbOnFilesystem() }
 
+@OptIn(ExperimentalForeignApi::class)
+private fun getTimezoneFromEtcTimezone(): String? {
+    val timezoneContent = Path.fromString("/etc/timezone").readBytes()?.toKString()?.trim() ?: return null
+    val zoneId = chaseSymlinks("/usr/share/zoneinfo/$timezoneContent")
+        ?.splitTimeZonePath()?.second?.toString()
+        ?: return null
+
+    val zoneInfoBytes = Path.fromString("/usr/share/zoneinfo/$zoneId").readBytes() ?: return null
+    val localtimeBytes = Path.fromString("/etc/localtime").readBytes() ?: return null
+
+    if (!localtimeBytes.contentEquals(zoneInfoBytes)) {
+        val displayTimezone = when (timezoneContent) {
+            zoneId -> "'$zoneId'"
+            else -> "'$timezoneContent' (resolved to '$zoneId')"
+        }
+        throw IllegalTimeZoneException(
+            "Timezone mismatch: /etc/timezone specifies $displayTimezone " +
+                    "but /etc/localtime content differs from /usr/share/zoneinfo/$zoneId"
+        )
+    }
+
+    return zoneId
+}
+
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
-    // according to https://www.man7.org/linux/man-pages/man5/localtime.5.html, when there is no symlink, UTC is used
     val zonePath = currentSystemTimeZonePath ?: return "Z" to null
-    val zoneId = zonePath.splitTimeZonePath()?.second?.toString()
-        ?: throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
-    return zoneId to null
+
+    zonePath.splitTimeZonePath()?.second?.toString()?.let { zoneId ->
+        return zoneId to null
+    }
+
+    getTimezoneFromEtcTimezone()?.let { zoneId ->
+        return zoneId to null
+    }
+
+    throw IllegalTimeZoneException("Could not determine the timezone ID that `$zonePath` corresponds to")
 }
