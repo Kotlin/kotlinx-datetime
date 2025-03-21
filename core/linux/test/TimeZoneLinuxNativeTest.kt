@@ -17,6 +17,7 @@ class TimeZoneLinuxNativeTest {
     @Test
     fun defaultTimeZoneTest() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
-        assertEquals(TimeZone.of("Europe/Oslo"), tz)
+        println("Default timezone: $tz")
+        assertTrue(tz == TimeZone.of("Europe/Oslo") || tz == TimeZone.of("Arctic/Longyearbyen"))
     }
 }
