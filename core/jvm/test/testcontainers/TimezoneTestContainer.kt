@@ -12,8 +12,17 @@ import org.testcontainers.images.builder.ImageFromDockerfile
 import java.nio.file.Paths
 
 enum class ContainerType(val dockerfilePath: String, val imageName: String) {
-    DEBIAN_JESSIE("./jvm/test/testcontainers/debian-jessie/Dockerfile", "debian-jessie-timezone-test"),
-    UBUNTU_NOBLE("./jvm/test/testcontainers/ubuntu-noble/Dockerfile", "ubuntu-noble-timezone-test")
+    // Standard Jessie with Arctic/Longyearbyen timezone
+    DEBIAN_JESSIE(
+        "./jvm/test/testcontainers/debian-jessie/Dockerfile",
+        "debian-jessie-timezone-test"
+    ),
+
+    // Standard Noble with Arctic/Longyearbyen timezone
+    UBUNTU_NOBLE(
+        "./jvm/test/testcontainers/ubuntu-noble/Dockerfile",
+        "ubuntu-noble-timezone-test"
+    )
 }
 
 class TimezoneTestContainer(containerType: ContainerType, binaryDir: String) :
