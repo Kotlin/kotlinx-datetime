@@ -43,7 +43,7 @@ private fun getTimezoneFromEtcTimezone(): String? {
 }
 
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
-    val zonePath = currentSystemTimeZonePath ?: return "UTC" to null
+    val zonePath = currentSystemTimeZonePath ?: return "Z" to null
 
     zonePath.splitTimeZonePath()?.second?.toString()?.let { zoneId ->
         return zoneId to null

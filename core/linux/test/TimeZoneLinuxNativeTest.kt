@@ -55,7 +55,7 @@ class TimeZoneLinuxNativeTest {
     @Test
     fun allTimeZoneFilesMissingTest() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
-        assertEquals(TimeZone.of("UTC"), tz)
+        assertEquals(TimeZone.UTC, tz)
     }
 
     /**
