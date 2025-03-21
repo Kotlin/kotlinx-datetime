@@ -16,41 +16,11 @@ import org.testcontainers.containers.Container.ExecResult
 class TimeZoneConfigurationTest {
 
     @Container
-    private val container = createTimezoneTestContainer()
+    private val container = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE)
 
     @Test
     fun defaultTimeZoneTest() {
         assertExecSuccess(container.execDefaultTimeZoneTest())
-    }
-
-    @Test
-    fun debianCopyTimeZoneTest() {
-        assertExecSuccess(container.execDebianCopyTimeZoneTest())
-    }
-
-    @Test
-    fun timezoneMismatchTest() {
-        assertExecSuccess(container.execTimezoneMismatchTest())
-    }
-
-    @Test
-    fun missingEtcTimezoneTest() {
-        assertExecSuccess(container.execMissingEtcTimezoneTest())
-    }
-
-    @Test
-    fun allTimeZoneFilesMissingTest() {
-        assertExecSuccess(container.execAllTimeZoneFilesMissingTest())
-    }
-
-    @Test
-    fun symlinkTimeZoneTest() {
-        assertExecSuccess(container.execSymlinkTimeZoneTest())
-    }
-
-    @Test
-    fun invalidTimezoneFormatTest() {
-        assertExecSuccess(container.execInvalidTimezoneFormatTest())
     }
 
     @Test

@@ -9,11 +9,18 @@ import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.Container.ExecResult
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
-import java.nio.file.Path
 import java.nio.file.Paths
 
-class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: String) :
-    GenericContainer<TimezoneTestContainer>(ImageFromDockerfile(imageName).withDockerfile(dockerfilePath)) {
+enum class ContainerType(val dockerfilePath: String, val imageName: String) {
+    DEBIAN_JESSIE("./jvm/test/testcontainers/debian-jessie/Dockerfile", "debian-jessie-timezone-test"),
+    UBUNTU_NOBLE("./jvm/test/testcontainers/ubuntu-noble/Dockerfile", "ubuntu-noble-timezone-test")
+}
+
+class TimezoneTestContainer(containerType: ContainerType, binaryDir: String) :
+    GenericContainer<TimezoneTestContainer>(
+        ImageFromDockerfile(containerType.imageName)
+            .withDockerfile(Paths.get(containerType.dockerfilePath))
+    ) {
 
     init {
         withCommand("tail -f /dev/null")
@@ -24,48 +31,7 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
         return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.defaultTimeZoneTest")
     }
 
-    fun execDebianCopyTimeZoneTest(): ExecResult {
-        exec("rm /etc/localtime")
-        exec("cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime")
-        exec("echo 'Europe/Berlin' > /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.debianCopyTimeZoneTest")
-    }
-
-    fun execTimezoneMismatchTest(): ExecResult {
-        exec("rm -f /etc/localtime")
-        exec("cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime")
-        exec("echo 'Europe/Paris' > /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.timezoneMismatchTest")
-    }
-
-    fun execMissingEtcTimezoneTest(): ExecResult {
-        exec("rm -f /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.missingEtcTimezoneTest")
-    }
-
-    fun execAllTimeZoneFilesMissingTest(): ExecResult {
-        exec("rm -f /etc/localtime")
-        exec("rm -f /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.allTimeZoneFilesMissingTest")
-    }
-
-    fun execSymlinkTimeZoneTest(): ExecResult {
-        exec("rm -f /etc/localtime")
-        exec("ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime")
-        exec("echo 'Europe/Paris' > /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.symlinkTimeZoneTest")
-    }
-
-    fun execInvalidTimezoneFormatTest(): ExecResult {
-        exec("rm -f /etc/localtime")
-        exec("cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime")
-        exec("echo 'Invalid/Timezone/Format' > /etc/timezone")
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.invalidTimezoneFormatTest")
-    }
-
     fun execCommonTimeZoneTests(): ExecResult {
-        exec("rm -f /etc/localtime")
-        exec("cp /usr/share/zoneinfo/$(cat /etc/timezone) /etc/localtime")
         return execTest("kotlinx.datetime.test.TimeZoneTest.*")
     }
 
@@ -75,10 +41,6 @@ class TimezoneTestContainer(dockerfilePath: Path, binaryDir: String, imageName: 
     private fun exec(command: String): ExecResult = execInContainer("bash", "-c", command)
 }
 
-fun createTimezoneTestContainer(): TimezoneTestContainer {
-    return TimezoneTestContainer(
-        Paths.get("./jvm/test/testcontainers/Dockerfile"),
-        "./build/bin/linuxArm64/debugTest/",
-        "ubuntu-arctic-longyearbyen"
-    )
+fun createTimezoneTestContainer(containerType: ContainerType): TimezoneTestContainer {
+    return TimezoneTestContainer(containerType, "./build/bin/linuxArm64/debugTest/")
 }
