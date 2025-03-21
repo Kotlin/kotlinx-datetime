@@ -36,8 +36,20 @@ class TimezoneTestContainer(containerType: ContainerType, binaryDir: String) :
         withFileSystemBind(binaryDir, "/app", BindMode.READ_WRITE)
     }
 
-    fun execDefaultTimeZoneTest(): ExecResult {
-        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.defaultTimeZoneTest")
+    fun execCurrentSystemTimeZoneTest(): ExecResult {
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.currentSystemTimeZoneTest")
+    }
+
+    fun execFallbackToUTCTest(): ExecResult {
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.fallbackToUTCTest")
+    }
+
+    fun execUndeterminedTimeZoneExceptionTest(): ExecResult {
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.undeterminedTimeZoneExceptionTest")
+    }
+
+    fun execInconsistentTimeZoneExceptionTest(): ExecResult {
+        return execTest("kotlinx.datetime.test.TimeZoneLinuxNativeTest.inconsistentTimeZoneExceptionTest")
     }
 
     fun execCommonTimeZoneTests(): ExecResult {

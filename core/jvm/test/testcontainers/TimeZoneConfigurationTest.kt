@@ -22,22 +22,22 @@ class TimeZoneConfigurationTest {
     private val nobleContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE)
 
     @Test
-    fun defaultTimeZoneTestJessie() {
-        assertExecSuccess(jessieContainer.execDefaultTimeZoneTest())
+    fun currentSystemTimeZoneJessieTest() {
+        assertExecSuccess(jessieContainer.execCurrentSystemTimeZoneTest())
     }
 
     @Test
-    fun defaultTimeZoneTestNoble() {
-        assertExecSuccess(nobleContainer.execDefaultTimeZoneTest())
+    fun currentSystemTimeZoneNobleTest() {
+        assertExecSuccess(nobleContainer.execCurrentSystemTimeZoneTest())
     }
 
     @Test
-    fun commonTimeZoneTestsJessie() {
+    fun commonTimeZoneJessieTests() {
         assertExecSuccess(jessieContainer.execCommonTimeZoneTests())
     }
 
     @Test
-    fun commonTimeZoneTestsNoble() {
+    fun commonTimeZoneNobleTests() {
         assertExecSuccess(nobleContainer.execCommonTimeZoneTests())
     }
 
