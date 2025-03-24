@@ -8,12 +8,17 @@ package kotlinx.datetime
 /**
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
  */
-public fun Instant.toJavaInstant(): java.time.Instant = this.value
+@PublishedApi
+@Suppress("DEPRECATION")
+internal fun Instant.toJavaInstant(): java.time.Instant = this.value
 
 /**
  * Converts this [java.time.Instant][java.time.Instant] value to a [kotlinx.datetime.Instant][Instant] value.
  */
-public fun java.time.Instant.toKotlinInstant(): Instant = Instant(this)
+@PublishedApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal fun java.time.Instant.toKotlinInstant(): Instant = Instant(this)
 
 
 /**
