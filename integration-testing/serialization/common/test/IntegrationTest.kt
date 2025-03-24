@@ -3,13 +3,13 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:Suppress("DEPRECATION")
 package kotlinx.datetime.serialization.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule

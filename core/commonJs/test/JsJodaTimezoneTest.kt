@@ -12,6 +12,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.test.JSJoda.Instant as jtInstant
 import kotlinx.datetime.test.JSJoda.ZoneId as jtZoneId
+import kotlin.time.Instant
 
 class JsJodaTimezoneTest {
     @Test

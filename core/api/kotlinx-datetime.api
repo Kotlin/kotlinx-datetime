@@ -12,9 +12,14 @@ public final class kotlinx/datetime/Clock$System : kotlinx/datetime/Clock {
 }
 
 public final class kotlinx/datetime/ClockKt {
-	public static final fun asClock (Lkotlin/time/TimeSource;Lkotlinx/datetime/Instant;)Lkotlinx/datetime/Clock;
+	public static final fun asClock (Lkotlin/time/TimeSource;Lkotlin/time/Instant;)Lkotlin/time/Clock;
+	public static final fun asTimeSource (Lkotlin/time/Clock;)Lkotlin/time/TimeSource$WithComparableMarks;
 	public static final fun asTimeSource (Lkotlinx/datetime/Clock;)Lkotlin/time/TimeSource$WithComparableMarks;
+	public static final fun toDeprecatedClock (Lkotlin/time/Clock;)Lkotlinx/datetime/Clock;
+	public static final fun toStdlibClock (Lkotlinx/datetime/Clock;)Lkotlin/time/Clock;
+	public static final fun todayAt (Lkotlin/time/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
 	public static final fun todayAt (Lkotlinx/datetime/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
+	public static final fun todayIn (Lkotlin/time/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
 	public static final fun todayIn (Lkotlinx/datetime/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
 }
 
@@ -241,22 +246,42 @@ public final class kotlinx/datetime/Instant$Companion {
 }
 
 public final class kotlinx/datetime/InstantJvmKt {
+	public static final fun minus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
+	public static final fun periodUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
 	public static final fun periodUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun plus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
+	public static final fun until (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
 	public static final fun until (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
 }
 
 public final class kotlinx/datetime/InstantKt {
+	public static final fun daysUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)I
 	public static final fun daysUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
+	public static final fun format (Lkotlin/time/Instant;Lkotlinx/datetime/format/DateTimeFormat;Lkotlinx/datetime/UtcOffset;)Ljava/lang/String;
 	public static final fun format (Lkotlinx/datetime/Instant;Lkotlinx/datetime/format/DateTimeFormat;Lkotlinx/datetime/UtcOffset;)Ljava/lang/String;
+	public static synthetic fun format$default (Lkotlin/time/Instant;Lkotlinx/datetime/format/DateTimeFormat;Lkotlinx/datetime/UtcOffset;ILjava/lang/Object;)Ljava/lang/String;
 	public static synthetic fun format$default (Lkotlinx/datetime/Instant;Lkotlinx/datetime/format/DateTimeFormat;Lkotlinx/datetime/UtcOffset;ILjava/lang/Object;)Ljava/lang/String;
 	public static final fun isDistantFuture (Lkotlinx/datetime/Instant;)Z
 	public static final fun isDistantPast (Lkotlinx/datetime/Instant;)Z
+	public static final fun minus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
+	public static final fun minus (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
+	public static final fun minus (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun minus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
@@ -266,11 +291,19 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
 	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
 	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun monthsUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)I
 	public static final fun monthsUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
+	public static final fun parse (Lkotlin/time/Instant$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
+	public static final fun toDeprecatedInstant (Lkotlin/time/Instant;)Lkotlinx/datetime/Instant;
 	public static final fun toInstant (Ljava/lang/String;)Lkotlinx/datetime/Instant;
+	public static final fun toStdlibInstant (Lkotlinx/datetime/Instant;)Lkotlin/time/Instant;
+	public static final fun until (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
 	public static final fun until (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
+	public static final fun yearsUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)I
 	public static final fun yearsUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
 }
 
@@ -539,6 +572,9 @@ public final class kotlinx/datetime/MonthKt {
 	public static final fun getNumber (Lkotlinx/datetime/Month;)I
 }
 
+public final class kotlinx/datetime/OverloadMarker {
+}
+
 public final class kotlinx/datetime/Ser : java/io/Externalizable {
 	public static final field Companion Lkotlinx/datetime/Ser$Companion;
 	public static final field DATE_TAG I
@@ -561,6 +597,9 @@ public class kotlinx/datetime/TimeZone {
 	public final fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
+	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
+	public static synthetic fun toInstant$default (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public final fun toLocalDateTime (Lkotlin/time/Instant;)Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalDateTime (Lkotlinx/datetime/Instant;)Lkotlinx/datetime/LocalDateTime;
 	public fun toString ()Ljava/lang/String;
 }
@@ -575,11 +614,21 @@ public final class kotlinx/datetime/TimeZone$Companion {
 
 public final class kotlinx/datetime/TimeZoneKt {
 	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
+	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
+	public static synthetic fun atStartOfDayIn$default (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public static final fun offsetAt (Lkotlinx/datetime/TimeZone;Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetAt (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/Instant;)Lkotlinx/datetime/UtcOffset;
+	public static final fun offsetIn (Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetIn (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
+	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/UtcOffset;)Lkotlinx/datetime/Instant;
+	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
+	public static synthetic fun toInstant$default (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public static synthetic fun toInstant$default (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public static final fun toLocalDateTime (Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun toLocalDateTime (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDateTime;
+	public static final fun toLocalDateTime (Lkotlinx/datetime/Instant;Lkotlinx/datetime/UtcOffset;)Lkotlinx/datetime/LocalDateTime;
 }
 
 public final class kotlinx/datetime/UtcOffset : java/io/Serializable {
@@ -761,6 +810,7 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public final fun setAmPm (Lkotlinx/datetime/format/AmPmMarker;)V
 	public final fun setDate (Lkotlinx/datetime/LocalDate;)V
 	public final fun setDateTime (Lkotlinx/datetime/LocalDateTime;)V
+	public final fun setDateTimeOffset (Lkotlin/time/Instant;Lkotlinx/datetime/UtcOffset;)V
 	public final fun setDateTimeOffset (Lkotlinx/datetime/Instant;Lkotlinx/datetime/UtcOffset;)V
 	public final fun setDateTimeOffset (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/UtcOffset;)V
 	public final fun setDay (Ljava/lang/Integer;)V
@@ -784,6 +834,8 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public final fun setYear (Ljava/lang/Integer;)V
 	public final fun setYearMonth (Lkotlinx/datetime/YearMonth;)V
 	public final fun toInstantUsingOffset ()Lkotlinx/datetime/Instant;
+	public final fun toInstantUsingOffset (Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
+	public static synthetic fun toInstantUsingOffset$default (Lkotlinx/datetime/format/DateTimeComponents;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
 	public final fun toLocalDate ()Lkotlinx/datetime/LocalDate;
 	public final fun toLocalDateTime ()Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalTime ()Lkotlinx/datetime/LocalTime;

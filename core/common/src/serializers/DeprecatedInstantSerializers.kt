@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:Suppress("DEPRECATION")
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.*
@@ -19,6 +20,11 @@ import kotlinx.serialization.encoding.*
  *
  * @see DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
  */
+@Deprecated(
+    "kotlinx.datetime.Instant is superseded by kotlin.time.Instant, " +
+            "whose serializers are provided by kotlinx.serialization.",
+    level = DeprecationLevel.WARNING,
+)
 public object InstantIso8601Serializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
@@ -38,6 +44,11 @@ public object InstantIso8601Serializer : KSerializer<Instant> {
  *
  * JSON example: `{"epochSeconds":1607505416,"nanosecondsOfSecond":124000}`
  */
+@Deprecated(
+    "kotlinx.datetime.Instant is superseded by kotlin.time.Instant, " +
+            "whose serializers are provided by kotlinx.serialization.",
+    level = DeprecationLevel.WARNING,
+)
 public object InstantComponentSerializer : KSerializer<Instant> {
 
     override val descriptor: SerialDescriptor =
