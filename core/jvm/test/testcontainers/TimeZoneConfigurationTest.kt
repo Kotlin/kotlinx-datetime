@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.Container.ExecResult
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class TimeZoneConfigurationTest {
 
     @Container
