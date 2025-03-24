@@ -16,19 +16,19 @@ import org.testcontainers.containers.Container.ExecResult
 class TimeZoneConfigurationTest {
 
     @Container
-    private val jessieCorrectConfigContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_CORRECT)
+    private val jessieCorrectConfigContainer = createTimezoneTestContainer(ContainerType.JESSIE_CORRECT)
 
     @Container
-    private val jessieDefaultConfigContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_DEFAULT)
+    private val jessieDefaultConfigContainer = createTimezoneTestContainer(ContainerType.JESSIE_DEFAULT)
 
     @Container
-    private val jessieMissingLocaltimeContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_MISSING_LOCALTIME)
+    private val jessieMissingLocaltimeContainer = createTimezoneTestContainer(ContainerType.JESSIE_MISSING_LOCALTIME)
 
     @Container
-    private val nobleCorrectConfigContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE_CORRECT)
+    private val nobleCorrectConfigContainer = createTimezoneTestContainer(ContainerType.NOBLE_CORRECT)
 
     @Container
-    private val nobleDefaultConfigContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE_DEFAULT)
+    private val nobleDefaultConfigContainer = createTimezoneTestContainer(ContainerType.NOBLE_DEFAULT)
 
     @Test
     fun debianJessieCorrectConfigTest() {
