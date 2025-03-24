@@ -34,6 +34,9 @@ class TimeZoneConfigurationTest {
     private val jessieIncorrectTimezoneContainer = createTimezoneTestContainer(ContainerType.JESSIE_INCORRECT_TIMEZONE)
 
     @Container
+    private val jessieDifferentTimezonesContainer = createTimezoneTestContainer(ContainerType.JESSIE_DIFFERENT_TIMEZONES)
+
+    @Container
     private val nobleCorrectConfigContainer = createTimezoneTestContainer(ContainerType.NOBLE_CORRECT)
 
     @Container
@@ -65,6 +68,11 @@ class TimeZoneConfigurationTest {
     @Test
     fun jessieIncorrectTimezoneTest() {
         assertExecSuccess(jessieIncorrectTimezoneContainer.execThrowsExceptionWhenTimeZoneUndetermined())
+    }
+
+    @Test
+    fun jessieDifferentTimezonesTest() {
+        assertExecSuccess(jessieDifferentTimezonesContainer.execThrowsExceptionWhenTimeZoneInconsistent())
     }
 
     @Test

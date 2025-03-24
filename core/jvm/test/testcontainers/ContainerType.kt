@@ -32,6 +32,11 @@ enum class ContainerType(val dockerfilePath: String, val imageName: String) {
         "debian-jessie-timezone-test-incorrect-timezone"
     ),
 
+    JESSIE_DIFFERENT_TIMEZONES(
+        "./jvm/test/testcontainers/debian-jessie/different-timezones.dockerfile",
+        "debian-jessie-timezone-test-different-timezones"
+    ),
+
     // Standard Noble with Arctic/Longyearbyen timezone
     NOBLE_CORRECT(
         "./jvm/test/testcontainers/ubuntu-noble/correct-config.dockerfile",
