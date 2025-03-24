@@ -102,15 +102,11 @@ class TimeZoneConfigurationTest {
 
     private fun assertExecSuccess(execResult: ExecResult) {
         logger.info("Container stdout:\n${execResult.stdout}")
-        logger.info("Container stderr:\n${execResult.stderr}")
-        logger.info("Container exit code: ${execResult.exitCode}")
 
         if (execResult.exitCode != 0) {
             throw AssertionError(
                 """
                 |Command execution failed with exit code ${execResult.exitCode}.
-                |Stdout:
-                |${execResult.stdout}
                 |Stderr:
                 |${execResult.stderr}
                 """.trimMargin()
