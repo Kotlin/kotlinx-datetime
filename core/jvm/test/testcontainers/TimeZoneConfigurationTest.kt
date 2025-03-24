@@ -23,12 +23,12 @@ class TimeZoneConfigurationTest {
 
     @Test
     fun currentSystemTimeZoneJessieTest() {
-        assertExecSuccess(jessieContainer.execCurrentSystemTimeZoneTest())
+        assertExecSuccess(jessieContainer.execCorrectRecognizesCurrentSystemTimeZone())
     }
 
     @Test
     fun currentSystemTimeZoneNobleTest() {
-        assertExecSuccess(nobleContainer.execCurrentSystemTimeZoneTest())
+        assertExecSuccess(nobleContainer.execCorrectRecognizesCurrentSystemTimeZone())
     }
 
     @Test

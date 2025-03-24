@@ -15,7 +15,7 @@ class TimeZoneLinuxNativeTest {
      * and matches one of the expected values for the test environment.
      */
     @Test
-    fun currentSystemTimeZoneTest() = Testcontainers.runIfAvailable {
+    fun correctRecognizesCurrentSystemTimeZone() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
         assertTrue(tz == TimeZone.of("Europe/Oslo") || tz == TimeZone.of("Arctic/Longyearbyen"))
     }
@@ -25,7 +25,7 @@ class TimeZoneLinuxNativeTest {
      * when no valid time zone can be determined.
      */
     @Test
-    fun fallbackToUTCTest() = Testcontainers.runIfAvailable {
+    fun fallsBackToUTC() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
     }
@@ -35,7 +35,7 @@ class TimeZoneLinuxNativeTest {
      * with the expected error message when the time zone ID cannot be determined.
      */
     @Test
-    fun undeterminedTimeZoneExceptionTest() = Testcontainers.runIfAvailable {
+    fun throwsExceptionWhenTimeZoneUndetermined() = Testcontainers.runIfAvailable {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
@@ -50,7 +50,7 @@ class TimeZoneLinuxNativeTest {
      * with the expected error message when time zone settings are inconsistent.
      */
     @Test
-    fun inconsistentTimeZoneExceptionTest() = Testcontainers.runIfAvailable {
+    fun throwsExceptionWhenTimeZoneInconsistent() = Testcontainers.runIfAvailable {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
