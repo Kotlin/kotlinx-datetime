@@ -9,10 +9,13 @@ import org.junit.jupiter.api.BeforeAll
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.Container.ExecResult
 
 @Testcontainers(disabledWithoutDocker = true)
+@TestInstance(PER_CLASS)
 class TimeZoneConfigurationTest {
 
     @Container
