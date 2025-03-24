@@ -16,29 +16,53 @@ import org.testcontainers.containers.Container.ExecResult
 class TimeZoneConfigurationTest {
 
     @Container
-    private val jessieContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE)
+    private val jessieCorrectConfigContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_CORRECT)
 
     @Container
-    private val nobleContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE)
+    private val jessieDefaultConfigContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_DEFAULT)
+
+    @Container
+    private val jessieMissingLocaltimeContainer = createTimezoneTestContainer(ContainerType.DEBIAN_JESSIE_MISSING_LOCALTIME)
+
+    @Container
+    private val nobleCorrectConfigContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE_CORRECT)
+
+    @Container
+    private val nobleDefaultConfigContainer = createTimezoneTestContainer(ContainerType.UBUNTU_NOBLE_DEFAULT)
 
     @Test
-    fun currentSystemTimeZoneJessieTest() {
-        assertExecSuccess(jessieContainer.execCorrectRecognizesCurrentSystemTimeZone())
+    fun debianJessieCorrectConfigTest() {
+        assertExecSuccess(jessieCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
     }
 
     @Test
-    fun currentSystemTimeZoneNobleTest() {
-        assertExecSuccess(nobleContainer.execCorrectRecognizesCurrentSystemTimeZone())
+    fun nobleCorrectConfigTest() {
+        assertExecSuccess(nobleCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
+    }
+
+    @Test
+    fun jessieDefaultConfigTest() {
+        assertExecSuccess(jessieDefaultConfigContainer.execFallsBackToUniversal())
+    }
+
+    @Test
+    fun jessieMissingLocaltimeTest() {
+        assertExecSuccess(jessieMissingLocaltimeContainer.execFallsBackToUTC())
+    }
+
+    @Test
+    fun nobleDefaultConfigTest() {
+        assertExecSuccess(nobleDefaultConfigContainer.execFallsBackToUTC())
     }
 
     @Test
     fun commonTimeZoneJessieTests() {
-        assertExecSuccess(jessieContainer.execCommonTimeZoneTests())
+        assertExecSuccess(jessieCorrectConfigContainer.execCommonTimeZoneTests())
     }
 
     @Test
     fun commonTimeZoneNobleTests() {
-        assertExecSuccess(nobleContainer.execCommonTimeZoneTests())
+        assertExecSuccess(nobleCorrectConfigContainer.execCommonTimeZoneTests())
     }
 
     private fun assertExecSuccess(execResult: ExecResult) {

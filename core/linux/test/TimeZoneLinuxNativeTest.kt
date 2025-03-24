@@ -30,6 +30,12 @@ class TimeZoneLinuxNativeTest {
         assertEquals(TimeZone.UTC, tz)
     }
 
+    @Test
+    fun fallsBackToUniversal() = Testcontainers.runIfAvailable {
+        val tz = TimeZone.currentSystemDefault()
+        assertEquals(TimeZone.of("Universal"), tz)
+    }
+
     /**
      * Verifies that TimeZone.currentSystemDefault() throws IllegalTimeZoneException
      * with the expected error message when the time zone ID cannot be determined.
