@@ -6,5 +6,3 @@ RUN apt-get update && apt-get install -y tzdata
 
 # 4: Arctic/Longyearbyen
 RUN echo 4 | dpkg-reconfigure tzdata
-
-WORKDIR /app

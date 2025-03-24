@@ -4,5 +4,3 @@ ENV INSIDE_TESTCONTAINERS=true
 
 # 5: Arctic/Longyearbyen
 RUN echo 5 | dpkg-reconfigure tzdata
-
-WORKDIR /app
