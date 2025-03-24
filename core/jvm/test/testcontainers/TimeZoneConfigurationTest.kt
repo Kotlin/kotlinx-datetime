@@ -28,6 +28,9 @@ class TimeZoneConfigurationTest {
     private val jessieMissingLocaltimeContainer = createTimezoneTestContainer(ContainerType.JESSIE_MISSING_LOCALTIME)
 
     @Container
+    private val jessieMissingTimezoneContainer = createTimezoneTestContainer(ContainerType.JESSIE_MISSING_TIMEZONE)
+
+    @Container
     private val nobleCorrectConfigContainer = createTimezoneTestContainer(ContainerType.NOBLE_CORRECT)
 
     @Container
@@ -49,6 +52,11 @@ class TimeZoneConfigurationTest {
     @Test
     fun jessieMissingLocaltimeTest() {
         assertExecSuccess(jessieMissingLocaltimeContainer.execFallsBackToUTC())
+    }
+
+    @Test
+    fun jessieMissingTimezoneTest() {
+        assertExecSuccess(jessieMissingTimezoneContainer.execThrowsExceptionWhenTimeZoneUndetermined())
     }
 
     @Test

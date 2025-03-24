@@ -22,6 +22,11 @@ enum class ContainerType(val dockerfilePath: String, val imageName: String) {
         "debian-jessie-timezone-test-missing-localtime"
     ),
 
+    JESSIE_MISSING_TIMEZONE(
+        "./jvm/test/testcontainers/debian-jessie/missing-timezone.dockerfile",
+        "debian-jessie-timezone-test-missing-timezone"
+    ),
+
     // Standard Noble with Arctic/Longyearbyen timezone
     NOBLE_CORRECT(
         "./jvm/test/testcontainers/ubuntu-noble/correct-config.dockerfile",
