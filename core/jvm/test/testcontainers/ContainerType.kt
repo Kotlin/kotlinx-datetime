@@ -31,5 +31,10 @@ enum class ContainerType(val dockerfilePath: String, val imageName: String) {
     NOBLE_DEFAULT(
         "./jvm/test/testcontainers/ubuntu-noble/default-config.dockerfile",
         "ubuntu-noble-timezone-test-default"
+    ),
+
+    NOBLE_INCORRECT_SYMLINK(
+        "./jvm/test/testcontainers/ubuntu-noble/incorrect-symlink.dockerfile",
+        "ubuntu-noble-timezone-test-incorrect-symlink"
     )
 }

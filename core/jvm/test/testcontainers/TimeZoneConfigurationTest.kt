@@ -30,14 +30,12 @@ class TimeZoneConfigurationTest {
     @Container
     private val nobleDefaultConfigContainer = createTimezoneTestContainer(ContainerType.NOBLE_DEFAULT)
 
-    @Test
-    fun debianJessieCorrectConfigTest() {
-        assertExecSuccess(jessieCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
-    }
+    @Container
+    private val nobleIncorrectSymlinkContainer = createTimezoneTestContainer(ContainerType.NOBLE_INCORRECT_SYMLINK)
 
     @Test
-    fun nobleCorrectConfigTest() {
-        assertExecSuccess(nobleCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
+    fun jessieCorrectConfigTest() {
+        assertExecSuccess(jessieCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
     }
 
     @Test
@@ -51,8 +49,18 @@ class TimeZoneConfigurationTest {
     }
 
     @Test
+    fun nobleCorrectConfigTest() {
+        assertExecSuccess(nobleCorrectConfigContainer.execCorrectRecognizesCurrentSystemTimeZone())
+    }
+
+    @Test
     fun nobleDefaultConfigTest() {
         assertExecSuccess(nobleDefaultConfigContainer.execFallsBackToUTC())
+    }
+
+    @Test
+    fun nobleIncorrectSymlinkTest() {
+        assertExecSuccess(nobleIncorrectSymlinkContainer.execThrowsExceptionWhenTimeZoneUndetermined())
     }
 
     @Test
