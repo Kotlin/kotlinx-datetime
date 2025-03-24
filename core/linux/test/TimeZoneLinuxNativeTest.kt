@@ -30,6 +30,11 @@ class TimeZoneLinuxNativeTest {
         assertEquals(TimeZone.UTC, tz)
     }
 
+    /**
+     * Verifies that the system time zone falls back to "Universal"
+     * when a specific time zone cannot be determined.
+     * This behavior is specific to Debian Jessie.
+     */
     @Test
     fun fallsBackToUniversal() = Testcontainers.runIfAvailable {
         val tz = TimeZone.currentSystemDefault()
