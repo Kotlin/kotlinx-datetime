@@ -11,35 +11,6 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 import java.nio.file.Paths
 
-enum class ContainerType(val dockerfilePath: String, val imageName: String) {
-    // Standard Jessie with Arctic/Longyearbyen timezone
-    DEBIAN_JESSIE_CORRECT(
-        "./jvm/test/testcontainers/debian-jessie/correct-config/Dockerfile",
-        "debian-jessie-timezone-test"
-    ),
-
-    DEBIAN_JESSIE_DEFAULT(
-        "./jvm/test/testcontainers/debian-jessie/default-config/Dockerfile",
-        "debian-jessie-timezone-test-default"
-    ),
-
-    DEBIAN_JESSIE_MISSING_LOCALTIME(
-        "./jvm/test/testcontainers/debian-jessie/missing-localtime/Dockerfile",
-        "debian-jessie-timezone-test-missing-localtime"
-    ),
-
-    // Standard Noble with Arctic/Longyearbyen timezone
-    UBUNTU_NOBLE_CORRECT(
-        "./jvm/test/testcontainers/ubuntu-noble/correct-config/Dockerfile",
-        "ubuntu-noble-timezone-test"
-    ),
-
-    UBUNTU_NOBLE_DEFAULT(
-        "./jvm/test/testcontainers/ubuntu-noble/default-config/Dockerfile",
-        "ubuntu-noble-timezone-test-default"
-    )
-}
-
 class TimezoneTestContainer(containerType: ContainerType, binaryDir: String) :
     GenericContainer<TimezoneTestContainer>(
         ImageFromDockerfile(containerType.imageName)
