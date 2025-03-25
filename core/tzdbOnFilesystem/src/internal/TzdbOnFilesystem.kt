@@ -47,7 +47,9 @@ internal fun tzdbPaths(defaultTzdbPath: Path?) = sequence {
     currentSystemTimeZonePath?.splitTimeZonePath()?.first?.let { yield(it) }
 }
 
-internal val currentSystemTimeZonePath get() = chaseSymlinks("/etc/localtime")
+internal var root: String = "/"
+
+internal val currentSystemTimeZonePath get() = chaseSymlinks("${root}etc/localtime")
 
 /**
  * Given a path like `/usr/share/zoneinfo/Europe/Berlin`, produces `/usr/share/zoneinfo to Europe/Berlin`.
