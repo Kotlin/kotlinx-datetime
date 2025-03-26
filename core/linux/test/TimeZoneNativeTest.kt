@@ -35,7 +35,7 @@ class TimeZoneNativeTest {
 
     @Test
     fun correctSymlinkTest() {
-        root = "./core/linux/test/time-zone-native-test-resources/correct-symlink/"
+        root = "./linux/test/time-zone-native-test-resources/correct-symlink/"
 
         println("PWD: ${pwd()}")
 
@@ -45,7 +45,7 @@ class TimeZoneNativeTest {
 
     @Test
     fun fallsBackToUTC() {
-        root = "./core/linux/test/time-zone-native-test-resources/missing-localtime/"
+        root = "./linux/test/time-zone-native-test-resources/missing-localtime/"
 
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
