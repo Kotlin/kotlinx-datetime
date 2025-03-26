@@ -19,4 +19,12 @@ class TimeZoneNativeTest {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
+
+    @Test
+    fun fallsBackToUTC() {
+        root = "./core/linux/test/time-zone-native-test-resources/missing-localtime/"
+
+        val tz = TimeZone.currentSystemDefault()
+        assertEquals(TimeZone.UTC, tz)
+    }
 }
