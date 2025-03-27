@@ -68,7 +68,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun differentTimezonesTest() = Testcontainers.runIfAvailable {
+    fun differentTimezonesTest() {
         root = "${RESOURCES}different-timezones/"
 
         val exception = assertFailsWith<IllegalTimeZoneException> {
