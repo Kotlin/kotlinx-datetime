@@ -16,33 +16,25 @@ import kotlin.test.assertTrue
 class TimeZoneNativeTest {
 
     @Test
-    fun correctSymlinkTest() {
-        root = "${RESOURCES}correct-symlink/"
-
+    fun correctSymlinkTest() = withFakeRoot("${RESOURCES}correct-symlink/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
 
     @Test
-    fun correctLocaltimeCopyTest() {
-        root = "${RESOURCES}correct-localtime-copy/"
-
+    fun correctLocaltimeCopyTest() = withFakeRoot("${RESOURCES}correct-localtime-copy/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
 
     @Test
-    fun fallsBackToUTC() {
-        root = "${RESOURCES}missing-localtime/"
-
+    fun fallsBackToUTC() = withFakeRoot("${RESOURCES}falls-back-to-utc/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
     }
 
     @Test
-    fun missingTimezoneTest() {
-        root = "${RESOURCES}missing-timezone/"
-
+    fun missingTimezoneTest() = withFakeRoot("${RESOURCES}missing-timezone/") {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
@@ -54,9 +46,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun incorrectTimezoneTest() {
-        root = "${RESOURCES}incorrect-timezone/"
-
+    fun incorrectTimezoneTest() = withFakeRoot("${RESOURCES}incorrect-timezone/") {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
@@ -68,9 +58,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun differentTimezonesTest() {
-        root = "${RESOURCES}different-timezones/"
-
+    fun differentTimezonesTest() = withFakeRoot("${RESOURCES}different-timezones/") {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
@@ -83,5 +71,15 @@ class TimeZoneNativeTest {
 
     companion object {
         const val RESOURCES = "./linux/test/time-zone-native-test-resources/"
+
+        private fun withFakeRoot(fakeRoot: String, action: () -> Unit) {
+            val defaultRoot = root
+            root = fakeRoot
+            try {
+                action()
+            } finally {
+                root = defaultRoot
+            }
+        }
     }
 }
