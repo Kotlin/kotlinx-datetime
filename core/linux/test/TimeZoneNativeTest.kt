@@ -47,6 +47,14 @@ class TimeZoneNativeTest {
     }
 
     @Test
+    fun correctLocaltimeCopyTest() {
+        root = "${RESOURCES}correct-localtime-copy/"
+
+        val tz = TimeZone.currentSystemDefault()
+        assertEquals(TimeZone.of("Europe/Oslo"), tz)
+    }
+
+    @Test
     fun fallsBackToUTC() {
         root = "${RESOURCES}missing-localtime/"
 
