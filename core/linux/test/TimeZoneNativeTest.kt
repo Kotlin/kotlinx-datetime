@@ -68,6 +68,20 @@ class TimeZoneNativeTest {
         )
     }
 
+    @Test
+    fun incorrectTimezoneTest() {
+        root = "${RESOURCES}incorrect-timezone/"
+
+        val exception = assertFailsWith<IllegalTimeZoneException> {
+            TimeZone.currentSystemDefault()
+        }
+
+        assertTrue(
+            exception.message?.startsWith("Could not determine the timezone ID") == true,
+            "Exception message did not match"
+        )
+    }
+
     companion object {
         const val RESOURCES = "./linux/test/time-zone-native-test-resources/"
     }
