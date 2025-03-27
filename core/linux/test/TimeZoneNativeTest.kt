@@ -12,11 +12,14 @@ import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.toKString
+import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.internal.root
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import platform.posix.*
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class TimeZoneNativeTest {
 
@@ -35,7 +38,7 @@ class TimeZoneNativeTest {
 
     @Test
     fun correctSymlinkTest() {
-        root = "./linux/test/time-zone-native-test-resources/correct-symlink/"
+        root = "${RESOURCES}correct-symlink/"
 
         println("PWD: ${pwd()}")
 
@@ -45,9 +48,27 @@ class TimeZoneNativeTest {
 
     @Test
     fun fallsBackToUTC() {
-        root = "./linux/test/time-zone-native-test-resources/missing-localtime/"
+        root = "${RESOURCES}missing-localtime/"
 
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
+    }
+
+    @Test
+    fun missingTimezoneTest() {
+        root = "${RESOURCES}missing-timezone/"
+
+        val exception = assertFailsWith<IllegalTimeZoneException> {
+            TimeZone.currentSystemDefault()
+        }
+
+        assertTrue(
+            exception.message?.startsWith("Could not determine the timezone ID") == true,
+            "Exception message did not match"
+        )
+    }
+
+    companion object {
+        const val RESOURCES = "./linux/test/time-zone-native-test-resources/"
     }
 }
