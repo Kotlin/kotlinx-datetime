@@ -5,45 +5,22 @@
 
 package kotlinx.datetime.test
 
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.toKString
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.internal.root
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import platform.posix.*
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TimeZoneNativeTest {
 
-    @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
-    private fun pwd(): String {
-        val PATH_MAX = 4096
-        return memScoped {
-            val buffer = allocArray<ByteVar>(PATH_MAX)
-            if (getcwd(buffer, PATH_MAX.convert()) != null) {
-                buffer.toKString()
-            } else {
-                throw Exception("Failed to get current directory: ${strerror(errno)?.toKString()}")
-            }
-        }
-    }
-
     @Test
     fun correctSymlinkTest() {
         root = "${RESOURCES}correct-symlink/"
 
-        println("PWD: ${pwd()}")
-
         val tz = TimeZone.currentSystemDefault()
-        assertEquals(TimeZone.of("Europe/Oslo"), tz, "PWD: ${pwd()}")
+        assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
 
     @Test
