@@ -82,6 +82,20 @@ class TimeZoneNativeTest {
         )
     }
 
+    @Test
+    fun differentTimezonesTest() = Testcontainers.runIfAvailable {
+        root = "${RESOURCES}different-timezones/"
+
+        val exception = assertFailsWith<IllegalTimeZoneException> {
+            TimeZone.currentSystemDefault()
+        }
+
+        assertTrue(
+            exception.message?.startsWith("Timezone mismatch") == true,
+            "Exception message did not start with 'Timezone mismatch'"
+        )
+    }
+
     companion object {
         const val RESOURCES = "./linux/test/time-zone-native-test-resources/"
     }
