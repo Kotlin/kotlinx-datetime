@@ -41,7 +41,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun incorrectTimezoneTest() = withFakeRoot("${RESOURCES}incorrect-timezone/") {
+    fun nonExistentTimezoneInTimezoneFile() = withFakeRoot("${RESOURCES}incorrect-timezone/") {
         assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
