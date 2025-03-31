@@ -22,13 +22,13 @@ private val tzdb = runCatching { TzdbOnFilesystem() }
 // See: https://github.com/Kotlin/kotlinx-datetime/issues/430
 @OptIn(ExperimentalForeignApi::class)
 private fun getTimezoneFromEtcTimezone(): String? {
-    val timezoneContent = Path.fromString("${root}etc/timezone").readBytes()?.toKString()?.trim() ?: return null
-    val zoneId = chaseSymlinks("${root}usr/share/zoneinfo/$timezoneContent")
+    val timezoneContent = Path.fromString("${systemTimezoneSearchRoot}etc/timezone").readBytes()?.toKString()?.trim() ?: return null
+    val zoneId = chaseSymlinks("${systemTimezoneSearchRoot}usr/share/zoneinfo/$timezoneContent")
         ?.splitTimeZonePath()?.second?.toString()
         ?: return null
 
-    val zoneInfoBytes = Path.fromString("${root}usr/share/zoneinfo/$zoneId").readBytes() ?: return null
-    val localtimeBytes = Path.fromString("${root}etc/localtime").readBytes() ?: return null
+    val zoneInfoBytes = Path.fromString("${systemTimezoneSearchRoot}usr/share/zoneinfo/$zoneId").readBytes() ?: return null
+    val localtimeBytes = Path.fromString("${systemTimezoneSearchRoot}etc/localtime").readBytes() ?: return null
 
     if (!localtimeBytes.contentEquals(zoneInfoBytes)) {
         val displayTimezone = when (timezoneContent) {
@@ -36,8 +36,8 @@ private fun getTimezoneFromEtcTimezone(): String? {
             else -> "'$timezoneContent' (resolved to '$zoneId')"
         }
         throw IllegalTimeZoneException(
-            "Timezone mismatch: ${root}etc/timezone specifies $displayTimezone " +
-                    "but ${root}etc/localtime content differs from ${root}usr/share/zoneinfo/$zoneId"
+            "Timezone mismatch: ${systemTimezoneSearchRoot}etc/timezone specifies $displayTimezone " +
+                    "but ${systemTimezoneSearchRoot}etc/localtime content differs from ${systemTimezoneSearchRoot}usr/share/zoneinfo/$zoneId"
         )
     }
 

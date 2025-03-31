@@ -7,7 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.internal.root
+import kotlinx.datetime.internal.systemTimezoneSearchRoot
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -73,12 +73,12 @@ class TimeZoneNativeTest {
         const val RESOURCES = "./linux/test/time-zone-native-test-resources/"
 
         private fun withFakeRoot(fakeRoot: String, action: () -> Unit) {
-            val defaultRoot = root
-            root = fakeRoot
+            val defaultRoot = systemTimezoneSearchRoot
+            systemTimezoneSearchRoot = fakeRoot
             try {
                 action()
             } finally {
-                root = defaultRoot
+                systemTimezoneSearchRoot = defaultRoot
             }
         }
     }
