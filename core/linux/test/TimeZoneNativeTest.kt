@@ -28,7 +28,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun fallsBackToUTC() = withFakeRoot("${RESOURCES}falls-back-to-utc/") {
+    fun fallbackToUTCWhenNoLocaltime() = withFakeRoot("${RESOURCES}missing-localtime/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
     }
