@@ -22,33 +22,33 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun timezoneFileAgreesWithLocaltimeContents() = withFakeRoot("${RESOURCES}correct-localtime-copy/") {
+    fun timezoneFileAgreesWithLocaltimeContentsTest() = withFakeRoot("${RESOURCES}timezone-file-agrees-with-localtime-contents/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.of("Europe/Oslo"), tz)
     }
 
     @Test
-    fun fallbackToUTCWhenNoLocaltime() = withFakeRoot("${RESOURCES}missing-localtime/") {
+    fun fallbackToUTCWhenNoLocaltimeTest() = withFakeRoot("${RESOURCES}fallback-to-utc-when-no-localtime/") {
         val tz = TimeZone.currentSystemDefault()
         assertEquals(TimeZone.UTC, tz)
     }
 
     @Test
-    fun missingTimezoneWhenLocaltimeIsNotSymlinkTest() = withFakeRoot("${RESOURCES}missing-timezone/") {
+    fun missingTimezoneWhenLocaltimeIsNotSymlinkTest() = withFakeRoot("${RESOURCES}missing-timezone-when-localtime-is-not-symlink/") {
         assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
     }
 
     @Test
-    fun nonExistentTimezoneInTimezoneFile() = withFakeRoot("${RESOURCES}incorrect-timezone/") {
+    fun nonExistentTimezoneInTimezoneFileTest() = withFakeRoot("${RESOURCES}non-existent-timezone-in-timezone-file/") {
         assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
     }
 
     @Test
-    fun timezoneFileDisagreesWithLocaltimeContentsTest() = withFakeRoot("${RESOURCES}different-timezones/") {
+    fun timezoneFileDisagreesWithLocaltimeContentsTest() = withFakeRoot("${RESOURCES}timezone-file-disagrees-with-localtime-contents/") {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
