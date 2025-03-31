@@ -18,6 +18,8 @@ internal actual fun getAvailableZoneIds(): Set<String> =
 
 private val tzdb = runCatching { TzdbOnFilesystem() }
 
+// This workaround is needed for Debian versions Etch (4.0) - Jessie (8.0), where the timezone data is organized differently.
+// See: https://github.com/Kotlin/kotlinx-datetime/issues/430
 @OptIn(ExperimentalForeignApi::class)
 private fun getTimezoneFromEtcTimezone(): String? {
     val timezoneContent = Path.fromString("${root}etc/timezone").readBytes()?.toKString()?.trim() ?: return null
