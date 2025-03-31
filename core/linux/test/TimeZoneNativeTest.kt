@@ -34,7 +34,7 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun missingTimezoneTest() = withFakeRoot("${RESOURCES}missing-timezone/") {
+    fun missingTimezoneWhenLocaltimeIsNotSymlinkTest() = withFakeRoot("${RESOURCES}missing-timezone/") {
         val exception = assertFailsWith<IllegalTimeZoneException> {
             TimeZone.currentSystemDefault()
         }
