@@ -54,8 +54,8 @@ class TimeZoneNativeTest {
         }
 
         assertTrue(
-            exception.message?.contains("/etc/timezone") == true,
-            "Exception message does not contain '/etc/timezone' as expected"
+            exception.message?.contains("Europe/Oslo") == true,
+            "Exception message does not contain 'Europe/Oslo' as expected"
         )
     }
 
