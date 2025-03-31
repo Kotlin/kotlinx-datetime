@@ -54,8 +54,8 @@ class TimeZoneNativeTest {
         }
 
         assertTrue(
-            exception.message?.startsWith("Timezone mismatch") == true,
-            "Exception message did not start with 'Timezone mismatch'"
+            exception.message?.contains("/etc/timezone") == true,
+            "Exception message does not contain '/etc/timezone' as expected"
         )
     }
 
