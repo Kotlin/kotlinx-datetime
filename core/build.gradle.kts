@@ -5,6 +5,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.konan.target.Family
 
@@ -102,16 +103,13 @@ kotlin {
             }
         }
         compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
+            compileTaskProvider.configure {
+                compilerOptions {
+                    sourceMap = true
+                    moduleKind = JsModuleKind.MODULE_UMD
+                }
             }
         }
-//        compilations["main"].apply {
-//            kotlinOptions {
-//                outputFile = "kotlinx-datetime-tmp.js"
-//            }
-//        }
     }
 
     wasmJs {
