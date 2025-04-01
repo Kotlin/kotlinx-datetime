@@ -447,6 +447,24 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     public fun toLocalTime(): LocalTime = contents.time.toLocalTime()
 
     /**
+     * Builds a [LocalTime] from the fields in this [DateTimeComponents] or returns `null` if the operation fails.
+     *
+     * This method uses the following fields:
+     * * [hour], [hourOfAmPm], and [amPm]
+     * * [minute]
+     * * [second] (default value is 0)
+     * * [nanosecond] (default value is 0)
+     *
+     * Returns `null` if hours or minutes are not present, if any of the fields are invalid, or
+     * [hourOfAmPm] and [amPm] are inconsistent with [hour].
+     * 
+     * Unlike [toLocalTime], this method never throws exceptions.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toLocalTimeOrNull
+     */
+    public fun toLocalTimeOrNull(): LocalTime? = contents.time.toLocalTimeOrNull()
+
+    /**
      * Builds a [LocalDateTime] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:

@@ -11,6 +11,57 @@ import kotlin.test.*
 
 class DateTimeComponentsTest {
     @Test
+    fun testToLocalTimeOrNull() {
+        // Valid case - should return a LocalTime
+        val validComponents = DateTimeComponents().apply {
+            hour = 15
+            minute = 30
+            second = 45
+            nanosecond = 123_456_789
+        }
+        val validTime = validComponents.toLocalTimeOrNull()
+        assertEquals(LocalTime(15, 30, 45, 123_456_789), validTime)
+
+        // Missing hour - should return null
+        val missingHourComponents = DateTimeComponents().apply {
+            minute = 30
+            second = 45
+        }
+        assertNull(missingHourComponents.toLocalTimeOrNull())
+
+        // Missing minute - should return null
+        val missingMinuteComponents = DateTimeComponents().apply {
+            hour = 15
+            second = 45
+        }
+        assertNull(missingMinuteComponents.toLocalTimeOrNull())
+
+        // Inconsistent hour and hourOfAmPm - should return null
+        val inconsistentHourComponents = DateTimeComponents().apply {
+            hour = 15
+            hourOfAmPm = 2 // Should be 3 for hour 15
+            minute = 30
+        }
+        assertNull(inconsistentHourComponents.toLocalTimeOrNull())
+
+        // Inconsistent hour and amPm - should return null
+        val inconsistentAmPmComponents = DateTimeComponents().apply {
+            hour = 15
+            amPm = AmPmMarker.AM // Should be PM for hour 15
+            minute = 30
+        }
+        assertNull(inconsistentAmPmComponents.toLocalTimeOrNull())
+
+        // Valid case with hourOfAmPm and amPm - should return a LocalTime
+        val validAmPmComponents = DateTimeComponents().apply {
+            hourOfAmPm = 3
+            amPm = AmPmMarker.PM
+            minute = 30
+        }
+        assertEquals(LocalTime(15, 30), validAmPmComponents.toLocalTimeOrNull())
+    }
+
+    @Test
     fun testAssigningIllegalValues() {
         val dateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
         for (field in twoDigitFields) {

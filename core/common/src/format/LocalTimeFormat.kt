@@ -80,6 +80,32 @@ internal class IncompleteLocalTime(
         )
     }
 
+    fun toLocalTimeOrNull(): LocalTime? {
+        val hour: Int = hour?.let { hour ->
+            hourOfAmPm?.let {
+                if ((hour + 11) % 12 + 1 != it) return null
+            }
+            amPm?.let { amPm ->
+                if ((amPm == AmPmMarker.PM) != (hour >= 12)) return null
+            }
+            hour
+        } ?: hourOfAmPm?.let { hourOfAmPm ->
+            amPm?.let { amPm ->
+                hourOfAmPm.let { if (it == 12) 0 else it } + if (amPm == AmPmMarker.PM) 12 else 0
+            }
+        } ?: return null
+
+        val minute = minute ?: return null
+        if (minute !in 0..59) return null
+
+        return LocalTime(
+            hour,
+            minute,
+            second ?: 0,
+            nanosecond ?: 0,
+        )
+    }
+
     fun populateFrom(localTime: LocalTime) {
         hour = localTime.hour
         hourOfAmPm = (localTime.hour + 11) % 12 + 1
