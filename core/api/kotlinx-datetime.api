@@ -617,6 +617,7 @@ public final class kotlinx/datetime/format/DateTimeComponents {
 	public final fun toLocalDate ()Lkotlinx/datetime/LocalDate;
 	public final fun toLocalDateTime ()Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalTime ()Lkotlinx/datetime/LocalTime;
+	public final fun toLocalTimeOrNull ()Lkotlinx/datetime/LocalTime;
 	public final fun toUtcOffset ()Lkotlinx/datetime/UtcOffset;
 }
 

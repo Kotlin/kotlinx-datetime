@@ -332,33 +332,9 @@ class DateTimeComponentsSamples {
         check(localTime == LocalTime(8, 49, 37))
 
         // Create a DateTimeComponents with invalid time data
-        val invalidComponents = DateTimeComponents().apply {
-            // Missing minute field
-            hour = 10
-        }
-
-        // toLocalTime() would throw an exception
-        try {
-            invalidComponents.toLocalTime()
-            fail("Expected an exception")
-        } catch (e: IllegalArgumentException) {
-            // Expected: minute is missing
-        }
-
-        // toLocalTimeOrNull() returns null instead
-        val nullTime = invalidComponents.toLocalTimeOrNull()
-        check(nullTime == null)
-
-        // Another example with inconsistent hour and AM/PM
-        val inconsistentComponents = DateTimeComponents().apply {
-            hour = 14 // 2 PM
-            hourOfAmPm = 2 // 2 AM/PM
-            amPm = AmPmMarker.AM // AM
-            minute = 30
-        }
-
-        // toLocalTimeOrNull() returns null for inconsistent data
-        check(inconsistentComponents.toLocalTimeOrNull() == null)
+        val brokenRfc1123Input = "Sun, 06 Nov 1994 25:61:61 +0300"
+        val brokenParsed = DateTimeComponents.Formats.RFC_1123.parse(brokenRfc1123Input)
+        check(brokenParsed.toLocalTimeOrNull() == null)
     }
 
     @Test

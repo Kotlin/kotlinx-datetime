@@ -59,6 +59,15 @@ class DateTimeComponentsTest {
             minute = 30
         }
         assertEquals(LocalTime(15, 30), validAmPmComponents.toLocalTimeOrNull())
+
+        // Valid case with hourOfAmPm, amPm, and simply hour - should return a LocalTime
+        val validAmPmComponents2 = DateTimeComponents().apply {
+            hour = 15
+            hourOfAmPm = 3
+            amPm = AmPmMarker.PM
+            minute = 30
+        }
+        assertEquals(LocalTime(15, 30), validAmPmComponents2.toLocalTimeOrNull())
     }
 
     @Test

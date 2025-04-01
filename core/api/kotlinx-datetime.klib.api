@@ -201,6 +201,7 @@ final class kotlinx.datetime.format/DateTimeComponents { // kotlinx.datetime.for
     final fun toLocalDate(): kotlinx.datetime/LocalDate // kotlinx.datetime.format/DateTimeComponents.toLocalDate|toLocalDate(){}[0]
     final fun toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime.format/DateTimeComponents.toLocalDateTime|toLocalDateTime(){}[0]
     final fun toLocalTime(): kotlinx.datetime/LocalTime // kotlinx.datetime.format/DateTimeComponents.toLocalTime|toLocalTime(){}[0]
+    final fun toLocalTimeOrNull(): kotlinx.datetime/LocalTime? // kotlinx.datetime.format/DateTimeComponents.toLocalTimeOrNull|toLocalTimeOrNull(){}[0]
     final fun toUtcOffset(): kotlinx.datetime/UtcOffset // kotlinx.datetime.format/DateTimeComponents.toUtcOffset|toUtcOffset(){}[0]
 
     final object Companion { // kotlinx.datetime.format/DateTimeComponents.Companion|null[0]

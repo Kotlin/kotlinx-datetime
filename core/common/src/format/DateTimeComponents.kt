@@ -442,6 +442,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * @throws IllegalArgumentException if hours or minutes are not present, if any of the fields are invalid, or
      * [hourOfAmPm] and [amPm] are inconsistent with [hour].
+     * @see toLocalTimeOrNull for a version that returns `null` instead of throwing exceptions.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toLocalTime
      */
     public fun toLocalTime(): LocalTime = contents.time.toLocalTime()
@@ -457,9 +458,10 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      *
      * Returns `null` if hours or minutes are not present, if any of the fields are invalid, or
      * [hourOfAmPm] and [amPm] are inconsistent with [hour].
-     * 
+     *
      * Unlike [toLocalTime], this method never throws exceptions.
      *
+     * @see toLocalTime for a version that throws exceptions.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toLocalTimeOrNull
      */
     public fun toLocalTimeOrNull(): LocalTime? = contents.time.toLocalTimeOrNull()
