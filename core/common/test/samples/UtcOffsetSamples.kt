@@ -65,6 +65,17 @@ class UtcOffsetSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing a UtcOffset from a string using predefined and custom formats or failing
+        check(UtcOffset.parseOrNull("+01:30")?.totalSeconds == 5400)
+        check(UtcOffset.parseOrNull("+0130", UtcOffset.Formats.FOUR_DIGITS)?.totalSeconds == 5400)
+        val customFormat = UtcOffset.Format { offsetHours(Padding.NONE); offsetMinutesOfHour() }
+        check(UtcOffset.parseOrNull("+130", customFormat)?.totalSeconds == 5400)
+        check(UtcOffset.parseOrNull("Europe/Berlin", customFormat) == null)
+        check(UtcOffset.parseOrNull("+9999", customFormat) == null)
+    }
+
+    @Test
     fun toStringSample() {
         // Converting a UtcOffset to a string
         check(UtcOffset.parse("+01:30:00").toString() == "+01:30")

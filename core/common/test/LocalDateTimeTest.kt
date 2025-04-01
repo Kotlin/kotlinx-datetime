@@ -23,17 +23,29 @@ class LocalDateTimeTest {
         fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
             checkComponents(LocalDateTime.parse(value), year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
         }
+        fun assertInvalidLocalDateTimeString(string: String) {
+            assertInvalidFormat { LocalDateTime.parse(string) }
+            assertNull(LocalDateTime.parseOrNull(string), string)
+        }
         checkParsedComponents("2019-10-01T18:43:15.100500", 2019, 10, 1, 18, 43, 15, 100500000, 2, 274)
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
+        invalidDateStrings.forEach { dateString ->
+            assertInvalidLocalDateTimeString("${dateString}T18:43:15")
+        }
+        invalidTimeStrings.forEach { timeString ->
+            assertInvalidLocalDateTimeString("2024-01-01T${timeString}")
+        }
 
-        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("x") }
-        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("+1000000000-03-26T04:00:00") }
+        assertInvalidLocalDateTimeString("x")
+        assertInvalidLocalDateTimeString("+1000000000-03-26T04:00:00")
 
         for (i in 1..30) {
             checkComponents(LocalDateTime.parse("+${"0".repeat(i)}2024-01-01T23:59"), 2024, 1, 1, 23, 59)
             checkComponents(LocalDateTime.parse("-${"0".repeat(i)}2024-01-01T23:59:03"), -2024, 1, 1, 23, 59, 3)
         }
+
+
 
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
