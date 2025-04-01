@@ -5,6 +5,9 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalDate.Companion.Format
+import kotlinx.datetime.LocalDate.Formats
+import kotlinx.datetime.LocalDateTime.Companion.Format
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -49,11 +52,12 @@ import kotlin.internal.*
  * [toEpochDays] is the inverse operation.
  * See sample 2.
  *
- * [parse] and [toString] methods can be used to obtain a [LocalDate] from and convert it to a string in the
- * ISO 8601 extended format.
+ * [parse], [parseOrNull][LocalDate.Companion.parseOrNull], and [toString] methods
+ * can be used to obtain a [LocalDate] from and convert it to a string in the ISO 8601 extended format.
  * See sample 3.
  *
- * [parse] and [LocalDate.format] both support custom formats created with [Format] or defined in [Formats].
+ * [parse], [parseOrNull][LocalDate.Companion.parseOrNull], and [LocalDate.format]
+ * all support custom formats created with [Format] or defined in [Formats].
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
@@ -76,10 +80,13 @@ public expect class LocalDate : Comparable<LocalDate> {
          * If [format] is not specified, [Formats.ISO] is used.
          * `2023-01-02` is an example of a string in this format.
          *
+         * See [Formats] and [Format] for predefined and custom formats.
+         *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalDate] are exceeded.
          *
          * @see LocalDate.toString for formatting using the default format.
          * @see LocalDate.format for formatting using a custom format.
+         * @see LocalDate.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()): LocalDate
@@ -266,6 +273,26 @@ public expect class LocalDate : Comparable<LocalDate> {
      */
     public override fun toString(): String
 }
+
+/**
+ * A shortcut for calling [DateTimeFormat.parseOrNull].
+ *
+ * Parses a string that represents a date and returns the parsed [LocalDate] value,
+ * or `null` if the string does not match the format or does not represent a valid [LocalDate].
+ *
+ * If [format] is not specified, [LocalDate.Formats.ISO] is used.
+ * `2023-01-02` is an example of a string in this format.
+ *
+ * See [LocalDate.Formats] and [LocalDate.Format] for predefined and custom formats.
+ *
+ * @see LocalDate.toString for formatting using the default format.
+ * @see LocalDate.format for formatting using a custom format.
+ * @see LocalDate.parse for a version of this function that throws an exception on faulty input.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.parseOrNull
+ */
+public fun LocalDate.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()
+): LocalDate? = format.parseOrNull(input)
 
 /**
  * @suppress

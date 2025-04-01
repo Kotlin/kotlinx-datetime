@@ -30,6 +30,18 @@ class LocalDateSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing LocalDate values using predefined and custom formats or failing
+        check(LocalDate.parseOrNull("2024-04-16") == LocalDate(2024, Month.APRIL, 16))
+        val customFormat = LocalDate.Format {
+            monthName(MonthNames.ENGLISH_ABBREVIATED); char(' '); day(); chars(", "); year()
+        }
+        check(LocalDate.parseOrNull("Apr 16, 2024", customFormat) == LocalDate(2024, Month.APRIL, 16))
+        check(LocalDate.parseOrNull("no date here", customFormat) == null)
+        check(LocalDate.parseOrNull("Apr 99, 2024", customFormat) == null)
+    }
+
+    @Test
     fun fromAndToEpochDays() {
         // Converting LocalDate values to the number of days since 1970-01-01 and back
         check(LocalDate.fromEpochDays(0) == LocalDate(1970, Month.JANUARY, 1))

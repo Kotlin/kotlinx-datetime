@@ -40,11 +40,13 @@ import kotlinx.serialization.Serializable
  *
  * There is also a [ZERO] constant for the offset of zero.
  *
- * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the
+ * [parse], [parseOrNull][UtcOffset.Companion.parseOrNull], and [toString] methods
+ * can be used to obtain a [UtcOffset] from and convert it to a string in the
  * ISO 8601 extended format (for example, `+01:30`).
  * See sample 2.
  *
- * [parse] and [UtcOffset.format] both support custom formats created with [Format] or defined in [Formats].
+ * [parse], [parseOrNull][UtcOffset.Companion.parseOrNull], and [UtcOffset.format]
+ * all support custom formats created with [Format] or defined in [Formats].
  * See sample 3.
  *
  * To serialize and deserialize [UtcOffset] values with `kotlinx-serialization`, use the [UtcOffsetSerializer].
@@ -85,6 +87,10 @@ public expect class UtcOffset {
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [UtcOffset] are
          * exceeded.
+         *
+         * @see UtcOffset.toString for formatting using the default format.
+         * @see UtcOffset.format for formatting using a custom format.
+         * @see UtcOffset.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()): UtcOffset
@@ -183,6 +189,25 @@ public expect class UtcOffset {
      */
     public override fun toString(): String
 }
+
+/**
+ * A shortcut for calling [DateTimeFormat.parseOrNull].
+ *
+ * Parses a string that represents a date and returns the parsed [UtcOffset] value,
+ * or `null` if the string does not match the format or does not represent a valid [UtcOffset].
+ *
+ * If [format] is not specified, [UtcOffset.Formats.ISO] is used.
+ * `+01:30` is an example of a string in this format.
+ *
+ * See [UtcOffset.Formats] and [UtcOffset.Format] for predefined and custom formats.
+ *
+ * @see UtcOffset.toString for formatting using the default format.
+ * @see UtcOffset.format for formatting using a custom format.
+ * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parseOrNull
+ */
+public fun UtcOffset.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()
+): UtcOffset? = format.parseOrNull(input)
 
 /**
  * Formats this value using the given [format].
