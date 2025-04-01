@@ -124,6 +124,14 @@ class InstantSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing an Instant from a string using predefined and custom formats
+        check(Instant.parseOrNull("1970-01-01T00:00:00Z") == Instant.fromEpochSeconds(0))
+        check(Instant.parseOrNull("Thu, 01 Jan 1970 03:30:00 +0330", DateTimeComponents.Formats.RFC_1123) == Instant.fromEpochSeconds(0))
+        check(Instant.parseOrNull("The moment of Charlie Chaplin's birth") == null)
+    }
+
+    @Test
     fun isDistantPast() {
         // Checking if an instant is so far in the past that it's probably irrelevant
         val currentInstant = Clock.System.now()

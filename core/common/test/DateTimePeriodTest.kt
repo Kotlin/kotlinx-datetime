@@ -76,64 +76,69 @@ class DateTimePeriodTest {
         assertEquals("P1DT-0.999999999S", DateTimePeriod(days = 1, seconds = -1, nanoseconds = 1L).toString())
     }
 
+    private inline fun <reified T : IllegalArgumentException> assertFailsToParse(text: String): T {
+        assertNull(DateTimePeriod.parseOrNull(text))
+        return assertFailsWith<T> { DateTimePeriod.parse(text) }
+    }
+
     @Test
     fun parseIsoString() {
-        assertEquals(DateTimePeriod(years = 1), DateTimePeriod.parse("P1Y"))
-        assertEquals(DatePeriod(years = 1, months = 1), DateTimePeriod.parse("P1Y1M"))
-        assertEquals(DateTimePeriod(months = 11), DateTimePeriod.parse("P11M"))
-        assertEquals(DateTimePeriod(months = 10, days = 5), DateTimePeriod.parse("P10M5D"))
-        assertEquals(DateTimePeriod(years = 1, days = 40), DateTimePeriod.parse("P1Y40D"))
+        fun assertParsesTo(value: DateTimePeriod, string: String) {
+            assertEquals(value, DateTimePeriod.parse(string))
+            assertEquals(value, DateTimePeriod.parseOrNull(string))
+        }
 
-        assertEquals(DateTimePeriod(months = 14), DateTimePeriod.parse("P14M"))
+        assertParsesTo(DateTimePeriod(years = 1), "P1Y")
+        assertParsesTo(DatePeriod(years = 1, months = 1), "P1Y1M")
+        assertParsesTo(DateTimePeriod(months = 11), "P11M")
+        assertParsesTo(DateTimePeriod(months = 10, days = 5), "P10M5D")
+        assertParsesTo(DateTimePeriod(years = 1, days = 40), "P1Y40D")
+
+        // Successful parsing tests
+        assertParsesTo(DateTimePeriod(months = 14), "P14M")
         assertPeriodComponents(DateTimePeriod.parse("P14M") as DatePeriod, years = 1, months = 2)
-
-        assertEquals(DateTimePeriod(hours = 1), DateTimePeriod.parse("PT1H"))
-        assertEquals(DateTimePeriod(), DateTimePeriod.parse("P0D"))
-        assertEquals(DatePeriod(), DateTimePeriod.parse("P0D"))
-
-        assertEquals(DateTimePeriod(days = 1, hours = -1), DateTimePeriod.parse("P1DT-1H"))
-        assertEquals(DateTimePeriod(days = -1, hours = -1), DateTimePeriod.parse("-P1DT1H"))
-        assertEquals(DateTimePeriod(months = -1), DateTimePeriod.parse("-P1M"))
-
-        assertEquals(DateTimePeriod(years = -1, months = -2, days = -3, hours = -4, minutes = -5, seconds = 0, nanoseconds = 500_000_000),
-            DateTimePeriod.parse("P-1Y-2M-3DT-4H-5M0.500000000S"))
+        assertParsesTo(DateTimePeriod(hours = 1), "PT1H")
+        assertParsesTo(DateTimePeriod(), "P0D")
+        assertParsesTo(DatePeriod(), "P0D")
+        assertParsesTo(DateTimePeriod(days = 1, hours = -1), "P1DT-1H")
+        assertParsesTo(DateTimePeriod(days = -1, hours = -1), "-P1DT1H")
+        assertParsesTo(DateTimePeriod(months = -1), "-P1M")
+        assertParsesTo(DateTimePeriod(years = -1, months = -2, days = -3, hours = -4, minutes = -5, seconds = 0, nanoseconds = 500_000_000),
+            "P-1Y-2M-3DT-4H-5M0.500000000S")
         assertPeriodComponents(DateTimePeriod.parse("P-1Y-2M-3DT-4H-5M0.500000000S"),
             years = -1, months = -2, days = -3, hours = -4, minutes = -4, seconds = -59, nanoseconds = -500_000_000)
-
-        assertEquals(DateTimePeriod(nanoseconds = 999_999_999_999_999L), DateTimePeriod.parse("PT277H46M39.999999999S"))
+        assertParsesTo(DateTimePeriod(nanoseconds = 999_999_999_999_999L), "PT277H46M39.999999999S")
         assertPeriodComponents(DateTimePeriod.parse("PT277H46M39.999999999S"),
             hours = 277, minutes = 46, seconds = 39, nanoseconds = 999_999_999)
-
-        assertEquals(DateTimePeriod(nanoseconds = 999_999_999), DateTimePeriod.parse("PT0.999999999S"))
-        assertEquals(DateTimePeriod(nanoseconds = -1), DateTimePeriod.parse("-PT0.000000001S"))
-        assertEquals(DateTimePeriod(days = 1, nanoseconds = -1), DateTimePeriod.parse("P1DT-0.000000001S"))
-        assertEquals(DateTimePeriod(nanoseconds = -999_999_999), DateTimePeriod.parse("-PT0.999999999S"))
-        assertEquals(DateTimePeriod(days = 1, nanoseconds = -999_999_999), DateTimePeriod.parse("P1DT-0.999999999S"))
+        assertParsesTo(DateTimePeriod(nanoseconds = 999_999_999), "PT0.999999999S")
+        assertParsesTo(DateTimePeriod(nanoseconds = -1), "-PT0.000000001S")
+        assertParsesTo(DateTimePeriod(days = 1, nanoseconds = -1), "P1DT-0.000000001S")
+        assertParsesTo(DateTimePeriod(nanoseconds = -999_999_999), "-PT0.999999999S")
+        assertParsesTo(DateTimePeriod(days = 1, nanoseconds = -999_999_999), "P1DT-0.999999999S")
         assertPeriodComponents(DateTimePeriod.parse("P1DT-0.999999999S"), days = 1, nanoseconds = -999_999_999)
-        assertEquals(DatePeriod(days = 1), DateTimePeriod.parse("P000000000000000000000000000001D"))
+        assertParsesTo(DatePeriod(days = 1), "P000000000000000000000000000001D")
 
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P") }
-
+        // Failing parsing tests - IllegalArgumentException
+        assertFailsToParse<IllegalArgumentException>("P")
         // overflow of `Int.MAX_VALUE` years
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P768614336404564651Y") }
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("P1Y9223372036854775805M") }
+        assertFailsToParse<IllegalArgumentException>("P768614336404564651Y")
+        assertFailsToParse<IllegalArgumentException>("P1Y9223372036854775805M")
+        assertFailsToParse<IllegalArgumentException>("PT+-2H")
 
-        assertFailsWith<IllegalArgumentException> { DateTimePeriod.parse("PT+-2H") }
-
-        // too large a number in a field
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000Y") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000M") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000D") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000H") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000M") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P3000000000S") }
+        // Failing parsing tests - DateTimeFormatException
+        assertFailsToParse<DateTimeFormatException>("P3000000000Y")
+        assertFailsToParse<DateTimeFormatException>("P3000000000M")
+        assertFailsToParse<DateTimeFormatException>("P3000000000D")
+        assertFailsToParse<DateTimeFormatException>("P3000000000H")
+        assertFailsToParse<DateTimeFormatException>("P3000000000M")
+        assertFailsToParse<DateTimeFormatException>("P3000000000S")
 
         // wrong order of signifiers
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P1Y2D3M") }
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P0DT1M2H") }
+        assertFailsToParse<DateTimeFormatException>("P1Y2D3M")
+        assertFailsToParse<DateTimeFormatException>("P0DT1M2H")
 
         // loss of precision in fractional seconds
-        assertFailsWith<DateTimeFormatException> { DateTimePeriod.parse("P0.000000000001S") }
+        assertFailsToParse<DateTimeFormatException>("P0.000000000001S")
 
         // non-zero time components when parsing DatePeriod
         assertFailsWith<IllegalArgumentException> { DatePeriod.parse("P1DT1H") }

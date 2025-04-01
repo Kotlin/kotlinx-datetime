@@ -425,6 +425,47 @@ class DateTimeComponentsSamples {
         }
     }
 
+    @Test
+    fun parseOrNull() {
+        // Parsing partial, complex, or broken data using parseOrNull
+        // DateTimeComponents can be used to parse complex data that consists of multiple components
+        val compoundFormat = DateTimeComponents.Format {
+            date(LocalDate.Formats.ISO)
+            char(' ')
+            hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
+            char(' ')
+            offsetHours(); char(':'); offsetMinutesOfHour(); optional { char(':'); offsetSecondsOfMinute() }
+        }
+        val parsedCompoundData = DateTimeComponents.parseOrNull("2023-01-02 03:46:58.531 +03:30", compoundFormat)
+        check(parsedCompoundData != null)
+        check(parsedCompoundData.toLocalTime() == LocalTime(3, 46, 58, 531_000_000))
+        check(parsedCompoundData.toLocalDate() == LocalDate(2023, 1, 2))
+        check(parsedCompoundData.toUtcOffset() == UtcOffset(3, 30))
+        check(parsedCompoundData.toInstantUsingOffset() == Instant.parse("2023-01-02T03:46:58.531+03:30"))
+        // It can also be used to parse partial data that is missing some components
+        val partialFormat = DateTimeComponents.Format {
+            year(); char('-'); monthNumber()
+        }
+        val parsedPartialData = DateTimeComponents.parseOrNull("2023-01", partialFormat)
+        check(parsedPartialData != null)
+        check(parsedPartialData.year == 2023)
+        check(parsedPartialData.month == Month.JANUARY)
+        try {
+            parsedPartialData.toLocalDate()
+            fail("Expected an exception")
+        } catch (e: IllegalArgumentException) {
+            // expected: the day is missing, so LocalDate cannot be constructed
+        }
+        // Invalid data can be parsed successfully
+        val parsedInvalidData = DateTimeComponents.parseOrNull("2025-99", partialFormat)
+        check(parsedInvalidData != null)
+        check(parsedInvalidData.year == 2025)
+        check(parsedInvalidData.monthNumber == 99)
+        // Non-parseable strings return null without an exception
+        val invalidData = DateTimeComponents.parseOrNull("invalid date-time", compoundFormat)
+        check(invalidData == null)
+    }
+
     class Formats {
         @Test
         fun rfc1123parsing() {
