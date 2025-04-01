@@ -19,19 +19,34 @@ class LocalDateTimeTest {
     @Test
     fun localDateTimeParsing() {
         fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
-            checkComponents(value.toLocalDateTime(), year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
+            val result = LocalDateTime.parse(value)
+            checkComponents(result, year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
+            assertEquals(result, LocalDateTime.parseOrNull(value))
+            assertEquals(value, result.toString())
+        }
+        fun assertInvalidLocalDateTimeString(string: String) {
+            assertInvalidFormat { LocalDateTime.parse(string) }
+            assertNull(LocalDateTime.parseOrNull(string), string)
         }
         checkParsedComponents("2019-10-01T18:43:15.100500", 2019, 10, 1, 18, 43, 15, 100500000, 2, 274)
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
+        invalidDateStrings.forEach { dateString ->
+            assertInvalidLocalDateTimeString("${dateString}T18:43:15")
+        }
+        invalidTimeStrings.forEach { timeString ->
+            assertInvalidLocalDateTimeString("2024-01-01T${timeString}")
+        }
 
-        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("x") }
-        assertFailsWith<DateTimeFormatException> { "+1000000000-03-26T04:00:00".toLocalDateTime() }
+        assertInvalidLocalDateTimeString("x")
+        assertInvalidLocalDateTimeString("+1000000000-03-26T04:00:00")
 
         for (i in 1..30) {
             checkComponents(LocalDateTime.parse("+${"0".repeat(i)}2024-01-01T23:59"), 2024, 1, 1, 23, 59)
             checkComponents(LocalDateTime.parse("-${"0".repeat(i)}2024-01-01T23:59:03"), -2024, 1, 1, 23, 59, 3)
         }
+
+
 
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
@@ -45,8 +60,8 @@ class LocalDateTimeTest {
 
     @Test
     fun localDtToInstantConversion() {
-        val ldt1 = "2019-10-01T18:43:15.100500".toLocalDateTime()
-        val ldt2 = "2019-10-01T19:50:00.500600".toLocalDateTime()
+        val ldt1 = LocalDateTime.parse("2019-10-01T18:43:15.100500")
+        val ldt2 = LocalDateTime.parse("2019-10-01T19:50:00.500600")
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
@@ -56,8 +71,8 @@ class LocalDateTimeTest {
 
     @Test
     fun localDtToInstantConversionRespectsTimezones() {
-        val ldt1 = "2011-03-26T04:00:00".toLocalDateTime()
-        val ldt2 = "2011-03-27T04:00:00".toLocalDateTime()
+        val ldt1 = LocalDateTime.parse("2011-03-26T04:00:00")
+        val ldt2 = LocalDateTime.parse("2011-03-27T04:00:00")
         val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(23.hours, diff)
     }
