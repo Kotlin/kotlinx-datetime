@@ -168,13 +168,6 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
             nanosecond: Int = 0
         ): LocalDateTime?
 
-        /**
-         * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts
-         * or returns `null` if either [date] or [time] is `null`.
-         *
-         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.createOrNullFromDateAndTime
-         */
-        public fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime?
 
         /**
          * A shortcut for calling [DateTimeFormat.parse].
