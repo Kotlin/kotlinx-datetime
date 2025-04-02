@@ -84,6 +84,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * - [month] `1..12`
          * - [day] `1..31`, the upper bound can be less, depending on the month
          *
+         * Use `LocalDate(year, month, day) to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.createOrNullMonthNumber
          */
         public fun createOrNull(year: Int, month: Int, day: Int): LocalDate?
@@ -97,6 +100,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
          * - [month] all values of the [Month] enum
          * - [day] `1..31`, the upper bound can be less, depending on the month
+         *
+         * Use `LocalDate(year, month, day) to throw an exception
+         * instead of returning `null` when the parameters are invalid.
          *
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.createOrNull
          */
@@ -209,6 +215,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
+     * @see createOrNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunctionMonthNumber
      */
     public constructor(year: Int, month: Int, day: Int)
@@ -224,6 +232,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
+     * @see createOrNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunction
      */
     public constructor(year: Int, month: Month, day: Int)
