@@ -1122,6 +1122,7 @@ final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotl
 final fun (kotlin.time/Instant).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant.Companion).kotlinx.datetime/parse(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>): kotlin.time/Instant // kotlinx.datetime/parse|parse@kotlin.time.Instant.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
 final fun (kotlin.time/TimeSource).kotlinx.datetime/asClock(kotlin.time/Instant): kotlin.time/Clock // kotlinx.datetime/asClock|asClock@kotlin.time.TimeSource(kotlin.time.Instant){}[0]
+final fun (kotlin.time/TimeSource).kotlinx.datetime/asClock(kotlinx.datetime/Instant): kotlinx.datetime/Clock // kotlinx.datetime/asClock|asClock@kotlin.time.TimeSource(kotlinx.datetime.Instant){}[0]
 final fun (kotlin/String).kotlinx.datetime/toDatePeriod(): kotlinx.datetime/DatePeriod // kotlinx.datetime/toDatePeriod|toDatePeriod@kotlin.String(){}[0]
 final fun (kotlin/String).kotlinx.datetime/toDateTimePeriod(): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/toDateTimePeriod|toDateTimePeriod@kotlin.String(){}[0]
 final fun (kotlin/String).kotlinx.datetime/toInstant(): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlin.String(){}[0]

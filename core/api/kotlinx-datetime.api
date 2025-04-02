@@ -13,6 +13,7 @@ public final class kotlinx/datetime/Clock$System : kotlinx/datetime/Clock {
 
 public final class kotlinx/datetime/ClockKt {
 	public static final fun asClock (Lkotlin/time/TimeSource;Lkotlin/time/Instant;)Lkotlin/time/Clock;
+	public static final fun asClock (Lkotlin/time/TimeSource;Lkotlinx/datetime/Instant;)Lkotlinx/datetime/Clock;
 	public static final fun asTimeSource (Lkotlin/time/Clock;)Lkotlin/time/TimeSource$WithComparableMarks;
 	public static final fun asTimeSource (Lkotlinx/datetime/Clock;)Lkotlin/time/TimeSource$WithComparableMarks;
 	public static final fun toDeprecatedClock (Lkotlin/time/Clock;)Lkotlinx/datetime/Clock;
