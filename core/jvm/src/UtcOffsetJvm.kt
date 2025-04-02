@@ -27,20 +27,10 @@ public actual class UtcOffset(
     public actual companion object {
         public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
 
-        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? {
-            return try {
-                when {
-                    hours != null ->
-                        UtcOffset(ZoneOffset.ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0))
-                    minutes != null ->
-                        UtcOffset(ZoneOffset.ofHoursMinutesSeconds(minutes / 60, minutes % 60, seconds ?: 0))
-                    else -> {
-                        UtcOffset(ZoneOffset.ofTotalSeconds(seconds ?: 0))
-                    }
-                }
-            } catch (e: DateTimeException) {
-                null
-            }
+        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+            UtcOffset(hours, minutes, seconds)
+        } catch (_: IllegalArgumentException) {
+            null
         }
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = when {

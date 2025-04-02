@@ -208,19 +208,6 @@ class LocalDateTimeSamples {
         check(LocalDateTime.createOrNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
     }
 
-    @Test
-    fun createOrNullFromDateAndTime() {
-        // Constructing a LocalDateTime value using `createOrNull` with LocalDate and LocalTime
-        val date = LocalDate(2024, 2, 15)
-        val time = LocalTime(16, 48)
-        val dateTime = LocalDateTime.createOrNull(date, time)
-        // For valid values, `createOrNull` is equivalent to the constructor
-        check(dateTime == LocalDateTime(date, time))
-        // If either date or time is null, null is returned
-        check(LocalDateTime.createOrNull(null, time) == null)
-        check(LocalDateTime.createOrNull(date, null) == null)
-        check(LocalDateTime.createOrNull(null, null) == null)
-    }
 
     @Test
     fun formatting() {

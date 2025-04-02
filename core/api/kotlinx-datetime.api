@@ -478,6 +478,10 @@ public final class kotlinx/datetime/LocalDateTime : java/io/Serializable, java/l
 
 public final class kotlinx/datetime/LocalDateTime$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun createOrNull (IIIIIII)Lkotlinx/datetime/LocalDateTime;
+	public final fun createOrNull (ILkotlinx/datetime/Month;IIIII)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun createOrNull$default (Lkotlinx/datetime/LocalDateTime$Companion;IIIIIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
+	public static synthetic fun createOrNull$default (Lkotlinx/datetime/LocalDateTime$Companion;ILkotlinx/datetime/Month;IIIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/LocalDateTime;
 	public final synthetic fun parse (Ljava/lang/String;)Lkotlinx/datetime/LocalDateTime;
 	public static synthetic fun parse$default (Lkotlinx/datetime/LocalDateTime$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
@@ -520,6 +524,8 @@ public final class kotlinx/datetime/LocalTime : java/io/Serializable, java/lang/
 
 public final class kotlinx/datetime/LocalTime$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun createOrNull (IIII)Lkotlinx/datetime/LocalTime;
+	public static synthetic fun createOrNull$default (Lkotlinx/datetime/LocalTime$Companion;IIIIILjava/lang/Object;)Lkotlinx/datetime/LocalTime;
 	public final fun fromMillisecondOfDay (I)Lkotlinx/datetime/LocalTime;
 	public final fun fromNanosecondOfDay (J)Lkotlinx/datetime/LocalTime;
 	public final fun fromSecondOfDay (I)Lkotlinx/datetime/LocalTime;
@@ -645,6 +651,8 @@ public final class kotlinx/datetime/UtcOffset : java/io/Serializable {
 
 public final class kotlinx/datetime/UtcOffset$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun createOrNull (Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;)Lkotlinx/datetime/UtcOffset;
+	public static synthetic fun createOrNull$default (Lkotlinx/datetime/UtcOffset$Companion;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;ILjava/lang/Object;)Lkotlinx/datetime/UtcOffset;
 	public final fun getZERO ()Lkotlinx/datetime/UtcOffset;
 	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/UtcOffset;
 	public final synthetic fun parse (Ljava/lang/String;)Lkotlinx/datetime/UtcOffset;

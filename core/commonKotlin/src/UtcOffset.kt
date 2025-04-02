@@ -24,20 +24,10 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? {
-            return try {
-                when {
-                    hours != null ->
-                        ofHoursMinutesSeconds(hours, minutes ?: 0, seconds ?: 0)
-                    minutes != null ->
-                        ofHoursMinutesSeconds(minutes / MINUTES_PER_HOUR, minutes % MINUTES_PER_HOUR, seconds ?: 0)
-                    else -> {
-                        ofSeconds(seconds ?: 0)
-                    }
-                }
-            } catch (e: IllegalArgumentException) {
-                null
-            }
+        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+            UtcOffset(hours, minutes, seconds)
+        } catch (_: IllegalArgumentException) {
+            null
         }
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)

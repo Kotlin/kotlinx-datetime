@@ -49,7 +49,7 @@ public actual class LocalTime internal constructor(
     public actual companion object {
         public actual fun createOrNull(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime? = try {
             jtLocalTime.of(hour, minute, second, nanosecond).let(::LocalTime)
-        } catch (e: DateTimeException) {
+        } catch (_: DateTimeException) {
             null
         }
 

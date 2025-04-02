@@ -46,35 +46,48 @@ class UtcOffsetTest {
             val offset = UtcOffset(hours, minutes, seconds)
             val offsetSeconds = UtcOffset(seconds = totalSeconds)
             val offsetMinutes = UtcOffset(minutes = totalMinutes, seconds = seconds)
+            val offsetOrNull = UtcOffset.createOrNull(hours, minutes, seconds)
+            val offsetSecondsOrNull = UtcOffset.createOrNull(seconds = totalSeconds)
+            val offsetMinutesOrNull = UtcOffset.createOrNull(minutes = totalMinutes, seconds = seconds)
             assertEquals(totalSeconds, offset.totalSeconds)
             assertEquals(offset, offsetMinutes)
             assertEquals(offset, offsetSeconds)
+            assertEquals(offset, offsetOrNull)
+            assertEquals(offset, offsetSecondsOrNull)
+            assertEquals(offset, offsetMinutesOrNull)
         }
     }
 
     @Test
     fun constructionErrors() {
+        fun assertInvalidUtcOffset(
+            hours: Int? = null,
+            minutes: Int? = null,
+            seconds: Int? = null,
+        ) {
+            assertIllegalArgument { UtcOffset(hours, minutes, seconds) }
+            assertNull(UtcOffset.createOrNull(hours, minutes, seconds))
+        }
         // total range
-        assertIllegalArgument { UtcOffset(hours = -19) }
-        assertIllegalArgument { UtcOffset(hours = +19) }
-        assertIllegalArgument { UtcOffset(hours = -18, minutes = -1) }
-        assertIllegalArgument { UtcOffset(hours = -18, seconds = -1) }
-        assertIllegalArgument { UtcOffset(hours = +18, seconds = +1) }
-        assertIllegalArgument { UtcOffset(hours = +18, seconds = +1) }
-        assertIllegalArgument { UtcOffset(seconds = offsetSecondsRange.first - 1) }
-        assertIllegalArgument { UtcOffset(seconds = offsetSecondsRange.last + 1) }
+        assertInvalidUtcOffset(hours = -19)
+        assertInvalidUtcOffset(hours = +19)
+        assertInvalidUtcOffset(hours = -18, minutes = -1)
+        assertInvalidUtcOffset(hours = -18, seconds = -1)
+        assertInvalidUtcOffset(hours = +18, seconds = +1)
+        assertInvalidUtcOffset(seconds = offsetSecondsRange.first - 1)
+        assertInvalidUtcOffset(seconds = offsetSecondsRange.last + 1)
         // component ranges
-        assertIllegalArgument { UtcOffset(hours = 0, minutes = 60) }
-        assertIllegalArgument { UtcOffset(hours = 0, seconds = -60) }
-        assertIllegalArgument { UtcOffset(minutes = 90, seconds = 90) }
-        assertIllegalArgument { UtcOffset(minutes = 0, seconds = 90) }
+        assertInvalidUtcOffset(hours = 0, minutes = 60)
+        assertInvalidUtcOffset(hours = 0, seconds = -60)
+        assertInvalidUtcOffset(minutes = 90, seconds = 90)
+        assertInvalidUtcOffset(minutes = 0, seconds = 90)
         // component signs
-        assertIllegalArgument { UtcOffset(hours = +1, minutes = -1) }
-        assertIllegalArgument { UtcOffset(hours = +1, seconds = -1) }
-        assertIllegalArgument { UtcOffset(hours = -1, minutes = +1) }
-        assertIllegalArgument { UtcOffset(hours = -1, seconds = +1) }
-        assertIllegalArgument { UtcOffset(minutes = +1, seconds = -1) }
-        assertIllegalArgument { UtcOffset(minutes = -1, seconds = +1) }
+        assertInvalidUtcOffset(hours = +1, minutes = -1)
+        assertInvalidUtcOffset(hours = +1, seconds = -1)
+        assertInvalidUtcOffset(hours = -1, minutes = +1)
+        assertInvalidUtcOffset(hours = -1, seconds = +1)
+        assertInvalidUtcOffset(minutes = +1, seconds = -1)
+        assertInvalidUtcOffset(minutes = -1, seconds = +1)
     }
 
     @Test
@@ -160,45 +173,5 @@ class UtcOffsetTest {
         val timeZone = offset.asTimeZone()
         assertIs<FixedOffsetTimeZone>(timeZone)
         assertEquals(offset, timeZone.offset)
-    }
-
-    @Test
-    fun createOrNull() {
-        // Valid cases
-        for (totalSeconds in offsetSecondsRange) {
-            val hours = totalSeconds / (60 * 60)
-            val totalMinutes = totalSeconds / 60
-            val minutes = totalMinutes % 60
-            val seconds = totalSeconds % 60
-            val offset = UtcOffset.createOrNull(hours, minutes, seconds)
-            val offsetSeconds = UtcOffset.createOrNull(seconds = totalSeconds)
-            val offsetMinutes = UtcOffset.createOrNull(minutes = totalMinutes, seconds = seconds)
-            assertNotNull(offset)
-            assertNotNull(offsetSeconds)
-            assertNotNull(offsetMinutes)
-            assertEquals(totalSeconds, offset!!.totalSeconds)
-            assertEquals(offset, offsetMinutes)
-            assertEquals(offset, offsetSeconds)
-        }
-
-        // Invalid cases
-        assertNull(UtcOffset.createOrNull(hours = -19))
-        assertNull(UtcOffset.createOrNull(hours = +19))
-        assertNull(UtcOffset.createOrNull(hours = -18, minutes = -1))
-        assertNull(UtcOffset.createOrNull(hours = -18, seconds = -1))
-        assertNull(UtcOffset.createOrNull(hours = +18, seconds = +1))
-        assertNull(UtcOffset.createOrNull(hours = +18, seconds = +1))
-        assertNull(UtcOffset.createOrNull(seconds = offsetSecondsRange.first - 1))
-        assertNull(UtcOffset.createOrNull(seconds = offsetSecondsRange.last + 1))
-        assertNull(UtcOffset.createOrNull(hours = 0, minutes = 60))
-        assertNull(UtcOffset.createOrNull(hours = 0, seconds = -60))
-        assertNull(UtcOffset.createOrNull(minutes = 90, seconds = 90))
-        assertNull(UtcOffset.createOrNull(minutes = 0, seconds = 90))
-        assertNull(UtcOffset.createOrNull(hours = +1, minutes = -1))
-        assertNull(UtcOffset.createOrNull(hours = +1, seconds = -1))
-        assertNull(UtcOffset.createOrNull(hours = -1, minutes = +1))
-        assertNull(UtcOffset.createOrNull(hours = -1, seconds = +1))
-        assertNull(UtcOffset.createOrNull(minutes = +1, seconds = -1))
-        assertNull(UtcOffset.createOrNull(minutes = -1, seconds = +1))
     }
 }

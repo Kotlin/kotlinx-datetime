@@ -45,10 +45,6 @@ public actual constructor(public actual val date: LocalDate, public actual val t
             return LocalDateTime(date, time)
         }
 
-        public actual fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime? {
-            if (date == null || time == null) return null
-            return LocalDateTime(date, time)
-        }
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             format.parse(input)
