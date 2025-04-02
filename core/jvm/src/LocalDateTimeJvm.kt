@@ -109,10 +109,6 @@ public actual class LocalDateTime internal constructor(
             nanosecond: Int
         ): LocalDateTime? = createOrNull(year, month.number, day, hour, minute, second, nanosecond)
 
-        public actual fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime? {
-            if (date == null || time == null) return null
-            return LocalDateTime(date, time)
-        }
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             if (format === Formats.ISO) {
