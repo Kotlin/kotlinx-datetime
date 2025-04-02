@@ -94,6 +94,9 @@ public expect class LocalTime : Comparable<LocalTime> {
          * - [second] `0..59`
          * - [nanosecond] `0..999_999_999`
          *
+         * Use `LocalTime(hour, minute, second, nanosecond)`
+         * to throw an exception instead of returning `null` when the parameters are invalid.
+         *
          * @sample kotlinx.datetime.test.samples.LocalTimeSamples.createOrNull
          */
         public fun createOrNull(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalTime?
@@ -244,6 +247,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * - [nanosecond] `0..999_999_999`
      *
      * @throws IllegalArgumentException if any parameter is out of range.
+     * @see createOrNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalTimeSamples.constructorFunction
      */
     public constructor(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
