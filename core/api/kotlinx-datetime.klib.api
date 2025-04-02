@@ -431,6 +431,8 @@ final class kotlinx.datetime/LocalDate : kotlin/Comparable<kotlinx.datetime/Loca
 
     final object Companion { // kotlinx.datetime/LocalDate.Companion|null[0]
         final fun Format(kotlin/Function1<kotlinx.datetime.format/DateTimeFormatBuilder.WithDate, kotlin/Unit>): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate> // kotlinx.datetime/LocalDate.Companion.Format|Format(kotlin.Function1<kotlinx.datetime.format.DateTimeFormatBuilder.WithDate,kotlin.Unit>){}[0]
+        final fun createOrNull(kotlin/Int, kotlin/Int, kotlin/Int): kotlinx.datetime/LocalDate? // kotlinx.datetime/LocalDate.Companion.createOrNull|createOrNull(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun createOrNull(kotlin/Int, kotlinx.datetime/Month, kotlin/Int): kotlinx.datetime/LocalDate? // kotlinx.datetime/LocalDate.Companion.createOrNull|createOrNull(kotlin.Int;kotlinx.datetime.Month;kotlin.Int){}[0]
         final fun fromEpochDays(kotlin/Int): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDate.Companion.fromEpochDays|fromEpochDays(kotlin.Int){}[0]
         final fun fromEpochDays(kotlin/Long): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDate.Companion.fromEpochDays|fromEpochDays(kotlin.Long){}[0]
         final fun parse(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate> = ...): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDate.Companion.parse|parse(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDate>){}[0]

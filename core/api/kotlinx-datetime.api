@@ -335,6 +335,8 @@ public final class kotlinx/datetime/LocalDate : java/io/Serializable, java/lang/
 
 public final class kotlinx/datetime/LocalDate$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun createOrNull (III)Lkotlinx/datetime/LocalDate;
+	public final fun createOrNull (ILkotlinx/datetime/Month;I)Lkotlinx/datetime/LocalDate;
 	public final fun fromEpochDays (I)Lkotlinx/datetime/LocalDate;
 	public final fun fromEpochDays (J)Lkotlinx/datetime/LocalDate;
 	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/LocalDate;
