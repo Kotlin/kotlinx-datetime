@@ -108,6 +108,24 @@ class UtcOffsetSamples {
         }
     }
 
+    @Test
+    fun createOrNull() {
+        // Using the createOrNull function to create UtcOffset values
+        val validOffset = UtcOffset.createOrNull(hours = 3, minutes = 30)
+        check(validOffset != null)
+        check(validOffset!!.totalSeconds == 12600)
+
+        // For valid inputs, createOrNull returns a non-null value
+        check(UtcOffset.createOrNull(seconds = -3600) == UtcOffset(hours = -1))
+
+        // For invalid inputs, createOrNull returns null
+        check(UtcOffset.createOrNull(hours = 1, minutes = 60) == null)
+        // Since `hours` is positive, `minutes` must also be positive
+        check(UtcOffset.createOrNull(hours = 1, minutes = -30) == null)
+        // The total offset must be within the range ±18:00
+        check(UtcOffset.createOrNull(hours = 19) == null)
+    }
+
     class Formats {
         @Test
         fun isoBasic() {

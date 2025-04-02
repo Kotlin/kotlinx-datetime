@@ -85,6 +85,35 @@ public actual class LocalDateTime internal constructor(
     actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
+        public actual fun createOrNull(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? = try {
+            jtLocalDateTime.of(year, month, day, hour, minute, second, nanosecond).let(::LocalDateTime)
+        } catch (e: DateTimeException) {
+            null
+        }
+
+        public actual fun createOrNull(
+            year: Int,
+            month: Month,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? = createOrNull(year, month.number, day, hour, minute, second, nanosecond)
+
+        public actual fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime? {
+            if (date == null || time == null) return null
+            return LocalDateTime(date, time)
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             if (format === Formats.ISO) {
                 try {
