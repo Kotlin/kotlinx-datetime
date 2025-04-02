@@ -184,6 +184,45 @@ class LocalDateTimeSamples {
     }
 
     @Test
+    fun createOrNull() {
+        // Constructing a LocalDateTime value using `createOrNull`
+        val dateTime = LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `createOrNull` is equivalent to the constructor
+        check(dateTime == LocalDateTime(2024, 2, 15, 16, 48, 59, 999_999_999))
+        // If a value can not be constructed, null is returned
+        check(LocalDateTime.createOrNull(2024, 2, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.createOrNull(2024, 2, 15, 24, 48) == null) // Invalid hour
+        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 60) == null) // Invalid minute
+        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 60) == null) // Invalid second
+        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 59, 1_000_000_000) == null) // Invalid nanosecond
+    }
+
+    @Test
+    fun createOrNullWithMonth() {
+        // Constructing a LocalDateTime value using `createOrNull` with Month enum
+        val dateTime = LocalDateTime.createOrNull(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `createOrNull` is equivalent to the constructor
+        check(dateTime == LocalDateTime(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999))
+        // If a value can not be constructed, null is returned
+        check(LocalDateTime.createOrNull(2024, Month.FEBRUARY, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.createOrNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
+    }
+
+    @Test
+    fun createOrNullFromDateAndTime() {
+        // Constructing a LocalDateTime value using `createOrNull` with LocalDate and LocalTime
+        val date = LocalDate(2024, 2, 15)
+        val time = LocalTime(16, 48)
+        val dateTime = LocalDateTime.createOrNull(date, time)
+        // For valid values, `createOrNull` is equivalent to the constructor
+        check(dateTime == LocalDateTime(date, time))
+        // If either date or time is null, null is returned
+        check(LocalDateTime.createOrNull(null, time) == null)
+        check(LocalDateTime.createOrNull(date, null) == null)
+        check(LocalDateTime.createOrNull(null, null) == null)
+    }
+
+    @Test
     fun formatting() {
         // Formatting LocalDateTime values using predefined and custom formats
         check(LocalDate(2024, 2, 15).atTime(16, 48).toString() == "2024-02-15T16:48")
