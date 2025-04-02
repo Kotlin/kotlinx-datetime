@@ -17,6 +17,39 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
+        public actual fun createOrNull(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? {
+            val date = LocalDate.createOrNull(year, month, day) ?: return null
+            val time = LocalTime.createOrNull(hour, minute, second, nanosecond) ?: return null
+            return LocalDateTime(date, time)
+        }
+
+        public actual fun createOrNull(
+            year: Int,
+            month: Month,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? {
+            val date = LocalDate.createOrNull(year, month, day) ?: return null
+            val time = LocalTime.createOrNull(hour, minute, second, nanosecond) ?: return null
+            return LocalDateTime(date, time)
+        }
+
+        public actual fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime? {
+            if (date == null || time == null) return null
+            return LocalDateTime(date, time)
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             format.parse(input)
 
