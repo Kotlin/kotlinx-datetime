@@ -8,6 +8,8 @@
 
 package kotlinx.datetime
 
+import kotlin.time.Instant
+
 internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: TimeZone, val offset: UtcOffset) {
     /**
      * @throws IllegalArgumentException if the result exceeds the boundaries
@@ -46,7 +48,7 @@ internal class ZonedDateTime(val dateTime: LocalDateTime, private val zone: Time
 }
 
 internal fun ZonedDateTime.toInstant(): Instant =
-    Instant(dateTime.toEpochSecond(offset), dateTime.nanosecond)
+    Instant.fromEpochSeconds(dateTime.toEpochSecond(offset), dateTime.nanosecond)
 
 
 // org.threeten.bp.ZonedDateTime#until
