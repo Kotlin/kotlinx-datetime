@@ -208,9 +208,9 @@ public expect class UtcOffset {
  * @see UtcOffset.parse for a version of this function that throws an exception on faulty input.
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parseOrNull
  */
-public fun UtcOffset.Companion.parseOrNull(
+public expect fun UtcOffset.Companion.parseOrNull(
     input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()
-): UtcOffset? = format.parseOrNull(input)
+): UtcOffset?
 
 /**
  * Formats this value using the given [format].

@@ -410,9 +410,9 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  * @see LocalDateTime.parse for a version of this function that throws an exception on faulty input.
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parseOrNull
  */
-public fun LocalDateTime.Companion.parseOrNull(
+public expect fun LocalDateTime.Companion.parseOrNull(
     input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()
-): LocalDateTime? = format.parseOrNull(input)
+): LocalDateTime?
 
 /**
  * @suppress

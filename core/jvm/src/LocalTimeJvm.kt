@@ -7,6 +7,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalTime.Formats
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
@@ -101,6 +102,18 @@ public actual class LocalTime internal constructor(
 
     private fun writeReplace(): Any = Ser(Ser.TIME_TAG, this)
 }
+
+public actual fun LocalTime.Companion.parseOrNull(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime? =
+    if (format === Formats.ISO) {
+        try {
+            jtLocalTime.parse(input).let(::LocalTime)
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    } else {
+        format.parseOrNull(input)
+    }
+
 
 @Deprecated(
     "Use kotlinx.datetime.Month",

@@ -358,6 +358,8 @@ public final class kotlinx/datetime/LocalDateJvmKt {
 	public static final fun daysUntil (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)I
 	public static final fun minus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun monthsUntil (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)I
+	public static final fun parseOrNull (Lkotlinx/datetime/LocalDate$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/LocalDate;
+	public static synthetic fun parseOrNull$default (Lkotlinx/datetime/LocalDate$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/LocalDate;
 	public static final fun periodUntil (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;JLkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
@@ -380,8 +382,6 @@ public final class kotlinx/datetime/LocalDateKt {
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DatePeriod;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
-	public static final fun parseOrNull (Lkotlinx/datetime/LocalDate$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/LocalDate;
-	public static synthetic fun parseOrNull$default (Lkotlinx/datetime/LocalDate$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/LocalDate;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun toLocalDate (Ljava/lang/String;)Lkotlinx/datetime/LocalDate;
 }
@@ -670,14 +670,14 @@ public final class kotlinx/datetime/UtcOffset$Formats {
 public final class kotlinx/datetime/UtcOffsetJvmKt {
 	public static final fun UtcOffset (Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;)Lkotlinx/datetime/UtcOffset;
 	public static synthetic fun UtcOffset$default (Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;ILjava/lang/Object;)Lkotlinx/datetime/UtcOffset;
+	public static final fun parseOrNull (Lkotlinx/datetime/UtcOffset$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/UtcOffset;
+	public static synthetic fun parseOrNull$default (Lkotlinx/datetime/UtcOffset$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/UtcOffset;
 }
 
 public final class kotlinx/datetime/UtcOffsetKt {
 	public static final fun UtcOffset ()Lkotlinx/datetime/UtcOffset;
 	public static final fun asTimeZone (Lkotlinx/datetime/UtcOffset;)Lkotlinx/datetime/FixedOffsetTimeZone;
 	public static final fun format (Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
-	public static final fun parseOrNull (Lkotlinx/datetime/UtcOffset$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/UtcOffset;
-	public static synthetic fun parseOrNull$default (Lkotlinx/datetime/UtcOffset$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/UtcOffset;
 }
 
 public final class kotlinx/datetime/YearMonth : java/io/Serializable, java/lang/Comparable {
