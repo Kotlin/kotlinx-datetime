@@ -33,6 +33,26 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
+        /**
+         * Constructs a [LocalTime] instance from the given time components
+         * or returns `null` if a value is out of range.
+         *
+         * The supported ranges of components:
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.createOrNull
+         */
+        public actual fun createOrNull(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime? {
+            return if (hour !in 0..23 || minute !in 0..59 || second !in 0..59 || nanosecond !in 0 until NANOS_PER_ONE) {
+                null
+            } else {
+                LocalTime(hour, minute, second, nanosecond)
+            }
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)

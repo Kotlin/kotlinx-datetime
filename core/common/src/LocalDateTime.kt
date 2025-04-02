@@ -115,6 +115,68 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
 
         /**
+         * Constructs a [LocalDateTime] instance from the given date and time components
+         * or returns `null` if a value is out of range.
+         *
+         * The components [month] and [day] are 1-based.
+         *
+         * The supported ranges of components:
+         * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] `1..12`
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.createOrNull
+         */
+        public fun createOrNull(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int = 0,
+            nanosecond: Int = 0
+        ): LocalDateTime?
+
+        /**
+         * Constructs a [LocalDateTime] instance from the given date and time components
+         * or returns `null` if a value is out of range.
+         *
+         * The supported ranges of components:
+         * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] all values of the [Month] enum
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.createOrNullWithMonth
+         */
+        public fun createOrNull(
+            year: Int,
+            month: Month,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int = 0,
+            nanosecond: Int = 0
+        ): LocalDateTime?
+
+        /**
+         * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts
+         * or returns `null` if either [date] or [time] is `null`.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.createOrNullFromDateAndTime
+         */
+        public fun createOrNull(date: LocalDate?, time: LocalTime?): LocalDateTime?
+
+        /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
          * Parses a string that represents a datetime value including date and time components

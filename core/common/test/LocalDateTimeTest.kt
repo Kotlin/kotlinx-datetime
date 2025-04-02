@@ -131,6 +131,65 @@ class LocalDateTimeTest {
         assertFailsWith<IllegalArgumentException> { localTime(0, 0, 0, 1_000_000_000) }
     }
 
+    @Test
+    fun createOrNull() {
+        // Test createOrNull with month number
+        val validDateTime1 = LocalDateTime.createOrNull(2020, 1, 1, 12, 30, 45, 500_000_000)
+        assertNotNull(validDateTime1)
+        assertEquals(2020, validDateTime1!!.year)
+        assertEquals(1, validDateTime1.month.number)
+        assertEquals(1, validDateTime1.day)
+        assertEquals(12, validDateTime1.hour)
+        assertEquals(30, validDateTime1.minute)
+        assertEquals(45, validDateTime1.second)
+        assertEquals(500_000_000, validDateTime1.nanosecond)
+
+        // Test createOrNull with Month enum
+        val validDateTime2 = LocalDateTime.createOrNull(2020, Month.FEBRUARY, 29, 23, 59, 59, 999_999_999)
+        assertNotNull(validDateTime2)
+        assertEquals(2020, validDateTime2!!.year)
+        assertEquals(Month.FEBRUARY, validDateTime2.month)
+        assertEquals(29, validDateTime2.day)
+        assertEquals(23, validDateTime2.hour)
+        assertEquals(59, validDateTime2.minute)
+        assertEquals(59, validDateTime2.second)
+        assertEquals(999_999_999, validDateTime2.nanosecond)
+
+        // Test createOrNull with LocalDate and LocalTime
+        val date = LocalDate(2020, 1, 1)
+        val time = LocalTime(12, 30, 45, 500_000_000)
+        val validDateTime3 = LocalDateTime.createOrNull(date, time)
+        assertNotNull(validDateTime3)
+        assertEquals(date, validDateTime3!!.date)
+        assertEquals(time, validDateTime3.time)
+
+        // Test invalid date components
+        assertNull(LocalDateTime.createOrNull(2021, 2, 29, 12, 30)) // Invalid day (not a leap year)
+        assertNull(LocalDateTime.createOrNull(2020, 13, 1, 12, 30)) // Invalid month
+        assertNull(LocalDateTime.createOrNull(2020, 0, 1, 12, 30)) // Invalid month
+        assertNull(LocalDateTime.createOrNull(2020, 1, 32, 12, 30)) // Invalid day
+        assertNull(LocalDateTime.createOrNull(2020, 1, 0, 12, 30)) // Invalid day
+
+        // Test invalid time components
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, -1, 30)) // Invalid hour
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 24, 30)) // Invalid hour
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, -1)) // Invalid minute
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, 60)) // Invalid minute
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, 30, -1)) // Invalid second
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, 30, 60)) // Invalid second
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, 30, 45, -1)) // Invalid nanosecond
+        assertNull(LocalDateTime.createOrNull(2020, 1, 1, 12, 30, 45, 1_000_000_000)) // Invalid nanosecond
+
+        // Test with Month enum
+        assertNull(LocalDateTime.createOrNull(2021, Month.FEBRUARY, 29, 12, 30)) // Invalid day (not a leap year)
+        assertNull(LocalDateTime.createOrNull(2020, Month.FEBRUARY, 30, 12, 30)) // Invalid day for February
+
+        // Test with null LocalDate or LocalTime
+        assertNull(LocalDateTime.createOrNull(null, time))
+        assertNull(LocalDateTime.createOrNull(date, null))
+        assertNull(LocalDateTime.createOrNull(null, null))
+    }
+
 }
 
 fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {

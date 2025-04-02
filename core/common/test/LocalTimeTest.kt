@@ -88,6 +88,41 @@ class LocalTimeTest {
     }
 
     @Test
+    fun createOrNull() {
+        // Valid times should be created correctly
+        val validTime1 = LocalTime.createOrNull(12, 30, 45, 500_000_000)
+        assertNotNull(validTime1)
+        assertEquals(12, validTime1!!.hour)
+        assertEquals(30, validTime1.minute)
+        assertEquals(45, validTime1.second)
+        assertEquals(500_000_000, validTime1.nanosecond)
+
+        val validTime2 = LocalTime.createOrNull(0, 0)
+        assertNotNull(validTime2)
+        assertEquals(0, validTime2!!.hour)
+        assertEquals(0, validTime2.minute)
+        assertEquals(0, validTime2.second)
+        assertEquals(0, validTime2.nanosecond)
+
+        val validTime3 = LocalTime.createOrNull(23, 59, 59, 999_999_999)
+        assertNotNull(validTime3)
+        assertEquals(23, validTime3!!.hour)
+        assertEquals(59, validTime3.minute)
+        assertEquals(59, validTime3.second)
+        assertEquals(999_999_999, validTime3.nanosecond)
+
+        // Invalid times should return null
+        assertNull(LocalTime.createOrNull(-1, 0))
+        assertNull(LocalTime.createOrNull(24, 0))
+        assertNull(LocalTime.createOrNull(0, -1))
+        assertNull(LocalTime.createOrNull(0, 60))
+        assertNull(LocalTime.createOrNull(0, 0, -1))
+        assertNull(LocalTime.createOrNull(0, 0, 60))
+        assertNull(LocalTime.createOrNull(0, 0, 0, -1))
+        assertNull(LocalTime.createOrNull(0, 0, 0, 1_000_000_000))
+    }
+
+    @Test
     fun fromNanosecondOfDay() {
         val data = mapOf(
             0L to LocalTime(0, 0),
