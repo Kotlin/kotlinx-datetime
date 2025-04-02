@@ -11,6 +11,7 @@ package kotlinx.datetime
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.time.ExperimentalTime
+import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 /**
@@ -124,3 +125,13 @@ public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = toStdlibClock(
 
 @Deprecated("Use Clock.todayIn instead", ReplaceWith("this.toStdlibClock().todayIn(timeZone)"), DeprecationLevel.WARNING)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)
+
+@Deprecated(
+    "kotlin.datetime.Clock is superseded by kotlin.time.Clock",
+    ReplaceWith("this.asClock(origin.toStdlibInstant()).toDeprecatedClock()"),
+    level = DeprecationLevel.WARNING
+)
+public fun TimeSource.asClock(origin: kotlinx.datetime.Instant): kotlinx.datetime.Clock = object : Clock {
+    private val startMark: TimeMark = markNow()
+    override fun now() = origin + startMark.elapsedNow()
+}
