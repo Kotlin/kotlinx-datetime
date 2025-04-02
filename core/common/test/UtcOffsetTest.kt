@@ -161,4 +161,44 @@ class UtcOffsetTest {
         assertIs<FixedOffsetTimeZone>(timeZone)
         assertEquals(offset, timeZone.offset)
     }
+
+    @Test
+    fun createOrNull() {
+        // Valid cases
+        for (totalSeconds in offsetSecondsRange) {
+            val hours = totalSeconds / (60 * 60)
+            val totalMinutes = totalSeconds / 60
+            val minutes = totalMinutes % 60
+            val seconds = totalSeconds % 60
+            val offset = UtcOffset.createOrNull(hours, minutes, seconds)
+            val offsetSeconds = UtcOffset.createOrNull(seconds = totalSeconds)
+            val offsetMinutes = UtcOffset.createOrNull(minutes = totalMinutes, seconds = seconds)
+            assertNotNull(offset)
+            assertNotNull(offsetSeconds)
+            assertNotNull(offsetMinutes)
+            assertEquals(totalSeconds, offset!!.totalSeconds)
+            assertEquals(offset, offsetMinutes)
+            assertEquals(offset, offsetSeconds)
+        }
+
+        // Invalid cases
+        assertNull(UtcOffset.createOrNull(hours = -19))
+        assertNull(UtcOffset.createOrNull(hours = +19))
+        assertNull(UtcOffset.createOrNull(hours = -18, minutes = -1))
+        assertNull(UtcOffset.createOrNull(hours = -18, seconds = -1))
+        assertNull(UtcOffset.createOrNull(hours = +18, seconds = +1))
+        assertNull(UtcOffset.createOrNull(hours = +18, seconds = +1))
+        assertNull(UtcOffset.createOrNull(seconds = offsetSecondsRange.first - 1))
+        assertNull(UtcOffset.createOrNull(seconds = offsetSecondsRange.last + 1))
+        assertNull(UtcOffset.createOrNull(hours = 0, minutes = 60))
+        assertNull(UtcOffset.createOrNull(hours = 0, seconds = -60))
+        assertNull(UtcOffset.createOrNull(minutes = 90, seconds = 90))
+        assertNull(UtcOffset.createOrNull(minutes = 0, seconds = 90))
+        assertNull(UtcOffset.createOrNull(hours = +1, minutes = -1))
+        assertNull(UtcOffset.createOrNull(hours = +1, seconds = -1))
+        assertNull(UtcOffset.createOrNull(hours = -1, minutes = +1))
+        assertNull(UtcOffset.createOrNull(hours = -1, seconds = +1))
+        assertNull(UtcOffset.createOrNull(minutes = +1, seconds = -1))
+        assertNull(UtcOffset.createOrNull(minutes = -1, seconds = +1))
+    }
 }
