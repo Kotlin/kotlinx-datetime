@@ -114,8 +114,5 @@ kotlin {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
         }
-
-        val nativeMain by getting
-        val nativeTest by getting
     }
 }
