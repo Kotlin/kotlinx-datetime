@@ -76,6 +76,27 @@ public expect class UtcOffset {
         public val ZERO: UtcOffset
 
         /**
+         * Constructs a [UtcOffset] from hours, minutes, and seconds components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * All components must have the same sign.
+         * Otherwise, `null` will be returned.
+         *
+         * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes;
+         * `null` will be returned if this rule is violated.
+         * For example, `UtcOffset.createOrNull(hours = 3, minutes = 61)` returns `null`.
+         *
+         * However, the non-null component of the highest order can exceed these bounds,
+         * for example, `UtcOffset.createOrNull(minutes = 241)` and `UtcOffset.createOrNull(seconds = -3600)` are both valid.
+         *
+         * Use `UtcOffset(hours, minutes, seconds)` to throw an exception instead of returning `null`
+         * when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.createOrNull
+         */
+        public fun createOrNull(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset?
+
+        /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
          * Parses a string that represents a UTC offset and returns the parsed [UtcOffset] value.
@@ -208,6 +229,7 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.
  * @throws IllegalArgumentException if components have different signs.
  * @throws IllegalArgumentException if the resulting `UtcOffset` value is outside of range `±18:00`.
+ * @see UtcOffset.createOrNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.constructorFunction
  */
 public expect fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset
