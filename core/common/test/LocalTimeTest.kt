@@ -16,14 +16,24 @@ class LocalTimeTest {
     @Test
     fun localTimeParsing() {
         fun checkParsedComponents(value: String, hour: Int, minute: Int, second: Int, nanosecond: Int) {
-            checkComponents(value.toLocalTime(), hour, minute, second, nanosecond)
+            val result = LocalTime.parse(value)
+            checkComponents(LocalTime.parse(value), hour, minute, second, nanosecond)
+            assertEquals(result, LocalTime.parseOrNull(value))
+            assertEquals(value, result.toString())
+        }
+        fun assertInvalidLocalDateTimeString(string: String) {
+            assertInvalidFormat { LocalDateTime.parse(string) }
+            assertNull(LocalDateTime.parseOrNull(string), string)
         }
         checkParsedComponents("18:43:15.100500", 18, 43, 15, 100500000)
         checkParsedComponents("18:43:15", 18, 43, 15, 0)
         checkParsedComponents("18:12", 18, 12, 0, 0)
 
-        assertFailsWith<DateTimeFormatException> { LocalTime.parse("x") }
-        assertFailsWith<DateTimeFormatException> { "+10000000004:00:00".toLocalDateTime() }
+        invalidTimeStrings.forEach {
+            assertInvalidFormat { LocalDateTime.parse(it) }
+            assertNull(LocalDateTime.parseOrNull(it), it)
+        }
+        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("+10000000004:00:00") }
 
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
@@ -233,3 +243,11 @@ private fun LocalTime.plusSeconds(secondsToAdd: Long): LocalTime {
     val newSecond: Int = newSofd % SECONDS_PER_MINUTE
     return LocalTime(newHour, newMinute, newSecond, nanosecond)
 }
+
+val invalidTimeStrings = listOf(
+    "x",
+    "24:43:15",
+    "18:60:15",
+    "18:43:60",
+    "18:43:15.1234567891",
+)

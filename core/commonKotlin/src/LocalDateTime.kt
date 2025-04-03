@@ -84,6 +84,10 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 }
 
+public actual fun LocalDateTime.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalDateTime>
+): LocalDateTime? = format.parseOrNull(input)
+
 // org.threeten.bp.LocalDateTime#until
 internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
     var endDate: LocalDate = other.date
