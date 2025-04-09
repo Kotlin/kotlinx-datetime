@@ -232,11 +232,72 @@ public sealed class DateTimePeriod {
          *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [DateTimePeriod] are
          * exceeded.
+         * @see parseOrNull for a function that returns `null` instead of throwing an exception.
          * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.parsing
          */
-        public fun parse(text: String): DateTimePeriod {
-            fun parseException(message: String, position: Int): Nothing =
-                throw DateTimeFormatException("Parse error at char $position: $message")
+        public fun parse(text: String): DateTimePeriod = parseImpl(text, { message, position ->
+            throw DateTimeFormatException("Parse error at char $position: $message")
+        }, ::DateTimePeriod)
+
+        /**
+         * Parses a ISO 8601 duration string as a [DateTimePeriod] or returns `null` if the string could not be parsed
+         * into a [DateTimePeriod].
+         *
+         * If the time components are absent or equal to zero, returns a [DatePeriod].
+         *
+         * Note that the ISO 8601 duration is not the same as [Duration],
+         * but instead includes the date components, like [DateTimePeriod] does.
+         *
+         * Examples of durations in the ISO 8601 format:
+         * - `P1Y40D` is one year and 40 days
+         * - `-P1DT1H` is minus (one day and one hour)
+         * - `P1DT-1H` is one day minus one hour
+         * - `-PT0.000000001S` is minus one nanosecond
+         *
+         * The format is defined as follows:
+         * - First, optionally, a `-` or `+`.
+         *   If `-` is present, the whole period after the `-` is negated: `-P-2M1D` is the same as `P2M-1D`.
+         * - Then, the letter `P`.
+         * - Optionally, the number of years, followed by `Y`.
+         * - Optionally, the number of months, followed by `M`.
+         * - Optionally, the number of weeks, followed by `W`.
+         * - Optionally, the number of days, followed by `D`.
+         * - The string can end here if there are no more time components.
+         *   If there are time components, the letter `T` is required.
+         * - Optionally, the number of hours, followed by `H`.
+         * - Optionally, the number of minutes, followed by `M`.
+         * - Optionally, the number of seconds, followed by `S`.
+         *   Seconds can optionally have a fractional part with up to nine digits.
+         *   The fractional part is separated with a `.`.
+         *
+         * An explicit `+` or `-` sign can be prepended to any number.
+         * `-` means that the number is negative, and `+` has no effect.
+         *
+         * See ISO-8601-1:2019, 5.5.2.2a) and 5.5.2.2b).
+         * We combine the two formats into one by allowing the number of weeks to go after the number of months
+         * and before the number of days.
+         *
+         * @see parse for a function that throws an exception when the string is not in the correct format or the
+         * boundaries of [DateTimePeriod] are exceeded.
+         * @sample kotlinx.datetime.test.samples.DateTimePeriodSamples.parseOrNull
+         */
+        public fun parseOrNull(text: String): DateTimePeriod? = parseImpl(text, { _, _ ->
+            return null
+        }) { years, months, days, hours, minutes, seconds, nanoseconds ->
+            try {
+                DateTimePeriod(years, months, days, hours, minutes, seconds, nanoseconds)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+        }
+
+        private inline fun <T> parseImpl(
+            text: String,
+            parseException: (message: String, position: Int) -> Nothing,
+            construct: (
+                years: Int, months: Int, days: Int, hours: Int, minutes: Int, seconds: Int, nanoseconds: Long
+            ) -> T
+        ): T {
             val START = 0
             val AFTER_P = 1
             val AFTER_YEAR = 2
@@ -273,7 +334,7 @@ public sealed class DateTimePeriod {
                     }
                     if (!someComponentParsed)
                         parseException("At least one component is required, but none were found", 0)
-                    return DateTimePeriod(years, months, daysTotal, hours, minutes, seconds, nanoseconds.toLong())
+                    return construct(years, months, daysTotal, hours, minutes, seconds, nanoseconds.toLong())
                 }
                 if (state == START) {
                     if (i + 1 >= text.length && (text[i] == '+' || text[i] == '-'))
@@ -324,17 +385,12 @@ public sealed class DateTimePeriod {
                 if (i == text.length)
                     parseException("Expected a designator after the numerical value", i)
                 val wrongOrder = "Wrong component order: should be 'Y', 'M', 'W', 'D', then designator 'T', then 'H', 'M', 'S'"
-                fun Long.toIntThrowing(component: Char): Int {
-                    if (this < Int.MIN_VALUE || this > Int.MAX_VALUE)
-                        parseException("Value $this does not fit into an Int, which is required for component '$component'", iStart)
-                    return toInt()
-                }
                 when (text[i].uppercaseChar()) {
                     'Y' -> {
                         if (state >= AFTER_YEAR)
                             parseException(wrongOrder, i)
                         state = AFTER_YEAR
-                        years = number.toIntThrowing('Y')
+                        years = number.toIntThrowing('Y', iStart, parseException)
                     }
                     'M' -> {
                         if (state >= AFTER_T) {
@@ -342,38 +398,38 @@ public sealed class DateTimePeriod {
                             if (state >= AFTER_MINUTE)
                                 parseException(wrongOrder, i)
                             state = AFTER_MINUTE
-                            minutes = number.toIntThrowing('M')
+                            minutes = number.toIntThrowing('M', iStart, parseException)
                         } else {
                             // Months
                             if (state >= AFTER_MONTH)
                                 parseException(wrongOrder, i)
                             state = AFTER_MONTH
-                            months = number.toIntThrowing('M')
+                            months = number.toIntThrowing('M', iStart, parseException)
                         }
                     }
                     'W' -> {
                         if (state >= AFTER_WEEK)
                             parseException(wrongOrder, i)
                         state = AFTER_WEEK
-                        weeks = number.toIntThrowing('W')
+                        weeks = number.toIntThrowing('W', iStart, parseException)
                     }
                     'D' -> {
                         if (state >= AFTER_DAY)
                             parseException(wrongOrder, i)
                         state = AFTER_DAY
-                        days = number.toIntThrowing('D')
+                        days = number.toIntThrowing('D', iStart, parseException)
                     }
                     'H' -> {
                         if (state >= AFTER_HOUR || state < AFTER_T)
                             parseException(wrongOrder, i)
                         state = AFTER_HOUR
-                        hours = number.toIntThrowing('H')
+                        hours = number.toIntThrowing('H', iStart, parseException)
                     }
                     'S' -> {
                         if (state >= AFTER_SECOND_AND_NANO || state < AFTER_T)
                             parseException(wrongOrder, i)
                         state = AFTER_SECOND_AND_NANO
-                        seconds = number.toIntThrowing('S')
+                        seconds = number.toIntThrowing('S', iStart, parseException)
                     }
                     '.', ',' -> {
                         i += 1
@@ -392,12 +448,22 @@ public sealed class DateTimePeriod {
                         if (state >= AFTER_SECOND_AND_NANO || state < AFTER_T)
                             parseException(wrongOrder, i)
                         state = AFTER_SECOND_AND_NANO
-                        seconds = number.toIntThrowing('S')
+                        seconds = number.toIntThrowing('S', iStart, parseException)
                     }
                     else -> parseException("Expected a designator after the numerical value", i)
                 }
                 i += 1
-           }
+            }
+        }
+
+        private inline fun Long.toIntThrowing(
+            component: Char, iStart: Int, parseException: (message: String, position: Int) -> Nothing
+        ): Int {
+            if (this < Int.MIN_VALUE || this > Int.MAX_VALUE)
+                parseException(
+                    "Value $this does not fit into an Int, which is required for component '$component'", iStart
+                )
+            return toInt()
         }
     }
 }
@@ -478,6 +544,7 @@ public class DatePeriod internal constructor(
          * or any time components are not zero.
          *
          * @see DateTimePeriod.parse
+         * @see parseOrNull for a version of this function that returns `null` instead of throwing exceptions
          * @sample kotlinx.datetime.test.samples.DatePeriodSamples.parsing
          */
         public fun parse(text: String): DatePeriod =
@@ -485,6 +552,19 @@ public class DatePeriod internal constructor(
                 is DatePeriod -> period
                 else -> throw DateTimeFormatException("Period $period (parsed from string $text) is not date-based")
             }
+
+        /**
+         * Parses the ISO 8601 duration representation as a [DatePeriod], for example, `P1Y2M30D`, or returns `null`
+         * if the string does not represent a valid [DatePeriod].
+         *
+         * This function is equivalent to [DateTimePeriod.parse], but will fail if any of the time components are not
+         * zero.
+         *
+         * @see DateTimePeriod.parseOrNull
+         * @see parse for a version of this function that throws on incorrect input
+         * @sample kotlinx.datetime.test.samples.DatePeriodSamples.parseOrNull
+         */
+        public fun parseOrNull(text: String): DatePeriod? = DateTimePeriod.parseOrNull(text) as? DatePeriod
     }
 }
 

@@ -136,6 +136,10 @@ public actual class LocalTime actual constructor(
 
 }
 
+public actual fun LocalTime.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalTime>
+): LocalTime? = format.parseOrNull(input)
+
 internal val ISO_TIME_OPTIONAL_SECONDS_TRAILING_ZEROS by lazy {
     LocalTimeFormat.build {
         hour()

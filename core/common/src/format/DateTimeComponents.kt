@@ -535,6 +535,7 @@ public fun DateTimeFormat<DateTimeComponents>.format(block: DateTimeComponents.(
  * matches.
  *
  * @throws IllegalArgumentException if the text does not match the format.
+ * @see DateTimeComponents.Companion.parseOrNull for a function that returns `null` if the string does not match the pattern
  * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.parsing
  */
 public fun DateTimeComponents.Companion.parse(
@@ -542,6 +543,23 @@ public fun DateTimeComponents.Companion.parse(
     format: DateTimeFormat<DateTimeComponents>
 ): DateTimeComponents =
     format.parse(input)
+
+/**
+ * Parses a [DateTimeComponents] from [input] using the given format or returns `null` if the string does not match the
+ * pattern.
+ * Equivalent to calling [DateTimeFormat.parseOrNull] on [format] with [input].
+ *
+ * [DateTimeComponents] does not perform any validation, so even invalid values may be parsed successfully if the string pattern
+ * matches.
+ *
+ * @see DateTimeComponents.Companion.parse for a function that throws an exception if the string does not match the pattern
+ * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.parseOrNull
+ */
+public fun DateTimeComponents.Companion.parseOrNull(
+    input: CharSequence,
+    format: DateTimeFormat<DateTimeComponents>
+): DateTimeComponents? =
+    format.parseOrNull(input)
 
 internal class DateTimeComponentsContents internal constructor(
     val date: IncompleteLocalDate = IncompleteLocalDate(),
