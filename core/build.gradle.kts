@@ -384,7 +384,9 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
 
     failOnWarning.set(true)
     dokkaSourceSets.configureEach {
-        kotlin.sourceSets.commonTest.get().kotlin.srcDirs.forEach { samples.from(it) }
+        val testSourceSet = kotlin.sourceSets.named("${name.dropLast(4)}Test")
+        samples.from(testSourceSet.map { it.kotlin.srcDirs })
+
         // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
         skipDeprecated.set(true)
         // Enum members and undocumented toString()
