@@ -383,10 +383,10 @@ tasks.withType<AbstractDokkaLeafTask>().configureEach {
     pluginsMapConfiguration.set(mapOf("org.jetbrains.dokka.base.DokkaBase" to """{ "templatesDir" : "${projectDir.toString().replace('\\', '/')}/dokka-templates" }"""))
 
     failOnWarning.set(true)
-    dokkaSourceSets.named("commonMain") {
-        samples.from(kotlin.sourceSets.commonTest.map { it.kotlin.srcDirs })
-    }
     dokkaSourceSets.configureEach {
+        val testSourceSet = kotlin.sourceSets.named("${name.dropLast(4)}Test")
+        samples.from(testSourceSet.map { it.kotlin.srcDirs })
+
         // reportUndocumented.set(true) // much noisy output about `hashCode` and serializer encoders, decoders etc
         skipDeprecated.set(true)
         // Enum members and undocumented toString()
