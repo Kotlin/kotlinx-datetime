@@ -33,6 +33,13 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
+        public actual fun createOrNull(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime? =
+            if (hour !in 0..23 || minute !in 0..59 || second !in 0..59 || nanosecond !in 0 until NANOS_PER_ONE) {
+                null
+            } else {
+                LocalTime(hour, minute, second, nanosecond)
+            }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)

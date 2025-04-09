@@ -23,6 +23,12 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
+        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+            UtcOffset(hours, minutes, seconds)
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
