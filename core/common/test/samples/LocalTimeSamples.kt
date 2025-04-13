@@ -281,6 +281,20 @@ class LocalTimeSamples {
 
     class Formats {
         @Test
+        fun isoBasic() {
+            // Parsing and formatting LocalTime values using the ISO_BASIC format
+            val timeWithNanoseconds = LocalTime(hour = 8, minute = 30, second = 15, nanosecond = 160_000_000)
+            val timeWithSeconds = LocalTime(hour = 8, minute = 30, second = 15)
+            val timeWithoutSeconds = LocalTime(hour = 8, minute = 30)
+            check(LocalTime.Formats.ISO_BASIC.parse("083015.16") == timeWithNanoseconds)
+            check(LocalTime.Formats.ISO_BASIC.parse("083015") == timeWithSeconds)
+            check(LocalTime.Formats.ISO_BASIC.parse("0830") == timeWithoutSeconds)
+            check(LocalTime.Formats.ISO_BASIC.format(timeWithNanoseconds) == "083015.16")
+            check(LocalTime.Formats.ISO_BASIC.format(timeWithSeconds) == "083015")
+            check(LocalTime.Formats.ISO_BASIC.format(timeWithoutSeconds) == "083000")
+        }
+
+        @Test
         fun iso() {
             // Parsing and formatting LocalTime values using the ISO format
             val timeWithNanoseconds = LocalTime(hour = 8, minute = 30, second = 15, nanosecond = 160_000_000)
