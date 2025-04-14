@@ -63,10 +63,36 @@ public expect open class TimeZone {
          *
          * If the current system time zone changes, this function can reflect this change on the next invocation.
          *
-         * On Linux, this function queries the `/etc/localtime` symbolic link. If the link is missing, [UTC] is used.
-         * If the link points to an invalid location, [IllegalTimeZoneException] is thrown.
+         * It is recommended to call this function once at the start of an operation and reuse the result:
+         * querying the system time zone may involve heavy operations like reading the system files,
+         * and also, querying the system time zone multiple times in one operation may lead to inconsistent results
+         * if the system time zone changes in the middle of the operation.
          *
-         * Always returns the `UTC` timezone on the Wasm WASI platform due to the lack of support for retrieving system timezone information.
+         * How exactly the time zone is acquired is system-dependent. The current implementation:
+         * - JVM: `java.time.ZoneId.systemDefault()` is queried.
+         * - Kotlin/Native:
+         *     - Darwin: first, `NSTimeZone.resetSystemTimeZone` is called to clear the cache of the system timezone.
+         *       Then, `NSTimeZone.systemTimeZone.name` is used to obtain the up-to-date timezone name.
+         *     - Linux: this function checks the `/etc/localtime` symbolic link.
+         *       If the link is missing, [UTC] is used.
+         *       If the file is not a link but a plain file,
+         *       the contents of `/etc/timezone` are additionally checked for the timezone name.
+         *       [IllegalTimeZoneException] is thrown if the timezone name cannot be determined
+         *       or is invalid.
+         *     - Windows: the `GetDynamicTimeZoneInformation` function is used,
+         *       with the native Windows timezone name being mapped to the corresponding IANA identifier.
+         *       [IllegalTimeZoneException] is thrown if this mapping fails. See [of] for details.
+         * - JavaScript and Wasm/JS:
+         *     - If the `@js-joda/timezone` library is loaded,
+         *       `Intl.DateTimeFormat().resolvedOptions().timeZone` is used to obtain the timezone name.
+         *       See https://github.com/Kotlin/kotlinx-datetime/blob/master/README.md#note-about-time-zones-in-js
+         *     - Otherwise, a time zone with the identifier `"SYSTEM"` is returned,
+         *       and JS `Date`'s `getTimezoneOffset()` is used to obtain the offset for the given moment.
+         * - Wasm/WASI: always returns the `UTC` timezone,
+         *   as the platform does not support retrieving system timezone information.
+         *
+         * Note that the implementation of this function for various platforms may change in the future,
+         * in particular, the JavaScript and Wasm/JS platforms.
          *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
@@ -95,11 +121,36 @@ public expect open class TimeZone {
          * It is guaranteed that passing any value from [availableZoneIds] to this function will return
          * a valid time zone.
          *
+         * How exactly the region-based time zone is acquired is system-dependent. The current implementation:
+         * - JVM: `java.time.ZoneId.of(zoneId)` is used.
+         * - Kotlin/Native:
+         *     - Darwin devices: the timezone database in `/var/db/timezone/zoneinfo` is used by default,
+         *       and if it is not a valid timezone database, the same search procedure as on Linux is used.
+         *     - Darwin simulators: the timezone database in `/usr/share/zoneinfo.default` is used by default,
+         *       and if it is not a valid timezone database, the same search procedure as on Linux is used.
+         *     - Linux: `/usr/share/zoneinfo`, `/usr/share/lib/zoneinfo`, and `/etc/zoneinfo`
+         *       are checked in turn for the timezone database.
+         *       If none of them is a valid timezone database, `/etc/localtime` is checked.
+         *       If it is a symlink of the form `.../zoneinfo/...`,
+         *       the target of the symlink with the last part stripped is used as the timezone database.
+         *     - Windows: the contents of the
+         *       `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones`
+         *       registry key are queried to obtain the timezone database.
+         *       Then, the Windows-specific timezone name is mapped to the corresponding IANA identifier
+         *       using the information from the CLDR project:
+         *       https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml
+         * - JavaScript and Wasm/JS:
+         *   if the `@js-joda/timezone` library is loaded,
+         *   it is used to obtain the timezone rules.
+         *   Otherwise, the [IllegalTimeZoneException] is thrown.
+         *   See https://github.com/Kotlin/kotlinx-datetime/blob/master/README.md#note-about-time-zones-in-js
+         * - Wasm/WASI:
+         *   if the `kotlinx-datetime-zoneinfo` artifact is added to the project as a dependency,
+         *   it is used to obtain the timezone rules.
+         *   Otherwise, the [IllegalTimeZoneException] is thrown.
+         *
          * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
          * is not found.
-         *
-         * @throws IllegalTimeZoneException on the Wasm WASI platform for non-fixed-offset time zones,
-         * unless a dependency on the `kotlinx-datetime-zoneinfo` artifact is added.
          *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
          */

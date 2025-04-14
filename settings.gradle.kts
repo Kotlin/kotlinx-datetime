@@ -24,4 +24,6 @@ include(":serialization")
 project(":serialization").name = "kotlinx-datetime-serialization"
 include(":js-without-timezones")
 project(":js-without-timezones").name = "kotlinx-datetime-js-test-without-timezones"
+include(":js-with-timezones")
+project(":js-with-timezones").name = "kotlinx-datetime-js-test-with-timezones"
 include(":benchmarks")

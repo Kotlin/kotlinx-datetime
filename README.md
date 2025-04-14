@@ -475,7 +475,9 @@ and after that add the following initialization code in your project:
 @JsNonModule
 external object JsJodaTimeZoneModule
 
-private val jsJodaTz = JsJodaTimeZoneModule
+@OptIn(ExperimentalJsExport::class)
+@JsExport
+val jsJodaTz = JsJodaTimeZoneModule
 ```
 
 #### Note about time zones in Wasm/JS
