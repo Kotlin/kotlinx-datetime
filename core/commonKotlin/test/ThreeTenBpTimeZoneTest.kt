@@ -33,15 +33,14 @@ class ThreeTenBpTimeZoneTest {
         val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
         val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
         val tz = TimeZone.of("Europe/Berlin")
-        assertEquals(tz.atZone(t1), tz.atZone(t2))
+        assertEquals(tz.localDateTimeToInstant(t1), tz.localDateTimeToInstant(t2))
     }
 
     @Test
     fun overlappingLocalTime() {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
         val zone = TimeZone.of("Europe/Paris")
-        assertEquals(ZonedDateTime(LocalDateTime(2007, 10, 28, 2, 30, 0, 0),
-            zone, UtcOffset(seconds = 2 * 3600)), zone.atZone(t))
+        assertEquals(t.toInstant(UtcOffset(hours = 2)), zone.localDateTimeToInstant(t))
     }
 
 }
