@@ -1,4 +1,5 @@
-@JsModule("@js-joda/timezone")
-external object JsJodaTimeZoneModule
-
-private val jsJodaTz = JsJodaTimeZoneModule
+// @JsModule("@js-joda/timezone")
+// external object JsJodaTimeZoneModule
+//
+// private val jsJodaTz = JsJodaTimeZoneModule
+//

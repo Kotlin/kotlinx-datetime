@@ -4,9 +4,15 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import java.util.Locale
 
 plugins {
-    id("kotlin-multiplatform")
-    id("org.jetbrains.kotlinx.kover")
+    kotlin("multiplatform") version "2.1.0"
 }
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+val datetimeVersion: String = property("datetimeVersion").toString()
 
 kotlin {
     js {
@@ -30,7 +36,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":kotlinx-datetime"))
+                api("org.jetbrains.kotlinx:kotlinx-datetime:$datetimeVersion")
             }
         }
 

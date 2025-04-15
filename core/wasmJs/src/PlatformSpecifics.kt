@@ -12,6 +12,7 @@ private fun getLinks(rulesProvider: JsAny): JsAny = js("rulesProvider.getTzdbDat
 
 internal actual fun readTzdb(): Pair<List<String>, List<String>>? = try {
     jsTry {
+        JsJodaTimeZoneModule
         val zones = getZones(ZoneRulesProvider as JsAny)
         val links = getLinks(ZoneRulesProvider as JsAny)
         zones.unsafeCast<JsArray<JsString>>().toList() to links.unsafeCast<JsArray<JsString>>().toList()

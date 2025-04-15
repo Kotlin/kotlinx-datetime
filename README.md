@@ -468,18 +468,6 @@ kotlin {
 }
 ```
 
-and after that add the following initialization code in your project:
-
-```kotlin
-@JsModule("@js-joda/timezone")
-@JsNonModule
-external object JsJodaTimeZoneModule
-
-@OptIn(ExperimentalJsExport::class)
-@JsExport
-val jsJodaTz = JsJodaTimeZoneModule
-```
-
 #### Note about time zones in Wasm/JS
 
 Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
@@ -496,15 +484,6 @@ kotlin {
         }
     }
 }
-```
-
-and after that add the following initialization code in your project:
-
-```kotlin
-@JsModule("@js-joda/timezone")
-external object JsJodaTimeZoneModule
-
-private val jsJodaTz = JsJodaTimeZoneModule
 ```
 
 #### Note about time zones in Wasm/WASI

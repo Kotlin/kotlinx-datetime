@@ -7,6 +7,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.internal.JSJoda.ZoneRulesProvider
 
 internal actual fun readTzdb(): Pair<List<String>, List<String>>? = try {
+    JsJodaTimeZoneModule
     val tzdbData = ZoneRulesProvider.asDynamic().getTzdbData()
     tzdbData.zones.unsafeCast<Array<String>>().toList() to tzdbData.links.unsafeCast<Array<String>>().toList()
 } catch (_: Throwable) {
