@@ -23,7 +23,14 @@ private fun isValidYear(year: Int): Boolean =
     year >= YEAR_MIN && year <= YEAR_MAX
 
 @Serializable(with = LocalDateSerializer::class)
-public actual class LocalDate actual constructor(public actual val year: Int, month: Int, public actual val day: Int) : Comparable<LocalDate> {
+public actual class LocalDate private constructor(
+    public actual val year: Int, month: Int, public actual val day: Int, unit: Unit
+) : Comparable<LocalDate> {
+
+    public actual constructor(year: Int, month: Int, day: Int): this(year, month, day, Unit) {
+        require(_month in 1..12) { "Invalid date: month must be a number between 1 and 12, got $_month" }
+        validateYearAndDay()
+    }
 
     private val _month: Int = month
     @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
@@ -31,21 +38,22 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
     @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
     public actual val dayOfMonth: Int get() = day
 
-    init {
+    public actual constructor(year: Int, month: Month, day: Int) : this(year, month.number, day, Unit) {
+        validateYearAndDay()
+    }
+
+    private fun validateYearAndDay() {
         // org.threeten.bp.LocalDate#create
         require(isValidYear(year)) { "Invalid date: the year is out of range" }
-        require(_month in 1..12) { "Invalid date: month must be a number between 1 and 12, got $_month" }
         require(day in 1..31) { "Invalid date: day of month must be a number between 1 and 31, got $day" }
         if (day > 28 && day > _month.monthLength(isLeapYear(year))) {
             if (day == 29) {
                 throw IllegalArgumentException("Invalid date 'February 29' as '$year' is not a leap year")
             } else {
-                throw IllegalArgumentException("Invalid date '${Month(month)} $day'")
+                throw IllegalArgumentException("Invalid date '$month $day'")
             }
         }
     }
-
-    public actual constructor(year: Int, month: Month, day: Int) : this(year, month.number, day)
 
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate = format.parse(input)
@@ -58,7 +66,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
                 (day > 28 && day > month.monthLength(isLeapYear(year)))) {
                 null
             } else {
-                LocalDate(year, month, day)
+                LocalDate(year, month, day, Unit)
             }
 
         public actual fun orNull(year: Int, month: Month, day: Int): LocalDate? =
@@ -98,7 +106,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
             val dom = marchDoy0 - (marchMonth0 * 306 + 5) / 10 + 1
             yearEst += marchMonth0 / 10
 
-            return LocalDate(yearEst.toInt(), month, dom)
+            // The range of valid values was checked in the beginning
+            return LocalDate(yearEst.toInt(), month, dom, Unit)
         }
 
         public actual fun fromEpochDays(epochDays: Int): LocalDate = fromEpochDays(epochDays.toLong())
@@ -171,11 +180,13 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
 
     // org.threeten.bp.LocalDate#resolvePreviousValid
     /**
+     * May only be called if the year and month are valid.
+     *
      * @throws IllegalArgumentException if the result exceeds the boundaries
      */
     private fun resolvePreviousValid(year: Int, month: Int, day: Int): LocalDate {
         val newDay = min(day, month.monthLength(isLeapYear(year)))
-        return LocalDate(year, month, newDay)
+        return LocalDate(year, month, newDay, Unit)
     }
 
     // org.threeten.bp.LocalDate#plusMonths
