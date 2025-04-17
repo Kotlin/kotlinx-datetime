@@ -24,10 +24,13 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun orNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
-            UtcOffset(hours, minutes, seconds)
-        } catch (_: IllegalArgumentException) {
-            null
+        public actual fun orNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = when {
+            hours != null ->
+                ofHoursMinutesSecondsOrNull(hours, minutes ?: 0, seconds ?: 0)
+            minutes != null ->
+                ofHoursMinutesSecondsOrNull(minutes / MINUTES_PER_HOUR, minutes % MINUTES_PER_HOUR, seconds ?: 0)
+            else ->
+                ofSecondsOrNull(seconds ?: 0)
         }
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
@@ -35,10 +38,11 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(offsetString: String): UtcOffset = parse(input = offsetString)
 
+        private fun totalSecondsValid(totalSeconds: Int): Boolean =
+            totalSeconds in -18 * SECONDS_PER_HOUR..18 * SECONDS_PER_HOUR
+
         private fun validateTotal(totalSeconds: Int) {
-            if (totalSeconds !in -18 * SECONDS_PER_HOUR .. 18 * SECONDS_PER_HOUR) {
-                throw IllegalArgumentException("Total seconds value is out of range: $totalSeconds")
-            }
+            require(totalSecondsValid(totalSeconds)) { "Total seconds value is out of range: $totalSeconds" }
         }
 
         // org.threeten.bp.ZoneOffset#validate
@@ -71,22 +75,47 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
             }
         }
 
+        private fun hoursMinutesSecondsValid(hours: Int, minutes: Int, seconds: Int): Boolean =
+            // valid range for hours, minutes and seconds
+            hours in -18..18 && minutes in -59..59 && seconds in -59..59
+                    // same sign for all components
+                    && !(hours > 0 && (minutes < 0 || seconds < 0))
+                    && !(hours < 0 && (minutes > 0 || seconds > 0))
+                    // same sign for minutes and seconds
+                    && !(minutes > 0 && seconds < 0 || minutes < 0 && seconds > 0)
+                    // valid range for total seconds
+                    && !(abs(hours) == 18 && (abs(minutes) > 0 || abs(seconds) > 0))
+
         // org.threeten.bp.ZoneOffset#ofHoursMinutesSeconds
+        internal fun ofHoursMinutesSecondsUnsafe(hours: Int, minutes: Int, seconds: Int): UtcOffset =
+            if (hours == 0 && minutes == 0 && seconds == 0) ZERO
+            else ofSeconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+
         internal fun ofHoursMinutesSeconds(hours: Int, minutes: Int, seconds: Int): UtcOffset {
             validate(hours, minutes, seconds)
-            return if (hours == 0 && minutes == 0 && seconds == 0) ZERO
-            else ofSeconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+            return ofHoursMinutesSecondsUnsafe(hours, minutes, seconds)
         }
 
-        // org.threeten.bp.ZoneOffset#ofTotalSeconds
-        internal fun ofSeconds(seconds: Int): UtcOffset {
-            validateTotal(seconds)
-            return if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
-                utcOffsetCache[seconds] ?: UtcOffset(totalSeconds = seconds).also { utcOffsetCache[seconds] = it }
+        internal fun ofHoursMinutesSecondsOrNull(hours: Int, minutes: Int, seconds: Int): UtcOffset? =
+            if (hoursMinutesSecondsValid(hours, minutes, seconds)) {
+                ofHoursMinutesSecondsUnsafe(hours, minutes, seconds)
             } else {
-                UtcOffset(totalSeconds = seconds)
+                null
             }
+
+        // org.threeten.bp.ZoneOffset#ofTotalSeconds
+        private fun ofSecondsUnsafe(seconds: Int): UtcOffset = if (seconds % (15 * SECONDS_PER_MINUTE) == 0) {
+            utcOffsetCache[seconds] ?: UtcOffset(totalSeconds = seconds).also { utcOffsetCache[seconds] = it }
+        } else {
+            UtcOffset(totalSeconds = seconds)
         }
+
+        internal fun ofSeconds(seconds: Int): UtcOffset = validateTotal(seconds).let {
+            ofSecondsUnsafe(seconds)
+        }
+
+        internal fun ofSecondsOrNull(seconds: Int): UtcOffset? =
+            if (totalSecondsValid(seconds)) ofSecondsUnsafe(seconds) else null
 
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
