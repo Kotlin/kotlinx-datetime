@@ -24,7 +24,7 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual val ZERO: UtcOffset = UtcOffset(totalSeconds = 0)
 
-        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+        public actual fun orNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
             UtcOffset(hours, minutes, seconds)
         } catch (_: IllegalArgumentException) {
             null

@@ -86,17 +86,17 @@ public expect class UtcOffset {
          *
          * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes;
          * `null` will be returned if this rule is violated.
-         * For example, `UtcOffset.createOrNull(hours = 3, minutes = 61)` returns `null`.
+         * For example, `UtcOffset.orNull(hours = 3, minutes = 61)` returns `null`.
          *
          * However, the non-null component of the highest order can exceed these bounds,
-         * for example, `UtcOffset.createOrNull(minutes = 241)` and `UtcOffset.createOrNull(seconds = -3600)` are both valid.
+         * for example, `UtcOffset.orNull(minutes = 241)` and `UtcOffset.orNull(seconds = -3600)` are both valid.
          *
          * Use `UtcOffset(hours, minutes, seconds)` to throw an exception instead of returning `null`
          * when the parameters are invalid.
          *
-         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.createOrNull
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.orNull
          */
-        public fun createOrNull(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset?
+        public fun orNull(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset?
 
         /**
          * A shortcut for calling [DateTimeFormat.parse].
@@ -231,7 +231,7 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.
  * @throws IllegalArgumentException if components have different signs.
  * @throws IllegalArgumentException if the resulting `UtcOffset` value is outside of range `±18:00`.
- * @see UtcOffset.createOrNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
+ * @see UtcOffset.orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.constructorFunction
  */
 public expect fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset

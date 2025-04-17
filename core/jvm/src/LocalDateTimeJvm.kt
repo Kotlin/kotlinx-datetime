@@ -85,7 +85,7 @@ public actual class LocalDateTime internal constructor(
     actual override fun compareTo(other: LocalDateTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
-        public actual fun createOrNull(
+        public actual fun orNull(
             year: Int,
             month: Int,
             day: Int,
@@ -99,7 +99,7 @@ public actual class LocalDateTime internal constructor(
             null
         }
 
-        public actual fun createOrNull(
+        public actual fun orNull(
             year: Int,
             month: Month,
             day: Int,
@@ -107,7 +107,7 @@ public actual class LocalDateTime internal constructor(
             minute: Int,
             second: Int,
             nanosecond: Int
-        ): LocalDateTime? = createOrNull(year, month.number, day, hour, minute, second, nanosecond)
+        ): LocalDateTime? = orNull(year, month.number, day, hour, minute, second, nanosecond)
 
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =

@@ -232,16 +232,16 @@ class LocalDateTest {
     }
 
     @Test
-    fun createOrNull() {
+    fun orNull() {
         validDates.forEach { (year, month, day) ->
             val expected = LocalDate(year, month, day)
-            assertEquals(expected, LocalDate.createOrNull(year, month, day))
-            assertEquals(expected, LocalDate.createOrNull(year, Month(month), day))
+            assertEquals(expected, LocalDate.orNull(year, month, day))
+            assertEquals(expected, LocalDate.orNull(year, Month(month), day))
         }
         invalidDates.forEach { (year, month, day) ->
-            assertNull(LocalDate.createOrNull(year, month, day))
+            assertNull(LocalDate.orNull(year, month, day))
             runCatching { Month(month) }.onSuccess { monthEnum ->
-                assertNull(LocalDate.createOrNull(year, monthEnum, day))
+                assertNull(LocalDate.orNull(year, monthEnum, day))
             }
         }
     }
