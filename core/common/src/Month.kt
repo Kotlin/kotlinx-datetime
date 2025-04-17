@@ -72,6 +72,8 @@ public val Month.number: Int get() = ordinal + 1
  * @sample kotlinx.datetime.test.samples.MonthSamples.constructorFunction
  */
 public fun Month(number: Int): Month {
-    require(number in 1..12)
+    require(number in 1..12) {
+        "Month must be a number between 1 and 12, got $number"
+    }
     return Month.entries[number - 1]
 }
