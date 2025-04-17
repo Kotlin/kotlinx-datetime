@@ -48,7 +48,7 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> {
     // According to https://www.man7.org/linux/man-pages/man5/localtime.5.html, UTC is used when /etc/localtime is missing.
     // If /etc/localtime exists but isn't a symlink, we check if it's a copy of a timezone file by examining /etc/timezone
     // (which is a Debian-specific approach used in older distributions).
-    val zonePath = currentSystemTimeZonePath ?: return "Z" to null
+    val zonePath = currentSystemTimeZonePath ?: return "UTC" to null
 
     zonePath.splitTimeZonePath()?.second?.toString()?.let { zoneId ->
         return zoneId to null
