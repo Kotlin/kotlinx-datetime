@@ -84,9 +84,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * Use `LocalDate(year, month, day) to throw an exception
          * instead of returning `null` when the parameters are invalid.
          *
-         * @sample kotlinx.datetime.test.samples.LocalDateSamples.createOrNullMonthNumber
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.orNullMonthNumber
          */
-        public fun createOrNull(year: Int, month: Int, day: Int): LocalDate?
+        public fun orNull(year: Int, month: Int, day: Int): LocalDate?
 
         /**
          * Constructs a [LocalDate] instance from the given date components
@@ -101,9 +101,9 @@ public expect class LocalDate : Comparable<LocalDate> {
          * Use `LocalDate(year, month, day) to throw an exception
          * instead of returning `null` when the parameters are invalid.
          *
-         * @sample kotlinx.datetime.test.samples.LocalDateSamples.createOrNull
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.orNull
          */
-        public fun createOrNull(year: Int, month: Month, day: Int): LocalDate?
+        public fun orNull(year: Int, month: Month, day: Int): LocalDate?
         /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
@@ -212,7 +212,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
-     * @see createOrNull for a version that returns `null` instead of throwing an exception
+     * @see orNull for a version that returns `null` instead of throwing an exception
      * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunctionMonthNumber
      */
@@ -229,7 +229,7 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
-     * @see createOrNull for a version that returns `null` instead of throwing an exception
+     * @see orNull for a version that returns `null` instead of throwing an exception
      * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunction
      */

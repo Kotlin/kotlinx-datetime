@@ -22,14 +22,14 @@ public actual class LocalDate internal constructor(
     internal val value: jtLocalDate
 ) : Comparable<LocalDate>, java.io.Serializable {
     public actual companion object {
-        public actual fun createOrNull(year: Int, month: Int, day: Int): LocalDate? =
+        public actual fun orNull(year: Int, month: Int, day: Int): LocalDate? =
             try {
                 LocalDate(year, month, day)
             } catch (e: IllegalArgumentException) {
                 null
             }
 
-        public actual fun createOrNull(year: Int, month: Month, day: Int): LocalDate? =
+        public actual fun orNull(year: Int, month: Month, day: Int): LocalDate? =
             try {
                 LocalDate(year, month, day)
             } catch (e: IllegalArgumentException) {
