@@ -53,7 +53,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
         public fun parse(isoString: String): LocalDate = parse(input = isoString)
 
-        public actual fun createOrNull(year: Int, month: Int, day: Int): LocalDate? =
+        public actual fun orNull(year: Int, month: Int, day: Int): LocalDate? =
             if (!isValidYear(year) || month !in 1..12 || day !in 1..31 ||
                 (day > 28 && day > month.monthLength(isLeapYear(year)))) {
                 null
@@ -61,8 +61,8 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
                 LocalDate(year, month, day)
             }
 
-        public actual fun createOrNull(year: Int, month: Month, day: Int): LocalDate? =
-            createOrNull(year, month.number, day)
+        public actual fun orNull(year: Int, month: Month, day: Int): LocalDate? =
+            orNull(year, month.number, day)
 
         // org.threeten.bp.LocalDate#toEpochDay
         public actual fun fromEpochDays(epochDays: Long): LocalDate {

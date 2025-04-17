@@ -132,36 +132,36 @@ class LocalDateTimeTest {
     }
 
     @Test
-    fun createOrNull() {// Test createOrNull with month number
-        LocalDateTime.createOrNull(2020, 1, 1, 12, 30, 45, 500_000_000)?.let {
+    fun orNull() {// Test orNull with month number
+        LocalDateTime.orNull(2020, 1, 1, 12, 30, 45, 500_000_000)?.let {
             checkComponents(it, 2020, 1, 1, 12, 30, 45, 500_000_000)
-        } ?: fail("LocalDateTime.createOrNull should not return null")
+        } ?: fail("LocalDateTime.orNull should not return null")
 
-        // Test createOrNull with Month enum
-        LocalDateTime.createOrNull(2020, Month.FEBRUARY, 29, 23, 59, 59, 999_999_999)?.let {
+        // Test orNull with Month enum
+        LocalDateTime.orNull(2020, Month.FEBRUARY, 29, 23, 59, 59, 999_999_999)?.let {
             checkComponents(it, 2020, 2, 29, 23, 59, 59, 999_999_999)
-        } ?: fail("LocalDateTime.createOrNull should not return null")
+        } ?: fail("LocalDateTime.orNull should not return null")
 
         // Test invalid date components
         for ((year, month, day) in invalidDates) {
-            assertNull(LocalDateTime.createOrNull(year, month, day, 12, 30))
+            assertNull(LocalDateTime.orNull(year, month, day, 12, 30))
             runCatching { Month(month) }.onSuccess { monthEnum ->
-                assertNull(LocalDateTime.createOrNull(year, monthEnum, day, 12, 30))
+                assertNull(LocalDateTime.orNull(year, monthEnum, day, 12, 30))
             }
         }
 
         // Test invalid time components
         for (input in invalidTimes) {
             when (input.size) {
-                2 -> assertNull(LocalDateTime.createOrNull(2024, 1, 1, input[0], input[1]))
-                3 -> assertNull(LocalDateTime.createOrNull(2024, 1, 1, input[0], input[1], input[2]))
-                4 -> assertNull(LocalDateTime.createOrNull(2024, 1, 1, input[0], input[1], input[2], input[3]))
+                2 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1]))
+                3 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1], input[2]))
+                4 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1], input[2], input[3]))
             }
         }
 
         // Test with Month enum
-        assertNull(LocalDateTime.createOrNull(2021, Month.FEBRUARY, 29, 12, 30)) // Invalid day (not a leap year)
-        assertNull(LocalDateTime.createOrNull(2020, Month.FEBRUARY, 30, 12, 30)) // Invalid day for February
+        assertNull(LocalDateTime.orNull(2021, Month.FEBRUARY, 29, 12, 30)) // Invalid day (not a leap year)
+        assertNull(LocalDateTime.orNull(2020, Month.FEBRUARY, 30, 12, 30)) // Invalid day for February
 
     }
 

@@ -184,28 +184,28 @@ class LocalDateTimeSamples {
     }
 
     @Test
-    fun createOrNull() {
-        // Constructing a LocalDateTime value using `createOrNull`
-        val dateTime = LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 59, 999_999_999)
-        // For valid values, `createOrNull` is equivalent to the constructor
+    fun orNull() {
+        // Constructing a LocalDateTime value using `orNull`
+        val dateTime = LocalDateTime.orNull(2024, 2, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `orNull` is equivalent to the constructor
         check(dateTime == LocalDateTime(2024, 2, 15, 16, 48, 59, 999_999_999))
         // If a value can not be constructed, null is returned
-        check(LocalDateTime.createOrNull(2024, 2, 31, 16, 48) == null) // Invalid day
-        check(LocalDateTime.createOrNull(2024, 2, 15, 24, 48) == null) // Invalid hour
-        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 60) == null) // Invalid minute
-        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 60) == null) // Invalid second
-        check(LocalDateTime.createOrNull(2024, 2, 15, 16, 48, 59, 1_000_000_000) == null) // Invalid nanosecond
+        check(LocalDateTime.orNull(2024, 2, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.orNull(2024, 2, 15, 24, 48) == null) // Invalid hour
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 60) == null) // Invalid minute
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 48, 60) == null) // Invalid second
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 48, 59, 1_000_000_000) == null) // Invalid nanosecond
     }
 
     @Test
-    fun createOrNullWithMonth() {
-        // Constructing a LocalDateTime value using `createOrNull` with Month enum
-        val dateTime = LocalDateTime.createOrNull(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999)
-        // For valid values, `createOrNull` is equivalent to the constructor
+    fun orNullWithMonth() {
+        // Constructing a LocalDateTime value using `orNull` with Month enum
+        val dateTime = LocalDateTime.orNull(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `orNull` is equivalent to the constructor
         check(dateTime == LocalDateTime(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999))
         // If a value can not be constructed, null is returned
-        check(LocalDateTime.createOrNull(2024, Month.FEBRUARY, 31, 16, 48) == null) // Invalid day
-        check(LocalDateTime.createOrNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
+        check(LocalDateTime.orNull(2024, Month.FEBRUARY, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.orNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
     }
 
 

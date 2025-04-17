@@ -70,23 +70,23 @@ class LocalDateSamples {
     }
 
     @Test
-    fun createOrNullMonthNumber() {
-        // Constructing a LocalDate value using `createOrNull`
-        val date = LocalDate.createOrNull(2024, 4, 16)
-        // For valid values, `createOrNull` is equivalent to the constructor
+    fun orNullMonthNumber() {
+        // Constructing a LocalDate value using `orNull`
+        val date = LocalDate.orNull(2024, 4, 16)
+        // For valid values, `orNull` is equivalent to the constructor
         check(date == LocalDate(2024, 4, 16))
         // If a value can not be constructed, null is returned
-        check(LocalDate.createOrNull(2024, 1, 99) == null)
+        check(LocalDate.orNull(2024, 1, 99) == null)
     }
 
     @Test
-    fun createOrNull() {
-        // Constructing a LocalDate value using `createOrNull`
-        val date = LocalDate.createOrNull(2024, Month.APRIL, 16)
-        // For valid values, `createOrNull` is equivalent to the constructor
+    fun orNull() {
+        // Constructing a LocalDate value using `orNull`
+        val date = LocalDate.orNull(2024, Month.APRIL, 16)
+        // For valid values, `orNull` is equivalent to the constructor
         check(date == LocalDate(2024, Month.APRIL, 16))
         // If a value can not be constructed, null is returned
-        check(LocalDate.createOrNull(2024, Month.FEBRUARY, 31) == null)
+        check(LocalDate.orNull(2024, Month.FEBRUARY, 31) == null)
     }
 
     @Test

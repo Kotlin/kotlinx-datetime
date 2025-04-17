@@ -88,26 +88,26 @@ class LocalTimeTest {
     }
 
     @Test
-    fun createOrNull() {
+    fun orNull() {
         // Valid times should be created correctly
-        LocalTime.createOrNull(12, 30, 45, 500_000_000)?.let {
+        LocalTime.orNull(12, 30, 45, 500_000_000)?.let {
             checkComponents(it, 12, 30, 45, 500_000_000)
-        } ?: fail("LocalTime.createOrNull should not return null")
+        } ?: fail("LocalTime.orNull should not return null")
 
-        LocalTime.createOrNull(0, 0)?.let {
+        LocalTime.orNull(0, 0)?.let {
             checkComponents(it, 0, 0)
-        } ?: fail("LocalTime.createOrNull should not return null")
+        } ?: fail("LocalTime.orNull should not return null")
 
-        LocalTime.createOrNull(23, 59, 59, 999_999_999)?.let {
+        LocalTime.orNull(23, 59, 59, 999_999_999)?.let {
             checkComponents(it, 23, 59, 59, 999_999_999)
-        } ?: fail("LocalTime.createOrNull should not return null")
+        } ?: fail("LocalTime.orNull should not return null")
 
         // Invalid times should return null
         for (input in invalidTimes) {
             when (input.size) {
-                2 -> assertNull(LocalTime.createOrNull(input[0], input[1]))
-                3 -> assertNull(LocalTime.createOrNull(input[0], input[1], input[2]))
-                4 -> assertNull(LocalTime.createOrNull(input[0], input[1], input[2], input[3]))
+                2 -> assertNull(LocalTime.orNull(input[0], input[1]))
+                3 -> assertNull(LocalTime.orNull(input[0], input[1], input[2]))
+                4 -> assertNull(LocalTime.orNull(input[0], input[1], input[2], input[3]))
             }
         }
     }

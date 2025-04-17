@@ -27,7 +27,7 @@ public actual class UtcOffset(
     public actual companion object {
         public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
 
-        public actual fun createOrNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+        public actual fun orNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
             UtcOffset(hours, minutes, seconds)
         } catch (_: IllegalArgumentException) {
             null

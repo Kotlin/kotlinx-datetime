@@ -46,9 +46,9 @@ class UtcOffsetTest {
             val offset = UtcOffset(hours, minutes, seconds)
             val offsetSeconds = UtcOffset(seconds = totalSeconds)
             val offsetMinutes = UtcOffset(minutes = totalMinutes, seconds = seconds)
-            val offsetOrNull = UtcOffset.createOrNull(hours, minutes, seconds)
-            val offsetSecondsOrNull = UtcOffset.createOrNull(seconds = totalSeconds)
-            val offsetMinutesOrNull = UtcOffset.createOrNull(minutes = totalMinutes, seconds = seconds)
+            val offsetOrNull = UtcOffset.orNull(hours, minutes, seconds)
+            val offsetSecondsOrNull = UtcOffset.orNull(seconds = totalSeconds)
+            val offsetMinutesOrNull = UtcOffset.orNull(minutes = totalMinutes, seconds = seconds)
             assertEquals(totalSeconds, offset.totalSeconds)
             assertEquals(offset, offsetMinutes)
             assertEquals(offset, offsetSeconds)
@@ -66,7 +66,7 @@ class UtcOffsetTest {
             seconds: Int? = null,
         ) {
             assertIllegalArgument { UtcOffset(hours, minutes, seconds) }
-            assertNull(UtcOffset.createOrNull(hours, minutes, seconds))
+            assertNull(UtcOffset.orNull(hours, minutes, seconds))
         }
         // total range
         assertInvalidUtcOffset(hours = -19)
