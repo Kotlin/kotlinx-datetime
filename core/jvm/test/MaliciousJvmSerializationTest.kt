@@ -16,10 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
-// TODO investigate other null stream (it's different from the one I got) from this comment:
-//  https://github.com/Kotlin/kotlinx-datetime/pull/373#discussion_r2009789491
-//  aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c44617465618443f17dae33e70200014c00097472756556616c75657400154c6a6176612f74696d652f4c6f63616c446174653b787070
-
 class MaliciousJvmSerializationTest {
 
     /**
