@@ -200,7 +200,7 @@ public expect class LocalTime : Comparable<LocalTime> {
         /**
          * ISO 8601 basic format.
          *
-         * Examples: `1234`, `123456`, `123456.789`, `123456.1234`.
+         * Examples: `T1234`, `T123456`, `T123456.789`, `T123456.1234`.
          *
          * When formatting, seconds are always included, even if they are zero.
          * Fractional parts of the second are included if non-zero.
