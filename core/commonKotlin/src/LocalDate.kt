@@ -195,6 +195,10 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
         if (daysToAdd == 0L) this
         else fromEpochDays(safeAdd(toEpochDays(), daysToAdd))
 
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
+
     override fun equals(other: Any?): Boolean =
         this === other || (other is LocalDate && compareTo(other) == 0)
 
