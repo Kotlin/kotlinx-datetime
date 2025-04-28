@@ -5,11 +5,8 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.clampToInt
-import kotlinx.datetime.internal.safeAdd
-import kotlinx.datetime.internal.safeMultiplyOrClamp
+import kotlinx.datetime.internal.*
 import kotlin.random.Random
-import kotlin.random.nextLong
 
 private class YearMonthProgressionIterator(private val iterator: LongIterator) : Iterator<YearMonth> {
     override fun hasNext(): Boolean = iterator.hasNext()
@@ -67,7 +64,7 @@ internal constructor(internal val longProgression: LongProgression) : Collection
      * Returns [Int.MAX_VALUE] if the number of months overflows [Int]
      */
     override val size: Int
-        get() = longProgression.size
+        get() = longProgression.sizeUnsafe
 
     /**
      * Returns true iff every element in [elements] is a member of the progression.
@@ -82,7 +79,7 @@ internal constructor(internal val longProgression: LongProgression) : Collection
         @Suppress("USELESS_CAST")
         if ((value as Any?) !is YearMonth) return false
 
-        return longProgression.contains(value.prolepticMonth)
+        return longProgression.containsUnsafe(value.prolepticMonth)
     }
 
     override fun equals(other: Any?): Boolean =
@@ -267,7 +264,7 @@ public infix fun YearMonth.downTo(that: YearMonth): YearMonthProgression =
  */
 public fun YearMonthProgression.random(random: Random = Random): YearMonth =
     if (isEmpty()) throw NoSuchElementException("Cannot get random in empty range: $this")
-    else longProgression.random(random).let(YearMonth.Companion::fromProlepticMonth)
+    else longProgression.randomUnsafe(random).let(YearMonth.Companion::fromProlepticMonth)
 
 /**
  * Returns a random [YearMonth] within the bounds of the [YearMonthProgression] or null if the progression is empty.
@@ -277,29 +274,5 @@ public fun YearMonthProgression.random(random: Random = Random): YearMonth =
  *
  * @sample kotlinx.datetime.test.samples.YearMonthRangeSamples.random
  */
-public fun YearMonthProgression.randomOrNull(random: Random = Random): YearMonth? = longProgression.randomOrNull(random)
+public fun YearMonthProgression.randomOrNull(random: Random = Random): YearMonth? = longProgression.randomUnsafeOrNull(random)
     ?.let(YearMonth.Companion::fromProlepticMonth)
-
-// this implementation is incorrect in general
-// (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).random()` throws an exception),
-// but for the range of epoch days in YearMonth it's good enough
-private fun LongProgression.random(random: Random = Random): Long =
-    random.nextLong(0L..(last - first) / step) * step + first
-
-// incorrect in general; see `random` just above
-private fun LongProgression.randomOrNull(random: Random = Random): Long? = if (isEmpty()) null else random(random)
-
-// this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).step(5).contains(2)`
-// returns `false` incorrectly https://www.wolframalpha.com/input?i=-2%5E63+%2B+1844674407370955162+*+5),
-// but for the range of epoch days in YearMonth it's good enough
-private fun LongProgression.contains(value: Long): Boolean =
-    value in (if (step > 0) first..last else last..first) && (value - first) % step == 0L
-
-// this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
-// but for the range of epoch days in YearMonth it's good enough
-private val LongProgression.size: Int
-    get() = if (isEmpty()) 0 else try {
-        (safeAdd(last, -first) / step + 1).clampToInt()
-    } catch (e: ArithmeticException) {
-        Int.MAX_VALUE
-    }
