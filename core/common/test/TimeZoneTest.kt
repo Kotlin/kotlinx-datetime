@@ -17,6 +17,7 @@ class TimeZoneTest {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
         println(utc)
         assertEquals("UTC", utc.id)
+        assertEquals(utc, TimeZone.of("UTC"))
         assertEquals(UtcOffset.ZERO, utc.offset)
         assertEquals(0, utc.offset.totalSeconds)
         assertEquals(utc.offset, utc.offsetAt(Clock.System.now()))
