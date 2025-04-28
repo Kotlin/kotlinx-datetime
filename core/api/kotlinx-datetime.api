@@ -625,12 +625,15 @@ public final class kotlinx/datetime/YearMonth : java/io/Serializable, java/lang/
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun compareTo (Lkotlinx/datetime/YearMonth;)I
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDays ()Lkotlinx/datetime/LocalDateRange;
 	public final fun getFirstDay ()Lkotlinx/datetime/LocalDate;
 	public final fun getLastDay ()Lkotlinx/datetime/LocalDate;
 	public final fun getMonth ()Lkotlinx/datetime/Month;
 	public final fun getNumberOfDays ()I
 	public final fun getYear ()I
 	public fun hashCode ()I
+	public final fun rangeTo (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonthRange;
+	public final fun rangeUntil (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonthRange;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -661,6 +664,69 @@ public final class kotlinx/datetime/YearMonthKt {
 	public static final fun plusYear (Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonth;
 	public static final fun until (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/DateTimeUnit$MonthBased;)J
 	public static final fun yearsUntil (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;)I
+}
+
+public class kotlinx/datetime/YearMonthProgression : java/util/Collection, kotlin/jvm/internal/markers/KMappedMarker {
+	public static final field Companion Lkotlinx/datetime/YearMonthProgression$Companion;
+	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun add (Lkotlinx/datetime/YearMonth;)Z
+	public fun addAll (Ljava/util/Collection;)Z
+	public fun clear ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkotlinx/datetime/YearMonth;)Z
+	public fun containsAll (Ljava/util/Collection;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFirst ()Lkotlinx/datetime/YearMonth;
+	public final fun getLast ()Lkotlinx/datetime/YearMonth;
+	public fun getSize ()I
+	public fun hashCode ()I
+	public fun isEmpty ()Z
+	public fun iterator ()Ljava/util/Iterator;
+	public fun remove (Ljava/lang/Object;)Z
+	public fun removeAll (Ljava/util/Collection;)Z
+	public fun removeIf (Ljava/util/function/Predicate;)Z
+	public fun retainAll (Ljava/util/Collection;)Z
+	public final fun size ()I
+	public fun toArray ()[Ljava/lang/Object;
+	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/YearMonthProgression$Companion {
+}
+
+public final class kotlinx/datetime/YearMonthRange : kotlinx/datetime/YearMonthProgression, kotlin/ranges/ClosedRange, kotlin/ranges/OpenEndRange {
+	public static final field Companion Lkotlinx/datetime/YearMonthRange$Companion;
+	public fun <init> (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;)V
+	public synthetic fun contains (Ljava/lang/Comparable;)Z
+	public fun contains (Lkotlinx/datetime/YearMonth;)Z
+	public synthetic fun getEndExclusive ()Ljava/lang/Comparable;
+	public fun getEndExclusive ()Lkotlinx/datetime/YearMonth;
+	public synthetic fun getEndInclusive ()Ljava/lang/Comparable;
+	public fun getEndInclusive ()Lkotlinx/datetime/YearMonth;
+	public synthetic fun getStart ()Ljava/lang/Comparable;
+	public fun getStart ()Lkotlinx/datetime/YearMonth;
+	public fun isEmpty ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/YearMonthRange$Companion {
+	public final fun getEMPTY ()Lkotlinx/datetime/YearMonthRange;
+}
+
+public final class kotlinx/datetime/YearMonthRangeKt {
+	public static final fun downTo (Lkotlinx/datetime/YearMonth;Lkotlinx/datetime/YearMonth;)Lkotlinx/datetime/YearMonthProgression;
+	public static final fun first (Lkotlinx/datetime/YearMonthProgression;)Lkotlinx/datetime/YearMonth;
+	public static final fun firstOrNull (Lkotlinx/datetime/YearMonthProgression;)Lkotlinx/datetime/YearMonth;
+	public static final fun last (Lkotlinx/datetime/YearMonthProgression;)Lkotlinx/datetime/YearMonth;
+	public static final fun lastOrNull (Lkotlinx/datetime/YearMonthProgression;)Lkotlinx/datetime/YearMonth;
+	public static final fun random (Lkotlinx/datetime/YearMonthProgression;Lkotlin/random/Random;)Lkotlinx/datetime/YearMonth;
+	public static synthetic fun random$default (Lkotlinx/datetime/YearMonthProgression;Lkotlin/random/Random;ILjava/lang/Object;)Lkotlinx/datetime/YearMonth;
+	public static final fun randomOrNull (Lkotlinx/datetime/YearMonthProgression;Lkotlin/random/Random;)Lkotlinx/datetime/YearMonth;
+	public static synthetic fun randomOrNull$default (Lkotlinx/datetime/YearMonthProgression;Lkotlin/random/Random;ILjava/lang/Object;)Lkotlinx/datetime/YearMonth;
+	public static final fun reversed (Lkotlinx/datetime/YearMonthProgression;)Lkotlinx/datetime/YearMonthProgression;
+	public static final fun step (Lkotlinx/datetime/YearMonthProgression;ILkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonthProgression;
+	public static final fun step (Lkotlinx/datetime/YearMonthProgression;JLkotlinx/datetime/DateTimeUnit$MonthBased;)Lkotlinx/datetime/YearMonthProgression;
 }
 
 public final class kotlinx/datetime/format/AmPmMarker : java/lang/Enum {

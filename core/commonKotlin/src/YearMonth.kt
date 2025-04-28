@@ -47,6 +47,10 @@ public actual constructor(public actual val year: Int, month: Int) : Comparable<
         public actual val ISO: DateTimeFormat<YearMonth> get() = ISO_YEAR_MONTH
     }
 
+    public actual operator fun rangeTo(that: YearMonth): YearMonthRange = YearMonthRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: YearMonth): YearMonthRange = YearMonthRange.fromRangeUntil(this, that)
+
     actual override fun compareTo(other: YearMonth): Int =
         compareValuesBy(this, other, YearMonth::year, YearMonth::month)
 
