@@ -572,6 +572,8 @@ final class kotlinx.datetime/YearMonth : kotlin/Comparable<kotlinx.datetime/Year
     constructor <init>(kotlin/Int, kotlin/Int) // kotlinx.datetime/YearMonth.<init>|<init>(kotlin.Int;kotlin.Int){}[0]
     constructor <init>(kotlin/Int, kotlinx.datetime/Month) // kotlinx.datetime/YearMonth.<init>|<init>(kotlin.Int;kotlinx.datetime.Month){}[0]
 
+    final val days // kotlinx.datetime/YearMonth.days|{}days[0]
+        final fun <get-days>(): kotlinx.datetime/LocalDateRange // kotlinx.datetime/YearMonth.days.<get-days>|<get-days>(){}[0]
     final val firstDay // kotlinx.datetime/YearMonth.firstDay|{}firstDay[0]
         final fun <get-firstDay>(): kotlinx.datetime/LocalDate // kotlinx.datetime/YearMonth.firstDay.<get-firstDay>|<get-firstDay>(){}[0]
     final val lastDay // kotlinx.datetime/YearMonth.lastDay|{}lastDay[0]
@@ -586,6 +588,8 @@ final class kotlinx.datetime/YearMonth : kotlin/Comparable<kotlinx.datetime/Year
     final fun compareTo(kotlinx.datetime/YearMonth): kotlin/Int // kotlinx.datetime/YearMonth.compareTo|compareTo(kotlinx.datetime.YearMonth){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/YearMonth.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // kotlinx.datetime/YearMonth.hashCode|hashCode(){}[0]
+    final fun rangeTo(kotlinx.datetime/YearMonth): kotlinx.datetime/YearMonthRange // kotlinx.datetime/YearMonth.rangeTo|rangeTo(kotlinx.datetime.YearMonth){}[0]
+    final fun rangeUntil(kotlinx.datetime/YearMonth): kotlinx.datetime/YearMonthRange // kotlinx.datetime/YearMonth.rangeUntil|rangeUntil(kotlinx.datetime.YearMonth){}[0]
     final fun toString(): kotlin/String // kotlinx.datetime/YearMonth.toString|toString(){}[0]
 
     final object Companion { // kotlinx.datetime/YearMonth.Companion|null[0]
@@ -597,6 +601,26 @@ final class kotlinx.datetime/YearMonth : kotlin/Comparable<kotlinx.datetime/Year
     final object Formats { // kotlinx.datetime/YearMonth.Formats|null[0]
         final val ISO // kotlinx.datetime/YearMonth.Formats.ISO|{}ISO[0]
             final fun <get-ISO>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth> // kotlinx.datetime/YearMonth.Formats.ISO.<get-ISO>|<get-ISO>(){}[0]
+    }
+}
+
+final class kotlinx.datetime/YearMonthRange : kotlin.ranges/ClosedRange<kotlinx.datetime/YearMonth>, kotlin.ranges/OpenEndRange<kotlinx.datetime/YearMonth>, kotlinx.datetime/YearMonthProgression { // kotlinx.datetime/YearMonthRange|null[0]
+    constructor <init>(kotlinx.datetime/YearMonth, kotlinx.datetime/YearMonth) // kotlinx.datetime/YearMonthRange.<init>|<init>(kotlinx.datetime.YearMonth;kotlinx.datetime.YearMonth){}[0]
+
+    final val endExclusive // kotlinx.datetime/YearMonthRange.endExclusive|{}endExclusive[0]
+        final fun <get-endExclusive>(): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonthRange.endExclusive.<get-endExclusive>|<get-endExclusive>(){}[0]
+    final val endInclusive // kotlinx.datetime/YearMonthRange.endInclusive|{}endInclusive[0]
+        final fun <get-endInclusive>(): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonthRange.endInclusive.<get-endInclusive>|<get-endInclusive>(){}[0]
+    final val start // kotlinx.datetime/YearMonthRange.start|{}start[0]
+        final fun <get-start>(): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonthRange.start.<get-start>|<get-start>(){}[0]
+
+    final fun contains(kotlinx.datetime/YearMonth): kotlin/Boolean // kotlinx.datetime/YearMonthRange.contains|contains(kotlinx.datetime.YearMonth){}[0]
+    final fun isEmpty(): kotlin/Boolean // kotlinx.datetime/YearMonthRange.isEmpty|isEmpty(){}[0]
+    final fun toString(): kotlin/String // kotlinx.datetime/YearMonthRange.toString|toString(){}[0]
+
+    final object Companion { // kotlinx.datetime/YearMonthRange.Companion|null[0]
+        final val EMPTY // kotlinx.datetime/YearMonthRange.Companion.EMPTY|{}EMPTY[0]
+            final fun <get-EMPTY>(): kotlinx.datetime/YearMonthRange // kotlinx.datetime/YearMonthRange.Companion.EMPTY.<get-EMPTY>|<get-EMPTY>(){}[0]
     }
 }
 
@@ -639,6 +663,25 @@ open class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
         final fun of(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZone.Companion.of|of(kotlin.String){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/TimeZone> // kotlinx.datetime/TimeZone.Companion.serializer|serializer(){}[0]
     }
+}
+
+open class kotlinx.datetime/YearMonthProgression : kotlin.collections/Collection<kotlinx.datetime/YearMonth> { // kotlinx.datetime/YearMonthProgression|null[0]
+    final val first // kotlinx.datetime/YearMonthProgression.first|{}first[0]
+        final fun <get-first>(): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonthProgression.first.<get-first>|<get-first>(){}[0]
+    final val last // kotlinx.datetime/YearMonthProgression.last|{}last[0]
+        final fun <get-last>(): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonthProgression.last.<get-last>|<get-last>(){}[0]
+    open val size // kotlinx.datetime/YearMonthProgression.size|{}size[0]
+        open fun <get-size>(): kotlin/Int // kotlinx.datetime/YearMonthProgression.size.<get-size>|<get-size>(){}[0]
+
+    open fun contains(kotlinx.datetime/YearMonth): kotlin/Boolean // kotlinx.datetime/YearMonthProgression.contains|contains(kotlinx.datetime.YearMonth){}[0]
+    open fun containsAll(kotlin.collections/Collection<kotlinx.datetime/YearMonth>): kotlin/Boolean // kotlinx.datetime/YearMonthProgression.containsAll|containsAll(kotlin.collections.Collection<kotlinx.datetime.YearMonth>){}[0]
+    open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/YearMonthProgression.equals|equals(kotlin.Any?){}[0]
+    open fun hashCode(): kotlin/Int // kotlinx.datetime/YearMonthProgression.hashCode|hashCode(){}[0]
+    open fun isEmpty(): kotlin/Boolean // kotlinx.datetime/YearMonthProgression.isEmpty|isEmpty(){}[0]
+    open fun iterator(): kotlin.collections/Iterator<kotlinx.datetime/YearMonth> // kotlinx.datetime/YearMonthProgression.iterator|iterator(){}[0]
+    open fun toString(): kotlin/String // kotlinx.datetime/YearMonthProgression.toString|toString(){}[0]
+
+    final object Companion // kotlinx.datetime/YearMonthProgression.Companion|null[0]
 }
 
 sealed class kotlinx.datetime/DateTimePeriod { // kotlinx.datetime/DateTimePeriod|null[0]
@@ -1104,6 +1147,7 @@ final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/format(kotlinx.datetime.
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlinx.datetime/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlinx.datetime.Instant){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/asTimeZone(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/asTimeZone|asTimeZone@kotlinx.datetime.UtcOffset(){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.UtcOffset(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
+final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/downTo(kotlinx.datetime/YearMonth): kotlinx.datetime/YearMonthProgression // kotlinx.datetime/downTo|downTo@kotlinx.datetime.YearMonth(kotlinx.datetime.YearMonth){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.YearMonth(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit.MonthBased): kotlinx.datetime/YearMonth // kotlinx.datetime/minus|minus@kotlinx.datetime.YearMonth(kotlin.Int;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit.MonthBased): kotlinx.datetime/YearMonth // kotlinx.datetime/minus|minus@kotlinx.datetime.YearMonth(kotlin.Long;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
@@ -1117,6 +1161,15 @@ final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/plusMonth(): kotlinx.dat
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/plusYear(): kotlinx.datetime/YearMonth // kotlinx.datetime/plusYear|plusYear@kotlinx.datetime.YearMonth(){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/until(kotlinx.datetime/YearMonth, kotlinx.datetime/DateTimeUnit.MonthBased): kotlin/Long // kotlinx.datetime/until|until@kotlinx.datetime.YearMonth(kotlinx.datetime.YearMonth;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/yearsUntil(kotlinx.datetime/YearMonth): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlinx.datetime.YearMonth(kotlinx.datetime.YearMonth){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/first(): kotlinx.datetime/YearMonth // kotlinx.datetime/first|first@kotlinx.datetime.YearMonthProgression(){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/firstOrNull(): kotlinx.datetime/YearMonth? // kotlinx.datetime/firstOrNull|firstOrNull@kotlinx.datetime.YearMonthProgression(){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/last(): kotlinx.datetime/YearMonth // kotlinx.datetime/last|last@kotlinx.datetime.YearMonthProgression(){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/lastOrNull(): kotlinx.datetime/YearMonth? // kotlinx.datetime/lastOrNull|lastOrNull@kotlinx.datetime.YearMonthProgression(){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/random(kotlin.random/Random = ...): kotlinx.datetime/YearMonth // kotlinx.datetime/random|random@kotlinx.datetime.YearMonthProgression(kotlin.random.Random){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/randomOrNull(kotlin.random/Random = ...): kotlinx.datetime/YearMonth? // kotlinx.datetime/randomOrNull|randomOrNull@kotlinx.datetime.YearMonthProgression(kotlin.random.Random){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/reversed(): kotlinx.datetime/YearMonthProgression // kotlinx.datetime/reversed|reversed@kotlinx.datetime.YearMonthProgression(){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/step(kotlin/Int, kotlinx.datetime/DateTimeUnit.MonthBased): kotlinx.datetime/YearMonthProgression // kotlinx.datetime/step|step@kotlinx.datetime.YearMonthProgression(kotlin.Int;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
+final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/step(kotlin/Long, kotlinx.datetime/DateTimeUnit.MonthBased): kotlinx.datetime/YearMonthProgression // kotlinx.datetime/step|step@kotlinx.datetime.YearMonthProgression(kotlin.Long;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
 final fun <#A: kotlinx.datetime.format/DateTimeFormatBuilder> (#A).kotlinx.datetime.format/alternativeParsing(kotlin/Array<out kotlin/Function1<#A, kotlin/Unit>>..., kotlin/Function1<#A, kotlin/Unit>) // kotlinx.datetime.format/alternativeParsing|alternativeParsing@0:0(kotlin.Array<out|kotlin.Function1<0:0,kotlin.Unit>>...;kotlin.Function1<0:0,kotlin.Unit>){0§<kotlinx.datetime.format.DateTimeFormatBuilder>}[0]
 final fun <#A: kotlinx.datetime.format/DateTimeFormatBuilder> (#A).kotlinx.datetime.format/optional(kotlin/String = ..., kotlin/Function1<#A, kotlin/Unit>) // kotlinx.datetime.format/optional|optional@0:0(kotlin.String;kotlin.Function1<0:0,kotlin.Unit>){0§<kotlinx.datetime.format.DateTimeFormatBuilder>}[0]
 final fun kotlinx.datetime/DateTimePeriod(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Long = ...): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/DateTimePeriod|DateTimePeriod(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Long){}[0]

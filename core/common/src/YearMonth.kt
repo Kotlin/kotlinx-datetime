@@ -184,6 +184,20 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
     }
 
     /**
+     * Creates a [YearMonthRange] from `this` to [that], inclusive.
+     *
+     * @sample kotlinx.datetime.test.samples.YearMonthRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeTo(that: YearMonth): YearMonthRange
+
+    /**
+     * Creates a [YearMonthRange] from `this` to [that], exclusive, i.e., from this to (that - 1 month)
+     *
+     * @sample kotlinx.datetime.test.samples.YearMonthRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeUntil(that: YearMonth): YearMonthRange
+
+    /**
      * Compares `this` date with the [other] year-month.
      * Returns zero if this year-month represents the same month as the other (meaning they are equal to one other),
      * a negative number if this year-month is earlier than the other,
@@ -357,9 +371,9 @@ public fun YearMonth.plus(value: Long, unit: DateTimeUnit.MonthBased): YearMonth
 public fun YearMonth.minus(value: Long, unit: DateTimeUnit.MonthBased): YearMonth =
     if (value != Long.MIN_VALUE) plus(-value, unit) else plus(Long.MAX_VALUE, unit).plus(1, unit)
 
-private val YearMonth.prolepticMonth: Long get() = year * 12L + (monthNumber - 1)
+internal val YearMonth.prolepticMonth: Long get() = year * 12L + (monthNumber - 1)
 
-private fun YearMonth.Companion.fromProlepticMonth(prolepticMonth: Long): YearMonth {
+internal fun YearMonth.Companion.fromProlepticMonth(prolepticMonth: Long): YearMonth {
     val year = prolepticMonth.floorDiv(12)
     require(year in LocalDate.MIN.year..LocalDate.MAX.year) {
         "Year $year is out of range: ${LocalDate.MIN.year}..${LocalDate.MAX.year}"
@@ -368,3 +382,6 @@ private fun YearMonth.Companion.fromProlepticMonth(prolepticMonth: Long): YearMo
     println("proleptic month: ${prolepticMonth}, year: $year, month: $month")
     return YearMonth(year.toInt(), month)
 }
+
+internal val YearMonth.Companion.MAX get() = LocalDate.MAX.yearMonth
+internal val YearMonth.Companion.MIN get() = LocalDate.MIN.yearMonth

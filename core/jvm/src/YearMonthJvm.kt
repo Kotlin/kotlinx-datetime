@@ -61,6 +61,10 @@ public actual class YearMonth internal constructor(
         public actual val ISO: DateTimeFormat<YearMonth> get() = ISO_YEAR_MONTH
     }
 
+    public actual operator fun rangeTo(that: YearMonth): YearMonthRange = YearMonthRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: YearMonth): YearMonthRange = YearMonthRange.fromRangeUntil(this, that)
+
     actual override fun compareTo(other: YearMonth): Int = value.compareTo(other.value)
 
     actual override fun toString(): String = isoFormat.format(value)
