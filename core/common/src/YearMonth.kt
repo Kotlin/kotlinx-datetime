@@ -115,7 +115,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      *
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.days
      */
-    // val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
+    public val days: LocalDateRange
 
     /**
      * Constructs a [YearMonth] instance from the given year-month components.

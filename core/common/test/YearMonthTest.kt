@@ -165,12 +165,18 @@ class YearMonthTest {
     }
 
     @Test
-    fun firstAndLastDay() {
+    fun daysRange() {
+        @OptIn(ExperimentalStdlibApi::class)
         fun test(year: Int, month: Int) {
             val yearMonth = YearMonth(year, month)
             assertEquals(LocalDate(year, month, 1), yearMonth.firstDay)
             assertEquals(LocalDate(year, month, yearMonth.numberOfDays), yearMonth.lastDay)
             assertEquals(yearMonth.plusMonth().firstDay, yearMonth.lastDay.plus(1, DateTimeUnit.DAY))
+            assertEquals(LocalDateRange(yearMonth.firstDay, yearMonth.lastDay), yearMonth.days)
+            assertContains(yearMonth.days as OpenEndRange<LocalDate>, yearMonth.firstDay)
+            assertContains(yearMonth.days as OpenEndRange<LocalDate>, yearMonth.lastDay)
+            assertFalse(yearMonth.days.contains(yearMonth.firstDay.minus(1, DateTimeUnit.DAY)))
+            assertFalse(yearMonth.days.contains(yearMonth.lastDay.plus(1, DateTimeUnit.DAY)))
         }
         for (month in 1..12) {
             for (year in 2000..2005) {
