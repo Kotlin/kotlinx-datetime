@@ -26,8 +26,7 @@ public actual class YearMonth internal constructor(
     public actual val firstDay: LocalDate get() = LocalDate(value.atDay(1))
     public actual val lastDay: LocalDate get() = LocalDate(value.atEndOfMonth())
     public actual val numberOfDays: Int get() = value.lengthOfMonth()
-
-    // val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
+    public actual val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
 
     public actual constructor(year: Int, month: Int): this(try {
         jtYearMonth.of(year, month)

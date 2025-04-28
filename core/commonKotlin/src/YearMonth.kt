@@ -30,7 +30,7 @@ public actual constructor(public actual val year: Int, month: Int) : Comparable<
 
     public actual val numberOfDays: Int get() = monthNumber.monthLength(isLeapYear(year))
 
-    // val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
+    public actual val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
 
     public actual constructor(year: Int, month: Month): this(year, month.number)
 
