@@ -74,6 +74,22 @@ class YearMonthSamples {
     }
 
     @Test
+    fun days() {
+        // Getting the range of days in a YearMonth
+        val yearMonth = YearMonth(2024, Month.APRIL)
+        // The range consists of all the days in the month:
+        check(yearMonth.days.size == 30)
+        check(yearMonth.days.first() == LocalDate(2024, Month.APRIL, 1))
+        check(yearMonth.days.last() == LocalDate(2024, Month.APRIL, 30))
+        check(yearMonth.days.contains(LocalDate(2024, Month.APRIL, 15)))
+        // The range allows iterating over the days:
+        for (day in yearMonth.days) {
+            check(day.month == Month.APRIL)
+            check(day.year == 2024)
+        }
+    }
+
+    @Test
     fun compareToSample() {
         // Comparing YearMonth values
         check(YearMonth(2023, 4) < YearMonth(2024, 3))
