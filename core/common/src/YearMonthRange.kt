@@ -258,7 +258,7 @@ public infix fun YearMonth.downTo(that: YearMonth): YearMonthProgression =
  * Takes the step into account;
  * will not return any value within the range that would be skipped over by the progression.
  *
- * @throws IllegalArgumentException if the progression is empty.
+ * @throws NoSuchElementException if the progression is empty.
  *
  * @sample kotlinx.datetime.test.samples.YearMonthRangeSamples.random
  */
