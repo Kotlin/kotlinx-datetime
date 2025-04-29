@@ -75,7 +75,7 @@ fun Project.additionalConfiguration() {
             notifications {
                 notifierSettings = slackNotifier {
                     connection = "PROJECT_EXT_51"
-                    sendTo = "UL2TZ4V55" // Dmitry Khalanskiy
+                    sendTo = "#kotlin-lib-team"
                     messageFormat = simpleMessageFormat()
                 }
                 buildFailed = true
