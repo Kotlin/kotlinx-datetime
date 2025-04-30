@@ -66,6 +66,7 @@ fun Project.additionalConfiguration() {
                     minute = 50
                 }
                 triggerBuild = always()
+                branchFilter = "+:<default>"
             }
         }
 
