@@ -82,4 +82,11 @@ internal val ISO_DATETIME by lazy {
     }
 }
 
+internal val ISO_DATETIME_BASIC by lazy {
+    LocalDateTimeFormat.build {
+        date(ISO_DATE_BASIC)
+        time(ISO_TIME_BASIC)
+    }
+}
+
 private val emptyIncompleteLocalDateTime = IncompleteLocalDateTime()

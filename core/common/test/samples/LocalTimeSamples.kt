@@ -291,7 +291,7 @@ class LocalTimeSamples {
             check(LocalTime.Formats.ISO_BASIC.parse("T0830") == timeWithoutSeconds)
             check(LocalTime.Formats.ISO_BASIC.format(timeWithNanoseconds) == "T083015.16")
             check(LocalTime.Formats.ISO_BASIC.format(timeWithSeconds) == "T083015")
-            check(LocalTime.Formats.ISO_BASIC.format(timeWithoutSeconds) == "T083000")
+            check(LocalTime.Formats.ISO_BASIC.format(timeWithoutSeconds) == "T0830")
         }
 
         @Test
