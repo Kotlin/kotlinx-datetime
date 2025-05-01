@@ -480,6 +480,8 @@ final class kotlinx.datetime/LocalTime : kotlin/Comparable<kotlinx.datetime/Loca
     final object Formats { // kotlinx.datetime/LocalTime.Formats|null[0]
         final val ISO // kotlinx.datetime/LocalTime.Formats.ISO|{}ISO[0]
             final fun <get-ISO>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> // kotlinx.datetime/LocalTime.Formats.ISO.<get-ISO>|<get-ISO>(){}[0]
+        final val ISO_BASIC // kotlinx.datetime/LocalTime.Formats.ISO_BASIC|{}ISO_BASIC[0]
+            final fun <get-ISO_BASIC>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> // kotlinx.datetime/LocalTime.Formats.ISO_BASIC.<get-ISO_BASIC>|<get-ISO_BASIC>(){}[0]
     }
 }
 
