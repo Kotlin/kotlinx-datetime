@@ -290,6 +290,8 @@ public final class kotlinx/datetime/LocalDate : java/io/Serializable, java/lang/
 	public final fun getMonthNumber ()I
 	public final fun getYear ()I
 	public fun hashCode ()I
+	public final fun rangeTo (Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalDateRange;
+	public final fun rangeUntil (Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalDateRange;
 	public final fun toEpochDays ()I
 	public final fun toEpochDays ()J
 	public fun toString ()Ljava/lang/String;
@@ -340,6 +342,69 @@ public final class kotlinx/datetime/LocalDateKt {
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun toLocalDate (Ljava/lang/String;)Lkotlinx/datetime/LocalDate;
+}
+
+public class kotlinx/datetime/LocalDateProgression : java/util/Collection, kotlin/jvm/internal/markers/KMappedMarker {
+	public static final field Companion Lkotlinx/datetime/LocalDateProgression$Companion;
+	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun add (Lkotlinx/datetime/LocalDate;)Z
+	public fun addAll (Ljava/util/Collection;)Z
+	public fun clear ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkotlinx/datetime/LocalDate;)Z
+	public fun containsAll (Ljava/util/Collection;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFirst ()Lkotlinx/datetime/LocalDate;
+	public final fun getLast ()Lkotlinx/datetime/LocalDate;
+	public fun getSize ()I
+	public fun hashCode ()I
+	public fun isEmpty ()Z
+	public fun iterator ()Ljava/util/Iterator;
+	public fun remove (Ljava/lang/Object;)Z
+	public fun removeAll (Ljava/util/Collection;)Z
+	public fun removeIf (Ljava/util/function/Predicate;)Z
+	public fun retainAll (Ljava/util/Collection;)Z
+	public final fun size ()I
+	public fun toArray ()[Ljava/lang/Object;
+	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/LocalDateProgression$Companion {
+}
+
+public final class kotlinx/datetime/LocalDateRange : kotlinx/datetime/LocalDateProgression, kotlin/ranges/ClosedRange, kotlin/ranges/OpenEndRange {
+	public static final field Companion Lkotlinx/datetime/LocalDateRange$Companion;
+	public fun <init> (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)V
+	public synthetic fun contains (Ljava/lang/Comparable;)Z
+	public fun contains (Lkotlinx/datetime/LocalDate;)Z
+	public synthetic fun getEndExclusive ()Ljava/lang/Comparable;
+	public fun getEndExclusive ()Lkotlinx/datetime/LocalDate;
+	public synthetic fun getEndInclusive ()Ljava/lang/Comparable;
+	public fun getEndInclusive ()Lkotlinx/datetime/LocalDate;
+	public synthetic fun getStart ()Ljava/lang/Comparable;
+	public fun getStart ()Lkotlinx/datetime/LocalDate;
+	public fun isEmpty ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/LocalDateRange$Companion {
+	public final fun getEMPTY ()Lkotlinx/datetime/LocalDateRange;
+}
+
+public final class kotlinx/datetime/LocalDateRangeKt {
+	public static final fun downTo (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalDateProgression;
+	public static final fun first (Lkotlinx/datetime/LocalDateProgression;)Lkotlinx/datetime/LocalDate;
+	public static final fun firstOrNull (Lkotlinx/datetime/LocalDateProgression;)Lkotlinx/datetime/LocalDate;
+	public static final fun last (Lkotlinx/datetime/LocalDateProgression;)Lkotlinx/datetime/LocalDate;
+	public static final fun lastOrNull (Lkotlinx/datetime/LocalDateProgression;)Lkotlinx/datetime/LocalDate;
+	public static final fun random (Lkotlinx/datetime/LocalDateProgression;Lkotlin/random/Random;)Lkotlinx/datetime/LocalDate;
+	public static synthetic fun random$default (Lkotlinx/datetime/LocalDateProgression;Lkotlin/random/Random;ILjava/lang/Object;)Lkotlinx/datetime/LocalDate;
+	public static final fun randomOrNull (Lkotlinx/datetime/LocalDateProgression;Lkotlin/random/Random;)Lkotlinx/datetime/LocalDate;
+	public static synthetic fun randomOrNull$default (Lkotlinx/datetime/LocalDateProgression;Lkotlin/random/Random;ILjava/lang/Object;)Lkotlinx/datetime/LocalDate;
+	public static final fun reversed (Lkotlinx/datetime/LocalDateProgression;)Lkotlinx/datetime/LocalDateProgression;
+	public static final fun step (Lkotlinx/datetime/LocalDateProgression;ILkotlinx/datetime/DateTimeUnit$DayBased;)Lkotlinx/datetime/LocalDateProgression;
+	public static final fun step (Lkotlinx/datetime/LocalDateProgression;JLkotlinx/datetime/DateTimeUnit$DayBased;)Lkotlinx/datetime/LocalDateProgression;
 }
 
 public final class kotlinx/datetime/LocalDateTime : java/io/Serializable, java/lang/Comparable {

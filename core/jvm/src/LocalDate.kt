@@ -88,6 +88,10 @@ public actual class LocalDate internal constructor(
     @PublishedApi internal fun getDayOfWeek(): java.time.DayOfWeek = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
 
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
+
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is LocalDate && this.value == other.value)
 

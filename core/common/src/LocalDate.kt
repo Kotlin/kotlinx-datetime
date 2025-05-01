@@ -247,6 +247,20 @@ public expect class LocalDate : Comparable<LocalDate> {
     public fun toEpochDays(): Long
 
     /**
+     * Creates a [LocalDateRange] from `this` to [that], inclusive.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeTo(that: LocalDate): LocalDateRange
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], exclusive, i.e., from this to (that - 1 day)
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeUntil(that: LocalDate): LocalDateRange
+
+    /**
      * Compares `this` date with the [other] date.
      * Returns zero if this date represents the same day as the other (meaning they are equal to one other),
      * a negative number if this date is earlier than the other,

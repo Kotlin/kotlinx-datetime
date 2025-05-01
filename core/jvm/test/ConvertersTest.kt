@@ -147,6 +147,7 @@ class ConvertersTest {
         }
 
         test("Z")
+        test("UTC")
         test("Etc/UTC")
         test("+00")
         test("+0000")

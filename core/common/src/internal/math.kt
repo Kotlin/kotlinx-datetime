@@ -18,7 +18,7 @@ internal expect fun safeAdd(a: Long, b: Long): Long
 internal expect fun safeAdd(a: Int, b: Int): Int
 
 /** Multiplies two non-zero long values. */
-internal fun safeMultiplyOrZero(a: Long, b: Long): Long {
+private fun safeMultiplyOrZero(a: Long, b: Long): Long {
     when (b) {
         -1L -> {
             if (a == Long.MIN_VALUE) {
@@ -31,6 +31,25 @@ internal fun safeMultiplyOrZero(a: Long, b: Long): Long {
     val total = a * b
     if (total / b != a) {
         return 0L
+    }
+    return total
+}
+
+/** Multiplies a long value [a] by a non-zero value [b]. */
+internal fun safeMultiplyOrClamp(a: Long, b: Long): Long {
+    when (b) {
+        -1L -> {
+            if (a == Long.MIN_VALUE) {
+                return Long.MAX_VALUE
+            }
+            return -a
+        }
+        1L -> return a
+    }
+    val total = a * b
+    if (total / b != a) {
+        // `a` is not zero, or the equality would hold, and `b` is not zero by the requirement
+        return if ((a > 0) == (b > 0)) Long.MAX_VALUE else Long.MIN_VALUE
     }
     return total
 }
