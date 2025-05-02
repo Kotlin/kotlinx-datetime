@@ -289,10 +289,10 @@ internal val ISO_TIME_BASIC by lazy {
         }) {
             optional {
                 second()
-            }
-            optional {
-                char('.')
-                secondFraction(1, 9)
+                optional {
+                    char('.')
+                    secondFraction(1, 9)
+                }
             }
         }
     }
