@@ -207,7 +207,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * When formatting, seconds are included, only if they are non-zero.
          * Fractional parts of the second are included if non-zero.
          *
-         * See ISO-8601-1:2019, 5.4.2.1b), the version without the offset, together with
+         * See ISO-8601-1:2019, 5.4.2.1a), the version without the offset, together with
          * [LocalDate.Formats.ISO_BASIC] and [LocalTime.Formats.ISO_BASIC].
          *
          * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.Formats.basicIso
