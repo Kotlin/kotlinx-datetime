@@ -33,6 +33,10 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
                 value as UtcOffset
                 out.writeInt(value.totalSeconds)
             }
+            YEAR_MONTH_TAG -> {
+                value as YearMonth
+                out.writeLong(value.toEpochMonths())
+            }
             else -> throw IllegalStateException("Unknown type tag: $typeTag for value: $value")
         }
     }
@@ -51,6 +55,8 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
                 )
             UTC_OFFSET_TAG ->
                 UtcOffset(seconds = `in`.readInt())
+            YEAR_MONTH_TAG ->
+                YearMonth.fromEpochMonths(`in`.readLong())
             else -> throw IOException("Unknown type tag: $typeTag")
         }
     }
@@ -63,5 +69,6 @@ internal class Ser(private var typeTag: Int, private var value: Any?) : External
         const val TIME_TAG = 3
         const val DATE_TIME_TAG = 4
         const val UTC_OFFSET_TAG = 10
+        const val YEAR_MONTH_TAG = 11
     }
 }

@@ -85,12 +85,12 @@ class UnicodeFormatTest {
         val directives = directivesInFormat(unicodeFormat)
         val dates = when {
             directives.any {
-                it is UnicodeFormat.Directive.DateBased.Year && it.formatLength == 2
-                        || it is UnicodeFormat.Directive.DateBased.YearOfEra && it.formatLength == 2
+                it is UnicodeFormat.Directive.YearMonthBased.Year && it.formatLength == 2
+                        || it is UnicodeFormat.Directive.YearMonthBased.YearOfEra && it.formatLength == 2
             } -> interestingDates21stCentury
 
-            directives.any { it is UnicodeFormat.Directive.DateBased.YearOfEra } -> interestingDatesPositive
-            directives.any { it is UnicodeFormat.Directive.DateBased } -> interestingDates
+            directives.any { it is UnicodeFormat.Directive.YearMonthBased.YearOfEra } -> interestingDatesPositive
+            directives.any { it is UnicodeFormat.Directive.YearMonthBased } -> interestingDates
             else -> listOf(LocalDate(1970, 1, 1))
         }
         val times = when {
