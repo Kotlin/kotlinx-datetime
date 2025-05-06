@@ -90,6 +90,7 @@ internal val standardToWindows: Map<String, String> = mutableMapOf(
   "America/Coral_Harbour" to "SA Pacific Standard Time",
   "America/Cordoba" to "Argentina Standard Time",
   "America/Costa_Rica" to "Central America Standard Time",
+  "America/Coyhaique" to "Magallanes Standard Time",
   "America/Creston" to "US Mountain Standard Time",
   "America/Cuiaba" to "Central Brazilian Standard Time",
   "America/Curacao" to "SA Western Standard Time",
