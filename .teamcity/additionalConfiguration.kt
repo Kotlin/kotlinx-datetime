@@ -34,6 +34,7 @@ fun Project.additionalConfiguration() {
 
         vcs {
             root(DslContext.settingsRoot)
+            cleanCheckout = true
         }
 
         steps {
