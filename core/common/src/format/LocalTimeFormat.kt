@@ -279,6 +279,25 @@ internal class LocalTimeFormat(override val actualFormat: CachedFormatStructure<
 }
 
 // these are constants so that the formats are not recreated every time they are used
+internal val ISO_TIME_BASIC by lazy {
+    LocalTimeFormat.build {
+        alternativeParsing({ char('t') }) { char('T') }
+        hour()
+        minute()
+        alternativeParsing({
+            // intentionally empty
+        }) {
+            optional {
+                second()
+                optional {
+                    char('.')
+                    secondFraction(1, 9)
+                }
+            }
+        }
+    }
+}
+
 internal val ISO_TIME by lazy {
     LocalTimeFormat.build {
         hour()

@@ -84,6 +84,7 @@ public actual class LocalTime actual constructor(
     }
 
     public actual object Formats {
+        public actual val ISO_BASIC: DateTimeFormat<LocalTime> get() = ISO_TIME_BASIC
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
     }
 
