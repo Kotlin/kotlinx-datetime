@@ -2,6 +2,8 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlin.test.*
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 class InstantParsing {
     @Test
