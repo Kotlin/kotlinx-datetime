@@ -257,13 +257,29 @@ class TimeZoneTest {
 
     @Test
     fun testSpecialNamedTimezones() {
-        listOf("UTC", "GMT", "UT", "Z")
-            .forEach { zoneId ->
-                val tz = TimeZone.of(zoneId)
-                val result = DateTimeComponents.Format { timeZoneId() }.parse(tz.id)
+        listOf("UTC", "GMT", "UT", "Z").forEach { zoneId ->
+            val tz = TimeZone.of(zoneId)
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
 
-                assertEquals(tz.id, result.timeZoneId)
-            }
+            assertEquals(tz.id, result.timeZoneId)
+        }
+    }
+
+    @Test
+    fun testFixedOffsets() {
+        listOf(
+            "+00:00", "+01:00", "+12:00", "+13:00", "+14:00",
+            "-00:00", "-01:00", "-11:00", "-12:00",
+            "+01:30", "+05:45", "+12:30",
+            "-03:30", "-09:30",
+            "+0100", "+1200", "-0500", "-1130",
+            "+01", "+12", "-05", "-11"
+        ).forEach { zoneId ->
+            val tz = TimeZone.of(zoneId)
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+
+            assertEquals(tz.id, result.timeZoneId)
+        }
     }
 
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
