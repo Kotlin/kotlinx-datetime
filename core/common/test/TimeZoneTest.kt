@@ -7,7 +7,10 @@
  */
 
 package kotlinx.datetime.test
+
 import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.char
 import kotlin.test.*
 
 class TimeZoneTest {
@@ -28,7 +31,7 @@ class TimeZoneTest {
         val tz = TimeZone.currentSystemDefault()
         println(tz)
         val offset = Clock.System.now().offsetIn(tz)
-        assertTrue(offset.totalSeconds in -18 * 60 * 60 .. 18 * 60 * 60)
+        assertTrue(offset.totalSeconds in -18 * 60 * 60..18 * 60 * 60)
         // assertTrue(tz.id.contains('/')) // does not work on build agents, whose timezone is "UTC"
         // TODO: decide how to assert system tz properties
     }
@@ -40,8 +43,10 @@ class TimeZoneTest {
         assertContains(allTzIds, "Europe/Moscow", "Europe/Moscow not in $allTzIds")
         assertContains(allTzIds, "America/New_York", "America/New_York not in $allTzIds")
 
-        assertTrue(TimeZone.currentSystemDefault().id in allTzIds,
-            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds")
+        assertTrue(
+            TimeZone.currentSystemDefault().id in allTzIds,
+            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds"
+        )
         assertTrue("UTC" in allTzIds, "The UTC timezone not in $allTzIds")
     }
 
@@ -114,7 +119,8 @@ class TimeZoneTest {
             Pair("UTC", "UTC"),
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),
-            Pair("UT+01:00", "UT+01:00"))
+            Pair("UT+01:00", "UT+01:00")
+        )
         for ((id, str) in idToString) {
             assertEquals(str, TimeZone.of(id).toString())
         }
@@ -130,7 +136,10 @@ class TimeZoneTest {
         val zoneIds = sameOffsetTZs.map { it.id }
 
         assertTrue(offsets.distinct().size == 1, "Expected all offsets to be equal: $offsets")
-        assertTrue(offsets.map { it.toString() }.distinct().size == 1, "Expected all offsets to have the same string representation: $offsets")
+        assertTrue(
+            offsets.map { it.toString() }.distinct().size == 1,
+            "Expected all offsets to have the same string representation: $offsets"
+        )
 
         assertTrue(zoneIds.distinct().size > 1, "Expected some fixed offset zones to have different ids: $zoneIds")
     }
@@ -246,6 +255,17 @@ class TimeZoneTest {
         }
     }
 
+    @Test
+    fun testSpecialNamedTimezones() {
+        listOf("UTC", "GMT", "UT", "Z")
+            .forEach { zoneId ->
+                val tz = TimeZone.of(zoneId)
+                val result = DateTimeComponents.Format { timeZoneId() }.parse(tz.id)
+
+                assertEquals(tz.id, result.timeZoneId)
+            }
+    }
+
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
 
 }
@@ -255,6 +275,7 @@ class TimeZoneTest {
  */
 private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
     val instant = gapStart.toInstant(timeZone)
+
     /** the first [LocalDateTime] after the gap */
     val adjusted = instant.toLocalDateTime(timeZone)
     try {
@@ -263,7 +284,8 @@ private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
         // the offsets before the gap are equal
         assertEquals(
             instant.offsetIn(timeZone),
-            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone))
+            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone)
+        )
         // the offsets after the gap are equal
         assertEquals(
             instant.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
