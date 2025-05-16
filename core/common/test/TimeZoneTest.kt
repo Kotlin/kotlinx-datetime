@@ -282,6 +282,22 @@ class TimeZoneTest {
         }
     }
 
+    @Test
+    fun testUTCGMTWithOffsets() {
+        listOf(
+            "UTC+00:00", "UTC+01:00", "UTC+12:00", "UTC-01:00", "UTC-12:00",
+            "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
+            "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
+            "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
+            "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10"
+        ).forEach { zoneId ->
+            val tz = TimeZone.of(zoneId)
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+
+            assertEquals(tz.id, result.timeZoneId)
+        }
+    }
+
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
 
 }
