@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2025 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 /* Based on the ThreeTenBp project.
@@ -7,7 +7,9 @@
  */
 
 package kotlinx.datetime.test
+
 import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeComponents
 import kotlin.test.*
 
 class TimeZoneTest {
@@ -243,6 +245,66 @@ class TimeZoneTest {
             checkRegular(this, LocalDateTime(2019, 10, 6, 1, 0), UtcOffset(hours = 10))
             checkGap(this, LocalDateTime(2019, 10, 6, 2, 0))
             checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 11))
+        }
+    }
+
+    @Test
+    fun testSpecialNamedTimezones() {
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "UTC", "GMT", "UT", "Z", "SYSTEM"
+            )
+        )
+    }
+
+    @Test
+    fun testFixedOffsets() {
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "+00:00", "+01:00", "+12:00", "+13:00", "+14:00",
+                "-00:00", "-01:00", "-11:00", "-12:00",
+                "+01:30", "+05:45", "+12:30",
+                "-03:30", "-09:30",
+                "+0100", "+1200", "-0500", "-1130",
+                "+01", "+12", "-05", "-11"
+            )
+        )
+    }
+
+    @Test
+    fun testUTCGMTWithOffsets() {
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "UTC+00:00", "UTC+01:00", "UTC+12:00", "UTC-01:00", "UTC-12:00",
+                "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
+                "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
+                "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
+                "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10"
+            )
+        )
+    }
+
+    @Test
+    fun testTimezoneDBIdentifiers() {
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
+                "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
+                "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg",
+                "Europe/Isle_of_Man", "America/Argentina/Buenos_Aires", "Asia/Kolkata"
+            )
+        )
+    }
+
+    private fun assertTimeZoneIdCanBeParsed(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            try {
+                val tz = TimeZone.of(zoneId)
+                val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+                assertEquals(tz.id, result.timeZoneId)
+            } catch (e: IllegalTimeZoneException) {
+                println("Timezone $zoneId not available on this platform, skipping")
+            }
         }
     }
 
