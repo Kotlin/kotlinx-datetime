@@ -317,7 +317,6 @@ class TimeZoneTest {
  */
 private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
     val instant = gapStart.toInstant(timeZone)
-
     /** the first [LocalDateTime] after the gap */
     val adjusted = instant.toLocalDateTime(timeZone)
     try {
@@ -326,8 +325,7 @@ private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
         // the offsets before the gap are equal
         assertEquals(
             instant.offsetIn(timeZone),
-            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone)
-        )
+            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone))
         // the offsets after the gap are equal
         assertEquals(
             instant.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
