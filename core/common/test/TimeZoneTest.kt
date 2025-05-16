@@ -116,8 +116,7 @@ class TimeZoneTest {
             Pair("UTC", "UTC"),
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),
-            Pair("UT+01:00", "UT+01:00")
-        )
+            Pair("UT+01:00", "UT+01:00"))
         for ((id, str) in idToString) {
             assertEquals(str, TimeZone.of(id).toString())
         }
