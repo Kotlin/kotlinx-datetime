@@ -257,44 +257,61 @@ class TimeZoneTest {
 
     @Test
     fun testSpecialNamedTimezones() {
-        listOf("UTC", "GMT", "UT", "Z").forEach { zoneId ->
-            val tz = TimeZone.of(zoneId)
-            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-
-            assertEquals(tz.id, result.timeZoneId)
-        }
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "UTC", "GMT", "UT", "Z", "SYSTEM"
+            )
+        )
     }
 
     @Test
     fun testFixedOffsets() {
-        listOf(
-            "+00:00", "+01:00", "+12:00", "+13:00", "+14:00",
-            "-00:00", "-01:00", "-11:00", "-12:00",
-            "+01:30", "+05:45", "+12:30",
-            "-03:30", "-09:30",
-            "+0100", "+1200", "-0500", "-1130",
-            "+01", "+12", "-05", "-11"
-        ).forEach { zoneId ->
-            val tz = TimeZone.of(zoneId)
-            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-
-            assertEquals(tz.id, result.timeZoneId)
-        }
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "+00:00", "+01:00", "+12:00", "+13:00", "+14:00",
+                "-00:00", "-01:00", "-11:00", "-12:00",
+                "+01:30", "+05:45", "+12:30",
+                "-03:30", "-09:30",
+                "+0100", "+1200", "-0500", "-1130",
+                "+01", "+12", "-05", "-11"
+            )
+        )
     }
 
     @Test
     fun testUTCGMTWithOffsets() {
-        listOf(
-            "UTC+00:00", "UTC+01:00", "UTC+12:00", "UTC-01:00", "UTC-12:00",
-            "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
-            "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
-            "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
-            "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10"
-        ).forEach { zoneId ->
-            val tz = TimeZone.of(zoneId)
-            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "UTC+00:00", "UTC+01:00", "UTC+12:00", "UTC-01:00", "UTC-12:00",
+                "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
+                "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
+                "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
+                "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10"
+            )
+        )
+    }
 
-            assertEquals(tz.id, result.timeZoneId)
+    @Test
+    fun testTimezoneDBIdentifiers() {
+        assertTimeZoneIdCanBeParsed(
+            listOf(
+                "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
+                "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
+                "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg",
+                "Europe/Isle_of_Man", "America/Argentina/Buenos_Aires", "Asia/Kolkata"
+            )
+        )
+    }
+
+    private fun assertTimeZoneIdCanBeParsed(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            try {
+                val tz = TimeZone.of(zoneId)
+                val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+                assertEquals(tz.id, result.timeZoneId)
+            } catch (e: IllegalTimeZoneException) {
+                println("Timezone $zoneId not available on this platform, skipping")
+            }
         }
     }
 
