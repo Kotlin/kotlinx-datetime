@@ -30,7 +30,7 @@ class TimeZoneTest {
         val tz = TimeZone.currentSystemDefault()
         println(tz)
         val offset = Clock.System.now().offsetIn(tz)
-        assertTrue(offset.totalSeconds in -18 * 60 * 60..18 * 60 * 60)
+        assertTrue(offset.totalSeconds in -18 * 60 * 60 .. 18 * 60 * 60)
         // assertTrue(tz.id.contains('/')) // does not work on build agents, whose timezone is "UTC"
         // TODO: decide how to assert system tz properties
     }
@@ -42,10 +42,8 @@ class TimeZoneTest {
         assertContains(allTzIds, "Europe/Moscow", "Europe/Moscow not in $allTzIds")
         assertContains(allTzIds, "America/New_York", "America/New_York not in $allTzIds")
 
-        assertTrue(
-            TimeZone.currentSystemDefault().id in allTzIds,
-            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds"
-        )
+        assertTrue(TimeZone.currentSystemDefault().id in allTzIds,
+            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds")
         assertTrue("UTC" in allTzIds, "The UTC timezone not in $allTzIds")
     }
 
@@ -118,7 +116,7 @@ class TimeZoneTest {
             Pair("UTC", "UTC"),
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),
-            Pair("UT+01:00", "UT+01:00")
+            Pair("UT+01:00", "UT+01:00"))
         )
         for ((id, str) in idToString) {
             assertEquals(str, TimeZone.of(id).toString())
@@ -135,10 +133,7 @@ class TimeZoneTest {
         val zoneIds = sameOffsetTZs.map { it.id }
 
         assertTrue(offsets.distinct().size == 1, "Expected all offsets to be equal: $offsets")
-        assertTrue(
-            offsets.map { it.toString() }.distinct().size == 1,
-            "Expected all offsets to have the same string representation: $offsets"
-        )
+        assertTrue(offsets.map { it.toString() }.distinct().size == 1, "Expected all offsets to have the same string representation: $offsets")
 
         assertTrue(zoneIds.distinct().size > 1, "Expected some fixed offset zones to have different ids: $zoneIds")
     }
