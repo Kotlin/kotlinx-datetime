@@ -10,7 +10,6 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.DateTimeComponents
-import kotlinx.datetime.format.char
 import kotlin.test.*
 
 class TimeZoneTest {
