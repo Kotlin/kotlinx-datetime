@@ -139,6 +139,25 @@ internal class UnconditionalModification<Output>(
     }
 }
 
+internal class TimeZoneParserOperation<Output>(
+    private val setter: AssignableField<Output, String>
+) : ParserOperation<Output> {
+
+    override fun consume(
+        storage: Output,
+        input: CharSequence,
+        startIndex: Int
+    ): ParseResult {
+        if (startIndex >= input.length) return ParseResult.Error(startIndex) { "Unexpected end of input" }
+        return if (input[startIndex] == 'Z') {
+            val lastMatch = startIndex + 1
+            setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
+        } else {
+            ParseResult.Error(startIndex) { "Expected 'Z' but got ${input[startIndex]}" }
+        }
+    }
+}
+
 /**
  * Matches the longest suitable string from `strings` and calls [consume] with the matched string.
  */
