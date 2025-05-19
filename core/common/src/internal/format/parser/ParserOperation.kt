@@ -149,12 +149,12 @@ internal class TimeZoneParserOperation<Output>(
         startIndex: Int
     ): ParseResult {
         if (startIndex >= input.length) return ParseResult.Error(startIndex) { "Unexpected end of input" }
-        return if (input[startIndex] == 'Z') {
-            val lastMatch = startIndex + 1
+        val lastMatch = validateTimezone(input, startIndex)
+        if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
-        } else {
-            ParseResult.Error(startIndex) { "Expected 'Z' but got ${input[startIndex]}" }
+            return ParseResult.Ok(lastMatch)
         }
+        return ParseResult.Error(startIndex) { "Invalid timezone format" }
     }
 
     companion object {
