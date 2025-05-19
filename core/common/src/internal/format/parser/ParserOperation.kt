@@ -169,103 +169,82 @@ internal class TimeZoneParserOperation<Output>(
         }
 
         private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
-            var state = State.START
             var index = startIndex
             var lastValidIndex = startIndex
 
+            fun hasEnoughChars(length: Int) = index + length <= input.length
+
+            fun validatePrefix(length: Int, validValues: List<String>): Boolean {
+                if (hasEnoughChars(length) && input.substring(index, index + length) in validValues) {
+                    index += length
+                    lastValidIndex = index
+                    return true
+                }
+                return false
+            }
+
+            fun validateTimeComponent(maxValue: Int): Boolean {
+                val length = 2
+                if (!hasEnoughChars(length) || !input[index].isDigit() || !input[index + 1].isDigit()) return false
+                val value = input.substring(index, index + length).toInt()
+                if (value >= maxValue) return false
+                index += length
+                lastValidIndex = index
+                return true
+            }
+
+            var state = State.START
             while (index < input.length && state != State.INVALID) {
-                when (state) {
+                state = when (state) {
                     State.START -> when {
                         input[index] == 'Z' -> {
                             index++
-                            state = State.END
-                        }
-
-                        index + 3 <= input.length &&
-                                input.subSequence(index, index + 3).toString() in listOf("UTC", "GMT") -> {
-                            index += 3
-                            lastValidIndex = index
-                            state = State.AFTER_PREFIX
-                        }
-
-                        index + 2 <= input.length &&
-                                input.subSequence(index, index + 2).toString() == "UT" -> {
-                            index += 2
-                            lastValidIndex = index
-                            state = State.AFTER_PREFIX
+                            State.END
                         }
 
                         input[index] in listOf('+', '-') -> {
                             index++
-                            state = State.AFTER_SIGN
+                            State.AFTER_SIGN
                         }
 
-                        else -> state = State.INVALID
+                        validatePrefix(3, listOf("UTC", "GMT")) -> State.AFTER_PREFIX
+                        validatePrefix(2, listOf("UT")) -> State.AFTER_PREFIX
+                        else -> State.INVALID
                     }
 
                     State.AFTER_PREFIX -> when {
                         input[index] in listOf('+', '-') -> {
                             index++
-                            state = State.AFTER_SIGN
+                            State.AFTER_SIGN
                         }
 
-                        else -> state = State.INVALID
+                        else -> State.INVALID
                     }
 
                     State.AFTER_SIGN -> when {
-                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
-                            val hours = input.substring(index, index + 2).toInt()
-                            if (hours < 24) {
-                                index += 2
-                                lastValidIndex = index
-                                state = State.AFTER_HOUR
-                            } else {
-                                state = State.INVALID
-                            }
-                        }
-
-                        else -> state = State.INVALID
+                        validateTimeComponent(24) -> State.AFTER_HOUR
+                        else -> State.INVALID
                     }
 
                     State.AFTER_HOUR -> when {
                         input[index] == ':' -> {
                             index++
-                            state = State.AFTER_COLON
+                            State.AFTER_COLON
                         }
 
-                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
-                            val minutes = input.substring(index, index + 2).toInt()
-                            if (minutes < 60) {
-                                index += 2
-                                state = State.END
-                            } else {
-                                state = State.INVALID
-                            }
-                        }
-
-                        else -> state = State.INVALID
+                        validateTimeComponent(60) -> State.END
+                        else -> State.INVALID
                     }
 
                     State.AFTER_COLON -> when {
-                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
-                            val minutes = input.substring(index, index + 2).toInt()
-                            if (minutes < 60) {
-                                index += 2
-                                state = State.END
-                            } else {
-                                state = State.INVALID
-                            }
-                        }
-
-                        else -> state = State.INVALID
+                        validateTimeComponent(60) -> State.END
+                        else -> State.INVALID
                     }
 
                     State.END -> return index
-
                     State.INVALID -> return lastValidIndex
                 }
             }
-
             return if (state == State.INVALID) lastValidIndex else index
         }
     }
