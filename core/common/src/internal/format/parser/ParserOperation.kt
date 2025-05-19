@@ -245,6 +245,7 @@ internal class TimeZoneParserOperation<Output>(
                     State.INVALID -> return lastValidIndex
                 }
             }
+
             return if (state == State.INVALID) lastValidIndex else index
         }
     }
