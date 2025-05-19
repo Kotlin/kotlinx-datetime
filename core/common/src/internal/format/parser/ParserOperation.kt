@@ -190,12 +190,11 @@ internal class TimeZoneParserOperation<Output>(
             }
 
             var state = State.START
-            while (index < input.length && state != State.INVALID) {
+            while (index < input.length) {
                 state = when (state) {
                     State.START -> when {
                         input[index] == 'Z' -> {
                             index++
-                            lastValidIndex = index
                             State.END
                         }
 
@@ -238,12 +237,11 @@ internal class TimeZoneParserOperation<Output>(
                         else -> State.INVALID
                     }
 
-                    State.END -> return index
-                    State.INVALID -> return lastValidIndex
+                    State.END, State.INVALID -> break
                 }
             }
 
-            return lastValidIndex
+            return if (state == State.END) index else lastValidIndex
         }
     }
 }
