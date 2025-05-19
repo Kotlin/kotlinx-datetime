@@ -308,6 +308,34 @@ class TimeZoneTest {
         }
     }
 
+    @Test
+    fun rejectTimeZoneOfRandomInvalidIds() {
+        assertTimeZoneIdCanNotBeParsed(listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE"))
+    }
+
+    @Test
+    fun rejectInvalidOffsetValues() {
+        assertTimeZoneIdCanNotBeParsed(listOf("+25:00", "+12:60", "UTC+25:00", "GMT+12:60", "UT+25:00"))
+    }
+
+    @Test
+    fun rejectMalformedOffsets() {
+        assertTimeZoneIdCanNotBeParsed(listOf("+:", "+1:", "UTC+:", "UTC+1:", "GMT-:", "UT+12:123"))
+    }
+
+    @Test
+    fun rejectSystemTimezoneId() {
+        assertTimeZoneIdCanNotBeParsed(listOf("SYSTEM"))
+    }
+
+    private fun assertTimeZoneIdCanNotBeParsed(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            assertFailsWith<DateTimeFormatException> {
+                DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            }
+        }
+    }
+
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
 
 }
