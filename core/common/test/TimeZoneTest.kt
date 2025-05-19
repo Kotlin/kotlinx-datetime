@@ -299,10 +299,10 @@ class TimeZoneTest {
     private fun assertTimeZoneIdCanBeParsed(zoneIds: List<String>) {
         zoneIds.forEach { zoneId ->
             try {
-                val tz = TimeZone.of(zoneId)
+                TimeZone.of(zoneId)
                 val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-                assertEquals(tz.id, result.timeZoneId)
-            } catch (e: IllegalTimeZoneException) {
+                assertEquals(zoneId, result.timeZoneId)
+            } catch (_: IllegalTimeZoneException) {
                 println("Timezone $zoneId not available on this platform, skipping")
             }
         }
