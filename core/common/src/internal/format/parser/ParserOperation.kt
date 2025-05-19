@@ -156,6 +156,119 @@ internal class TimeZoneParserOperation<Output>(
             ParseResult.Error(startIndex) { "Expected 'Z' but got ${input[startIndex]}" }
         }
     }
+
+    companion object {
+        enum class State {
+            START,
+            AFTER_PREFIX,
+            AFTER_SIGN,
+            AFTER_HOUR,
+            AFTER_COLON,
+            END,
+            INVALID
+        }
+
+        private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+            var state = State.START
+            var index = startIndex
+            var lastValidIndex = startIndex
+
+            while (index < input.length && state != State.INVALID) {
+                when (state) {
+                    State.START -> when {
+                        input[index] == 'Z' -> {
+                            index++
+                            state = State.END
+                        }
+
+                        index + 3 <= input.length &&
+                                input.subSequence(index, index + 3).toString() in listOf("UTC", "GMT") -> {
+                            index += 3
+                            lastValidIndex = index
+                            state = State.AFTER_PREFIX
+                        }
+
+                        index + 2 <= input.length &&
+                                input.subSequence(index, index + 2).toString() == "UT" -> {
+                            index += 2
+                            lastValidIndex = index
+                            state = State.AFTER_PREFIX
+                        }
+
+                        input[index] in listOf('+', '-') -> {
+                            index++
+                            state = State.AFTER_SIGN
+                        }
+
+                        else -> state = State.INVALID
+                    }
+
+                    State.AFTER_PREFIX -> when {
+                        input[index] in listOf('+', '-') -> {
+                            index++
+                            state = State.AFTER_SIGN
+                        }
+
+                        else -> state = State.INVALID
+                    }
+
+                    State.AFTER_SIGN -> when {
+                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
+                            val hours = input.substring(index, index + 2).toInt()
+                            if (hours < 24) {
+                                index += 2
+                                lastValidIndex = index
+                                state = State.AFTER_HOUR
+                            } else {
+                                state = State.INVALID
+                            }
+                        }
+
+                        else -> state = State.INVALID
+                    }
+
+                    State.AFTER_HOUR -> when {
+                        input[index] == ':' -> {
+                            index++
+                            state = State.AFTER_COLON
+                        }
+
+                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
+                            val minutes = input.substring(index, index + 2).toInt()
+                            if (minutes < 60) {
+                                index += 2
+                                state = State.END
+                            } else {
+                                state = State.INVALID
+                            }
+                        }
+
+                        else -> state = State.INVALID
+                    }
+
+                    State.AFTER_COLON -> when {
+                        index + 2 <= input.length && input[index].isDigit() && input[index + 1].isDigit() -> {
+                            val minutes = input.substring(index, index + 2).toInt()
+                            if (minutes < 60) {
+                                index += 2
+                                state = State.END
+                            } else {
+                                state = State.INVALID
+                            }
+                        }
+
+                        else -> state = State.INVALID
+                    }
+
+                    State.END -> return index
+
+                    State.INVALID -> return lastValidIndex
+                }
+            }
+
+            return if (state == State.INVALID) lastValidIndex else index
+        }
+    }
 }
 
 /**
