@@ -309,6 +309,19 @@ class TimeZoneTest {
     }
 
     @Test
+    fun testParseUntilRightBound() {
+        for (zoneId in listOf("UTC", "GMT+03", "UT-0101", "+12:00", "+11", "-0020", "UT+07:00")) {
+            for (randomString in listOf("+", "-", "|", ":", "###", "0")) {
+                val result = DateTimeComponents.Format {
+                    timeZoneId()
+                    chars(randomString)
+                }.parse("$zoneId$randomString")
+                assertEquals(zoneId, result.timeZoneId)
+            }
+        }
+    }
+
+    @Test
     fun rejectTimeZoneOfRandomInvalidIds() {
         assertTimeZoneIdCanNotBeParsed(listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE"))
     }

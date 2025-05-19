@@ -195,6 +195,7 @@ internal class TimeZoneParserOperation<Output>(
                     State.START -> when {
                         input[index] == 'Z' -> {
                             index++
+                            lastValidIndex = index
                             State.END
                         }
 
@@ -242,7 +243,7 @@ internal class TimeZoneParserOperation<Output>(
                 }
             }
 
-            return if (state == State.INVALID) lastValidIndex else index
+            return lastValidIndex
         }
     }
 }
