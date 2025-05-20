@@ -182,17 +182,17 @@ internal class TimeZoneParserOperation<Output>(
             fun validateTimeComponent(length: Int, maxValue: Int): Boolean {
                 if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) return false
                 val value = input.substring(index, index + length).toInt()
-                if (value >= maxValue) return false
+                if (value > maxValue) return false
                 index += length
                 lastValidIndex = index
                 return true
             }
 
-            fun validateHH() = validateTimeComponent(2, 24)
+            fun validateHH() = validateTimeComponent(2, 18)
 
-            fun validateH() = validateTimeComponent(1, 10)
+            fun validateH() = validateTimeComponent(1, 9)
 
-            fun validateMM() = validateTimeComponent(2, 60)
+            fun validateMM() = validateTimeComponent(2, 59)
 
             var state = State.START
             while (index < input.length) {
