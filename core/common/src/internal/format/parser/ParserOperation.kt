@@ -164,10 +164,12 @@ internal class TimeZoneParserOperation<Output>(
             INVALID
         }
 
+        private const val INVALID_TIME = -1
+
         private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
             var index = startIndex
             var lastValidIndex = startIndex
-            var hours = -1
+            var hours = INVALID_TIME
 
             fun hasEnoughChars(length: Int) = index + length <= input.length
 
@@ -180,48 +182,26 @@ internal class TimeZoneParserOperation<Output>(
                 return false
             }
 
-            fun getTimeComponent(length: Int, maxValue: Int): Int {
-                if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) return -1
+            fun validateTimeComponent(
+                length: Int, maxValue: Int, additionalValidation: (Int) -> Boolean = { true }
+            ): Int {
+                if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) {
+                    return INVALID_TIME
+                }
                 val value = input.substring(index, index + length).toInt()
-                if (value > maxValue) return -1
+                if (value > maxValue || !additionalValidation(value)) return INVALID_TIME
+                index += length
+                lastValidIndex = index
                 return value
             }
 
-            fun validateHH(): Int {
-                val length = 2
-                return getTimeComponent(length, 18).also {
-                    if (it != -1) {
-                        index += length
-                        lastValidIndex = index
-                    }
-                }
-            }
+            fun validateHH() = validateTimeComponent(2, 18)
+            fun validateH() = validateTimeComponent(1, 9)
+            fun validateMM() = validateTimeComponent(2, 59) { minutes -> hours < 18 || minutes == 0 }
 
-            fun validateH(): Int {
-                val length = 1
-                return getTimeComponent(length, 9).also {
-                    if (it != -1) {
-                        index += length
-                        lastValidIndex = index
-                    }
-                }
-            }
-
-            fun validateMM(): Int {
-                val length = 2
-                return getTimeComponent(length, 59).let { minutes ->
-                    println("HOURS = $hours, MINUTES = $minutes")
-                    if (hours < 18 || minutes == 0) minutes else -1
-                }.also {
-                    if (it != -1) {
-                        index += length
-                        lastValidIndex = index
-                    }
-                }
-            }
+            fun Int.isValid() = this != INVALID_TIME
 
             var state = State.START
-
             while (index < input.length) {
                 state = when (state) {
                     State.START -> when {
@@ -251,11 +231,11 @@ internal class TimeZoneParserOperation<Output>(
 
                     State.AFTER_SIGN -> {
                         hours = validateHH()
-                        if (hours != -1) {
+                        if (hours.isValid()) {
                             State.AFTER_HOUR
                         } else {
                             hours = validateH()
-                            if (hours != -1) State.END else State.INVALID
+                            if (hours.isValid()) State.END else State.INVALID
                         }
                     }
 
@@ -265,12 +245,12 @@ internal class TimeZoneParserOperation<Output>(
                             State.AFTER_COLON
                         }
 
-                        validateMM() != -1 -> State.END
+                        validateMM().isValid() -> State.END
                         else -> State.INVALID
                     }
 
                     State.AFTER_COLON -> when {
-                        validateMM() != -1 -> State.END
+                        validateMM().isValid() -> State.END
                         else -> State.INVALID
                     }
 
