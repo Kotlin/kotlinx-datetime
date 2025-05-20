@@ -179,15 +179,20 @@ internal class TimeZoneParserOperation<Output>(
                 return false
             }
 
-            fun validateTimeComponent(maxValue: Int): Boolean {
-                val length = 2
-                if (!hasEnoughChars(length) || !input[index].isDigit() || !input[index + 1].isDigit()) return false
+            fun validateTimeComponent(length: Int, maxValue: Int): Boolean {
+                if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) return false
                 val value = input.substring(index, index + length).toInt()
                 if (value >= maxValue) return false
                 index += length
                 lastValidIndex = index
                 return true
             }
+
+            fun validateHH() = validateTimeComponent(2, 24)
+
+            fun validateH() = validateTimeComponent(1, 10)
+
+            fun validateMM() = validateTimeComponent(2, 60)
 
             var state = State.START
             while (index < input.length) {
@@ -218,7 +223,8 @@ internal class TimeZoneParserOperation<Output>(
                     }
 
                     State.AFTER_SIGN -> when {
-                        validateTimeComponent(24) -> State.AFTER_HOUR
+                        validateHH() -> State.AFTER_HOUR
+                        validateH() -> State.END
                         else -> State.INVALID
                     }
 
@@ -228,12 +234,12 @@ internal class TimeZoneParserOperation<Output>(
                             State.AFTER_COLON
                         }
 
-                        validateTimeComponent(60) -> State.END
+                        validateMM() -> State.END
                         else -> State.INVALID
                     }
 
                     State.AFTER_COLON -> when {
-                        validateTimeComponent(60) -> State.END
+                        validateMM() -> State.END
                         else -> State.INVALID
                     }
 
