@@ -266,7 +266,8 @@ class TimeZoneTest {
                 "+01:30", "+05:45", "+12:30",
                 "-03:30", "-09:30",
                 "+0100", "+1200", "-0500", "-1130",
-                "+01", "+12", "-05", "-11"
+                "+01", "+12", "-05", "-11",
+                "+1", "-7", "+8"
             )
         )
     }
@@ -279,7 +280,8 @@ class TimeZoneTest {
                 "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
                 "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
                 "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
-                "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10"
+                "UTC+01", "UTC-11", "GMT+03", "GMT-05", "UT+06", "UT-10",
+                "UTC+1", "GMT-7", "UT+8"
             )
         )
     }
@@ -328,7 +330,12 @@ class TimeZoneTest {
 
     @Test
     fun rejectInvalidOffsetValues() {
-        assertTimeZoneIdCanNotBeParsed(listOf("+25:00", "+12:60", "UTC+25:00", "GMT+12:60", "UT+25:00"))
+        assertTimeZoneIdCanNotBeParsed(
+            listOf(
+                "+25:00", "+12:60", "UTC+25:00", "GMT+12:60", "UT+25:00",
+                "UTC+905", "UT+095", "GMT+9:05", "UTC-09:5", "7"
+            )
+        )
     }
 
     @Test
