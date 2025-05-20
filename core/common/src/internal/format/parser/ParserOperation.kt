@@ -167,6 +167,7 @@ internal class TimeZoneParserOperation<Output>(
         private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
             var index = startIndex
             var lastValidIndex = startIndex
+            var hours = -1
 
             fun hasEnoughChars(length: Int) = index + length <= input.length
 
@@ -179,22 +180,48 @@ internal class TimeZoneParserOperation<Output>(
                 return false
             }
 
-            fun validateTimeComponent(length: Int, maxValue: Int): Boolean {
-                if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) return false
+            fun getTimeComponent(length: Int, maxValue: Int): Int {
+                if (!hasEnoughChars(length) || input.slice(index..<(index + length)).any { !it.isDigit() }) return -1
                 val value = input.substring(index, index + length).toInt()
-                if (value > maxValue) return false
-                index += length
-                lastValidIndex = index
-                return true
+                if (value > maxValue) return -1
+                return value
             }
 
-            fun validateHH() = validateTimeComponent(2, 18)
+            fun validateHH(): Int {
+                val length = 2
+                return getTimeComponent(length, 18).also {
+                    if (it != -1) {
+                        index += length
+                        lastValidIndex = index
+                    }
+                }
+            }
 
-            fun validateH() = validateTimeComponent(1, 9)
+            fun validateH(): Int {
+                val length = 1
+                return getTimeComponent(length, 9).also {
+                    if (it != -1) {
+                        index += length
+                        lastValidIndex = index
+                    }
+                }
+            }
 
-            fun validateMM() = validateTimeComponent(2, 59)
+            fun validateMM(): Int {
+                val length = 2
+                return getTimeComponent(length, 59).let { minutes ->
+                    println("HOURS = $hours, MINUTES = $minutes")
+                    if (hours < 18 || minutes == 0) minutes else -1
+                }.also {
+                    if (it != -1) {
+                        index += length
+                        lastValidIndex = index
+                    }
+                }
+            }
 
             var state = State.START
+
             while (index < input.length) {
                 state = when (state) {
                     State.START -> when {
@@ -222,10 +249,14 @@ internal class TimeZoneParserOperation<Output>(
                         else -> State.INVALID
                     }
 
-                    State.AFTER_SIGN -> when {
-                        validateHH() -> State.AFTER_HOUR
-                        validateH() -> State.END
-                        else -> State.INVALID
+                    State.AFTER_SIGN -> {
+                        hours = validateHH()
+                        if (hours != -1) {
+                            State.AFTER_HOUR
+                        } else {
+                            hours = validateH()
+                            if (hours != -1) State.END else State.INVALID
+                        }
                     }
 
                     State.AFTER_HOUR -> when {
@@ -234,12 +265,12 @@ internal class TimeZoneParserOperation<Output>(
                             State.AFTER_COLON
                         }
 
-                        validateMM() -> State.END
+                        validateMM() != -1 -> State.END
                         else -> State.INVALID
                     }
 
                     State.AFTER_COLON -> when {
-                        validateMM() -> State.END
+                        validateMM() != -1 -> State.END
                         else -> State.INVALID
                     }
 

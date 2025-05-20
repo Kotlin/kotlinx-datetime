@@ -332,7 +332,7 @@ class TimeZoneTest {
     fun rejectInvalidOffsetValues() {
         assertTimeZoneIdCanNotBeParsed(
             listOf(
-                "+19:00", "+12:60", "UTC+19:00", "GMT+12:60", "UT+19:00",
+                "+19:00", "+12:60", "UTC+19:00", "GMT+12:60", "UT+19:00", "+18:01",
                 "UTC+905", "UT+095", "GMT+9:05", "UTC-09:5", "7"
             )
         )
