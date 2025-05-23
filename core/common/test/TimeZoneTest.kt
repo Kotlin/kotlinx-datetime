@@ -267,7 +267,8 @@ class TimeZoneTest {
                 "-03:30", "-09:30",
                 "+0100", "+1200", "-0500", "-1130",
                 "+01", "+12", "+18", "-05", "-11",
-                "+1", "-7", "+8"
+                "+1", "-7", "+8",
+                "-65:43", "+99:99", "+77", "-50"
             )
         )
     }
@@ -281,7 +282,8 @@ class TimeZoneTest {
                 "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
                 "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
                 "UTC+01", "UTC-11", "GMT+03", "GMT+18", "GMT-05", "UT+06", "UT-10",
-                "UTC+1", "GMT-7", "UT+8"
+                "UTC+1", "GMT-7", "UT+8",
+                "UTC-65:43", "GMT+99:99", "UT+77", "UTC-50"
             )
         )
     }
@@ -300,13 +302,8 @@ class TimeZoneTest {
 
     private fun assertTimeZoneIdCanBeParsed(zoneIds: List<String>) {
         zoneIds.forEach { zoneId ->
-            try {
-                TimeZone.of(zoneId)
-                val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-                assertEquals(zoneId, result.timeZoneId)
-            } catch (_: IllegalTimeZoneException) {
-                println("Timezone $zoneId not available on this platform, skipping")
-            }
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            assertEquals(zoneId, result.timeZoneId)
         }
     }
 
@@ -332,7 +329,6 @@ class TimeZoneTest {
     fun rejectInvalidOffsetValues() {
         assertTimeZoneIdCanNotBeParsed(
             listOf(
-                "+19:00", "+12:60", "UTC+19:00", "GMT+12:60", "UT+19:00", "+18:01",
                 "UTC+905", "UT+095", "GMT+9:05", "UTC-09:5", "7"
             )
         )
