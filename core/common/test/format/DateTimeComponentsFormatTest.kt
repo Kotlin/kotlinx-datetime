@@ -281,9 +281,9 @@ class DateTimeComponentsFormatTest {
         val incorrectParsableOffsets = listOf(
             "19", "99", "20",                       // Invalid hours (exceeding typical timezone ranges)
             "2010", "0260", "0999", "9999",         // HHMM format with invalid minutes (>59) or hours (>18)
-            "180000", "006000", "000099", "999999", // HHMMSS format with invalid hours, minutes, or seconds
+            "180001", "006000", "000099", "999999", // HHMMSS format with invalid hours, minutes, or seconds
             "30:10", "02:70", "99:99",              // HH:MM format with invalid hours or minutes
-            "18:00:00", "00:60:00", "99:99:99",     // HH:MM:SS format with invalid hours, minutes, or seconds
+            "19:00:00", "00:60:00", "99:99:99",     // HH:MM:SS format with invalid hours, minutes, or seconds
         )
 
         val incorrectUnparsableOffsets = listOf(
