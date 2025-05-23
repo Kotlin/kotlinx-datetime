@@ -159,7 +159,9 @@ internal class TimeZoneParserOperation<Output>(
             AFTER_PREFIX,
             AFTER_SIGN,
             AFTER_HOUR,
-            AFTER_COLON,
+            AFTER_HOUR_COLON,
+            AFTER_MINUTE,
+            AFTER_MINUTE_COLON,
             END,
             INVALID
         }
@@ -225,14 +227,29 @@ internal class TimeZoneParserOperation<Output>(
                     State.AFTER_HOUR -> when {
                         input[index] == ':' -> {
                             index++
-                            State.AFTER_COLON
+                            State.AFTER_HOUR_COLON
+                        }
+
+                        validateTimeComponent(2) -> State.AFTER_MINUTE
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_HOUR_COLON -> when {
+                        validateTimeComponent(2) -> State.AFTER_MINUTE
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_MINUTE -> when {
+                        input[index] == ':' -> {
+                            index++
+                            State.AFTER_MINUTE_COLON
                         }
 
                         validateTimeComponent(2) -> State.END
                         else -> State.INVALID
                     }
 
-                    State.AFTER_COLON -> when {
+                    State.AFTER_MINUTE_COLON -> when {
                         validateTimeComponent(2) -> State.END
                         else -> State.INVALID
                     }
