@@ -292,6 +292,7 @@ class DateTimeComponentsFormatTest {
             "110", "020",                                       // Three digits (invalid length - not 2 or 4 digits)
             "18000", "02300",                                   // Five digits (invalid length - not 4 or 6 digits)
             "3:10", "2:70", "99:", ":20",                       // HH:MM format violations: single digit hour, missing minute, missing hour
+            "12:3456", "1234:56",                               // Invalid colon-separated formats: too many digits in an hour/minute component
             "1:00:00", "00:6:00", "09:99:9",                    // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
             ":00:00", "00::00", "09:99:", "::00", "00::", "::", // Colon placement errors
             "180:00:00", "00:610:00", "99:99:199"               // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
