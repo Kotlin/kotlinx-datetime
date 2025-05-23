@@ -323,28 +323,19 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testPrefixWithCorrectParsableOffset() {
-        val timezoneIds = generateTimezoneIds(
-            prefixes = TimezoneTestData.tzPrefixes + "",
-            offsets = TimezoneTestData.correctParsableOffsets
-        )
+        val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.correctParsableOffsets)
         assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_CORRECTLY)
     }
 
     @Test
     fun testPrefixWithIncorrectParsableOffset() {
-        val timezoneIds = generateTimezoneIds(
-            prefixes = TimezoneTestData.tzPrefixes + "",
-            offsets = TimezoneTestData.incorrectParsableOffsets
-        )
+        val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectParsableOffsets)
         assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_INCORRECTLY)
     }
 
     @Test
     fun testPrefixWithIncorrectUnparsableOffset() {
-        val timezoneIds = generateTimezoneIds(
-            prefixes = TimezoneTestData.tzPrefixes + "",
-            offsets = TimezoneTestData.incorrectUnparsableOffsets
-        )
+        val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectUnparsableOffsets)
         assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_FAIL_TO_PARSE)
     }
 
@@ -364,13 +355,9 @@ class DateTimeComponentsFormatTest {
         SHOULD_FAIL_TO_PARSE
     }
 
-    private fun generateTimezoneIds(
-        prefixes: List<String> = listOf(""),
-        signs: List<Char> = listOf('+', '-'),
-        offsets: List<String>
-    ): List<String> = buildList {
+    private fun generateTimezoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
         for (prefix in prefixes) {
-            for (sign in signs) {
+            for (sign in listOf('+', '-')) {
                 for (offset in offsets) {
                     add("$prefix$sign$offset")
                 }
