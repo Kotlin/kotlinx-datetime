@@ -170,16 +170,12 @@ internal class TimeZoneParserOperation<Output>(
             var index = startIndex
             var lastValidIndex = startIndex
 
-            fun hasEnoughChars(length: Int) = index + length <= input.length
-
-            fun validatePrefix(length: Int, validValues: List<String>): Boolean {
-                if (hasEnoughChars(length) && input.substring(index, index + length) in validValues) {
-                    index += length
+            fun validatePrefix(validValues: List<String>): Boolean =
+                validValues.firstOrNull { input.startsWith(it) }?.let {
+                    index += it.length
                     lastValidIndex = index
-                    return true
-                }
-                return false
-            }
+                    true
+                } ?: false
 
             fun validateTimeComponent(length: Int): Boolean {
                 if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
@@ -204,8 +200,7 @@ internal class TimeZoneParserOperation<Output>(
                             State.AFTER_SIGN
                         }
 
-                        validatePrefix(3, listOf("UTC", "GMT")) -> State.AFTER_PREFIX
-                        validatePrefix(2, listOf("UT")) -> State.AFTER_PREFIX
+                        validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
                         else -> State.INVALID
                     }
 
