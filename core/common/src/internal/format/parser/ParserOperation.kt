@@ -238,6 +238,7 @@ internal class TimeZoneParserOperation<Output>(
                             index++
                             if (validateTimeComponent(2)) State.END else State.INVALID
                         }
+
                         else -> State.INVALID
                     }
 
