@@ -10,6 +10,8 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
+import kotlinx.datetime.internal.format.parser.ParserStructure
+import kotlinx.datetime.internal.format.parser.TimeZoneParserOperation
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
@@ -569,6 +571,18 @@ internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
     override val builderRepresentation: String
         get() =
             "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+
+    override fun parser(): ParserStructure<DateTimeComponentsContents> =
+        ParserStructure(
+            emptyList(),
+            listOf(
+                super.parser(),
+                ParserStructure(
+                    listOf(TimeZoneParserOperation(timeZoneField.accessor)),
+                    emptyList()
+                )
+            )
+        )
 
     override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
     override fun hashCode(): Int = knownZones.hashCode()
