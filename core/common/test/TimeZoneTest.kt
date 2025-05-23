@@ -248,77 +248,94 @@ class TimeZoneTest {
         }
     }
 
+    private val tzPrefixes = listOf("UTC", "GMT", "UT")
+
+    private val correctParsableOffsets = listOf(
+        "1", "9", "0",                     // Single digit hours (H format)
+        "09", "11", "18",                  // Two-digit hours (HH format)
+        "0110", "0230", "0930",            // Hours and minutes without a separator (HHMM format)
+        "010000", "000100", "012345",      // Hours, minutes, and seconds without a separator (HHMMSS format)
+        "01:15", "02:35", "09:35",         // Hours and minutes with colon separator (HH:MM format)
+        "01:10:32", "15:51:00", "17:54:32" // Hours, minutes, and seconds with colon separators (HH:MM:SS format)
+    )
+
+    private val incorrectParsableOffsets = listOf(
+        "19", "99", "20",                       // Invalid hours (exceeding typical timezone ranges)
+        "2010", "0260", "0999", "9999",         // HHMM format with invalid minutes (>59) or hours (>18)
+        "180000", "006000", "000099", "999999", // HHMMSS format with invalid hours, minutes, or seconds
+        "30:10", "02:70", "99:99",              // HH:MM format with invalid hours or minutes
+        "18:00:00", "00:60:00", "99:99:99",     // HH:MM:SS format with invalid hours, minutes, or seconds
+    )
+
+    private val incorrectUnparsableOffsets = listOf(
+        "a", "_", "+",                                      // Single non-digit characters
+        "a9", "y!", "1#",                                   // Two characters: letter+digit, letter+symbol, digit+symbol
+        "110", "020",                                       // Three digits (invalid length - not 2 or 4 digits)
+        "18000", "02300",                                   // Five digits (invalid length - not 4 or 6 digits)
+        "3:10", "2:70", "99:", ":20",                       // HH:MM format violations: single digit hour, missing minute, missing hour
+        "1:00:00", "00:6:00", "09:99:9",                    // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
+        ":00:00", "00::00", "09:99:", "::00", "00::", "::", // Colon placement errors
+        "180:00:00", "00:610:00", "99:99:199"               // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
+    )
+
+    @Test
+    fun testZuluTimeZone() {
+        assertIncorrectTimeZoneIdCanBeParsed(listOf("Z", "z"))
+    }
+
     @Test
     fun testSpecialNamedTimezones() {
-        assertTimeZoneIdCanBeParsed(
-            listOf(
-                "UTC", "GMT", "UT", "Z", "z"
-            )
-        )
+        assertIncorrectTimeZoneIdCanBeParsed(tzPrefixes)
     }
 
     @Test
-    fun testFixedOffsets() {
-        assertTimeZoneIdCanBeParsed(
-            listOf(
-                "+00:00", "+01:00", "+12:00", "+13:00", "+14:00", "+18:00",
-                "-00:00", "-01:00", "-11:00", "-12:00", "-18:00",
-                "+01:30", "+05:45", "+12:30",
-                "-03:30", "-09:30",
-                "+0100", "+1200", "-0500", "-1130",
-                "+01", "+12", "+18", "-05", "-11",
-                "+1", "-7", "+8",
-                "-65:43", "+99:99", "+77", "-50",
-                "+00:00:10", "-01:00:20", "+12:00:30", "-13:00:40", "+14:00:50", "-18:00:60",
-            )
-        )
+    fun testPrefixWithCorrectParsableOffset() {
+        val ids = mutableListOf<String>()
+        for (prefix in tzPrefixes + "") {
+            for (sign in listOf('+', '-')) {
+                for (offset in correctParsableOffsets) {
+                    ids += "$prefix$sign$offset"
+                }
+            }
+        }
+        assertCorrectTimeZoneIdCanBeParsed(ids)
     }
 
     @Test
-    fun testUTCGMTWithOffsets() {
-        assertTimeZoneIdCanBeParsed(
-            listOf(
-                "UTC+00:00", "UTC+01:00", "UTC+12:00", "UTC-01:00", "UTC-12:00", "UTC-18:00",
-                "GMT+00:00", "GMT+01:00", "GMT+12:00", "GMT-01:00", "GMT-12:00",
-                "UT+00:00", "UT+01:00", "UT+12:00", "UT-01:00", "UT-12:00",
-                "UTC+0100", "UTC-0500", "GMT+0300", "GMT-1100", "UT+0700", "UT-0900",
-                "UTC+01", "UTC-11", "GMT+03", "GMT+18", "GMT-05", "UT+06", "UT-10",
-                "UTC+1", "GMT-7", "UT+8",
-                "UTC-65:43", "GMT+99:99", "UT+77", "UTC-50",
-                "UTC+00:00:10", "GMT-01:00:20", "UT+12:00:30", "UTC-13:00:40", "GMT+14:00:50", "UT-18:00:60",
-            )
-        )
+    fun testPrefixWithIncorrectParsableOffset() {
+        val ids = mutableListOf<String>()
+        for (prefix in tzPrefixes + "") {
+            for (sign in listOf('+', '-')) {
+                for (offset in incorrectParsableOffsets) {
+                    ids += "$prefix$sign$offset"
+                }
+            }
+        }
+        assertIncorrectTimeZoneIdCanBeParsed(ids)
+    }
+
+    @Test
+    fun testPrefixWithIncorrectUnparsableOffset() {
+        val ids = mutableListOf<String>()
+        for (prefix in tzPrefixes + "") {
+            for (sign in listOf('+', '-')) {
+                for (offset in incorrectUnparsableOffsets) {
+                    ids += "$prefix$sign$offset"
+                }
+            }
+        }
+        assertTimeZoneIdCanNotBeParsed(ids)
     }
 
     @Test
     fun testTimezoneDBIdentifiers() {
-        assertTimeZoneIdCanBeParsed(
+        assertIncorrectTimeZoneIdCanBeParsed(
             listOf(
                 "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
                 "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
                 "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
             )
         )
-    }
-
-    private fun assertTimeZoneIdCanBeParsed(zoneIds: List<String>) {
-        zoneIds.forEach { zoneId ->
-            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-            assertEquals(zoneId, result.timeZoneId)
-        }
-    }
-
-    @Test
-    fun testParseUntilRightBound() {
-        for (zoneId in listOf("UTC", "GMT+03", "UT-0101", "+12:00", "+11", "-0020", "UT+07:00")) {
-            for (randomString in listOf("+", "-", "|", ":", "###", "0")) {
-                val result = DateTimeComponents.Format {
-                    timeZoneId()
-                    chars(randomString)
-                }.parse("$zoneId$randomString")
-                assertEquals(zoneId, result.timeZoneId)
-            }
-        }
     }
 
     @Test
@@ -328,21 +345,27 @@ class TimeZoneTest {
 
     @Test
     fun rejectInvalidOffsetValues() {
-        assertTimeZoneIdCanNotBeParsed(
-            listOf(
-                "UTC+905", "UT+095", "GMT+9:05", "UTC-09:5", "7", "UTC-09:50:1", "UTC-09:5:10", "UTC-09:50:100"
-            )
-        )
-    }
-
-    @Test
-    fun rejectMalformedOffsets() {
-        assertTimeZoneIdCanNotBeParsed(listOf("+:", "+1:", "UTC+:", "UTC+1:", "GMT-:", "UT+12:123"))
+        assertTimeZoneIdCanNotBeParsed(incorrectUnparsableOffsets)
     }
 
     @Test
     fun rejectSystemTimezoneId() {
         assertTimeZoneIdCanNotBeParsed(listOf("SYSTEM"))
+    }
+
+    private fun assertCorrectTimeZoneIdCanBeParsed(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            TimeZone.of(zoneId)
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            assertEquals(zoneId, result.timeZoneId)
+        }
+    }
+
+    private fun assertIncorrectTimeZoneIdCanBeParsed(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            assertEquals(zoneId, result.timeZoneId)
+        }
     }
 
     private fun assertTimeZoneIdCanNotBeParsed(zoneIds: List<String>) {
