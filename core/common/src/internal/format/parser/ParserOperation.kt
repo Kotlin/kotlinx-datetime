@@ -154,7 +154,7 @@ internal class TimeZoneParserOperation<Output>(
     }
 
     companion object {
-        enum class State {
+        private enum class State {
             START,
             AFTER_PREFIX,
             AFTER_SIGN,
