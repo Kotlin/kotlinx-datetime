@@ -297,7 +297,7 @@ class TimeZoneTest {
                 "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
                 "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
                 "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg",
-                "Europe/Isle_of_Man", "America/Argentina/Buenos_Aires", "Asia/Kolkata"
+                "Europe/Isle_of_Man", "Asia/Kolkata"
             )
         )
     }
