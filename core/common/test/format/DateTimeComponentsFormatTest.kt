@@ -298,8 +298,6 @@ class DateTimeComponentsFormatTest {
             "180:00:00", "00:610:00", "99:99:199"               // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
         )
 
-        val zuluTimezones = listOf("Z", "z")
-
         val tzPrefixes = listOf("UTC", "GMT", "UT")
 
         val timezoneDbIdentifiers = listOf(
@@ -313,8 +311,11 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testZuluTimeZone() {
-        // TODO: Change SHOULD_PARSE_INCORRECTLY to SHOULD_PARSE_CORRECTLY when TimeZone.of("z") will work correctly
-        assertTimezoneParsingBehavior(TimezoneTestData.zuluTimezones, ParseExpectation.SHOULD_PARSE_INCORRECTLY)
+        // Replace it to:
+        // assertTimezoneParsingBehavior(listOf("Z", "z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        // when TimeZone.of("z") will work correctly
+        assertTimezoneParsingBehavior(listOf("Z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        assertTimezoneParsingBehavior(listOf("z"), ParseExpectation.SHOULD_PARSE_INCORRECTLY)
     }
 
     @Test
@@ -376,6 +377,7 @@ class DateTimeComponentsFormatTest {
                 }
 
                 ParseExpectation.SHOULD_PARSE_INCORRECTLY -> {
+                    assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
                     val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
                     assertEquals(zoneId, result.timeZoneId)
                 }
