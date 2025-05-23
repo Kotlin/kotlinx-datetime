@@ -8,7 +8,6 @@ package kotlinx.datetime.test.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
 import kotlin.test.*
 
 class DateTimeComponentsFormatTest {
@@ -265,6 +264,139 @@ class DateTimeComponentsFormatTest {
             assertDateTimeComponentsEqual(value, format.parse(canonicalString), "parsing '$canonicalString' with $format")
             for (otherString in otherStrings) {
                 assertDateTimeComponentsEqual(value, format.parse(otherString), "parsing '$otherString' with $format")
+            }
+        }
+    }
+
+    private object TimezoneTestData {
+        val correctParsableOffsets = listOf(
+            "1", "9", "0",                     // Single digit hours (H format)
+            "09", "11", "18",                  // Two-digit hours (HH format)
+            "0110", "0230", "0930",            // Hours and minutes without a separator (HHMM format)
+            "010000", "000100", "012345",      // Hours, minutes, and seconds without a separator (HHMMSS format)
+            "01:15", "02:35", "09:35",         // Hours and minutes with colon separator (HH:MM format)
+            "01:10:32", "15:51:00", "17:54:32" // Hours, minutes, and seconds with colon separators (HH:MM:SS format)
+        )
+
+        val incorrectParsableOffsets = listOf(
+            "19", "99", "20",                       // Invalid hours (exceeding typical timezone ranges)
+            "2010", "0260", "0999", "9999",         // HHMM format with invalid minutes (>59) or hours (>18)
+            "180000", "006000", "000099", "999999", // HHMMSS format with invalid hours, minutes, or seconds
+            "30:10", "02:70", "99:99",              // HH:MM format with invalid hours or minutes
+            "18:00:00", "00:60:00", "99:99:99",     // HH:MM:SS format with invalid hours, minutes, or seconds
+        )
+
+        val incorrectUnparsableOffsets = listOf(
+            "a", "_", "+",                                      // Single non-digit characters
+            "a9", "y!", "1#",                                   // Two characters: letter+digit, letter+symbol, digit+symbol
+            "110", "020",                                       // Three digits (invalid length - not 2 or 4 digits)
+            "18000", "02300",                                   // Five digits (invalid length - not 4 or 6 digits)
+            "3:10", "2:70", "99:", ":20",                       // HH:MM format violations: single digit hour, missing minute, missing hour
+            "1:00:00", "00:6:00", "09:99:9",                    // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
+            ":00:00", "00::00", "09:99:", "::00", "00::", "::", // Colon placement errors
+            "180:00:00", "00:610:00", "99:99:199"               // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
+        )
+
+        val zuluTimezones = listOf("Z", "z")
+
+        val tzPrefixes = listOf("UTC", "GMT", "UT")
+
+        val timezoneDbIdentifiers = listOf(
+            "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
+            "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
+            "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
+        )
+
+        val invalidTimezoneIds = listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE", "SYSTEM")
+    }
+
+    @Test
+    fun testZuluTimeZone() {
+        // TODO: Change SHOULD_PARSE_INCORRECTLY to SHOULD_PARSE_CORRECTLY when TimeZone.of("z") will work correctly
+        assertTimezoneParsingBehavior(TimezoneTestData.zuluTimezones, ParseExpectation.SHOULD_PARSE_INCORRECTLY)
+    }
+
+    @Test
+    fun testSpecialNamedTimezones() {
+        assertTimezoneParsingBehavior(TimezoneTestData.tzPrefixes, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+    }
+
+    @Test
+    fun testPrefixWithCorrectParsableOffset() {
+        val timezoneIds = generateTimezoneIds(
+            prefixes = TimezoneTestData.tzPrefixes + "",
+            offsets = TimezoneTestData.correctParsableOffsets
+        )
+        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+    }
+
+    @Test
+    fun testPrefixWithIncorrectParsableOffset() {
+        val timezoneIds = generateTimezoneIds(
+            prefixes = TimezoneTestData.tzPrefixes + "",
+            offsets = TimezoneTestData.incorrectParsableOffsets
+        )
+        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_INCORRECTLY)
+    }
+
+    @Test
+    fun testPrefixWithIncorrectUnparsableOffset() {
+        val timezoneIds = generateTimezoneIds(
+            prefixes = TimezoneTestData.tzPrefixes + "",
+            offsets = TimezoneTestData.incorrectUnparsableOffsets
+        )
+        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_FAIL_TO_PARSE)
+    }
+
+    @Test
+    fun testTimezoneDBIdentifiers() {
+        assertTimezoneParsingBehavior(TimezoneTestData.timezoneDbIdentifiers, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+    }
+
+    @Test
+    fun testInvalidTimezoneIds() {
+        assertTimezoneParsingBehavior(TimezoneTestData.invalidTimezoneIds, ParseExpectation.SHOULD_FAIL_TO_PARSE)
+    }
+
+    enum class ParseExpectation {
+        SHOULD_PARSE_CORRECTLY,
+        SHOULD_PARSE_INCORRECTLY,
+        SHOULD_FAIL_TO_PARSE
+    }
+
+    private fun generateTimezoneIds(
+        prefixes: List<String> = listOf(""),
+        signs: List<Char> = listOf('+', '-'),
+        offsets: List<String>
+    ): List<String> = buildList {
+        for (prefix in prefixes) {
+            for (sign in signs) {
+                for (offset in offsets) {
+                    add("$prefix$sign$offset")
+                }
+            }
+        }
+    }
+
+    private fun assertTimezoneParsingBehavior(zoneIds: List<String>, expectation: ParseExpectation) {
+        zoneIds.forEach { zoneId ->
+            when (expectation) {
+                ParseExpectation.SHOULD_PARSE_CORRECTLY -> {
+                    TimeZone.of(zoneId)
+                    val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+                    assertEquals(zoneId, result.timeZoneId)
+                }
+
+                ParseExpectation.SHOULD_PARSE_INCORRECTLY -> {
+                    val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+                    assertEquals(zoneId, result.timeZoneId)
+                }
+
+                ParseExpectation.SHOULD_FAIL_TO_PARSE -> {
+                    assertFailsWith<DateTimeFormatException> {
+                        DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+                    }
+                }
             }
         }
     }
