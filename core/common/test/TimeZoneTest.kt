@@ -252,7 +252,7 @@ class TimeZoneTest {
     fun testSpecialNamedTimezones() {
         assertTimeZoneIdCanBeParsed(
             listOf(
-                "UTC", "GMT", "UT", "Z"
+                "UTC", "GMT", "UT", "Z", "z"
             )
         )
     }

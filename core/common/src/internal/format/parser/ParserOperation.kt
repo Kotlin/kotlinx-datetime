@@ -192,7 +192,7 @@ internal class TimeZoneParserOperation<Output>(
             while (index < input.length) {
                 state = when (state) {
                     State.START -> when {
-                        input[index] == 'Z' -> {
+                        input[index] == 'Z' || input[index] == 'z' -> {
                             index++
                             State.END
                         }
