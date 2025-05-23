@@ -182,7 +182,7 @@ internal class TimeZoneParserOperation<Output>(
             }
 
             fun validateTimeComponent(length: Int): Boolean {
-                if (hasEnoughChars(length) && input.slice(index..<(index + length)).all { it.isDigit() }) {
+                if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
                     index += length
                     lastValidIndex = index
                     return true
