@@ -7,6 +7,7 @@ package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
 import kotlin.test.*
+import kotlin.time.Clock
 
 class DayOfWeekSamples {
 
