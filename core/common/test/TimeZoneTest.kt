@@ -111,6 +111,7 @@ class TimeZoneTest {
             Pair("Europe/Paris", "Europe/Paris"),
             Pair("Europe/Berlin", "Europe/Berlin"),
             Pair("Z", "Z"),
+            Pair("z", "Z"),
             Pair("UTC", "UTC"),
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),

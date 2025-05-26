@@ -32,7 +32,7 @@ public actual open class TimeZone internal constructor() {
             if (zoneId == "UTC") {
                 return UTC
             }
-            if (zoneId == "Z") {
+            if (zoneId == "Z" || zoneId == "z") {
                 return UtcOffset.ZERO.asTimeZone()
             }
             if (zoneId == "SYSTEM") {
