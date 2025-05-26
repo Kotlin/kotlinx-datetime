@@ -145,11 +145,12 @@ internal class TimeZoneParserOperation<Output>(
 
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         val lastMatch = validateTimezone(input, startIndex)
-        if (lastMatch > startIndex) {
+        return if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
-            return ParseResult.Ok(lastMatch)
+            ParseResult.Ok(lastMatch)
+        } else {
+            ParseResult.Error(startIndex) { "Invalid timezone format" }
         }
-        return ParseResult.Error(startIndex) { "Invalid timezone format" }
     }
 
     companion object {
