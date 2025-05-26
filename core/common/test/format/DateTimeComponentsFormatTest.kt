@@ -270,32 +270,52 @@ class DateTimeComponentsFormatTest {
 
     private object TimezoneTestData {
         val correctParsableOffsets = listOf(
-            "1", "9", "0",                     // Single digit hours (H format)
-            "09", "11", "18",                  // Two-digit hours (HH format)
-            "0110", "0230", "0930",            // Hours and minutes without a separator (HHMM format)
-            "010000", "000100", "012345",      // Hours, minutes, and seconds without a separator (HHMMSS format)
-            "01:15", "02:35", "09:35",         // Hours and minutes with colon separator (HH:MM format)
-            "01:10:32", "15:51:00", "17:54:32" // Hours, minutes, and seconds with colon separators (HH:MM:SS format)
+            // Single digit hours (H format)
+            "1", "9", "0",
+            // Two-digit hours (HH format)
+            "09", "11", "18",
+            // Hours and minutes without a separator (HHMM format)
+            "0110", "0230", "0930",
+            // Hours, minutes, and seconds without a separator (HHMMSS format)
+            "010000", "000100", "012345",
+            // Hours and minutes with colon separator (HH:MM format)
+            "01:15", "02:35", "09:35",
+            // Hours, minutes, and seconds with colon separators (HH:MM:SS format)
+            "01:10:32", "15:51:00", "17:54:32"
         )
 
         val incorrectParsableOffsets = listOf(
-            "19", "99", "20",                       // Invalid hours (exceeding typical timezone ranges)
-            "2010", "0260", "0999", "9999",         // HHMM format with invalid minutes (>59) or hours (>18)
-            "180001", "006000", "000099", "999999", // HHMMSS format with invalid hours, minutes, or seconds
-            "30:10", "02:70", "99:99",              // HH:MM format with invalid hours or minutes
-            "19:00:00", "00:60:00", "99:99:99",     // HH:MM:SS format with invalid hours, minutes, or seconds
+            // Invalid hours (exceeding typical timezone ranges)
+            "19", "99", "20",
+            // HHMM format with invalid minutes (>59) or hours (>18)
+            "2010", "0260", "0999", "9999",
+            // HHMMSS format with invalid hours, minutes, or seconds
+            "180001", "006000", "000099", "999999",
+            // HH:MM format with invalid hours or minutes
+            "30:10", "02:70", "99:99",
+            // HH:MM:SS format with invalid hours, minutes, or seconds
+            "19:00:00", "00:60:00", "99:99:99",
         )
 
         val incorrectUnparsableOffsets = listOf(
-            "a", "_", "+",                                      // Single non-digit characters
-            "a9", "y!", "1#",                                   // Two characters: letter+digit, letter+symbol, digit+symbol
-            "110", "020",                                       // Three digits (invalid length - not 2 or 4 digits)
-            "18000", "02300",                                   // Five digits (invalid length - not 4 or 6 digits)
-            "3:10", "2:70", "99:", ":20",                       // HH:MM format violations: single digit hour, missing minute, missing hour
-            "12:3456", "1234:56",                               // Invalid colon-separated formats: too many digits in an hour/minute component
-            "1:00:00", "00:6:00", "09:99:9",                    // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
-            ":00:00", "00::00", "09:99:", "::00", "00::", "::", // Colon placement errors
-            "180:00:00", "00:610:00", "99:99:199"               // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
+            // Single non-digit characters
+            "a", "_", "+",
+            // Two characters: letter+digit, letter+symbol, digit+symbol
+            "a9", "y!", "1#",
+            // Three digits (invalid length - not 2 or 4 digits)
+            "110", "020",
+            // Five digits (invalid length - not 4 or 6 digits)
+            "18000", "02300",
+            // HH:MM format violations: single digit hour, missing minute, missing hour
+            "3:10", "2:70", "99:", ":20",
+            // Invalid colon-separated formats: too many digits in an hour/minute component
+            "12:3456", "1234:56",
+            // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
+            "1:00:00", "00:6:00", "09:99:9",
+            // Colon placement errors
+            ":00:00", "00::00", "09:99:", "::00", "00::", "::",
+            // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
+            "180:00:00", "00:610:00", "99:99:199"
         )
 
         val tzPrefixes = listOf("UTC", "GMT", "UT")
