@@ -144,7 +144,6 @@ internal class TimeZoneParserOperation<Output>(
 ) : ParserOperation<Output> {
 
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
-        if (startIndex >= input.length) return ParseResult.Error(startIndex) { "Unexpected end of input" }
         val lastMatch = validateTimezone(input, startIndex)
         if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
