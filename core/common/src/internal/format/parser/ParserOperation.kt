@@ -139,6 +139,118 @@ internal class UnconditionalModification<Output>(
     }
 }
 
+internal class TimeZoneParserOperation<Output>(
+    private val setter: AssignableField<Output, String>
+) : ParserOperation<Output> {
+
+    override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
+        val lastMatch = validateTimezone(input, startIndex)
+        return if (lastMatch > startIndex) {
+            setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
+            ParseResult.Ok(lastMatch)
+        } else {
+            ParseResult.Error(startIndex) { "Invalid timezone format" }
+        }
+    }
+
+    companion object {
+        private enum class State {
+            START,
+            AFTER_PREFIX,
+            AFTER_SIGN,
+            AFTER_HOUR,
+            AFTER_MINUTE,
+            AFTER_COLON_MINUTE,
+            END,
+            INVALID
+        }
+
+        private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+            var index = startIndex
+            var lastValidIndex = startIndex
+
+            fun validatePrefix(validValues: List<String>): Boolean =
+                validValues.firstOrNull { input.startsWith(it) }?.let {
+                    index += it.length
+                    lastValidIndex = index
+                    true
+                } ?: false
+
+            fun validateTimeComponent(length: Int): Boolean {
+                if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
+                    index += length
+                    lastValidIndex = index
+                    return true
+                }
+                return false
+            }
+
+            var state = State.START
+            while (index < input.length) {
+                state = when (state) {
+                    State.START -> when {
+                        input[index] == 'Z' || input[index] == 'z' -> {
+                            index++
+                            State.END
+                        }
+
+                        input[index] in listOf('+', '-') -> {
+                            index++
+                            State.AFTER_SIGN
+                        }
+
+                        validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_PREFIX -> when {
+                        input[index] in listOf('+', '-') -> {
+                            index++
+                            State.AFTER_SIGN
+                        }
+
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_SIGN -> when {
+                        validateTimeComponent(2) -> State.AFTER_HOUR
+                        validateTimeComponent(1) -> State.END
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_HOUR -> when {
+                        input[index] == ':' -> {
+                            index++
+                            if (validateTimeComponent(2)) State.AFTER_COLON_MINUTE else State.INVALID
+                        }
+
+                        validateTimeComponent(2) -> State.AFTER_MINUTE
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_MINUTE -> when {
+                        validateTimeComponent(2) -> State.END
+                        else -> State.INVALID
+                    }
+
+                    State.AFTER_COLON_MINUTE -> when {
+                        input[index] == ':' -> {
+                            index++
+                            if (validateTimeComponent(2)) State.END else State.INVALID
+                        }
+
+                        else -> State.INVALID
+                    }
+
+                    State.END, State.INVALID -> break
+                }
+            }
+
+            return if (state == State.END) index else lastValidIndex
+        }
+    }
+}
+
 /**
  * Matches the longest suitable string from `strings` and calls [consume] with the matched string.
  */

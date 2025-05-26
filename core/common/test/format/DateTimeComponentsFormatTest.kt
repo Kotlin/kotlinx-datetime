@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 JetBrains s.r.o. and contributors.
+ * Copyright 2019-2025 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -8,7 +8,6 @@ package kotlinx.datetime.test.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
 import kotlin.test.*
 
 class DateTimeComponentsFormatTest {
@@ -266,6 +265,140 @@ class DateTimeComponentsFormatTest {
             for (otherString in otherStrings) {
                 assertDateTimeComponentsEqual(value, format.parse(otherString), "parsing '$otherString' with $format")
             }
+        }
+    }
+
+    private object TimezoneTestData {
+        val correctParsableOffsets = listOf(
+            // Single digit hours (H format)
+            "1", "9", "0",
+            // Two-digit hours (HH format)
+            "09", "11", "18",
+            // Hours and minutes without a separator (HHMM format)
+            "0110", "0230", "0930",
+            // Hours, minutes, and seconds without a separator (HHMMSS format)
+            "010000", "000100", "012345",
+            // Hours and minutes with colon separator (HH:MM format)
+            "01:15", "02:35", "09:35",
+            // Hours, minutes, and seconds with colon separators (HH:MM:SS format)
+            "01:10:32", "15:51:00", "17:54:32"
+        )
+
+        val incorrectParsableOffsets = listOf(
+            // Invalid hours (exceeding typical timezone ranges)
+            "19", "99", "20",
+            // HHMM format with invalid minutes (>59) or hours (>18)
+            "2010", "0260", "0999", "9999",
+            // HHMMSS format with invalid hours, minutes, or seconds
+            "180001", "006000", "000099", "999999",
+            // HH:MM format with invalid hours or minutes
+            "30:10", "02:70", "99:99",
+            // HH:MM:SS format with invalid hours, minutes, or seconds
+            "19:00:00", "00:60:00", "99:99:99",
+        )
+
+        val incorrectUnparsableOffsets = listOf(
+            // Single non-digit characters
+            "a", "_", "+",
+            // Two characters: letter+digit, letter+symbol, digit+symbol
+            "a9", "y!", "1#",
+            // Three digits (invalid length - not 2 or 4 digits)
+            "110", "020",
+            // Five digits (invalid length - not 4 or 6 digits)
+            "18000", "02300",
+            // HH:MM format violations: single digit hour, missing minute, missing hour
+            "3:10", "2:70", "99:", ":20",
+            // Invalid colon-separated formats: too many digits in an hour/minute component
+            "12:3456", "1234:56",
+            // HH:MM:SS format violations: single digit hour, single digit minute, single digit second
+            "1:00:00", "00:6:00", "09:99:9",
+            // Colon placement errors
+            ":00:00", "00::00", "09:99:", "::00", "00::", "::",
+            // HH:MM:SS format violations: 3-digit hour, 3-digit minute, 3-digit second
+            "180:00:00", "00:610:00", "99:99:199"
+        )
+
+        val tzPrefixes = listOf("UTC", "GMT", "UT")
+
+        val timezoneDbIdentifiers = listOf(
+            "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
+            "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
+            "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
+        )
+
+        val invalidTimezoneIds = listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE", "SYSTEM")
+    }
+
+    @Test
+    fun testZuluTimeZone() {
+        // Replace it to:
+        // listOf("z", "Z").forEach(::assertParseableAsTimeZone)
+        // when TimeZone.of("z") works correctly
+        assertParseableAsTimeZone("Z")
+        assertIncorrectlyParseableAsTimeZone("z")
+    }
+
+    @Test
+    fun testSpecialNamedTimezones() {
+        TimezoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
+    }
+
+    @Test
+    fun testPrefixWithCorrectParsableOffset() {
+        val timezoneIds =
+            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.correctParsableOffsets)
+        timezoneIds.forEach(::assertParseableAsTimeZone)
+    }
+
+    @Test
+    fun testPrefixWithIncorrectParsableOffset() {
+        val timezoneIds =
+            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectParsableOffsets)
+        timezoneIds.forEach(::assertIncorrectlyParseableAsTimeZone)
+    }
+
+    @Test
+    fun testPrefixWithIncorrectUnparsableOffset() {
+        val timezoneIds =
+            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectUnparsableOffsets)
+        timezoneIds.forEach(::assertNonParseableAsTimeZone)
+    }
+
+    @Test
+    fun testTimezoneDBIdentifiers() {
+        TimezoneTestData.timezoneDbIdentifiers.forEach(::assertParseableAsTimeZone)
+    }
+
+    @Test
+    fun testInvalidTimezoneIds() {
+        TimezoneTestData.invalidTimezoneIds.forEach(::assertNonParseableAsTimeZone)
+    }
+
+    private fun generateTimezoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
+        for (prefix in prefixes) {
+            for (sign in listOf('+', '-')) {
+                for (offset in offsets) {
+                    add("$prefix$sign$offset")
+                }
+            }
+        }
+    }
+
+    private fun assertParseableAsTimeZone(zoneId: String) {
+        TimeZone.of(zoneId)
+        val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+        assertEquals(zoneId, result.timeZoneId)
+    }
+
+    private fun assertIncorrectlyParseableAsTimeZone(zoneId: String) {
+        assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
+        val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+        assertEquals(zoneId, result.timeZoneId)
+    }
+
+    private fun assertNonParseableAsTimeZone(zoneId: String) {
+        assertFailsWith<DateTimeFormatException> {
+            DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
         }
     }
 }
