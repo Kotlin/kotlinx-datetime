@@ -331,11 +331,7 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testZuluTimeZone() {
-        // Replace it to:
-        // listOf("z", "Z").forEach(::assertParseableAsTimeZone)
-        // when TimeZone.of("z") works correctly
-        assertParseableAsTimeZone("Z")
-        assertIncorrectlyParseableAsTimeZone("z")
+        listOf("z", "Z").forEach(::assertParseableAsTimeZone)
     }
 
     @Test
