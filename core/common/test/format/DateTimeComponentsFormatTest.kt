@@ -332,49 +332,43 @@ class DateTimeComponentsFormatTest {
     @Test
     fun testZuluTimeZone() {
         // Replace it to:
-        // assertTimezoneParsingBehavior(listOf("Z", "z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        // assertParseableAsTimeZone(listOf("Z", "z"))
         // when TimeZone.of("z") works correctly
-        assertTimezoneParsingBehavior(listOf("Z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
-        assertTimezoneParsingBehavior(listOf("z"), ParseExpectation.SHOULD_PARSE_INCORRECTLY)
+        assertParseableAsTimeZone(listOf("Z"))
+        assertIncorrectlyParseableAsTimeZone(listOf("z"))
     }
 
     @Test
     fun testSpecialNamedTimezones() {
-        assertTimezoneParsingBehavior(TimezoneTestData.tzPrefixes, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        assertParseableAsTimeZone(TimezoneTestData.tzPrefixes)
     }
 
     @Test
     fun testPrefixWithCorrectParsableOffset() {
         val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.correctParsableOffsets)
-        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        assertParseableAsTimeZone(timezoneIds)
     }
 
     @Test
     fun testPrefixWithIncorrectParsableOffset() {
         val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectParsableOffsets)
-        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_PARSE_INCORRECTLY)
+        assertIncorrectlyParseableAsTimeZone(timezoneIds)
     }
 
     @Test
     fun testPrefixWithIncorrectUnparsableOffset() {
         val timezoneIds = generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectUnparsableOffsets)
-        assertTimezoneParsingBehavior(timezoneIds, ParseExpectation.SHOULD_FAIL_TO_PARSE)
+        assertNonParseableAsTimeZone(timezoneIds)
     }
 
     @Test
     fun testTimezoneDBIdentifiers() {
-        assertTimezoneParsingBehavior(TimezoneTestData.timezoneDbIdentifiers, ParseExpectation.SHOULD_PARSE_CORRECTLY)
+        assertParseableAsTimeZone(TimezoneTestData.timezoneDbIdentifiers)
     }
 
     @Test
     fun testInvalidTimezoneIds() {
-        assertTimezoneParsingBehavior(TimezoneTestData.invalidTimezoneIds, ParseExpectation.SHOULD_FAIL_TO_PARSE)
-    }
-
-    enum class ParseExpectation {
-        SHOULD_PARSE_CORRECTLY,
-        SHOULD_PARSE_INCORRECTLY,
-        SHOULD_FAIL_TO_PARSE
+        assertNonParseableAsTimeZone(TimezoneTestData.invalidTimezoneIds)
     }
 
     private fun generateTimezoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
@@ -387,26 +381,26 @@ class DateTimeComponentsFormatTest {
         }
     }
 
-    private fun assertTimezoneParsingBehavior(zoneIds: List<String>, expectation: ParseExpectation) {
+    private fun assertParseableAsTimeZone(zoneIds: List<String>) {
         zoneIds.forEach { zoneId ->
-            when (expectation) {
-                ParseExpectation.SHOULD_PARSE_CORRECTLY -> {
-                    TimeZone.of(zoneId)
-                    val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-                    assertEquals(zoneId, result.timeZoneId)
-                }
+            TimeZone.of(zoneId)
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            assertEquals(zoneId, result.timeZoneId)
+        }
+    }
 
-                ParseExpectation.SHOULD_PARSE_INCORRECTLY -> {
-                    assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
-                    val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-                    assertEquals(zoneId, result.timeZoneId)
-                }
+    private fun assertIncorrectlyParseableAsTimeZone(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
+            val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+            assertEquals(zoneId, result.timeZoneId)
+        }
+    }
 
-                ParseExpectation.SHOULD_FAIL_TO_PARSE -> {
-                    assertFailsWith<DateTimeFormatException> {
-                        DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-                    }
-                }
+    private fun assertNonParseableAsTimeZone(zoneIds: List<String>) {
+        zoneIds.forEach { zoneId ->
+            assertFailsWith<DateTimeFormatException> {
+                DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
             }
         }
     }
