@@ -313,7 +313,7 @@ class DateTimeComponentsFormatTest {
     fun testZuluTimeZone() {
         // Replace it to:
         // assertTimezoneParsingBehavior(listOf("Z", "z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
-        // when TimeZone.of("z") will work correctly
+        // when TimeZone.of("z") works correctly
         assertTimezoneParsingBehavior(listOf("Z"), ParseExpectation.SHOULD_PARSE_CORRECTLY)
         assertTimezoneParsingBehavior(listOf("z"), ParseExpectation.SHOULD_PARSE_INCORRECTLY)
     }
