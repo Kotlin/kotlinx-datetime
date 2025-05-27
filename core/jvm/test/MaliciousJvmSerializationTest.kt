@@ -3,9 +3,9 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime
+package kotlinx.datetime.test
 
-import kotlinx.datetime.MaliciousJvmSerializationTest.TestCase.Streams
+import kotlinx.datetime.test.MaliciousJvmSerializationTest.TestCase.Streams
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
 import java.io.Serializable
@@ -61,7 +61,6 @@ class MaliciousJvmSerializationTest {
         )
     }
 
-    @Suppress("RemoveRedundantQualifierName")
     private val testCases = listOf(
         TestCase(
             kotlinx.datetime.LocalDate::class,
