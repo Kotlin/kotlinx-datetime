@@ -19,7 +19,7 @@ import kotlinx.serialization.encoding.*
  * @see LocalTime.Formats.ISO
  */
 public object LocalTimeIso8601Serializer : KSerializer<LocalTime>
-by LocalTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalTime ISO")
+by LocalTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalTime/ISO")
 
 /**
  * A serializer for [LocalTime] that represents a value as its components.
@@ -29,7 +29,7 @@ by LocalTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalTime ISO")
 public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("kotlinx.datetime.LocalTime components") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalTime/components") {
             element<Short>("hour")
             element<Short>("minute")
             element<Short>("second", isOptional = true)
@@ -97,7 +97,7 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
  */
 public abstract class FormattedLocalTimeSerializer(
     name: String, format: DateTimeFormat<LocalTime>
-) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime serializer $name")
+) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime/serializer/$name")
 
 /**
  * A serializer for [LocalTime] that uses the ISO 8601 representation.

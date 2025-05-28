@@ -60,7 +60,7 @@ public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
  * @see UtcOffset.Formats.ISO
  */
 public object UtcOffsetIso8601Serializer : KSerializer<UtcOffset>
-by UtcOffset.Formats.ISO.asKSerializer("kotlinx.datetime.UtcOffset ISO")
+by UtcOffset.Formats.ISO.asKSerializer("kotlinx.datetime.UtcOffset/ISO")
 
 /**
  * A serializer for [UtcOffset] that uses the default [UtcOffset.toString]/[UtcOffset.parse].
@@ -107,4 +107,4 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
  */
 public abstract class FormattedUtcOffsetSerializer(
     name: String, format: DateTimeFormat<UtcOffset>
-) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset serializer $name")
+) : KSerializer<UtcOffset> by format.asKSerializer("kotlinx.datetime.UtcOffset/serializer/$name")

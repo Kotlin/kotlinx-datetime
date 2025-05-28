@@ -19,7 +19,7 @@ import kotlinx.serialization.encoding.*
  * @see LocalDateTime.Formats.ISO
  */
 public object LocalDateTimeIso8601Serializer : KSerializer<LocalDateTime>
-by LocalDateTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalDateTime ISO")
+by LocalDateTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalDateTime/ISO")
 
 /**
  * A serializer for [LocalDateTime] that represents a value as its components.
@@ -29,7 +29,7 @@ by LocalDateTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalDateTime ISO")
 public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("kotlinx.datetime.LocalDateTime components") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalDateTime/components") {
             element<Int>("year")
             element<Short>("month")
             element<Short>("day")
@@ -117,7 +117,7 @@ public object LocalDateTimeComponentSerializer: KSerializer<LocalDateTime> {
  */
 public abstract class FormattedLocalDateTimeSerializer(
     name: String, format: DateTimeFormat<LocalDateTime>
-) : KSerializer<LocalDateTime> by format.asKSerializer("kotlinx.datetime.LocalDateTime serializer $name")
+) : KSerializer<LocalDateTime> by format.asKSerializer("kotlinx.datetime.LocalDateTime/serializer/$name")
 
 /**
  * A serializer for [LocalDateTime] that uses the default [LocalDateTime.toString]/[LocalDateTime.parse].
