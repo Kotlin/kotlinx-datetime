@@ -11,7 +11,7 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.format.parser.ParserStructure
-import kotlinx.datetime.internal.format.parser.TimeZoneParserOperation
+import kotlinx.datetime.internal.format.parser.OffsetTimezoneParserOperation
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
@@ -578,7 +578,7 @@ internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
             listOf(
                 super.parser(),
                 ParserStructure(
-                    listOf(TimeZoneParserOperation(timeZoneField.accessor)),
+                    listOf(OffsetTimezoneParserOperation(timeZoneField.accessor)),
                     emptyList()
                 )
             )

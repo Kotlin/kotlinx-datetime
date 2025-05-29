@@ -139,7 +139,7 @@ internal class UnconditionalModification<Output>(
     }
 }
 
-internal class TimeZoneParserOperation<Output>(
+internal class OffsetTimezoneParserOperation<Output>(
     private val setter: AssignableField<Output, String>
 ) : ParserOperation<Output> {
 
