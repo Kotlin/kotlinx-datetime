@@ -227,7 +227,7 @@ class LocalDateTimeFormatTest {
     @Test
     fun testBasicIso() {
         val dateTimes = buildMap<LocalDateTime, Pair<String, Set<String>>> {
-            put(LocalDateTime(2008, 7, 5, 0, 0, 0, 0), ("20080705T0000" to setOf("20080705T0000")))
+            put(LocalDateTime(2008, 7, 5, 0, 0, 0, 0), ("20080705T0000" to setOf("20080705t0000")))
             put(LocalDateTime(2007, 12, 31, 1, 0, 0, 0), ("20071231T0100" to setOf("20071231t010000")))
             put(LocalDateTime(999, 11, 30, 23, 0, 0, 0), ("09991130T2300" to setOf()))
             put(LocalDateTime(-1, 1, 2, 0, 1, 0, 0), ("-00010102T0001" to setOf()))
