@@ -159,7 +159,6 @@ internal abstract class TimezoneParserOperation<Output>(
 internal class OffsetTimezoneParserOperation<Output>(
     setter: AssignableField<Output, String>
 ) : TimezoneParserOperation<Output>(setter) {
-
     private enum class State {
         START,
         AFTER_PREFIX,
@@ -253,6 +252,14 @@ internal class OffsetTimezoneParserOperation<Output>(
         }
 
         return if (state == State.END) index else lastValidIndex
+    }
+}
+
+internal class NamedTimezoneParserOperation<Output>(
+    setter: AssignableField<Output, String>
+) : TimezoneParserOperation<Output>(setter) {
+    override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+        TODO("Not yet implemented")
     }
 }
 
