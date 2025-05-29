@@ -139,7 +139,7 @@ internal class UnconditionalModification<Output>(
     }
 }
 
-internal class OffsetTimezoneParserOperation<Output>(
+internal abstract class TimezoneParserOperation<Output>(
     private val setter: AssignableField<Output, String>
 ) : ParserOperation<Output> {
 
@@ -153,101 +153,106 @@ internal class OffsetTimezoneParserOperation<Output>(
         }
     }
 
-    companion object {
-        private enum class State {
-            START,
-            AFTER_PREFIX,
-            AFTER_SIGN,
-            AFTER_HOUR,
-            AFTER_MINUTE,
-            AFTER_COLON_MINUTE,
-            END,
-            INVALID
+    protected abstract fun validateTimezone(input: CharSequence, startIndex: Int): Int
+}
+
+internal class OffsetTimezoneParserOperation<Output>(
+    setter: AssignableField<Output, String>
+) : TimezoneParserOperation<Output>(setter) {
+
+    private enum class State {
+        START,
+        AFTER_PREFIX,
+        AFTER_SIGN,
+        AFTER_HOUR,
+        AFTER_MINUTE,
+        AFTER_COLON_MINUTE,
+        END,
+        INVALID
+    }
+
+    override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+        var index = startIndex
+        var lastValidIndex = startIndex
+
+        fun validatePrefix(validValues: List<String>): Boolean =
+            validValues.firstOrNull { input.startsWith(it) }?.let {
+                index += it.length
+                lastValidIndex = index
+                true
+            } ?: false
+
+        fun validateTimeComponent(length: Int): Boolean {
+            if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
+                index += length
+                lastValidIndex = index
+                return true
+            }
+            return false
         }
 
-        private fun validateTimezone(input: CharSequence, startIndex: Int): Int {
-            var index = startIndex
-            var lastValidIndex = startIndex
+        var state = State.START
+        while (index < input.length) {
+            state = when (state) {
+                State.START -> when {
+                    input[index] == 'Z' || input[index] == 'z' -> {
+                        index++
+                        State.END
+                    }
 
-            fun validatePrefix(validValues: List<String>): Boolean =
-                validValues.firstOrNull { input.startsWith(it) }?.let {
-                    index += it.length
-                    lastValidIndex = index
-                    true
-                } ?: false
+                    input[index] in listOf('+', '-') -> {
+                        index++
+                        State.AFTER_SIGN
+                    }
 
-            fun validateTimeComponent(length: Int): Boolean {
-                if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
-                    index += length
-                    lastValidIndex = index
-                    return true
+                    validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
+                    else -> State.INVALID
                 }
-                return false
-            }
 
-            var state = State.START
-            while (index < input.length) {
-                state = when (state) {
-                    State.START -> when {
-                        input[index] == 'Z' || input[index] == 'z' -> {
-                            index++
-                            State.END
-                        }
-
-                        input[index] in listOf('+', '-') -> {
-                            index++
-                            State.AFTER_SIGN
-                        }
-
-                        validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
-                        else -> State.INVALID
+                State.AFTER_PREFIX -> when {
+                    input[index] in listOf('+', '-') -> {
+                        index++
+                        State.AFTER_SIGN
                     }
 
-                    State.AFTER_PREFIX -> when {
-                        input[index] in listOf('+', '-') -> {
-                            index++
-                            State.AFTER_SIGN
-                        }
-
-                        else -> State.INVALID
-                    }
-
-                    State.AFTER_SIGN -> when {
-                        validateTimeComponent(2) -> State.AFTER_HOUR
-                        validateTimeComponent(1) -> State.END
-                        else -> State.INVALID
-                    }
-
-                    State.AFTER_HOUR -> when {
-                        input[index] == ':' -> {
-                            index++
-                            if (validateTimeComponent(2)) State.AFTER_COLON_MINUTE else State.INVALID
-                        }
-
-                        validateTimeComponent(2) -> State.AFTER_MINUTE
-                        else -> State.INVALID
-                    }
-
-                    State.AFTER_MINUTE -> when {
-                        validateTimeComponent(2) -> State.END
-                        else -> State.INVALID
-                    }
-
-                    State.AFTER_COLON_MINUTE -> when {
-                        input[index] == ':' -> {
-                            index++
-                            if (validateTimeComponent(2)) State.END else State.INVALID
-                        }
-
-                        else -> State.INVALID
-                    }
-
-                    State.END, State.INVALID -> break
+                    else -> State.INVALID
                 }
-            }
 
-            return if (state == State.END) index else lastValidIndex
+                State.AFTER_SIGN -> when {
+                    validateTimeComponent(2) -> State.AFTER_HOUR
+                    validateTimeComponent(1) -> State.END
+                    else -> State.INVALID
+                }
+
+                State.AFTER_HOUR -> when {
+                    input[index] == ':' -> {
+                        index++
+                        if (validateTimeComponent(2)) State.AFTER_COLON_MINUTE else State.INVALID
+                    }
+
+                    validateTimeComponent(2) -> State.AFTER_MINUTE
+                    else -> State.INVALID
+                }
+
+                State.AFTER_MINUTE -> when {
+                    validateTimeComponent(2) -> State.END
+                    else -> State.INVALID
+                }
+
+                State.AFTER_COLON_MINUTE -> when {
+                    input[index] == ':' -> {
+                        index++
+                        if (validateTimeComponent(2)) State.END else State.INVALID
+                    }
+
+                    else -> State.INVALID
+                }
+
+                State.END, State.INVALID -> break
+            }
         }
+
+        return if (state == State.END) index else lastValidIndex
     }
 }
 
