@@ -95,7 +95,6 @@ class DateTimeComponentsFormatTest {
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
         assertEquals(berlin, bag.timeZoneId)
-        format.assertCanNotParse("2008-06-03T11:05:30.123456789+01:00[Mars/New_York]")
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("2008-06-03T11:05:30.123456789+01:00[$zone]").timeZoneId)
         }
@@ -103,9 +102,9 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = DateTimeComponents.Format { timeZoneId(); chars("X") }
+        val format = DateTimeComponents.Format { timeZoneId(); chars("]") }
         for (zone in TimeZone.availableZoneIds) {
-            assertEquals(zone, format.parse("${zone}X").timeZoneId)
+            assertEquals(zone, format.parse("${zone}]").timeZoneId)
         }
     }
 
@@ -298,14 +297,6 @@ class DateTimeComponentsFormatTest {
         )
 
         val incorrectUnparsableOffsets = listOf(
-            // Single non-digit characters
-            "a", "_", "+",
-            // Two characters: letter+digit, letter+symbol, digit+symbol
-            "a9", "y!", "1#",
-            // Three digits (invalid length - not 2 or 4 digits)
-            "110", "020",
-            // Five digits (invalid length - not 4 or 6 digits)
-            "18000", "02300",
             // HH:MM format violations: single digit hour, missing minute, missing hour
             "3:10", "2:70", "99:", ":20",
             // Invalid colon-separated formats: too many digits in an hour/minute component
@@ -326,7 +317,7 @@ class DateTimeComponentsFormatTest {
             "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
         )
 
-        val invalidTimezoneIds = listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE", "SYSTEM")
+        val invalidTimezoneIds = listOf("INV#ALID", "<XYZ>", "ABC//DEF", "NOT_A_TIMEZONE!", "-SYSTEM")
     }
 
     @Test

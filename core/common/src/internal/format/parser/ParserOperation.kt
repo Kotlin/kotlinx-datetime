@@ -258,8 +258,64 @@ internal class OffsetTimezoneParserOperation<Output>(
 internal class NamedTimezoneParserOperation<Output>(
     setter: AssignableField<Output, String>
 ) : TimezoneParserOperation<Output>(setter) {
+    private enum class State {
+        EXPECTING_INITIAL,
+        IN_PART,
+        AFTER_SLASH
+    }
+
     override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
-        TODO("Not yet implemented")
+        fun Char.isTimeZoneInitial() = isLetter() || this == '.' || this == '_'
+        fun Char.isTimeZoneChar() = isTimeZoneInitial() || isDigit() || this == '-' || this == '+'
+
+        var index = startIndex
+        var state = State.EXPECTING_INITIAL
+
+        while (index < input.length) {
+            val currentChar = input[index]
+            state = when (state) {
+                State.EXPECTING_INITIAL -> when {
+                    currentChar.isTimeZoneInitial() -> {
+                        index++
+                        State.IN_PART
+                    }
+
+                    else -> break
+                }
+
+                State.IN_PART -> when {
+                    currentChar.isTimeZoneChar() -> {
+                        index++
+                        State.IN_PART
+                    }
+
+                    currentChar == '/' -> {
+                        index++
+                        State.AFTER_SLASH
+                    }
+
+                    else -> break
+                }
+
+                State.AFTER_SLASH -> when {
+                    currentChar.isTimeZoneInitial() -> {
+                        index++
+                        State.IN_PART
+                    }
+
+                    else -> {
+                        index--
+                        break
+                    }
+                }
+            }
+        }
+
+        if (state == State.AFTER_SLASH) {
+            index--
+        }
+
+        return index
     }
 }
 
