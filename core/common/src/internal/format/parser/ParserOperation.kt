@@ -266,7 +266,7 @@ internal class NamedTimezoneParserOperation<Output>(
 
     override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
         fun Char.isTimeZoneInitial() = isLetter() || this == '.' || this == '_'
-        fun Char.isTimeZoneChar() = isTimeZoneInitial() || isDigit() || this == '-' || this == '+'
+        fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
         var index = startIndex
         var state = State.EXPECTING_INITIAL
