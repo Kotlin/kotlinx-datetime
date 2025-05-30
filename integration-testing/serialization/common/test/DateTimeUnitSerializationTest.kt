@@ -18,7 +18,7 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
-            val json = "{\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
+            val json = "{\"nanoseconds\":$nanoseconds}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
@@ -65,7 +65,7 @@ class DateTimeUnitSerializationTest {
         repeat(100) {
             val nanoseconds = Random.nextLong(1, Long.MAX_VALUE)
             val unit = DateTimeUnit.TimeBased(nanoseconds)
-            val json = "{\"type\":\"kotlinx.datetime.TimeBased\",\"nanoseconds\":${nanoseconds.toString()}}" // https://youtrack.jetbrains.com/issue/KT-39891
+            val json = "{\"type\":\"kotlinx.datetime.TimeBased\",\"nanoseconds\":$nanoseconds}"
             assertEquals(json, Json.encodeToString(serializer, unit))
             assertEquals(unit, Json.decodeFromString(serializer, json))
         }
@@ -87,21 +87,25 @@ class DateTimeUnitSerializationTest {
 
     @Test
     fun testTimeBasedUnitSerialization() {
+        assertKSerializerName("kotlinx.datetime.TimeBased", TimeBasedDateTimeUnitSerializer)
         timeBasedSerialization(TimeBasedDateTimeUnitSerializer)
     }
 
     @Test
     fun testDayBasedSerialization() {
+        assertKSerializerName("kotlinx.datetime.DayBased", DayBasedDateTimeUnitSerializer)
         dayBasedSerialization(DayBasedDateTimeUnitSerializer)
     }
 
     @Test
     fun testMonthBasedSerialization() {
+        assertKSerializerName("kotlinx.datetime.MonthBased", MonthBasedDateTimeUnitSerializer)
         monthBasedSerialization(MonthBasedDateTimeUnitSerializer)
     }
 
     @Test
     fun testDateBasedSerialization() {
+        assertKSerializerName("kotlinx.datetime.DateTimeUnit.DateBased", DateBasedDateTimeUnitSerializer)
         dateBasedSerialization(DateBasedDateTimeUnitSerializer)
     }
 

@@ -46,7 +46,11 @@ class TimeZoneSerializationTest {
 
     @Test
     fun testDefaultSerializers() {
+        assertKSerializerName<FixedOffsetTimeZone>(
+            "kotlinx.datetime.FixedOffsetTimeZone", Json.serializersModule.serializer()
+        )
         zoneOffsetSerialization(Json.serializersModule.serializer())
+        assertKSerializerName<TimeZone>("kotlinx.datetime.TimeZone", Json.serializersModule.serializer())
         serialization(Json.serializersModule.serializer())
     }
 }

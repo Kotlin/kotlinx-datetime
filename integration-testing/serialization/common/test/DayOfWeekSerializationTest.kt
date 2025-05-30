@@ -13,6 +13,7 @@ import kotlin.test.*
 class DayOfWeekSerializationTest {
     @Test
     fun testSerialization() {
+        assertKSerializerName("kotlinx.datetime.DayOfWeek", DayOfWeekSerializer)
         for (dayOfWeek in DayOfWeek.entries) {
             val json = "\"${dayOfWeek.name}\""
             assertEquals(json, Json.encodeToString(DayOfWeekSerializer, dayOfWeek))

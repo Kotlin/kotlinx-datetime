@@ -6,6 +6,7 @@
 package kotlinx.datetime.serializers
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
@@ -15,21 +16,10 @@ import kotlinx.serialization.encoding.*
  *
  * JSON example: `"12:01:03.999"`
  *
- * @see LocalDate.parse
- * @see LocalDate.toString
+ * @see LocalTime.Formats.ISO
  */
-public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): LocalTime =
-        LocalTime.parse(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: LocalTime) {
-        encoder.encodeString(value.toString())
-    }
-}
+public object LocalTimeIso8601Serializer : KSerializer<LocalTime>
+by LocalTime.Formats.ISO.asKSerializer("kotlinx.datetime.LocalTime/ISO")
 
 /**
  * A serializer for [LocalTime] that represents a value as its components.
@@ -39,7 +29,7 @@ public object LocalTimeIso8601Serializer : KSerializer<LocalTime> {
 public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
 
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("kotlinx.datetime.LocalTime") {
+        buildClassSerialDescriptor("kotlinx.datetime.LocalTime/components") {
             element<Short>("hour")
             element<Short>("minute")
             element<Short>("second", isOptional = true)
@@ -79,5 +69,54 @@ public object LocalTimeComponentSerializer : KSerializer<LocalTime> {
                 }
             }
         }
+    }
+}
+
+/**
+ * An abstract serializer for [LocalTime] values that uses
+ * a custom [DateTimeFormat] to serialize and deserialize the value.
+ *
+ * [name] is the name of the serializer.
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.LocalTime/serializer/`[name].
+ * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
+ * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
+ * to avoid conflicts with serializers defined by other libraries and client code.
+ *
+ * This serializer is abstract and must be subclassed to provide a concrete serializer.
+ * Example:
+ * ```
+ * // serializes LocalTime(12, 30) as "12:30:00.000"
+ * object FixedWidthTimeSerializer : FormattedLocalTimeSerializer("my.package.FixedWidthTime", LocalTime.Format {
+ *     hour(); char(':'); minute(); char(':'); second(); char('.'); secondFraction(3)
+ * })
+ * ```
+ *
+ * Note that [LocalTime] is [kotlinx.serialization.Serializable] by default,
+ * so it is not necessary to create custom serializers when the format is not important.
+ * Additionally, [LocalTimeIso8601Serializer] is provided for the ISO 8601 format.
+ */
+public abstract class FormattedLocalTimeSerializer(
+    name: String, format: DateTimeFormat<LocalTime>
+) : KSerializer<LocalTime> by format.asKSerializer("kotlinx.datetime.LocalTime/serializer/$name")
+
+/**
+ * A serializer for [LocalTime] that uses the ISO 8601 representation.
+ *
+ * JSON example: `"12:01:03.999"`
+ *
+ * @see LocalDate.parse
+ * @see LocalDate.toString
+ */
+@PublishedApi
+internal object LocalTimeSerializer : KSerializer<LocalTime> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("kotlinx.datetime.LocalTime", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): LocalTime =
+        LocalTime.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: LocalTime) {
+        encoder.encodeString(value.toString())
     }
 }

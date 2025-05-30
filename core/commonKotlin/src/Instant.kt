@@ -10,7 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.InstantIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.*
 import kotlin.time.Duration.Companion.nanoseconds
@@ -26,7 +26,7 @@ private const val MIN_SECOND = -31557014167219200L // -1000000000-01-01T00:00:00
  */
 private const val MAX_SECOND = 31556889864403199L // +1000000000-12-31T23:59:59
 
-@Serializable(with = InstantIso8601Serializer::class)
+@Serializable(with = InstantSerializer::class)
 public actual class Instant internal constructor(public actual val epochSeconds: Long, public actual val nanosecondsOfSecond: Int) : Comparable<Instant> {
 
     init {
