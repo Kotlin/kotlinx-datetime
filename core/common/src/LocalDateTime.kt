@@ -8,8 +8,7 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
-import kotlinx.datetime.serializers.LocalDateTimeComponentSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.internal.*
 import kotlin.jvm.JvmMultifileClass
@@ -99,6 +98,7 @@ import kotlin.jvm.JvmName
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDateTime]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [LocalDateTimeIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateTimeComponentSerializer] for an object with components.
  *
@@ -110,7 +110,7 @@ import kotlin.jvm.JvmName
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.customFormat
  */
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
 
