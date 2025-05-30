@@ -73,13 +73,13 @@ class LocalTimeSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.LocalTime ISO", LocalTimeIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.LocalTime/ISO", LocalTimeIso8601Serializer)
         iso8601Serialization(LocalTimeIso8601Serializer)
     }
 
     @Test
     fun testComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.LocalTime components", LocalTimeComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.LocalTime/components", LocalTimeComponentSerializer)
         componentSerialization(LocalTimeComponentSerializer)
     }
 
@@ -95,7 +95,7 @@ class LocalTimeSerializationTest {
 
     @Test
     fun testCustomSerializer() {
-        assertKSerializerName("kotlinx.datetime.LocalTime serializer FixedWidth", FixedWidthTimeSerializer)
+        assertKSerializerName("kotlinx.datetime.LocalTime/serializer/FixedWidth", FixedWidthTimeSerializer)
         for ((localTime, json) in listOf(
             Pair(LocalTime(2, 1), "\"02:01:00.000\""),
             Pair(LocalTime(23, 59, 1), "\"23:59:01.000\""),

@@ -47,7 +47,7 @@ class UtcOffsetSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset ISO", UtcOffsetIso8601Serializer)
+        assertKSerializerName<UtcOffset>("kotlinx.datetime.UtcOffset/ISO", UtcOffsetIso8601Serializer)
         iso8601Serialization(UtcOffsetIso8601Serializer)
     }
 
@@ -64,7 +64,7 @@ class UtcOffsetSerializationTest {
 
     @Test
     fun testCustomSerializer() {
-        assertKSerializerName("kotlinx.datetime.UtcOffset serializer FOUR_DIGITS", FourDigitOffsetSerializer)
+        assertKSerializerName("kotlinx.datetime.UtcOffset/serializer/FOUR_DIGITS", FourDigitOffsetSerializer)
         for ((utcOffset, json) in listOf(
             Pair(UtcOffset.ZERO, "\"+0000\""),
             Pair(UtcOffset(2), "\"+0200\""),

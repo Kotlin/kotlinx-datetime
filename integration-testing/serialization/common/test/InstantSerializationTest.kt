@@ -70,13 +70,13 @@ class InstantSerializationTest {
 
     @Test
     fun testIso8601Serialization() {
-        assertKSerializerName("kotlinx.datetime.Instant ISO", InstantIso8601Serializer)
+        assertKSerializerName("kotlinx.datetime.Instant/ISO", InstantIso8601Serializer)
         iso8601Serialization(InstantIso8601Serializer)
     }
 
     @Test
     fun testComponentSerialization() {
-        assertKSerializerName("kotlinx.datetime.Instant components", InstantComponentSerializer)
+        assertKSerializerName("kotlinx.datetime.Instant/components", InstantComponentSerializer)
         componentSerialization(InstantComponentSerializer)
     }
 
@@ -91,7 +91,7 @@ class InstantSerializationTest {
 
     @Test
     fun testCustomSerializer() {
-        assertKSerializerName("kotlinx.datetime.Instant serializer RFC_1123", Rfc1123InstantSerializer)
+        assertKSerializerName("kotlinx.datetime.Instant/serializer/RFC_1123", Rfc1123InstantSerializer)
         for ((instant, json) in listOf(
             Pair(Instant.fromEpochSeconds(1607505416),
                 "\"Wed, 9 Dec 2020 09:16:56 GMT\""),
