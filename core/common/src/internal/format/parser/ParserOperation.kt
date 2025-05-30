@@ -259,36 +259,31 @@ internal class OffsetTimeZoneParserOperation<Output>(
 internal class NamedTimeZoneParserOperation<Output>(
     setter: AssignableField<Output, String>
 ) : TimeZoneParserOperation<Output>(setter) {
-    private enum class State {
-        START,
-        IN_PART
-    }
-
     override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
         fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
         fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
         var index = startIndex
-        var state = State.START
+        var inPart = false
 
         while (index < input.length) {
             val currentChar = input[index]
-            state = when (state) {
-                State.START -> when {
-                    currentChar.isTimeZoneInitial() -> State.IN_PART
+            inPart = if (inPart) {
+                when {
+                    currentChar.isTimeZoneChar() -> true
+                    currentChar == '/' -> false
                     else -> break
                 }
-
-                State.IN_PART -> when {
-                    currentChar.isTimeZoneChar() -> State.IN_PART
-                    currentChar == '/' -> State.START
+            } else {
+                when {
+                    currentChar.isTimeZoneInitial() -> true
                     else -> break
                 }
             }
             index++
         }
 
-        if (state != State.IN_PART) index--
+        if (!inPart) index--
 
         return index
     }
