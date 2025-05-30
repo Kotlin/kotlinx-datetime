@@ -404,7 +404,8 @@ class DateTimeComponentsFormatTest {
             "CET" to " 123",
             "CEST" to "\t456",
             "Asia/Tokyo" to "/1Invalid",
-            "Region/SubRegion" to "/@Invalid"
+            "Region/SubRegion" to "/@Invalid",
+            "America/New_York" to "/"
         )
     }
 
