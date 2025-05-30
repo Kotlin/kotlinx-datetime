@@ -139,12 +139,12 @@ internal class UnconditionalModification<Output>(
     }
 }
 
-internal abstract class TimezoneParserOperation<Output>(
+internal abstract class TimeZoneParserOperation<Output>(
     private val setter: AssignableField<Output, String>
 ) : ParserOperation<Output> {
 
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
-        val lastMatch = validateTimezone(input, startIndex)
+        val lastMatch = validateTimeZone(input, startIndex)
         return if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
             ParseResult.Ok(lastMatch)
@@ -153,12 +153,12 @@ internal abstract class TimezoneParserOperation<Output>(
         }
     }
 
-    protected abstract fun validateTimezone(input: CharSequence, startIndex: Int): Int
+    protected abstract fun validateTimeZone(input: CharSequence, startIndex: Int): Int
 }
 
-internal class OffsetTimezoneParserOperation<Output>(
+internal class OffsetTimeZoneParserOperation<Output>(
     setter: AssignableField<Output, String>
-) : TimezoneParserOperation<Output>(setter) {
+) : TimeZoneParserOperation<Output>(setter) {
     private enum class State {
         START,
         AFTER_PREFIX,
@@ -170,7 +170,7 @@ internal class OffsetTimezoneParserOperation<Output>(
         INVALID
     }
 
-    override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+    override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
         var index = startIndex
         var lastValidIndex = startIndex
 
@@ -255,16 +255,16 @@ internal class OffsetTimezoneParserOperation<Output>(
     }
 }
 
-internal class NamedTimezoneParserOperation<Output>(
+internal class NamedTimeZoneParserOperation<Output>(
     setter: AssignableField<Output, String>
-) : TimezoneParserOperation<Output>(setter) {
+) : TimeZoneParserOperation<Output>(setter) {
     private enum class State {
         EXPECTING_INITIAL,
         IN_PART,
         AFTER_SLASH
     }
 
-    override fun validateTimezone(input: CharSequence, startIndex: Int): Int {
+    override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
         fun Char.isTimeZoneInitial() = isLetter() || this == '.' || this == '_'
         fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 

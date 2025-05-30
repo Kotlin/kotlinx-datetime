@@ -12,9 +12,9 @@ import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.formatter.FormatterStructure
 import kotlinx.datetime.internal.format.formatter.StringFormatterStructure
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlinx.datetime.internal.format.parser.NamedTimezoneParserOperation
+import kotlinx.datetime.internal.format.parser.NamedTimeZoneParserOperation
 import kotlinx.datetime.internal.format.parser.ParserStructure
-import kotlinx.datetime.internal.format.parser.OffsetTimezoneParserOperation
+import kotlinx.datetime.internal.format.parser.OffsetTimeZoneParserOperation
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
@@ -584,11 +584,11 @@ internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsCo
             emptyList(),
             listOf(
                 ParserStructure(
-                    listOf(OffsetTimezoneParserOperation(timeZoneField.accessor)),
+                    listOf(OffsetTimeZoneParserOperation(timeZoneField.accessor)),
                     emptyList()
                 ),
                 ParserStructure(
-                    listOf(NamedTimezoneParserOperation(timeZoneField.accessor)),
+                    listOf(NamedTimeZoneParserOperation(timeZoneField.accessor)),
                     emptyList()
                 ),
             )
