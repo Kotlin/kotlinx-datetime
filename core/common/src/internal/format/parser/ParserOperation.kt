@@ -261,8 +261,7 @@ internal class NamedTimeZoneParserOperation<Output>(
 ) : TimeZoneParserOperation<Output>(setter) {
     private enum class State {
         START,
-        IN_PART,
-        AFTER_SLASH
+        IN_PART
     }
 
     override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
@@ -282,19 +281,14 @@ internal class NamedTimeZoneParserOperation<Output>(
 
                 State.IN_PART -> when {
                     currentChar.isTimeZoneChar() -> State.IN_PART
-                    currentChar == '/' -> State.AFTER_SLASH
-                    else -> break
-                }
-
-                State.AFTER_SLASH -> when {
-                    currentChar.isTimeZoneInitial() -> State.IN_PART
+                    currentChar == '/' -> State.START
                     else -> break
                 }
             }
             index++
         }
 
-        if (state == State.AFTER_SLASH) index--
+        if (state != State.IN_PART) index--
 
         return index
     }
