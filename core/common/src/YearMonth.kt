@@ -7,7 +7,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.YearMonthIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
@@ -57,7 +57,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.YearMonthSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.YearMonthSamples.customFormat
  */
-@Serializable(with = YearMonthIso8601Serializer::class)
+@Serializable(with = YearMonthSerializer::class)
 public expect class YearMonth
 /**
  * Constructs a [YearMonth] instance from the given year-month components.

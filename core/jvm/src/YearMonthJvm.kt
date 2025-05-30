@@ -7,7 +7,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.YearMonthIso8601Serializer
+import kotlinx.datetime.serializers.YearMonthSerializer
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeFormatterBuilder
@@ -15,7 +15,7 @@ import java.time.format.DateTimeParseException
 import java.time.format.SignStyle
 import java.time.YearMonth as jtYearMonth
 
-@Serializable(with = YearMonthIso8601Serializer::class)
+@Serializable(with = YearMonthSerializer::class)
 public actual class YearMonth internal constructor(
     internal val value: jtYearMonth
 ) : Comparable<YearMonth>, java.io.Serializable {

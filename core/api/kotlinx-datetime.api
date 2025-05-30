@@ -1100,6 +1100,15 @@ public abstract class kotlinx/datetime/serializers/FormattedUtcOffsetSerializer 
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/UtcOffset;)V
 }
 
+public abstract class kotlinx/datetime/serializers/FormattedYearMonthSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/YearMonth;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/YearMonth;)V
+}
+
 public final class kotlinx/datetime/serializers/InstantComponentSerializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/InstantComponentSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
@@ -1273,6 +1282,15 @@ public final class kotlinx/datetime/serializers/YearMonthComponentSerializer : k
 
 public final class kotlinx/datetime/serializers/YearMonthIso8601Serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lkotlinx/datetime/serializers/YearMonthIso8601Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/YearMonth;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/YearMonth;)V
+}
+
+public final class kotlinx/datetime/serializers/YearMonthSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lkotlinx/datetime/serializers/YearMonthSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/YearMonth;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
