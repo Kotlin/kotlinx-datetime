@@ -287,10 +287,25 @@ public sealed interface DateTimeFormatBuilder {
      */
     public sealed interface WithDateTimeComponents : WithDateTime, WithUtcOffset {
         /**
-         * The IANA time zone identifier, for example, "Europe/Berlin".
+         * A timezone identifier, either offset-based or a region-based IANA timezone ID.
          *
-         * When formatting, the timezone identifier is supplied as is, without any validation.
-         * On parsing, [TimeZone.availableZoneIds] is used to validate the identifier.
+         * Offset-based timezones:
+         * - `Z` or `z` - UTC
+         * - Optional prefix (`UTC`, `GMT`, `UT`) followed by offset
+         * - Direct offset with `+` or `-`
+         * - Formats: `H`, `HH`, `HHMM`, `HHMMSS`, `HH:MM`, `HH:MM:SS`
+         *
+         * Region-based IANA timezone IDs:
+         * Parsed according to Temporal grammar:
+         * ```
+         * time-zone-initial = ALPHA / "." / "_"
+         * time-zone-char    = time-zone-initial / DIGIT / "-" / "+"
+         * time-zone-part    = time-zone-initial *time-zone-char
+         * time-zone-name    = time-zone-part *("/" time-zone-part)
+         * ```
+         *
+         * When formatting, outputs the identifier as-is. When parsing, validates syntax only;
+         * actual timezone validation is deferred until creating a [TimeZone] object.
          *
          * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsFormatSamples.timeZoneId
          */
