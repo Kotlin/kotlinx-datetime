@@ -6,6 +6,7 @@
 package kotlinx.datetime.internal.format.parser
 
 import kotlinx.datetime.internal.isAsciiDigit
+import kotlinx.datetime.internal.isAsciiLetter
 
 internal interface ParserOperation<in Output> {
     fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult
@@ -265,7 +266,7 @@ internal class NamedTimeZoneParserOperation<Output>(
     }
 
     override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
-        fun Char.isTimeZoneInitial() = isLetter() || this == '.' || this == '_'
+        fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
         fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
         var index = startIndex
