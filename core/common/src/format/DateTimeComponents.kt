@@ -569,14 +569,14 @@ internal class DateTimeComponentsContents internal constructor(
 internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
 
 internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsContents> {
-    override val field: FieldSpec<DateTimeComponentsContents, *>
+    override val field: FieldSpec<DateTimeComponentsContents, String>
         get() = timeZoneField
 
     override val builderRepresentation: String
         get() = "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
 
     override fun formatter(): FormatterStructure<DateTimeComponentsContents> {
-        return StringFormatterStructure { field.accessor.getterNotNull(it).toString() }
+        return StringFormatterStructure { field.accessor.getterNotNull(it) }
     }
 
     override fun parser(): ParserStructure<DateTimeComponentsContents> =
