@@ -268,24 +268,18 @@ internal class NamedTimeZoneParserOperation<Output>(
 
         while (index < input.length) {
             val currentChar = input[index]
-            inPart = if (inPart) {
-                when {
-                    currentChar.isTimeZoneChar() -> true
-                    currentChar == '/' -> false
-                    else -> break
-                }
-            } else {
-                when {
-                    currentChar.isTimeZoneInitial() -> true
-                    else -> break
-                }
+            inPart = if (inPart) when {
+                currentChar.isTimeZoneChar() -> true
+                currentChar == '/' -> false
+                else -> break
+            } else when {
+                currentChar.isTimeZoneInitial() -> true
+                else -> break
             }
             index++
         }
 
-        if (!inPart) index--
-
-        return index
+        return index - if (inPart) 0 else 1
     }
 }
 
