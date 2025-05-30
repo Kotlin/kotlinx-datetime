@@ -576,7 +576,7 @@ internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsCo
         get() = "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
 
     override fun formatter(): FormatterStructure<DateTimeComponentsContents> {
-        return StringFormatterStructure { field.accessor.getterNotNull(it) }
+        return StringFormatterStructure(field.accessor::getterNotNull)
     }
 
     override fun parser(): ParserStructure<DateTimeComponentsContents> =
