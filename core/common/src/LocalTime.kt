@@ -85,6 +85,23 @@ public expect class LocalTime : Comparable<LocalTime> {
     public companion object {
 
         /**
+         * Constructs a [LocalTime] instance from the given time components
+         * or returns `null` if a value is out of range.
+         *
+         * The supported ranges of components:
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * Use `LocalTime(hour, minute, second, nanosecond)`
+         * to throw an exception instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.orNull
+         */
+        public fun orNull(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0): LocalTime?
+
+        /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
          * Parses a string that represents time-of-day and returns the parsed [LocalTime] value.
@@ -230,6 +247,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * - [nanosecond] `0..999_999_999`
      *
      * @throws IllegalArgumentException if any parameter is out of range.
+     * @see orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalTimeSamples.constructorFunction
      */
     public constructor(hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0)
