@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import java.util.Locale
 
 plugins {
@@ -51,9 +52,11 @@ kotlin {
         nodejs {
         }
         compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
+            compileTaskProvider.configure {
+                compilerOptions {
+                    sourceMap.set(true)
+                    moduleKind.set(JsModuleKind.MODULE_UMD)
+                }
             }
         }
     }
