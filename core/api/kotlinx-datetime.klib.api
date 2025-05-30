@@ -190,6 +190,16 @@ abstract class kotlinx.datetime.serializers/FormattedUtcOffsetSerializer : kotli
     open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/UtcOffset) // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.UtcOffset){}[0]
 }
 
+abstract class kotlinx.datetime.serializers/FormattedYearMonthSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/YearMonth> { // kotlinx.datetime.serializers/FormattedYearMonthSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth>) // kotlinx.datetime.serializers/FormattedYearMonthSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedYearMonthSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedYearMonthSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/YearMonth // kotlinx.datetime.serializers/FormattedYearMonthSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/YearMonth) // kotlinx.datetime.serializers/FormattedYearMonthSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.YearMonth){}[0]
+}
+
 final class kotlinx.datetime.format/DateTimeComponents { // kotlinx.datetime.format/DateTimeComponents|null[0]
     final var amPm // kotlinx.datetime.format/DateTimeComponents.amPm|{}amPm[0]
         final fun <get-amPm>(): kotlinx.datetime.format/AmPmMarker? // kotlinx.datetime.format/DateTimeComponents.amPm.<get-amPm>|<get-amPm>(){}[0]
@@ -1051,6 +1061,14 @@ final object kotlinx.datetime.serializers/YearMonthIso8601Serializer : kotlinx.s
 
     final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/YearMonth // kotlinx.datetime.serializers/YearMonthIso8601Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/YearMonth) // kotlinx.datetime.serializers/YearMonthIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.YearMonth){}[0]
+}
+
+final object kotlinx.datetime.serializers/YearMonthSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/YearMonth> { // kotlinx.datetime.serializers/YearMonthSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/YearMonthSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/YearMonthSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/YearMonth // kotlinx.datetime.serializers/YearMonthSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/YearMonth) // kotlinx.datetime.serializers/YearMonthSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.YearMonth){}[0]
 }
 
 final val kotlinx.datetime/isDistantFuture // kotlinx.datetime/isDistantFuture|@kotlinx.datetime.Instant{}isDistantFuture[0]

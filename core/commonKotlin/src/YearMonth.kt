@@ -7,10 +7,10 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.YearMonthIso8601Serializer
+import kotlinx.datetime.serializers.YearMonthSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable(with = YearMonthIso8601Serializer::class)
+@Serializable(with = YearMonthSerializer::class)
 public actual class YearMonth
 public actual constructor(public actual val year: Int, month: Int) : Comparable<YearMonth> {
     internal actual val monthNumber: Int = month
