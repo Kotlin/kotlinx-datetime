@@ -85,7 +85,7 @@ public object InstantComponentSerializer : KSerializer<Instant> {
  * See [Instant.parse] for details of how deserialization is performed.
  *
  * [name] is the name of the serializer.
- * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.Instant serializer `[name].
+ * The [SerialDescriptor.serialName] of the resulting serializer is `kotlinx.datetime.Instant/serializer/`[name].
  * [SerialDescriptor.serialName] must be unique across all serializers in the same serialization context.
  * When defining a serializer in a library, it is recommended to use the fully qualified class name in [name]
  * to avoid conflicts with serializers defined by other libraries and client code.
