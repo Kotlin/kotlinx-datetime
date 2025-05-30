@@ -7,6 +7,8 @@ package kotlinx.datetime.internal
 
 internal fun Char.isAsciiDigit(): Boolean = this in '0'..'9'
 
+internal fun Char.isAsciiLetter(): Boolean = this in 'A'..'Z' || this in 'a'..'z'
+
 internal fun Char.asciiDigitToInt(): Int = this - '0'
 
 /** Working around the JSR-310 behavior of failing to parse long year numbers even when they start with leading zeros */

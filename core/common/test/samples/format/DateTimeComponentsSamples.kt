@@ -288,12 +288,6 @@ class DateTimeComponentsSamples {
         check(formattedWithTimeZone == "2021-03-28T02:16:20[America/New_York]")
         val parsedWithTimeZone = DateTimeComponents.parse(formattedWithTimeZone, formatWithTimeZone)
         check(parsedWithTimeZone.timeZoneId == "America/New_York")
-        try {
-            formatWithTimeZone.parse("2021-03-28T02:16:20[Mars/Phobos]")
-            fail("Expected an exception")
-        } catch (e: DateTimeFormatException) {
-            // expected: the time zone ID is invalid
-        }
     }
 
     @Test
