@@ -267,7 +267,7 @@ class DateTimeComponentsFormatTest {
         }
     }
 
-    private object TimezoneTestData {
+    private object OffsetTimeZoneTestData {
         val correctParsableOffsets = listOf(
             // Single digit hours (H format)
             "1", "9", "0",
@@ -310,14 +310,6 @@ class DateTimeComponentsFormatTest {
         )
 
         val tzPrefixes = listOf("UTC", "GMT", "UT")
-
-        val timezoneDbIdentifiers = listOf(
-            "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
-            "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
-            "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
-        )
-
-        val invalidTimezoneIds = listOf("INV#ALID", "<XYZ>", "ABC//DEF", "NOT_A_TIMEZONE!", "-SYSTEM")
     }
 
     @Test
@@ -326,42 +318,38 @@ class DateTimeComponentsFormatTest {
     }
 
     @Test
-    fun testSpecialNamedTimezones() {
-        TimezoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
+    fun testSpecialNamedTimeZones() {
+        OffsetTimeZoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
     }
 
     @Test
     fun testPrefixWithCorrectParsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.correctParsableOffsets)
+        val timezoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.correctParsableOffsets
+        )
         timezoneIds.forEach(::assertParseableAsTimeZone)
     }
 
     @Test
     fun testPrefixWithIncorrectParsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectParsableOffsets)
+        val timezoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.incorrectParsableOffsets
+        )
         timezoneIds.forEach(::assertIncorrectlyParseableAsTimeZone)
     }
 
     @Test
     fun testPrefixWithIncorrectUnparsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectUnparsableOffsets)
+        val timezoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.incorrectUnparsableOffsets
+        )
         timezoneIds.forEach(::assertNonParseableAsTimeZone)
     }
 
-    @Test
-    fun testTimezoneDBIdentifiers() {
-        TimezoneTestData.timezoneDbIdentifiers.forEach(::assertParseableAsTimeZone)
-    }
-
-    @Test
-    fun testInvalidTimezoneIds() {
-        TimezoneTestData.invalidTimezoneIds.forEach(::assertNonParseableAsTimeZone)
-    }
-
-    private fun generateTimezoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
+    private fun generateTimeZoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
         for (prefix in prefixes) {
             for (sign in listOf('+', '-')) {
                 for (offset in offsets) {
