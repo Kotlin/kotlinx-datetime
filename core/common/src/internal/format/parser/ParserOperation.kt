@@ -260,7 +260,7 @@ internal class NamedTimeZoneParserOperation<Output>(
     setter: AssignableField<Output, String>
 ) : TimeZoneParserOperation<Output>(setter) {
     private enum class State {
-        EXPECTING_INITIAL,
+        START,
         IN_PART,
         AFTER_SLASH
     }
@@ -270,51 +270,31 @@ internal class NamedTimeZoneParserOperation<Output>(
         fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
         var index = startIndex
-        var state = State.EXPECTING_INITIAL
+        var state = State.START
 
         while (index < input.length) {
             val currentChar = input[index]
             state = when (state) {
-                State.EXPECTING_INITIAL -> when {
-                    currentChar.isTimeZoneInitial() -> {
-                        index++
-                        State.IN_PART
-                    }
-
+                State.START -> when {
+                    currentChar.isTimeZoneInitial() -> State.IN_PART
                     else -> break
                 }
 
                 State.IN_PART -> when {
-                    currentChar.isTimeZoneChar() -> {
-                        index++
-                        State.IN_PART
-                    }
-
-                    currentChar == '/' -> {
-                        index++
-                        State.AFTER_SLASH
-                    }
-
+                    currentChar.isTimeZoneChar() -> State.IN_PART
+                    currentChar == '/' -> State.AFTER_SLASH
                     else -> break
                 }
 
                 State.AFTER_SLASH -> when {
-                    currentChar.isTimeZoneInitial() -> {
-                        index++
-                        State.IN_PART
-                    }
-
-                    else -> {
-                        index--
-                        break
-                    }
+                    currentChar.isTimeZoneInitial() -> State.IN_PART
+                    else -> break
                 }
             }
+            index++
         }
 
-        if (state == State.AFTER_SLASH) {
-            index--
-        }
+        if (state == State.AFTER_SLASH) index--
 
         return index
     }
