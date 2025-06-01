@@ -135,6 +135,57 @@ sealed interface kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.date
     }
 }
 
+abstract class kotlinx.datetime.serializers/FormattedInstantSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/Instant> { // kotlinx.datetime.serializers/FormattedInstantSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>) // kotlinx.datetime.serializers/FormattedInstantSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedInstantSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedInstantSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/Instant // kotlinx.datetime.serializers/FormattedInstantSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/Instant) // kotlinx.datetime.serializers/FormattedInstantSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.Instant){}[0]
+    open fun toString(): kotlin/String // kotlinx.datetime.serializers/FormattedInstantSerializer.toString|toString(){}[0]
+}
+
+abstract class kotlinx.datetime.serializers/FormattedLocalDateSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDate> { // kotlinx.datetime.serializers/FormattedLocalDateSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate>) // kotlinx.datetime.serializers/FormattedLocalDateSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDate>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedLocalDateSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedLocalDateSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalDate // kotlinx.datetime.serializers/FormattedLocalDateSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDate) // kotlinx.datetime.serializers/FormattedLocalDateSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDate){}[0]
+}
+
+abstract class kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDateTime> { // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime>) // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalDateTime // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDateTime) // kotlinx.datetime.serializers/FormattedLocalDateTimeSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDateTime){}[0]
+}
+
+abstract class kotlinx.datetime.serializers/FormattedLocalTimeSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalTime> { // kotlinx.datetime.serializers/FormattedLocalTimeSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime>) // kotlinx.datetime.serializers/FormattedLocalTimeSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalTime>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedLocalTimeSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedLocalTimeSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalTime // kotlinx.datetime.serializers/FormattedLocalTimeSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalTime) // kotlinx.datetime.serializers/FormattedLocalTimeSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalTime){}[0]
+}
+
+abstract class kotlinx.datetime.serializers/FormattedUtcOffsetSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/UtcOffset> { // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer|null[0]
+    constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset>) // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
+
+    open val descriptor // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.descriptor|{}descriptor[0]
+        open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/UtcOffset // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/UtcOffset) // kotlinx.datetime.serializers/FormattedUtcOffsetSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.UtcOffset){}[0]
+}
+
 final class kotlinx.datetime.format/DateTimeComponents { // kotlinx.datetime.format/DateTimeComponents|null[0]
     final var amPm // kotlinx.datetime.format/DateTimeComponents.amPm|{}amPm[0]
         final fun <get-amPm>(): kotlinx.datetime.format/AmPmMarker? // kotlinx.datetime.format/DateTimeComponents.amPm.<get-amPm>|<get-amPm>(){}[0]
@@ -355,6 +406,8 @@ final class kotlinx.datetime/LocalDate : kotlin/Comparable<kotlinx.datetime/Loca
     final fun compareTo(kotlinx.datetime/LocalDate): kotlin/Int // kotlinx.datetime/LocalDate.compareTo|compareTo(kotlinx.datetime.LocalDate){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalDate.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // kotlinx.datetime/LocalDate.hashCode|hashCode(){}[0]
+    final fun rangeTo(kotlinx.datetime/LocalDate): kotlinx.datetime/LocalDateRange // kotlinx.datetime/LocalDate.rangeTo|rangeTo(kotlinx.datetime.LocalDate){}[0]
+    final fun rangeUntil(kotlinx.datetime/LocalDate): kotlinx.datetime/LocalDateRange // kotlinx.datetime/LocalDate.rangeUntil|rangeUntil(kotlinx.datetime.LocalDate){}[0]
     final fun toEpochDays(): kotlin/Long // kotlinx.datetime/LocalDate.toEpochDays|toEpochDays(){}[0]
     final fun toString(): kotlin/String // kotlinx.datetime/LocalDate.toString|toString(){}[0]
 
@@ -372,6 +425,26 @@ final class kotlinx.datetime/LocalDate : kotlin/Comparable<kotlinx.datetime/Loca
             final fun <get-ISO>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate> // kotlinx.datetime/LocalDate.Formats.ISO.<get-ISO>|<get-ISO>(){}[0]
         final val ISO_BASIC // kotlinx.datetime/LocalDate.Formats.ISO_BASIC|{}ISO_BASIC[0]
             final fun <get-ISO_BASIC>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate> // kotlinx.datetime/LocalDate.Formats.ISO_BASIC.<get-ISO_BASIC>|<get-ISO_BASIC>(){}[0]
+    }
+}
+
+final class kotlinx.datetime/LocalDateRange : kotlin.ranges/ClosedRange<kotlinx.datetime/LocalDate>, kotlin.ranges/OpenEndRange<kotlinx.datetime/LocalDate>, kotlinx.datetime/LocalDateProgression { // kotlinx.datetime/LocalDateRange|null[0]
+    constructor <init>(kotlinx.datetime/LocalDate, kotlinx.datetime/LocalDate) // kotlinx.datetime/LocalDateRange.<init>|<init>(kotlinx.datetime.LocalDate;kotlinx.datetime.LocalDate){}[0]
+
+    final val endExclusive // kotlinx.datetime/LocalDateRange.endExclusive|{}endExclusive[0]
+        final fun <get-endExclusive>(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDateRange.endExclusive.<get-endExclusive>|<get-endExclusive>(){}[0]
+    final val endInclusive // kotlinx.datetime/LocalDateRange.endInclusive|{}endInclusive[0]
+        final fun <get-endInclusive>(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDateRange.endInclusive.<get-endInclusive>|<get-endInclusive>(){}[0]
+    final val start // kotlinx.datetime/LocalDateRange.start|{}start[0]
+        final fun <get-start>(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDateRange.start.<get-start>|<get-start>(){}[0]
+
+    final fun contains(kotlinx.datetime/LocalDate): kotlin/Boolean // kotlinx.datetime/LocalDateRange.contains|contains(kotlinx.datetime.LocalDate){}[0]
+    final fun isEmpty(): kotlin/Boolean // kotlinx.datetime/LocalDateRange.isEmpty|isEmpty(){}[0]
+    final fun toString(): kotlin/String // kotlinx.datetime/LocalDateRange.toString|toString(){}[0]
+
+    final object Companion { // kotlinx.datetime/LocalDateRange.Companion|null[0]
+        final val EMPTY // kotlinx.datetime/LocalDateRange.Companion.EMPTY|{}EMPTY[0]
+            final fun <get-EMPTY>(): kotlinx.datetime/LocalDateRange // kotlinx.datetime/LocalDateRange.Companion.EMPTY.<get-EMPTY>|<get-EMPTY>(){}[0]
     }
 }
 
@@ -487,6 +560,25 @@ final class kotlinx.datetime/UtcOffset { // kotlinx.datetime/UtcOffset|null[0]
         final val ISO_BASIC // kotlinx.datetime/UtcOffset.Formats.ISO_BASIC|{}ISO_BASIC[0]
             final fun <get-ISO_BASIC>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset> // kotlinx.datetime/UtcOffset.Formats.ISO_BASIC.<get-ISO_BASIC>|<get-ISO_BASIC>(){}[0]
     }
+}
+
+open class kotlinx.datetime/LocalDateProgression : kotlin.collections/Collection<kotlinx.datetime/LocalDate> { // kotlinx.datetime/LocalDateProgression|null[0]
+    final val first // kotlinx.datetime/LocalDateProgression.first|{}first[0]
+        final fun <get-first>(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDateProgression.first.<get-first>|<get-first>(){}[0]
+    final val last // kotlinx.datetime/LocalDateProgression.last|{}last[0]
+        final fun <get-last>(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalDateProgression.last.<get-last>|<get-last>(){}[0]
+    open val size // kotlinx.datetime/LocalDateProgression.size|{}size[0]
+        open fun <get-size>(): kotlin/Int // kotlinx.datetime/LocalDateProgression.size.<get-size>|<get-size>(){}[0]
+
+    open fun contains(kotlinx.datetime/LocalDate): kotlin/Boolean // kotlinx.datetime/LocalDateProgression.contains|contains(kotlinx.datetime.LocalDate){}[0]
+    open fun containsAll(kotlin.collections/Collection<kotlinx.datetime/LocalDate>): kotlin/Boolean // kotlinx.datetime/LocalDateProgression.containsAll|containsAll(kotlin.collections.Collection<kotlinx.datetime.LocalDate>){}[0]
+    open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalDateProgression.equals|equals(kotlin.Any?){}[0]
+    open fun hashCode(): kotlin/Int // kotlinx.datetime/LocalDateProgression.hashCode|hashCode(){}[0]
+    open fun isEmpty(): kotlin/Boolean // kotlinx.datetime/LocalDateProgression.isEmpty|isEmpty(){}[0]
+    open fun iterator(): kotlin.collections/Iterator<kotlinx.datetime/LocalDate> // kotlinx.datetime/LocalDateProgression.iterator|iterator(){}[0]
+    open fun toString(): kotlin/String // kotlinx.datetime/LocalDateProgression.toString|toString(){}[0]
+
+    final object Companion // kotlinx.datetime/LocalDateProgression.Companion|null[0]
 }
 
 open class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
@@ -654,6 +746,14 @@ final object kotlinx.datetime.serializers/DatePeriodIso8601Serializer : kotlinx.
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/DatePeriod) // kotlinx.datetime.serializers/DatePeriodIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.DatePeriod){}[0]
 }
 
+final object kotlinx.datetime.serializers/DatePeriodSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/DatePeriod> { // kotlinx.datetime.serializers/DatePeriodSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/DatePeriodSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/DatePeriodSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/DatePeriod // kotlinx.datetime.serializers/DatePeriodSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/DatePeriod) // kotlinx.datetime.serializers/DatePeriodSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.DatePeriod){}[0]
+}
+
 final object kotlinx.datetime.serializers/DateTimePeriodComponentSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/DateTimePeriod> { // kotlinx.datetime.serializers/DateTimePeriodComponentSerializer|null[0]
     final val descriptor // kotlinx.datetime.serializers/DateTimePeriodComponentSerializer.descriptor|{}descriptor[0]
         final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/DateTimePeriodComponentSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
@@ -668,6 +768,14 @@ final object kotlinx.datetime.serializers/DateTimePeriodIso8601Serializer : kotl
 
     final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/DateTimePeriod // kotlinx.datetime.serializers/DateTimePeriodIso8601Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/DateTimePeriod) // kotlinx.datetime.serializers/DateTimePeriodIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.DateTimePeriod){}[0]
+}
+
+final object kotlinx.datetime.serializers/DateTimePeriodSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/DateTimePeriod> { // kotlinx.datetime.serializers/DateTimePeriodSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/DateTimePeriodSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/DateTimePeriodSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/DateTimePeriod // kotlinx.datetime.serializers/DateTimePeriodSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/DateTimePeriod) // kotlinx.datetime.serializers/DateTimePeriodSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.DateTimePeriod){}[0]
 }
 
 final object kotlinx.datetime.serializers/DateTimeUnitSerializer : kotlinx.serialization.internal/AbstractPolymorphicSerializer<kotlinx.datetime/DateTimeUnit> { // kotlinx.datetime.serializers/DateTimeUnitSerializer|null[0]
@@ -720,6 +828,14 @@ final object kotlinx.datetime.serializers/InstantIso8601Serializer : kotlinx.ser
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/Instant) // kotlinx.datetime.serializers/InstantIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.Instant){}[0]
 }
 
+final object kotlinx.datetime.serializers/InstantSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/Instant> { // kotlinx.datetime.serializers/InstantSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/InstantSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/InstantSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/Instant // kotlinx.datetime.serializers/InstantSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/Instant) // kotlinx.datetime.serializers/InstantSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.Instant){}[0]
+}
+
 final object kotlinx.datetime.serializers/LocalDateComponentSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDate> { // kotlinx.datetime.serializers/LocalDateComponentSerializer|null[0]
     final val descriptor // kotlinx.datetime.serializers/LocalDateComponentSerializer.descriptor|{}descriptor[0]
         final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/LocalDateComponentSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
@@ -734,6 +850,14 @@ final object kotlinx.datetime.serializers/LocalDateIso8601Serializer : kotlinx.s
 
     final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalDate // kotlinx.datetime.serializers/LocalDateIso8601Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDate) // kotlinx.datetime.serializers/LocalDateIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDate){}[0]
+}
+
+final object kotlinx.datetime.serializers/LocalDateSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDate> { // kotlinx.datetime.serializers/LocalDateSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/LocalDateSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/LocalDateSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalDate // kotlinx.datetime.serializers/LocalDateSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDate) // kotlinx.datetime.serializers/LocalDateSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDate){}[0]
 }
 
 final object kotlinx.datetime.serializers/LocalDateTimeComponentSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDateTime> { // kotlinx.datetime.serializers/LocalDateTimeComponentSerializer|null[0]
@@ -752,6 +876,14 @@ final object kotlinx.datetime.serializers/LocalDateTimeIso8601Serializer : kotli
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDateTime) // kotlinx.datetime.serializers/LocalDateTimeIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDateTime){}[0]
 }
 
+final object kotlinx.datetime.serializers/LocalDateTimeSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalDateTime> { // kotlinx.datetime.serializers/LocalDateTimeSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/LocalDateTimeSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/LocalDateTimeSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalDateTime // kotlinx.datetime.serializers/LocalDateTimeSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalDateTime) // kotlinx.datetime.serializers/LocalDateTimeSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalDateTime){}[0]
+}
+
 final object kotlinx.datetime.serializers/LocalTimeComponentSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalTime> { // kotlinx.datetime.serializers/LocalTimeComponentSerializer|null[0]
     final val descriptor // kotlinx.datetime.serializers/LocalTimeComponentSerializer.descriptor|{}descriptor[0]
         final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/LocalTimeComponentSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
@@ -766,6 +898,14 @@ final object kotlinx.datetime.serializers/LocalTimeIso8601Serializer : kotlinx.s
 
     final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalTime // kotlinx.datetime.serializers/LocalTimeIso8601Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalTime) // kotlinx.datetime.serializers/LocalTimeIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalTime){}[0]
+}
+
+final object kotlinx.datetime.serializers/LocalTimeSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/LocalTime> { // kotlinx.datetime.serializers/LocalTimeSerializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/LocalTimeSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/LocalTimeSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/LocalTime // kotlinx.datetime.serializers/LocalTimeSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/LocalTime) // kotlinx.datetime.serializers/LocalTimeSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.LocalTime){}[0]
 }
 
 final object kotlinx.datetime.serializers/MonthBasedDateTimeUnitSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/DateTimeUnit.MonthBased> { // kotlinx.datetime.serializers/MonthBasedDateTimeUnitSerializer|null[0]
@@ -798,6 +938,14 @@ final object kotlinx.datetime.serializers/TimeZoneSerializer : kotlinx.serializa
 
     final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/TimeZone // kotlinx.datetime.serializers/TimeZoneSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/TimeZone) // kotlinx.datetime.serializers/TimeZoneSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.TimeZone){}[0]
+}
+
+final object kotlinx.datetime.serializers/UtcOffsetIso8601Serializer : kotlinx.serialization/KSerializer<kotlinx.datetime/UtcOffset> { // kotlinx.datetime.serializers/UtcOffsetIso8601Serializer|null[0]
+    final val descriptor // kotlinx.datetime.serializers/UtcOffsetIso8601Serializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/UtcOffsetIso8601Serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/UtcOffset // kotlinx.datetime.serializers/UtcOffsetIso8601Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/UtcOffset) // kotlinx.datetime.serializers/UtcOffsetIso8601Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.UtcOffset){}[0]
 }
 
 final object kotlinx.datetime.serializers/UtcOffsetSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/UtcOffset> { // kotlinx.datetime.serializers/UtcOffsetSerializer|null[0]
@@ -864,6 +1012,7 @@ final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/atStartOfDayIn(kotlinx.d
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/atTime(kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Int = ...): kotlinx.datetime/LocalDateTime // kotlinx.datetime/atTime|atTime@kotlinx.datetime.LocalDate(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/atTime(kotlinx.datetime/LocalTime): kotlinx.datetime/LocalDateTime // kotlinx.datetime/atTime|atTime@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalTime){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/daysUntil(kotlinx.datetime/LocalDate): kotlin/Int // kotlinx.datetime/daysUntil|daysUntil@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate){}[0]
+final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/downTo(kotlinx.datetime/LocalDate): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/downTo|downTo@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDate>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.LocalDate(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDate>){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/LocalDate // kotlinx.datetime/minus|minus@kotlinx.datetime.LocalDate(kotlin.Int;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/LocalDate // kotlinx.datetime/minus|minus@kotlinx.datetime.LocalDate(kotlin.Long;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
@@ -878,6 +1027,15 @@ final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlinx.datetime/Da
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/LocalDate // kotlinx.datetime/plus|plus@kotlinx.datetime.LocalDate(kotlinx.datetime.DateTimeUnit.DateBased){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/until(kotlinx.datetime/LocalDate, kotlinx.datetime/DateTimeUnit.DateBased): kotlin/Long // kotlinx.datetime/until|until@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/yearsUntil(kotlinx.datetime/LocalDate): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/first(): kotlinx.datetime/LocalDate // kotlinx.datetime/first|first@kotlinx.datetime.LocalDateProgression(){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/firstOrNull(): kotlinx.datetime/LocalDate? // kotlinx.datetime/firstOrNull|firstOrNull@kotlinx.datetime.LocalDateProgression(){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/last(): kotlinx.datetime/LocalDate // kotlinx.datetime/last|last@kotlinx.datetime.LocalDateProgression(){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/lastOrNull(): kotlinx.datetime/LocalDate? // kotlinx.datetime/lastOrNull|lastOrNull@kotlinx.datetime.LocalDateProgression(){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/random(kotlin.random/Random = ...): kotlinx.datetime/LocalDate // kotlinx.datetime/random|random@kotlinx.datetime.LocalDateProgression(kotlin.random.Random){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/randomOrNull(kotlin.random/Random = ...): kotlinx.datetime/LocalDate? // kotlinx.datetime/randomOrNull|randomOrNull@kotlinx.datetime.LocalDateProgression(kotlin.random.Random){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/reversed(): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/reversed|reversed@kotlinx.datetime.LocalDateProgression(){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Int, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Int;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
+final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Long, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Long;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.LocalDateTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/TimeZone): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/UtcOffset): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.UtcOffset){}[0]

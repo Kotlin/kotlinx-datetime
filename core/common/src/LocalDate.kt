@@ -57,6 +57,7 @@ import kotlin.internal.*
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalDate]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [LocalDateIso8601Serializer] for the ISO 8601 extended format.
  * - [LocalDateComponentSerializer] for an object with components.
  *
@@ -65,7 +66,7 @@ import kotlin.internal.*
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.customFormat
  */
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
         /**
@@ -245,6 +246,20 @@ public expect class LocalDate : Comparable<LocalDate> {
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.toEpochDays
      */
     public fun toEpochDays(): Long
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], inclusive.
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeTo(that: LocalDate): LocalDateRange
+
+    /**
+     * Creates a [LocalDateRange] from `this` to [that], exclusive, i.e., from this to (that - 1 day)
+     *
+     * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.simpleRangeCreation
+     */
+    public operator fun rangeUntil(that: LocalDate): LocalDateRange
 
     /**
      * Compares `this` date with the [other] date.

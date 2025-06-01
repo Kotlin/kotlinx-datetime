@@ -16,7 +16,8 @@ class TimeZoneTest {
     fun utc() {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
         println(utc)
-        assertEquals("Z", utc.id)
+        assertEquals("UTC", utc.id)
+        assertEquals(utc, TimeZone.of("UTC"))
         assertEquals(UtcOffset.ZERO, utc.offset)
         assertEquals(0, utc.offset.totalSeconds)
         assertEquals(utc.offset, utc.offsetAt(Clock.System.now()))
@@ -110,6 +111,7 @@ class TimeZoneTest {
             Pair("Europe/Paris", "Europe/Paris"),
             Pair("Europe/Berlin", "Europe/Berlin"),
             Pair("Z", "Z"),
+            Pair("z", "Z"),
             Pair("UTC", "UTC"),
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),

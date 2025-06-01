@@ -9,7 +9,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.LocalDateIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit
 import java.time.LocalDate as jtLocalDate
 import kotlin.internal.*
 
-@Serializable(with = LocalDateIso8601Serializer::class)
+@Serializable(with = LocalDateSerializer::class)
 public actual class LocalDate internal constructor(
     internal val value: jtLocalDate
 ) : Comparable<LocalDate>, java.io.Serializable {
@@ -92,6 +92,10 @@ public actual class LocalDate internal constructor(
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
     @PublishedApi internal fun getDayOfWeek(): java.time.DayOfWeek = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
+
+    public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
+
+    public actual operator fun rangeUntil(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeUntil(this, that)
 
     override fun equals(other: Any?): Boolean =
             (this === other) || (other is LocalDate && this.value == other.value)

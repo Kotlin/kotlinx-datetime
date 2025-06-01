@@ -32,10 +32,11 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
 
     public actual companion object {
         public actual fun currentSystemDefault(): TimeZone = ofZone(ZoneId.systemDefault())
-        public actual val UTC: FixedOffsetTimeZone = UtcOffset(jtZoneOffset.UTC).asTimeZone()
+        public actual val UTC: FixedOffsetTimeZone =
+            FixedOffsetTimeZone(UtcOffset.ZERO, ZoneId.of("UTC"))
 
         public actual fun of(zoneId: String): TimeZone = try {
-            ofZone(ZoneId.of(zoneId))
+            ofZone(ZoneId.of(if (zoneId == "z") "Z" else zoneId))
         } catch (e: Exception) {
             if (e is DateTimeException) throw IllegalTimeZoneException(e)
             throw e

@@ -24,13 +24,16 @@ public actual open class TimeZone internal constructor() {
             return zone ?: of(name)
         }
 
-        public actual val UTC: FixedOffsetTimeZone = UtcOffset.ZERO.asTimeZone()
+        public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
         public actual fun of(zoneId: String): TimeZone {
             // TODO: normalize aliases?
-            if (zoneId == "Z") {
+            if (zoneId == "UTC") {
                 return UTC
+            }
+            if (zoneId == "Z" || zoneId == "z") {
+                return UtcOffset.ZERO.asTimeZone()
             }
             if (zoneId == "SYSTEM") {
                 return currentSystemDefault()

@@ -8,13 +8,13 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.removeLeadingZerosFromLongYearFormLocalDateTime
-import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.LocalDateTime as jtLocalDateTime
 
-@Serializable(with = LocalDateTimeIso8601Serializer::class)
+@Serializable(with = LocalDateTimeSerializer::class)
 public actual class LocalDateTime internal constructor(
     internal val value: jtLocalDateTime
 ) : Comparable<LocalDateTime>, java.io.Serializable {
