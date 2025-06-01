@@ -107,9 +107,8 @@ public actual class LocalDateTime internal constructor(
         public actual fun Format(builder: DateTimeFormatBuilder.WithDateTime.() -> Unit): DateTimeFormat<LocalDateTime> =
             LocalDateTimeFormat.build(builder)
 
-        // even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
-        // stable serialVersionUID means exceptions caused by deserialization of malicious streams will be consistent
-        // (InvalidClassException vs. InvalidObjectException, see MaliciousJvmSerializationTest)
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
         private const val serialVersionUID: Long = -4261744960416354711L
     }
 
