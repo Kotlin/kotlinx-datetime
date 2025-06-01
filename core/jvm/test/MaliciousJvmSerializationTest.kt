@@ -8,8 +8,8 @@ package kotlinx.datetime.test
 import kotlinx.datetime.test.MaliciousJvmSerializationTest.TestCase.Streams
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
+import java.io.ObjectStreamClass
 import java.io.Serializable
-import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -140,11 +140,9 @@ class MaliciousJvmSerializationTest {
 
     private fun TestCase.ensureAssumptionsHold() {
         val className = clazz.qualifiedName!!
+        val objectStreamClass = ObjectStreamClass.lookup(clazz.java)
 
-        val actualSerialVersionUID = clazz.java
-            .getDeclaredField("serialVersionUID")
-            .apply { isAccessible = true }
-            .get(null) as Long
+        val actualSerialVersionUID = objectStreamClass.serialVersionUID
         if (actualSerialVersionUID == 42L) {
             fail("This test assumes that the tested classes don't have a serialVersionUID of 42 but $className does.")
         }
@@ -155,11 +153,11 @@ class MaliciousJvmSerializationTest {
             )
         }
 
-        val field = clazz.java.declaredFields.singleOrNull { !Modifier.isStatic(it.modifiers) }
+        val field = objectStreamClass.fields.singleOrNull()
         if (field == null || field.name != delegateFieldName || field.type != delegate.javaClass) {
             fail(
-                "This test assumes that $className has a single instance field named $delegateFieldName of type " +
-                    "${delegate::class.qualifiedName}. The test case for $className should be updated with new " +
+                "This test assumes that $className has a single serializable field named '$delegateFieldName' of " +
+                    "type ${delegate::class.qualifiedName}. The test case for $className should be updated with new " +
                     "malicious serial streams that represent the changes to $className."
             )
         }
