@@ -296,13 +296,16 @@ public sealed interface DateTimeFormatBuilder {
          * - Formats: `H`, `HH`, `HHMM`, `HHMMSS`, `HH:MM`, `HH:MM:SS`
          *
          * Region-based IANA timezone IDs:
-         * Parsed according to Temporal grammar:
+         * Parsed according to RFC 9557 grammar (section 4.1 of https://datatracker.ietf.org/doc/rfc9557/):
          * ```
          * time-zone-initial = ALPHA / "." / "_"
          * time-zone-char    = time-zone-initial / DIGIT / "-" / "+"
          * time-zone-part    = time-zone-initial *time-zone-char
          * time-zone-name    = time-zone-part *("/" time-zone-part)
          * ```
+         *
+         * Note: This implementation doesn't follow the RFC 9557 grammar fully and allows
+         * "." and ".." as the time-zone-part.
          *
          * When formatting, outputs the identifier as-is. When parsing, validates syntax only;
          * actual timezone validation is deferred until creating a [TimeZone] object.
