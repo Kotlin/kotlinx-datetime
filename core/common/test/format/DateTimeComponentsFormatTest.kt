@@ -440,6 +440,16 @@ class DateTimeComponentsFormatTest {
         timeZoneIds.forEach(::assertNonParseableAsTimeZone)
     }
 
+    @Test
+    fun testOffsetParsingWithBrackets() {
+        val actual = DateTimeComponents.Format {
+            char('[')
+            timeZoneId()
+            char(']')
+        }.parse("[UTC+03:00]").timeZoneId
+        assertEquals("UTC+03:00", actual)
+    }
+
     private fun generateTimeZoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
         for (prefix in prefixes) {
             for (sign in listOf('+', '-')) {

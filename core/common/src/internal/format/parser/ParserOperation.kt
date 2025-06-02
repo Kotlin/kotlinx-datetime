@@ -172,7 +172,7 @@ internal class TimeZoneParserOperation<Output>(
             var index = startIndex
 
             fun validatePrefix(validValues: List<String>): Boolean =
-                validValues.firstOrNull { input.startsWith(it) }?.let {
+                validValues.firstOrNull { input.startsWith(it, startIndex) }?.let {
                     index += it.length
                     true
                 } ?: false
