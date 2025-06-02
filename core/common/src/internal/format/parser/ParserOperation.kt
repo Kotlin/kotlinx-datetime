@@ -168,17 +168,18 @@ internal class TimeZoneParserOperation<Output>(
             END
         }
 
+        private inline fun <T> T?.onNotNull(action: (obj: T) -> Unit): Boolean =
+            if (this != null) { action(this); true } else false
+
         private inline fun Boolean.onTrue(action: () -> Unit): Boolean = if (this) { action(); true } else false
+
         private inline fun Boolean.onFalse(action: () -> Unit): Boolean = if (this) true else { action(); false }
 
         private fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
             var index = startIndex
 
             fun validatePrefix(validValues: List<String>): Boolean =
-                validValues.firstOrNull { input.startsWith(it, startIndex) }?.let {
-                    index += it.length
-                    true
-                } ?: false
+                validValues.firstOrNull { input.startsWith(it, index) }.onNotNull { index += it.length }
 
             fun validateSign(): Boolean = (input[index] in listOf('+', '-')).onTrue { index++ }
 
