@@ -260,7 +260,7 @@ internal class TimeZoneParserOperation<Output>(
                 }
             }
 
-            return index - if (state != State.AFTER_SLASH && state != State.AFTER_INIT_SIGN) 0 else 1
+            return index - if (state == State.AFTER_SLASH || state == State.AFTER_INIT_SIGN) 1 else 0
         }
     }
 }
