@@ -292,8 +292,7 @@ public sealed interface DateTimeFormatBuilder {
          * Offset-based timezones:
          * - `Z` or `z` - UTC
          * - Optional prefix (`UTC`, `GMT`, `UT`) followed by offset
-         * - Direct offset with `+` or `-`
-         * - Formats: `H`, `HH`, `HHMM`, `HHMMSS`, `HH:MM`, `HH:MM:SS`
+         * - Offset in one of the formats: `+H`, `+HH`, `+HHMM`, `+HHMMSS`, `+HH:MM`, `+HH:MM:SS`
          *
          * Region-based IANA timezone IDs:
          * Parsed according to RFC 9557 grammar (section 4.1 of https://datatracker.ietf.org/doc/rfc9557/):
