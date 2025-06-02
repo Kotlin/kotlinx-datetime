@@ -140,10 +140,9 @@ internal class UnconditionalModification<Output>(
     }
 }
 
-internal abstract class TimeZoneParserOperation<Output>(
+internal class TimeZoneParserOperation<Output>(
     private val setter: AssignableField<Output, String>
 ) : ParserOperation<Output> {
-
     override fun consume(storage: Output, input: CharSequence, startIndex: Int): ParseResult {
         val lastMatch = validateTimeZone(input, startIndex)
         return if (lastMatch > startIndex) {
@@ -154,132 +153,127 @@ internal abstract class TimeZoneParserOperation<Output>(
         }
     }
 
-    protected abstract fun validateTimeZone(input: CharSequence, startIndex: Int): Int
-}
-
-internal class OffsetTimeZoneParserOperation<Output>(
-    setter: AssignableField<Output, String>
-) : TimeZoneParserOperation<Output>(setter) {
-    private enum class State {
-        START,
-        AFTER_PREFIX,
-        AFTER_SIGN,
-        AFTER_HOUR,
-        AFTER_MINUTE,
-        AFTER_COLON_MINUTE,
-        END,
-        INVALID
-    }
-
-    override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
-        var index = startIndex
-        var lastValidIndex = startIndex
-
-        fun validatePrefix(validValues: List<String>): Boolean =
-            validValues.firstOrNull { input.startsWith(it) }?.let {
-                index += it.length
-                lastValidIndex = index
-                true
-            } ?: false
-
-        fun validateTimeComponent(length: Int): Boolean {
-            if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
-                index += length
-                lastValidIndex = index
-                return true
-            }
-            return false
+    companion object {
+        private enum class State {
+            START,
+            AFTER_PREFIX,
+            AFTER_SIGN,
+            AFTER_INIT_SIGN,
+            AFTER_HOUR,
+            AFTER_INIT_HOUR,
+            AFTER_MINUTE,
+            AFTER_COLON_MINUTE,
+            IN_PART,
+            AFTER_SLASH,
+            END
         }
 
-        var state = State.START
-        while (index < input.length) {
-            state = when (state) {
-                State.START -> when {
-                    input[index] == 'Z' || input[index] == 'z' -> {
-                        index++
-                        State.END
-                    }
+        private fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
+            var index = startIndex
 
-                    input[index] in listOf('+', '-') -> {
-                        index++
-                        State.AFTER_SIGN
-                    }
+            fun validatePrefix(validValues: List<String>): Boolean =
+                validValues.firstOrNull { input.startsWith(it) }?.let {
+                    index += it.length
+                    true
+                } ?: false
 
-                    validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
-                    else -> State.INVALID
-                }
+            fun validateSign(): Boolean = if (input[index] in listOf('+', '-')) { index++; true } else false
 
-                State.AFTER_PREFIX -> when {
-                    input[index] in listOf('+', '-') -> {
-                        index++
-                        State.AFTER_SIGN
-                    }
+            fun validateTimeComponent(length: Int): Boolean =
+                if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
+                    index += length
+                    true
+                } else false
 
-                    else -> State.INVALID
-                }
-
-                State.AFTER_SIGN -> when {
-                    validateTimeComponent(2) -> State.AFTER_HOUR
-                    validateTimeComponent(1) -> State.END
-                    else -> State.INVALID
-                }
-
-                State.AFTER_HOUR -> when {
-                    input[index] == ':' -> {
-                        index++
-                        if (validateTimeComponent(2)) State.AFTER_COLON_MINUTE else State.INVALID
-                    }
-
-                    validateTimeComponent(2) -> State.AFTER_MINUTE
-                    else -> State.INVALID
-                }
-
-                State.AFTER_MINUTE -> when {
-                    validateTimeComponent(2) -> State.END
-                    else -> State.INVALID
-                }
-
-                State.AFTER_COLON_MINUTE -> when {
-                    input[index] == ':' -> {
-                        index++
-                        if (validateTimeComponent(2)) State.END else State.INVALID
-                    }
-
-                    else -> State.INVALID
-                }
-
-                State.END, State.INVALID -> break
+            fun validateTimeComponentWithColon(): Boolean {
+                if (input[index] != ':') return false
+                index++
+                return validateTimeComponent(2).also { if (!it) index-- }
             }
-        }
 
-        return if (state == State.END) index else lastValidIndex
-    }
-}
+            fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
+            fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
-internal class NamedTimeZoneParserOperation<Output>(
-    setter: AssignableField<Output, String>
-) : TimeZoneParserOperation<Output>(setter) {
-    override fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
-        fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
-        fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
+            var state = State.START
+            while (index < input.length) {
+                state = when (state) {
+                    State.START -> when {
+                        validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
+                        validateSign() -> State.AFTER_INIT_SIGN
+                        input[index].isTimeZoneInitial() -> {
+                            index++
+                            State.IN_PART
+                        }
 
-        var index = startIndex
-        var inPart = false
+                        else -> break
+                    }
 
-        while (index < input.length) {
-            val currentChar = input[index]
-            inPart = if (inPart) when {
-                currentChar.isTimeZoneChar() -> true
-                currentChar == '/' -> false
-                else -> break
-            } else when {
-                currentChar.isTimeZoneInitial() -> true
-                else -> break
+                    State.AFTER_PREFIX -> when {
+                        validateSign() -> State.AFTER_SIGN
+                        else -> State.IN_PART
+                    }
+
+                    State.AFTER_SIGN -> when {
+                        validateTimeComponent(2) -> State.AFTER_HOUR
+                        else -> State.IN_PART
+                    }
+
+                    State.AFTER_INIT_SIGN -> when {
+                        validateTimeComponent(2) -> State.AFTER_INIT_HOUR
+                        validateTimeComponent(1) -> State.END
+                        else -> break
+                    }
+
+                    State.AFTER_HOUR -> when {
+                        validateTimeComponentWithColon() -> State.AFTER_COLON_MINUTE
+                        else -> State.IN_PART
+                    }
+
+                    State.AFTER_INIT_HOUR -> when {
+                        validateTimeComponentWithColon() -> State.AFTER_COLON_MINUTE
+                        validateTimeComponent(2) -> State.AFTER_MINUTE
+                        else -> break
+                    }
+
+                    State.AFTER_MINUTE -> when {
+                        validateTimeComponent(2) -> State.END
+                        else -> break
+                    }
+
+                    State.AFTER_COLON_MINUTE -> when {
+                        validateTimeComponentWithColon() -> State.END
+                        else -> break
+                    }
+
+                    State.IN_PART -> when {
+                        input[index].isTimeZoneChar() -> {
+                            index++
+                            State.IN_PART
+                        }
+
+                        input[index] == '/' -> {
+                            index++
+                            State.AFTER_SLASH
+                        }
+
+                        else -> break
+                    }
+
+                    State.AFTER_SLASH -> when {
+                        input[index].isTimeZoneInitial() -> {
+                            index++
+                            State.IN_PART
+                        }
+
+                        else -> break
+                    }
+
+                    State.END -> break
+                }
             }
-            index++
-        }
 
-        return index - if (inPart) 0 else 1
+            return index - if (state != State.AFTER_SLASH && state != State.AFTER_INIT_SIGN) 0 else 1
+        }
     }
 }
 
