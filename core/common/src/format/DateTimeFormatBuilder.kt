@@ -307,6 +307,8 @@ public sealed interface DateTimeFormatBuilder {
          * When formatting, outputs the identifier as-is. When parsing, validates syntax only;
          * actual timezone validation is deferred until creating a [TimeZone] object.
          *
+         * If more than one way to read a valid timezone ID matches the string, we always take the longest one
+         *
          * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsFormatSamples.timeZoneId
          */
         public fun timeZoneId()
