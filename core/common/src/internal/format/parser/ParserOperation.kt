@@ -168,9 +168,6 @@ internal class TimeZoneParserOperation<Output>(
             END
         }
 
-        private inline fun <T> T?.onNotNull(action: (T) -> Unit): Boolean =
-            if (this != null) { action(this); true } else false
-
         private inline fun Boolean.onTrue(action: () -> Unit): Boolean = if (this) { action(); true } else false
 
         private inline fun Boolean.onFalse(action: () -> Unit): Boolean = if (this) true else { action(); false }
@@ -179,7 +176,7 @@ internal class TimeZoneParserOperation<Output>(
             var index = startIndex
 
             fun validatePrefix(validValues: List<String>): Boolean =
-                validValues.firstOrNull { input.startsWith(it, index) }.onNotNull { index += it.length }
+                validValues.firstOrNull { input.startsWith(it, index) }?.also { index += it.length } != null
 
             fun validateSign(): Boolean = (input[index] in listOf('+', '-')).onTrue { index++ }
 
