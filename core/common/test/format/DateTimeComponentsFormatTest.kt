@@ -412,11 +412,13 @@ class DateTimeComponentsFormatTest {
     @Test
     fun testValidSinglePartTimeZones() {
         NamedTimeZoneTestData.validSinglePart.forEach(::assertParseableAsNamedTimeZone)
+        NamedTimeZoneTestData.validSinglePart.forEach(::assertParseableAsNamedTimeZoneWithDelimiters)
     }
 
     @Test
     fun testValidMultiPartTimeZones() {
         NamedTimeZoneTestData.validMultiPart.forEach(::assertParseableAsNamedTimeZone)
+        NamedTimeZoneTestData.validMultiPart.forEach(::assertParseableAsNamedTimeZoneWithDelimiters)
     }
 
     @Test
@@ -440,16 +442,6 @@ class DateTimeComponentsFormatTest {
         timeZoneIds.forEach(::assertNonParseableAsTimeZone)
     }
 
-    @Test
-    fun testOffsetParsingWithBrackets() {
-        val actual = DateTimeComponents.Format {
-            char('[')
-            timeZoneId()
-            char(']')
-        }.parse("[UTC+03:00]").timeZoneId
-        assertEquals("UTC+03:00", actual)
-    }
-
     private fun generateTimeZoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
         for (prefix in prefixes) {
             for (sign in listOf('+', '-')) {
@@ -463,15 +455,26 @@ class DateTimeComponentsFormatTest {
     private fun assertParseableAsTimeZone(zoneId: String) {
         TimeZone.of(zoneId)
         assertParseableAsNamedTimeZone(zoneId)
+        assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }
 
     private fun assertIncorrectlyParseableAsTimeZone(zoneId: String) {
         assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
         assertParseableAsNamedTimeZone(zoneId)
+        assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }
 
     private fun assertParseableAsNamedTimeZone(zoneId: String) {
         val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+        assertEquals(zoneId, result.timeZoneId)
+    }
+
+    private fun assertParseableAsNamedTimeZoneWithDelimiters(zoneId: String) {
+        val result = DateTimeComponents.Format {
+            char('[')
+            timeZoneId()
+            char(']')
+        }.parse("[$zoneId]")
         assertEquals(zoneId, result.timeZoneId)
     }
 
