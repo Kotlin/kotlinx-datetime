@@ -95,7 +95,6 @@ class DateTimeComponentsFormatTest {
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
         assertEquals(berlin, bag.timeZoneId)
-        format.assertCanNotParse("2008-06-03T11:05:30.123456789+01:00[Mars/New_York]")
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("2008-06-03T11:05:30.123456789+01:00[$zone]").timeZoneId)
         }
@@ -103,9 +102,9 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = DateTimeComponents.Format { timeZoneId(); chars("X") }
+        val format = DateTimeComponents.Format { timeZoneId(); chars("]") }
         for (zone in TimeZone.availableZoneIds) {
-            assertEquals(zone, format.parse("${zone}X").timeZoneId)
+            assertEquals(zone, format.parse("${zone}]").timeZoneId)
         }
     }
 
@@ -268,7 +267,7 @@ class DateTimeComponentsFormatTest {
         }
     }
 
-    private object TimezoneTestData {
+    private object OffsetTimeZoneTestData {
         val correctParsableOffsets = listOf(
             // Single digit hours (H format)
             "1", "9", "0",
@@ -298,14 +297,6 @@ class DateTimeComponentsFormatTest {
         )
 
         val incorrectUnparsableOffsets = listOf(
-            // Single non-digit characters
-            "a", "_", "+",
-            // Two characters: letter+digit, letter+symbol, digit+symbol
-            "a9", "y!", "1#",
-            // Three digits (invalid length - not 2 or 4 digits)
-            "110", "020",
-            // Five digits (invalid length - not 4 or 6 digits)
-            "18000", "02300",
             // HH:MM format violations: single digit hour, missing minute, missing hour
             "3:10", "2:70", "99:", ":20",
             // Invalid colon-separated formats: too many digits in an hour/minute component
@@ -319,14 +310,6 @@ class DateTimeComponentsFormatTest {
         )
 
         val tzPrefixes = listOf("UTC", "GMT", "UT")
-
-        val timezoneDbIdentifiers = listOf(
-            "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney",
-            "Pacific/Auckland", "Africa/Cairo", "America/Los_Angeles", "Europe/Paris",
-            "Asia/Singapore", "Australia/Melbourne", "Africa/Johannesburg", "Europe/Isle_of_Man"
-        )
-
-        val invalidTimezoneIds = listOf("INVALID", "XYZ", "ABC/DEF", "NOT_A_TIMEZONE", "SYSTEM")
     }
 
     @Test
@@ -335,42 +318,131 @@ class DateTimeComponentsFormatTest {
     }
 
     @Test
-    fun testSpecialNamedTimezones() {
-        TimezoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
+    fun testSpecialNamedTimeZones() {
+        OffsetTimeZoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
     }
 
     @Test
     fun testPrefixWithCorrectParsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.correctParsableOffsets)
+        val timezoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.correctParsableOffsets
+        )
         timezoneIds.forEach(::assertParseableAsTimeZone)
     }
 
     @Test
     fun testPrefixWithIncorrectParsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectParsableOffsets)
+        val timezoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.incorrectParsableOffsets
+        )
         timezoneIds.forEach(::assertIncorrectlyParseableAsTimeZone)
+    }
+
+    private object NamedTimeZoneTestData {
+        val validSinglePart = listOf(
+            // Simple names
+            "EST", "PST", "CET", "CEST",
+            // Names with underscores
+            "Eastern_Standard", "Pacific_Standard_Time",
+            // Names with dots
+            "US.Eastern", "Australia.Sydney",
+            // Names with digits
+            "GMT0", "UTC8", "Zone1",
+            // Names with hyphens
+            "GMT-Special", "UTC-Extended",
+            // Names with plus signs
+            "GMT+Special", "Zone+Extended",
+            // Mixed characters
+            "Zone_1.2-Special+Extended",
+            // Starting with a dot or underscore
+            ".SpecialZone", "_InternalZone"
+        )
+
+        val validMultiPart = listOf(
+            // Common real-world timezones
+            "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney", "Africa/Cairo",
+            // Three parts
+            "America/Indiana/Indianapolis", "America/Argentina/Buenos_Aires", "America/Kentucky/Louisville", "_/./a",
+            // Many parts
+            "A/B/C/D/E/F/G/H/I/J/KLM/N/O/P/Q/R/S/T/U/V/W/Z/Y/Z",
+            // Multiple parts with various characters
+            "Etc/GMT+1", "Etc/GMT-10", "US/East-Indiana", "Brazil/DeNoronha",
+            // With dots
+            "System.Default/Zone.1",
+            // Complex names
+            "Region_1/Sub-Region.2/Zone+3",
+            // Maximum complexity
+            "Region_1.2-3+4/Sub-Region_5.6-7+8/Zone_9.0-1+2"
+        )
+
+        val invalid = listOf(
+            // Empty string
+            "",
+            // Starting with invalid characters
+            "1America", "-Zone", "+Zone", "/Zone",
+            // Starting with slash
+            "/America/New_York",
+            // Ending with slash
+            "America/New_York/", "America/",
+            // Double slashes
+            "America//New_York", "Europe///London",
+            // Invalid characters
+            "America@New_York", "Europe#London", "Asia*Tokyo", "Zone With Spaces", "Tab\tZone", "Newline\nZone",
+            // Invalid characters after slash
+            "America/1NewYork", "Europe/-London", "Asia/+Tokyo", "Zone//",
+            // Special characters
+            "Zone(1)", "Zone[1]", "Zone{1}", "Zone<1>", "Zone!1", "Zone?1", "Zone=1", "Zone&1",
+            // Unicode characters
+            "América/São_Paulo", "Москва/Zone", "東京/Zone"
+        )
+
+        val partiallyValid = listOf(
+            "America/New_York" to "@Extra",
+            "Europe/London" to "#123",
+            "CET" to " 123",
+            "CEST" to "\t456",
+            "Asia/Tokyo" to "/1Invalid",
+            "Region/SubRegion" to "/@Invalid",
+            "America/New_York" to "/"
+        )
+    }
+
+    @Test
+    fun testValidSinglePartTimeZones() {
+        NamedTimeZoneTestData.validSinglePart.forEach(::assertParseableAsNamedTimeZone)
+        NamedTimeZoneTestData.validSinglePart.forEach(::assertParseableAsNamedTimeZoneWithDelimiters)
+    }
+
+    @Test
+    fun testValidMultiPartTimeZones() {
+        NamedTimeZoneTestData.validMultiPart.forEach(::assertParseableAsNamedTimeZone)
+        NamedTimeZoneTestData.validMultiPart.forEach(::assertParseableAsNamedTimeZoneWithDelimiters)
+    }
+
+    @Test
+    fun testInvalidTimeZones() {
+        NamedTimeZoneTestData.invalid.forEach(::assertNonParseableAsTimeZone)
+    }
+
+    @Test
+    fun testPartiallyValidTimeZones() {
+        NamedTimeZoneTestData.partiallyValid.forEach { (zoneId, extra) ->
+            assertPartiallyParseableAsNamedTimeZone(zoneId, extra)
+        }
     }
 
     @Test
     fun testPrefixWithIncorrectUnparsableOffset() {
-        val timezoneIds =
-            generateTimezoneIds(TimezoneTestData.tzPrefixes + "", TimezoneTestData.incorrectUnparsableOffsets)
-        timezoneIds.forEach(::assertNonParseableAsTimeZone)
+        val timeZoneIds = generateTimeZoneIds(
+            OffsetTimeZoneTestData.tzPrefixes + "",
+            OffsetTimeZoneTestData.incorrectUnparsableOffsets
+        )
+        timeZoneIds.forEach(::assertNonParseableAsTimeZone)
     }
 
-    @Test
-    fun testTimezoneDBIdentifiers() {
-        TimezoneTestData.timezoneDbIdentifiers.forEach(::assertParseableAsTimeZone)
-    }
-
-    @Test
-    fun testInvalidTimezoneIds() {
-        TimezoneTestData.invalidTimezoneIds.forEach(::assertNonParseableAsTimeZone)
-    }
-
-    private fun generateTimezoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
+    private fun generateTimeZoneIds(prefixes: List<String>, offsets: List<String>): List<String> = buildList {
         for (prefix in prefixes) {
             for (sign in listOf('+', '-')) {
                 for (offset in offsets) {
@@ -382,13 +454,27 @@ class DateTimeComponentsFormatTest {
 
     private fun assertParseableAsTimeZone(zoneId: String) {
         TimeZone.of(zoneId)
-        val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-        assertEquals(zoneId, result.timeZoneId)
+        assertParseableAsNamedTimeZone(zoneId)
+        assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }
 
     private fun assertIncorrectlyParseableAsTimeZone(zoneId: String) {
         assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
+        assertParseableAsNamedTimeZone(zoneId)
+        assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
+    }
+
+    private fun assertParseableAsNamedTimeZone(zoneId: String) {
         val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
+        assertEquals(zoneId, result.timeZoneId)
+    }
+
+    private fun assertParseableAsNamedTimeZoneWithDelimiters(zoneId: String) {
+        val result = DateTimeComponents.Format {
+            char('[')
+            timeZoneId()
+            char(']')
+        }.parse("[$zoneId]")
         assertEquals(zoneId, result.timeZoneId)
     }
 
@@ -396,5 +482,10 @@ class DateTimeComponentsFormatTest {
         assertFailsWith<DateTimeFormatException> {
             DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
         }
+    }
+
+    private fun assertPartiallyParseableAsNamedTimeZone(zoneId: String, extra: String) {
+        val result = DateTimeComponents.Format { timeZoneId(); chars(extra) }.parse("$zoneId$extra")
+        assertEquals(zoneId, result.timeZoneId)
     }
 }

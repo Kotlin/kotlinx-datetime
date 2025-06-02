@@ -9,6 +9,8 @@ import kotlinx.datetime.*
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.formatter.FormatterStructure
+import kotlinx.datetime.internal.format.formatter.StringFormatterStructure
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.format.parser.ParserStructure
 import kotlinx.datetime.internal.format.parser.TimeZoneParserOperation
@@ -565,27 +567,22 @@ internal class DateTimeComponentsContents internal constructor(
 
 internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
 
-internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
-    StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
+internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsContents> {
+    override val field: FieldSpec<DateTimeComponentsContents, String>
+        get() = timeZoneField
 
     override val builderRepresentation: String
-        get() =
-            "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+        get() = "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+
+    override fun formatter(): FormatterStructure<DateTimeComponentsContents> {
+        return StringFormatterStructure(field.accessor::getterNotNull)
+    }
 
     override fun parser(): ParserStructure<DateTimeComponentsContents> =
         ParserStructure(
-            emptyList(),
-            listOf(
-                super.parser(),
-                ParserStructure(
-                    listOf(TimeZoneParserOperation(timeZoneField.accessor)),
-                    emptyList()
-                )
-            )
+            listOf(TimeZoneParserOperation(timeZoneField.accessor)),
+            emptyList()
         )
-
-    override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
-    override fun hashCode(): Int = knownZones.hashCode()
 }
 
 internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatStructure<DateTimeComponentsContents>) :
@@ -609,7 +606,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatS
         }
 
         override fun timeZoneId() =
-            actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
+            actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective()))
 
         @Suppress("NO_ELSE_IN_WHEN")
         override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
