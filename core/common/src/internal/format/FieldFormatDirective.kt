@@ -147,27 +147,6 @@ internal abstract class NamedEnumIntFieldFormatDirective<in Target, Type>(
         )
 }
 
-internal abstract class StringFieldFormatDirective<in Target>(
-    final override val field: FieldSpec<Target, String>,
-    private val acceptedStrings: Set<String>,
-) : FieldFormatDirective<Target> {
-
-    init {
-        require(acceptedStrings.isNotEmpty()) {
-            "The set of accepted strings is empty"
-        }
-    }
-
-    override fun formatter(): FormatterStructure<Target> =
-        StringFormatterStructure(field.accessor::getterNotNull)
-
-    override fun parser(): ParserStructure<Target> =
-        ParserStructure(
-            listOf(StringSetParserOperation(acceptedStrings, field.accessor, field.name)),
-            emptyList()
-        )
-}
-
 internal abstract class SignedIntFieldFormatDirective<in Target>(
     final override val field: FieldSpec<Target, Int>,
     private val minDigits: Int?,
