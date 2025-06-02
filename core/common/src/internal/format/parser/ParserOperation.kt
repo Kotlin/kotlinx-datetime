@@ -194,17 +194,27 @@ internal class TimeZoneParserOperation<Output>(
             fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
             fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
+            fun validateTimeZoneInitial(): Boolean =
+                if (input[index].isTimeZoneInitial()) {
+                    index++
+                    true
+                } else false
+
+            fun validateTimeZoneChar(): Boolean =
+                if (input[index].isTimeZoneChar()) {
+                    index++
+                    true
+                } else false
+
+            fun validateSlash(): Boolean = if (input[index] == '/') { index++; true } else false
+
             var state = State.START
             while (index < input.length) {
                 state = when (state) {
                     State.START -> when {
                         validatePrefix(listOf("UTC", "GMT", "UT")) -> State.AFTER_PREFIX
                         validateSign() -> State.AFTER_INIT_SIGN
-                        input[index].isTimeZoneInitial() -> {
-                            index++
-                            State.IN_PART
-                        }
-
+                        validateTimeZoneInitial() -> State.IN_PART
                         else -> break
                     }
 
@@ -246,25 +256,13 @@ internal class TimeZoneParserOperation<Output>(
                     }
 
                     State.IN_PART -> when {
-                        input[index].isTimeZoneChar() -> {
-                            index++
-                            State.IN_PART
-                        }
-
-                        input[index] == '/' -> {
-                            index++
-                            State.AFTER_SLASH
-                        }
-
+                        validateTimeZoneChar() -> State.IN_PART
+                        validateSlash() -> State.AFTER_SLASH
                         else -> break
                     }
 
                     State.AFTER_SLASH -> when {
-                        input[index].isTimeZoneInitial() -> {
-                            index++
-                            State.IN_PART
-                        }
-
+                        validateTimeZoneInitial() -> State.IN_PART
                         else -> break
                     }
 
