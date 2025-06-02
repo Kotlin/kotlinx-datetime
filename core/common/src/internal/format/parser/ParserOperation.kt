@@ -168,6 +168,9 @@ internal class TimeZoneParserOperation<Output>(
             END
         }
 
+        private inline fun Boolean.onTrue(action: () -> Unit): Boolean = if (this) { action(); true } else false
+        private inline fun Boolean.onFalse(action: () -> Unit): Boolean = if (this) true else { action(); false }
+
         private fun validateTimeZone(input: CharSequence, startIndex: Int): Int {
             var index = startIndex
 
@@ -177,36 +180,22 @@ internal class TimeZoneParserOperation<Output>(
                     true
                 } ?: false
 
-            fun validateSign(): Boolean = if (input[index] in listOf('+', '-')) { index++; true } else false
+            fun validateSign(): Boolean = (input[index] in listOf('+', '-')).onTrue { index++ }
 
             fun validateTimeComponent(length: Int): Boolean =
-                if ((index..<(index + length)).all { input.getOrNull(it)?.isAsciiDigit() ?: false }) {
-                    index += length
-                    true
-                } else false
+                (index..<(index + length))
+                    .all { input.getOrNull(it)?.isAsciiDigit() ?: false }
+                    .onTrue { index += length }
 
-            fun validateTimeComponentWithColon(): Boolean {
-                if (input[index] != ':') return false
-                index++
-                return validateTimeComponent(2).also { if (!it) index-- }
-            }
+            fun validateTimeComponentWithColon(): Boolean =
+                (input[index] == ':').onTrue { index++ } && validateTimeComponent(2).onFalse { index-- }
 
-            fun Char.isTimeZoneInitial() = isAsciiLetter() || this == '.' || this == '_'
-            fun Char.isTimeZoneChar() = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
+            fun Char.isTimeZoneInitial(): Boolean = isAsciiLetter() || this == '.' || this == '_'
+            fun Char.isTimeZoneChar(): Boolean = isTimeZoneInitial() || isAsciiDigit() || this == '-' || this == '+'
 
-            fun validateTimeZoneInitial(): Boolean =
-                if (input[index].isTimeZoneInitial()) {
-                    index++
-                    true
-                } else false
-
-            fun validateTimeZoneChar(): Boolean =
-                if (input[index].isTimeZoneChar()) {
-                    index++
-                    true
-                } else false
-
-            fun validateSlash(): Boolean = if (input[index] == '/') { index++; true } else false
+            fun validateTimeZoneInitial(): Boolean = input[index].isTimeZoneInitial().onTrue { index++ }
+            fun validateTimeZoneChar(): Boolean = input[index].isTimeZoneChar().onTrue { index++ }
+            fun validateSlash(): Boolean = (input[index] == '/').onTrue { index++ }
 
             var state = State.START
             while (index < input.length) {
