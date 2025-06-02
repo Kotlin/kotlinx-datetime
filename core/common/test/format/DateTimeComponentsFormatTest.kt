@@ -462,14 +462,12 @@ class DateTimeComponentsFormatTest {
 
     private fun assertParseableAsTimeZone(zoneId: String) {
         TimeZone.of(zoneId)
-        val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-        assertEquals(zoneId, result.timeZoneId)
+        assertParseableAsNamedTimeZone(zoneId)
     }
 
     private fun assertIncorrectlyParseableAsTimeZone(zoneId: String) {
         assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
-        val result = DateTimeComponents.Format { timeZoneId() }.parse(zoneId)
-        assertEquals(zoneId, result.timeZoneId)
+        assertParseableAsNamedTimeZone(zoneId)
     }
 
     private fun assertParseableAsNamedTimeZone(zoneId: String) {
