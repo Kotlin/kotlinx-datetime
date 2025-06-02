@@ -168,7 +168,7 @@ internal class TimeZoneParserOperation<Output>(
             END
         }
 
-        private inline fun <T> T?.onNotNull(action: (obj: T) -> Unit): Boolean =
+        private inline fun <T> T?.onNotNull(action: (T) -> Unit): Boolean =
             if (this != null) { action(this); true } else false
 
         private inline fun Boolean.onTrue(action: () -> Unit): Boolean = if (this) { action(); true } else false
