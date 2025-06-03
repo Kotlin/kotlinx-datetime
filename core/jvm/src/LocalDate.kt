@@ -55,7 +55,7 @@ public actual class LocalDate internal constructor(
 
         // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
         // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
-        private const val serialVersionUID = 0L
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
