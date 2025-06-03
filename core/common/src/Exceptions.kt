@@ -13,6 +13,10 @@ public class DateTimeArithmeticException: RuntimeException {
     public constructor(message: String): super(message)
     public constructor(cause: Throwable): super(cause)
     public constructor(message: String, cause: Throwable): super(message, cause)
+
+    private companion object {
+        private const val serialVersionUID: Long = -3207806170214997982L
+    }
 }
 
 /**
@@ -23,6 +27,10 @@ public class IllegalTimeZoneException: IllegalArgumentException {
     public constructor(message: String): super(message)
     public constructor(cause: Throwable): super(cause)
     public constructor(message: String, cause: Throwable): super(message, cause)
+
+    private companion object {
+        private const val serialVersionUID: Long = 1159315966274264801L
+    }
 }
 
 internal class DateTimeFormatException: IllegalArgumentException {
@@ -30,4 +38,8 @@ internal class DateTimeFormatException: IllegalArgumentException {
     constructor(message: String): super(message)
     constructor(cause: Throwable): super(cause)
     constructor(message: String, cause: Throwable): super(message, cause)
+
+    private companion object {
+        private const val serialVersionUID: Long = 4231196759387994100L
+    }
 }
