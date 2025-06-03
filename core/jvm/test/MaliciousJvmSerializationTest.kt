@@ -45,13 +45,12 @@ class MaliciousJvmSerializationTest {
      */
     private class TestCase(
         val clazz: KClass<out Serializable>,
-        val serialVersionUID: Long,
         val delegateFieldName: String,
         val delegate: Serializable,
-        /** serialVersionUID had the correct value ([serialVersionUID]) in the Java code. */
+        /** `serialVersionUID` was set to the correct value (`0L`) in the Java code. */
         val withCorrectSVUID: Streams,
-        /** serialVersionUID had an incorrect value (42) in the Java code. */
-        val withSVUID42: Streams,
+        /** `serialVersionUID` was set to an incorrect value (`42L`) in the Java code. */
+        val withIncorrectSVUID: Streams,
     ) {
         class Streams(
             /** `z` was set to `null` in the Java code. */
@@ -64,56 +63,52 @@ class MaliciousJvmSerializationTest {
     private val testCases = listOf(
         TestCase(
             kotlinx.datetime.LocalDate::class,
-            serialVersionUID = 7026816023079564263L,
             delegateFieldName = "value",
             delegate = java.time.LocalDate.of(2025, 4, 26),
             withCorrectSVUID = Streams(
-                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c44617465618443f17dae33e70200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770703000007e9041a78",
-                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c44617465618443f17dae33e70200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b787070",
+                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c4461746500000000000000000200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770703000007e9041a78",
+                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c4461746500000000000000000200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b787070",
             ),
-            withSVUID42 = Streams(
+            withIncorrectSVUID = Streams(
                 delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c44617465000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770703000007e9041a78",
                 delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c44617465000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c446174653b787070",
             ),
         ),
         TestCase(
             kotlinx.datetime.LocalDateTime::class,
-            serialVersionUID = -4261744960416354711L,
             delegateFieldName = "value",
             delegate = java.time.LocalDateTime.of(2025, 4, 26, 11, 18),
             withCorrectSVUID = Streams(
-                delegateValid = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d65c4db3d89c7126e690200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770905000007e9041a0bed78",
-                delegateNull = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d65c4db3d89c7126e690200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b787070",
+                delegateValid = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d6500000000000000000200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770905000007e9041a0bed78",
+                delegateNull = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d6500000000000000000200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b787070",
             ),
-            withSVUID42 = Streams(
+            withIncorrectSVUID = Streams(
                 delegateValid = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d65000000000000002a0200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c00007870770905000007e9041a0bed78",
                 delegateNull = "aced00057372001e6b6f746c696e782e6461746574696d652e4c6f63616c4461746554696d65000000000000002a0200014c000576616c75657400194c6a6176612f74696d652f4c6f63616c4461746554696d653b787070",
             ),
         ),
         TestCase(
             kotlinx.datetime.LocalTime::class,
-            serialVersionUID = -352249606036216323L,
             delegateFieldName = "value",
             delegate = java.time.LocalTime.of(11, 18),
             withCorrectSVUID = Streams(
-                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d65fb1c8ed97ff0a5fd0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707703040bed78",
-                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d65fb1c8ed97ff0a5fd0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b787070",
+                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d6500000000000000000200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707703040bed78",
+                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d6500000000000000000200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b787070",
             ),
-            withSVUID42 = Streams(
+            withIncorrectSVUID = Streams(
                 delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d65000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707703040bed78",
                 delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e4c6f63616c54696d65000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f4c6f63616c54696d653b787070",
             ),
         ),
         TestCase(
             kotlinx.datetime.UtcOffset::class,
-            serialVersionUID = -6636773355667981618L,
             delegateFieldName = "zoneOffset",
             delegate = java.time.ZoneOffset.UTC,
             withCorrectSVUID = Streams(
-                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574a3e571cbd0a1face0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707702080078",
-                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574a3e571cbd0a1face0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b787070",
+                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f666673657400000000000000000200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707702080078",
+                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f666673657400000000000000000200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b787070",
             ),
-            withSVUID42 = Streams(
+            withIncorrectSVUID = Streams(
                 delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574000000000000002a0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707702080078",
                 delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574000000000000002a0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b787070",
             ),
@@ -134,7 +129,7 @@ class MaliciousJvmSerializationTest {
             testCase.ensureAssumptionsHold()
             val className = testCase.clazz.qualifiedName!!
             testStreamsWithCorrectSVUID(className, testCase.withCorrectSVUID)
-            testStreamsWithSVUID42(testCase.serialVersionUID, className, testCase.withSVUID42)
+            testStreamsWithIncorrectSVUID(className, testCase.withIncorrectSVUID)
         }
     }
 
@@ -143,14 +138,8 @@ class MaliciousJvmSerializationTest {
         val objectStreamClass = ObjectStreamClass.lookup(clazz.java)
 
         val actualSerialVersionUID = objectStreamClass.serialVersionUID
-        if (actualSerialVersionUID == 42L) {
-            fail("This test assumes that the tested classes don't have a serialVersionUID of 42 but $className does.")
-        }
-        if (actualSerialVersionUID != serialVersionUID) {
-            fail(
-                "This test assumes that the serialVersionUID of $className is $serialVersionUID but it was " +
-                    "$actualSerialVersionUID."
-            )
+        if (actualSerialVersionUID != 0L) {
+            fail("This test assumes that the serialVersionUID of $className is 0, but it was $actualSerialVersionUID.")
         }
 
         val field = objectStreamClass.fields.singleOrNull()
@@ -184,12 +173,12 @@ class MaliciousJvmSerializationTest {
         assertEquals(expectedIOEMessage, ioe2.message)
     }
 
-    private fun testStreamsWithSVUID42(serialVersionUID: Long, className: String, streams: Streams) {
+    private fun testStreamsWithIncorrectSVUID(className: String, streams: Streams) {
         val testFailureMessage = "Deserialization of a serial stream that tries to bypass kotlinx.datetime.Ser but " +
             "has a wrong serialVersionUID for $className should fail"
 
         val expectedICEMessage = "$className; local class incompatible: stream classdesc serialVersionUID = 42, " +
-            "local class serialVersionUID = $serialVersionUID"
+            "local class serialVersionUID = 0"
 
         val ice1 = assertFailsWith<java.io.InvalidClassException>(testFailureMessage) {
             deserialize(streams.delegateValid)
