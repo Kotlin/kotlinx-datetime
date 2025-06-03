@@ -85,12 +85,19 @@ public actual class LocalTime internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
+
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
 
     }
+
+    private fun readObject(ois: java.io.ObjectInputStream): Unit =
+        throw java.io.InvalidObjectException("kotlinx.datetime.LocalTime must be deserialized via kotlinx.datetime.Ser")
 
     private fun writeReplace(): Any = Ser(Ser.TIME_TAG, this)
 }

@@ -52,6 +52,10 @@ public actual class LocalDate internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> =
             LocalDateFormat.build(block)
+
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
@@ -106,6 +110,9 @@ public actual class LocalDate internal constructor(
     @PublishedApi
     @JvmName("toEpochDays")
     internal fun toEpochDaysJvm(): Int = value.toEpochDay().clampToInt()
+
+    private fun readObject(ois: java.io.ObjectInputStream): Unit =
+        throw java.io.InvalidObjectException("kotlinx.datetime.LocalDate must be deserialized via kotlinx.datetime.Ser")
 
     private fun writeReplace(): Any = Ser(Ser.DATE_TAG, this)
 }
