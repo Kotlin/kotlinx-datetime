@@ -9,6 +9,7 @@ package kotlinx.datetime
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.plus
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -107,3 +108,34 @@ internal actual fun Instant.plus(secondsToAdd: Long, nanosToAdd: Long): Instant 
 } catch (e: DateTimeException) {
     throw IllegalArgumentException(e)
 }
+
+@JvmName("minus") @PublishedApi internal fun minusJvm(instant: Instant, value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    instant.minus(value, unit, timeZone)
+
+@JvmName("periodUntil") @PublishedApi internal fun periodUntilJvm(
+    start: Instant, end: Instant, timeZone: TimeZone
+): DateTimePeriod = start.periodUntil(end, timeZone)
+
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Int, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(value, unit, timeZone)
+
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Long, unit: DateTimeUnit.TimeBased
+): Instant = instant.plus(value, unit)
+
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Long, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(value, unit, timeZone)
+
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, period: DateTimePeriod, timeZone: TimeZone
+): Instant = instant.plus(period, timeZone)
+
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(1, unit, timeZone)
+
+@JvmName("until") @PublishedApi internal fun untilJvm(
+    start: Instant, end: Instant, unit: DateTimeUnit, timeZone: TimeZone
+): Long = start.until(end, unit, timeZone)
