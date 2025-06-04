@@ -450,27 +450,10 @@ public fun String.toInstant(): Instant = Instant.parse(this)
 public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
     with(period) {
         val initialOffset = offsetIn(timeZone)
-        val initialLdt = toLocalDateTimeFailing(initialOffset)
-        val instantAfterMonths: Instant
-        val offsetAfterMonths: UtcOffset
-        val ldtAfterMonths: LocalDateTime
-        if (totalMonths != 0L) {
-            val unresolvedLdtWithMonths = initialLdt.plus(totalMonths, DateTimeUnit.MONTH)
-            instantAfterMonths = localDateTimeToInstant(unresolvedLdtWithMonths, timeZone, preferred = initialOffset)
-            offsetAfterMonths = instantAfterMonths.offsetIn(timeZone)
-            ldtAfterMonths = instantAfterMonths.toLocalDateTime(offsetAfterMonths)
-        } else {
-            instantAfterMonths = this@plus
-            offsetAfterMonths = initialOffset
-            ldtAfterMonths = initialLdt
-        }
-        val instantAfterMonthsAndDays = if (days != 0) {
-            val unresolvedLdtWithDays = ldtAfterMonths.plus(days, DateTimeUnit.DAY)
-            localDateTimeToInstant(unresolvedLdtWithDays, timeZone, preferred = offsetAfterMonths)
-        } else {
-            instantAfterMonths
-        }
-        instantAfterMonthsAndDays
+        val ldtPlusDate = toLocalDateTimeFailing(initialOffset)
+            .run { if (totalMonths != 0L) { plus(totalMonths, DateTimeUnit.MONTH) } else { this } }
+            .run { if (days != 0) { this.plus(days, DateTimeUnit.DAY) } else { this } }
+        localDateTimeToInstant(ldtPlusDate, timeZone, preferred = initialOffset)
             .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
     }.check(timeZone)
 } catch (e: ArithmeticException) {
@@ -522,21 +505,21 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
 public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
     val initialOffset = offsetIn(timeZone)
     val initialLdt = toLocalDateTimeFailing(initialOffset)
-    val otherLdt = other.toLocalDateTimeFailing(other.offsetIn(timeZone))
-
-    val months = initialLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
-    val unresolvedLdtWithMonths = initialLdt.plus(months, DateTimeUnit.MONTH)
-        // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val instantWithMonths = localDateTimeToInstant(unresolvedLdtWithMonths, timeZone, preferred = initialOffset)
-    val offsetWithMonths = instantWithMonths.offsetIn(timeZone)
-    val ldtWithMonths = instantWithMonths.toLocalDateTime(offsetWithMonths)
-    val days = ldtWithMonths.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
-    val unresolvedLdtWithDays = ldtWithMonths.plus(days, DateTimeUnit.DAY)
+    val otherLdt = other.toLocalDateTimeFailing(timeZone)
+    val timeAfterAddingDate =
+        localDateTimeToInstant(otherLdt.date.atTime(initialLdt.time), timeZone, preferred = initialOffset)
+    val delta = when {
+        other > this && timeAfterAddingDate > other -> -1 // addition won't throw: end date - date >= 1
+        other < this && timeAfterAddingDate < other -> 1 // addition won't throw: date - end date >= 1
+        else -> 0
+    }
+    val endDate = otherLdt.date.plus(delta, DateTimeUnit.DAY) // `endDate` is guaranteed to be valid
+    val unresolvedLdtWithDays = endDate.atTime(initialLdt.time)
     val newInstant = localDateTimeToInstant(unresolvedLdtWithDays, timeZone, preferred = initialOffset)
         // won't throw: thisLdt + days <= otherLdt
     val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
-
-    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
+    val datePeriod = endDate - initialLdt.date
+    return buildDateTimePeriod(datePeriod.totalMonths, datePeriod.days, nanoseconds)
 }
 
 /**
@@ -555,8 +538,18 @@ public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeri
  */
 public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
     when (unit) {
-        is DateTimeUnit.DateBased ->
-            toLocalDateTimeFailing(offsetIn(timeZone)).until(other.toLocalDateTimeFailing(other.offsetIn(timeZone)), unit)
+        is DateTimeUnit.DateBased -> {
+            val start = toLocalDateTimeFailing(timeZone)
+            val end = other.toLocalDateTimeFailing(timeZone)
+            val timeAfterAddingDate =
+                localDateTimeToInstant(end.date.atTime(start.time), timeZone, preferred = this.offsetIn(timeZone))
+            val delta = when {
+                other > this && timeAfterAddingDate > other -> -1 // addition won't throw: end date - date >= 1
+                other < this && timeAfterAddingDate < other -> 1 // addition won't throw: date - end date >= 1
+                else -> 0
+            }
+            start.date.until(end.date.plus(delta, DateTimeUnit.DAY), unit)
+        }
         is DateTimeUnit.TimeBased -> {
             check(timeZone); other.check(timeZone)
             until(other, unit)
@@ -890,11 +883,14 @@ private fun Instant.toLocalDateTimeFailing(offset: UtcOffset): LocalDateTime = t
     throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
 }
 
+private fun Instant.toLocalDateTimeFailing(timeZone: TimeZone): LocalDateTime =
+    toLocalDateTimeFailing(offsetIn(timeZone))
+
 /** Check that [Instant] fits in [LocalDateTime].
  * This is done on the results of computations for consistency with other platforms.
  */
 private fun Instant.check(zone: TimeZone): Instant = this@check.also {
-    toLocalDateTimeFailing(offsetIn(zone))
+    toLocalDateTimeFailing(zone)
 }
 
 private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =
@@ -908,18 +904,3 @@ private fun LocalDateTime.plus(value: Int, unit: DateTimeUnit.DateBased) =
  * @throws IllegalArgumentException if the boundaries of Instant are overflown
  */
 internal expect fun Instant.plus(secondsToAdd: Long, nanosToAdd: Long): Instant
-
-// org.threeten.bp.LocalDateTime#until
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
-    val otherDate = other.date
-    val delta = when {
-        otherDate > date && other.time < time -> -1 // addition won't throw: endDate - date >= 1
-        otherDate < date && other.time > time -> 1 // addition won't throw: date - endDate >= 1
-        else -> 0
-    }
-    val endDate = otherDate.plus(delta, DateTimeUnit.DAY)
-    return when (unit) {
-        is DateTimeUnit.MonthBased -> date.until(endDate, DateTimeUnit.MONTH) / unit.months
-        is DateTimeUnit.DayBased -> date.until(endDate, DateTimeUnit.DAY) / unit.days
-    }
-}

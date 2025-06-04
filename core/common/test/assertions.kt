@@ -8,6 +8,7 @@ import kotlinx.datetime.DateTimeArithmeticException
 import kotlinx.datetime.DateTimeFormatException
 import kotlin.test.assertFailsWith
 import kotlin.test.fail
+import kotlin.time.Duration.Companion.minutes
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 @kotlin.internal.InlineOnly
@@ -40,3 +41,8 @@ inline fun <T> assertIllegalArgument(message: String? = null, f: () -> T) {
  * The number of iterations to perform in nondeterministic tests.
  */
 const val STRESS_TEST_ITERATIONS = 1000
+
+/**
+ * How long to spin nondeterministic tests before giving up.
+ */
+val STRESS_TEST_DURATION = 5.minutes
