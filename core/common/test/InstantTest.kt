@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 class InstantTest {
 
@@ -283,6 +284,104 @@ class InstantTest {
     }
 
     @Test
+    fun periodUntilSameSign() {
+        val tz = TimeZone.of("Europe/Berlin")
+        // Same sign when the period is positive but smaller than the non-DST-aware date-based period
+        assertPeriodSameSign(
+            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz).periodUntil(
+                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz), tz))
+        // Same sign when the period is negative but bigger than the non-DST-aware date-based period
+        assertPeriodSameSign(
+            Instant.parse("2025-07-27T00:59:00Z").periodUntil(
+                Instant.parse("2024-10-27T01:00:00Z"), tz))
+    }
+
+    @Test
+    @Ignore
+    fun periodUntilSameSignStressTest() {
+        val tz = TimeZone.of("Europe/Berlin")
+        val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
+        while (endMoment.elapsedNow().isNegative()) {
+            val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val end = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val period = start.periodUntil(end, tz)
+            assertPeriodSameSign(period)
+        }
+    }
+
+    @Test
+    fun untilDays() {
+        val tz = TimeZone.of("Europe/Berlin")
+        // No overshooting when the distance is positive but smaller than the non-DST-aware date-based distance
+        run {
+            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz)
+            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz)
+            val distance = i1.until(i2, DateTimeUnit.DAY, tz)
+            assertTrue(i2 > i1.plus(distance, DateTimeUnit.DAY, tz))
+        }
+        // No overshooting when the distance is negative but bigger than the non-DST-aware date-based distance
+        run {
+            val i1 = Instant.parse("2025-07-27T00:59:00Z")
+            val i2 = Instant.parse("2024-10-27T01:00:00Z")
+            val distance = i1.until(i2, DateTimeUnit.DAY, tz)
+            assertTrue(i2 < i1.plus(distance, DateTimeUnit.DAY, tz))
+        }
+    }
+
+    @Test
+    @Ignore
+    fun untilDaysStressTest() {
+        val tz = TimeZone.of("Europe/Berlin")
+        val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
+        while (endMoment.elapsedNow().isNegative()) {
+            val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val end = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val period = start.until(end, DateTimeUnit.DAY, tz)
+            val afterAdding = start.plus(period, DateTimeUnit.DAY, tz)
+            if (afterAdding > end && start < end || afterAdding < end && start > end) {
+                error("start: $start (${start.toLocalDateTime(tz)}), end: $end (${end.toLocalDateTime(tz)}), period: $period, " +
+                        "afterAdding: $afterAdding (${afterAdding.toLocalDateTime(tz)})")
+            }
+        }
+    }
+
+    @Test
+    fun dateTimePeriodWithGapBetweenMonthsAndDays() {
+        val zone = TimeZone.of("America/New_York")
+        // LocalDateTime(2019, 3, 10, 2, 0) is a gap.
+        // If months and days are not added atomically, the result will be adjusted.
+        val start = Instant.parse("2019-02-10T02:00:00-05:00")
+        val expectedEnd = Instant.parse("2019-03-11T02:00:00-04:00")
+        val end = start.plus(DateTimePeriod(months = 1, days = 1), zone)
+        // assertEquals(expectedEnd, end)
+        val period = start.periodUntil(end, zone)
+        assertEquals(end, start.plus(period, zone))
+    }
+
+    @Test
+    fun periodUntilWithGapBetweenMonthsAndDays() {
+        val start = Instant.parse("2024-01-30T01:10:00Z")
+        val end = Instant.parse("2025-04-01T01:10:00Z")
+        val tz = TimeZone.of("Europe/Berlin")
+        val period = start.periodUntil(end, tz)
+        assertEquals(DateTimePeriod(years = 1, months = 2, days = 2, hours = 1), period)
+        assertEquals(end, start.plus(period, tz), "start: $start, end: $end, period: $period")
+    }
+
+    @Test
+    @Ignore
+    fun periodUntilWithGapBetweenMonthsAndDaysStressTest() {
+        val tz = TimeZone.of("Europe/Berlin")
+        val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
+        while (endMoment.elapsedNow().isNegative()) {
+            val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val end = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
+            val period = start.periodUntil(end, tz)
+            assertEquals(end, start.plus(period, tz), "start: $start, end: $end, period: $period")
+        }
+    }
+
+    @Test
     fun diffInvariant() {
         repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
@@ -445,6 +544,12 @@ class InstantTest {
         assertFalse(Instant.MIN.isDistantFuture)
     }
 
+    private fun DateTimePeriod.hasSameSign() =
+        totalMonths >= 0 && days >= 0 && totalNanoseconds >= 0 ||
+                totalMonths <= 0 && days <= 0 && totalNanoseconds <= 0
+    private fun assertPeriodSameSign(period: DateTimePeriod) {
+        assertTrue(period.hasSameSign(), "Period $period has different signs for months, days and nanoseconds")
+    }
 }
 
 class InstantRangeTest {
