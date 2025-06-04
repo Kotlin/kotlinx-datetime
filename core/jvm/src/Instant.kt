@@ -9,6 +9,7 @@ package kotlinx.datetime
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.plus
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
@@ -102,83 +103,39 @@ public actual class Instant internal constructor(
     }
 }
 
-private fun Instant.atZone(zone: TimeZone): java.time.ZonedDateTime = try {
-    value.atZone(zone.zoneId)
+internal actual fun Instant.plus(secondsToAdd: Long, nanosToAdd: Long): Instant = try {
+    Instant(this.value.plusSeconds(secondsToAdd).plusNanos(nanosToAdd))
 } catch (e: DateTimeException) {
-    throw DateTimeArithmeticException(e)
+    throw IllegalArgumentException(e)
 }
 
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant {
-    try {
-        val thisZdt = atZone(timeZone)
-        return with(period) {
-            thisZdt
-                    .run { if (totalMonths != 0L) plusMonths(totalMonths) else this }
-                    .run { if (days != 0) plusDays(days.toLong()) else this }
-                    .run { if (totalNanoseconds != 0L) plusNanos(totalNanoseconds) else this }
-        }.toInstant().let(::Instant)
-    } catch (e: DateTimeException) {
-        throw DateTimeArithmeticException(e)
-    }
-}
+@JvmName("minus") @PublishedApi internal fun minusJvm(instant: Instant, value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    instant.minus(value, unit, timeZone)
 
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
-public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
-        plus(1L, unit, timeZone)
+@JvmName("periodUntil") @PublishedApi internal fun periodUntilJvm(
+    start: Instant, end: Instant, timeZone: TimeZone
+): DateTimePeriod = start.periodUntil(end, timeZone)
 
-public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-        plus(value.toLong(), unit, timeZone)
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Int, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(value, unit, timeZone)
 
-public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-        plus(-value.toLong(), unit, timeZone)
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Long, unit: DateTimeUnit.TimeBased
+): Instant = instant.plus(value, unit)
 
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-        try {
-            val thisZdt = atZone(timeZone)
-            when (unit) {
-                is DateTimeUnit.TimeBased ->
-                    plus(value, unit).value.also { it.atZone(timeZone.zoneId) }
-                is DateTimeUnit.DayBased ->
-                    thisZdt.plusDays(safeMultiply(value, unit.days.toLong())).toInstant()
-                is DateTimeUnit.MonthBased ->
-                    thisZdt.plusMonths(safeMultiply(value, unit.months.toLong())).toInstant()
-            }.let(::Instant)
-        } catch (e: Exception) {
-            if (e !is DateTimeException && e !is ArithmeticException) throw e
-            throw DateTimeArithmeticException("Instant $this cannot be represented as local date when adding $value $unit to it", e)
-        }
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, value: Long, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(value, unit, timeZone)
 
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
-    try {
-        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (d, r) ->
-            Instant(this.value.plusSeconds(d).plusNanos(r))
-        }
-    } catch (e: Exception) {
-        if (e !is DateTimeException && e !is ArithmeticException) throw e
-        if (value > 0) Instant.MAX else Instant.MIN
-    }
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, period: DateTimePeriod, timeZone: TimeZone
+): Instant = instant.plus(period, timeZone)
 
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    var thisZdt = this.atZone(timeZone)
-    val otherZdt = other.atZone(timeZone)
+@JvmName("plus") @PublishedApi internal fun plusJvm(
+    instant: Instant, unit: DateTimeUnit, timeZone: TimeZone
+): Instant = instant.plus(1, unit, timeZone)
 
-    val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
-    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
-    val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
-
-    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
-}
-
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
-    val thisZdt = this.atZone(timeZone)
-    val otherZdt = other.atZone(timeZone)
-    when(unit) {
-        is DateTimeUnit.TimeBased -> until(other, unit)
-        is DateTimeUnit.DayBased -> thisZdt.until(otherZdt, ChronoUnit.DAYS) / unit.days
-        is DateTimeUnit.MonthBased -> thisZdt.until(otherZdt, ChronoUnit.MONTHS) / unit.months
-    }
-} catch (e: DateTimeException) {
-    throw DateTimeArithmeticException(e)
-} catch (e: ArithmeticException) {
-    if (this.value < other.value) Long.MAX_VALUE else Long.MIN_VALUE
-}
+@JvmName("until") @PublishedApi internal fun untilJvm(
+    start: Instant, end: Instant, unit: DateTimeUnit, timeZone: TimeZone
+): Long = start.until(end, unit, timeZone)

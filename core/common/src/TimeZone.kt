@@ -325,3 +325,7 @@ public expect fun LocalDateTime.toInstant(offset: UtcOffset): Instant
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
 public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone): Instant
+
+internal expect fun localDateTimeToInstant(
+    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset? = null
+): Instant
