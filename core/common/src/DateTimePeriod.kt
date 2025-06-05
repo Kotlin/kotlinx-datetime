@@ -577,6 +577,11 @@ public fun DateTimePeriod(
 // TODO: maybe it's more consistent to throw here on overflow?
 public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(totalNanoseconds = inWholeNanoseconds)
 
+internal fun DateTimePeriod.datePeriodPortion(): DatePeriod = this as? DatePeriod ?: DatePeriod(
+    totalMonths = totalMonths,
+    days = days
+)
+
 /**
  * Adds two [DateTimePeriod] instances.
  *

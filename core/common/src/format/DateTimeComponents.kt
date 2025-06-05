@@ -9,11 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
-import kotlinx.datetime.internal.format.formatter.FormatterStructure
-import kotlinx.datetime.internal.format.formatter.StringFormatterStructure
-import kotlinx.datetime.internal.format.parser.Copyable
-import kotlinx.datetime.internal.format.parser.ParserStructure
-import kotlinx.datetime.internal.format.parser.TimeZoneParserOperation
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
 
@@ -41,7 +36,7 @@ import kotlin.reflect.*
  * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.parsingInvalidInput
  * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.simpleFormatting
  */
-public class DateTimeComponents internal constructor(internal val contents: DateTimeComponentsContents = DateTimeComponentsContents()) {
+public class DateTimeComponents internal constructor(internal val contents: IncompleteDateTimeOffsetZone = IncompleteDateTimeOffsetZone()) {
     public companion object {
         /**
          * Creates a [DateTimeFormat] for [DateTimeComponents] values using [DateTimeFormatBuilder.WithDateTimeComponents].
@@ -547,76 +542,6 @@ public fun DateTimeComponents.Companion.parse(
 ): DateTimeComponents =
     format.parse(input)
 
-internal class DateTimeComponentsContents internal constructor(
-    val date: IncompleteLocalDate = IncompleteLocalDate(),
-    val time: IncompleteLocalTime = IncompleteLocalTime(),
-    val offset: IncompleteUtcOffset = IncompleteUtcOffset(),
-    var timeZoneId: String? = null,
-) : DateFieldContainer by date, TimeFieldContainer by time, UtcOffsetFieldContainer by offset,
-    DateTimeFieldContainer, Copyable<DateTimeComponentsContents> {
-    override fun copy(): DateTimeComponentsContents =
-        DateTimeComponentsContents(date.copy(), time.copy(), offset.copy(), timeZoneId)
-
-    override fun equals(other: Any?): Boolean =
-        other is DateTimeComponentsContents && other.date == date && other.time == time &&
-            other.offset == offset && other.timeZoneId == timeZoneId
-
-    override fun hashCode(): Int =
-        date.hashCode() xor time.hashCode() xor offset.hashCode() xor (timeZoneId?.hashCode() ?: 0)
-}
-
-internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
-
-internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsContents> {
-    override val field: FieldSpec<DateTimeComponentsContents, String>
-        get() = timeZoneField
-
-    override val builderRepresentation: String
-        get() = "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
-
-    override fun formatter(): FormatterStructure<DateTimeComponentsContents> {
-        return StringFormatterStructure(field.accessor::getterNotNull)
-    }
-
-    override fun parser(): ParserStructure<DateTimeComponentsContents> =
-        ParserStructure(
-            listOf(TimeZoneParserOperation(timeZoneField.accessor)),
-            emptyList()
-        )
-}
-
-internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatStructure<DateTimeComponentsContents>) :
-    AbstractDateTimeFormat<DateTimeComponents, DateTimeComponentsContents>() {
-    override fun intermediateFromValue(value: DateTimeComponents): DateTimeComponentsContents = value.contents
-
-    override fun valueFromIntermediate(intermediate: DateTimeComponentsContents): DateTimeComponents =
-        DateTimeComponents(intermediate)
-
-    override val emptyIntermediate get() = emptyDateTimeComponentsContents
-
-    class Builder(override val actualBuilder: AppendableFormatStructure<DateTimeComponentsContents>) :
-        AbstractDateTimeFormatBuilder<DateTimeComponentsContents, Builder>, AbstractWithDateTimeBuilder,
-        AbstractWithOffsetBuilder, DateTimeFormatBuilder.WithDateTimeComponents {
-        override fun addFormatStructureForDateTime(structure: FormatStructure<DateTimeFieldContainer>) {
-            actualBuilder.add(structure)
-        }
-
-        override fun addFormatStructureForOffset(structure: FormatStructure<UtcOffsetFieldContainer>) {
-            actualBuilder.add(structure)
-        }
-
-        override fun timeZoneId() =
-            actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective()))
-
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
-            is DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat)
-        }
-
-        override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
-    }
-}
-
 private class TwoDigitNumber(private val reference: KMutableProperty0<Int?>) {
     operator fun getValue(thisRef: Any?, property: KProperty<*>) = reference.getValue(thisRef, property)
 
@@ -636,5 +561,3 @@ private class ThreeDigitNumber(private val reference: KMutableProperty0<Int?>) {
         reference.setValue(thisRef, property, value)
     }
 }
-
-private val emptyDateTimeComponentsContents = DateTimeComponentsContents()
