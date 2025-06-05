@@ -281,11 +281,7 @@ public sealed interface DateTimeFormatBuilder {
         public fun offset(format: DateTimeFormat<UtcOffset>)
     }
 
-    /**
-     * Builder for formats for values that have all the datetime components:
-     * date, time, UTC offset, and the timezone ID.
-     */
-    public sealed interface WithDateTimeComponents : WithDateTime, WithUtcOffset {
+    public sealed interface WithZonedDateTime : WithDateTime, WithUtcOffset {
         /**
          * A timezone identifier, either offset-based or a region-based IANA timezone ID.
          *
@@ -315,6 +311,19 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun timeZoneId()
 
+        /**
+         * An existing [DateTimeFormat] for the UTC offset part.
+         *
+         * @sample kotlinx.datetime.test.samples.format.UtcOffsetFormatSamples.offset
+         */
+        public fun zonedDateTime(format: DateTimeFormat<UnresolvedZonedDateTime>)
+    }
+
+    /**
+     * Builder for formats for values that have all the datetime components:
+     * date, time, UTC offset, and the timezone ID.
+     */
+    public sealed interface WithDateTimeComponents : WithZonedDateTime {
         /**
          * An existing [DateTimeFormat].
          *
