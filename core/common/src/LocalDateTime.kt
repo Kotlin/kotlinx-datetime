@@ -66,7 +66,7 @@ import kotlin.jvm.JvmName
  *
  * ### Platform specifics
  *
- * The range of supported years is platform-dependent, but at least is enough to represent dates of all instants between
+ * The range of supported years is unspecified, but at least is enough to represent dates of all instants between
  * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
  *
  * On the JVM, there are `LocalDateTime.toJavaLocalDateTime()` and `java.time.LocalDateTime.toKotlinLocalDateTime()`

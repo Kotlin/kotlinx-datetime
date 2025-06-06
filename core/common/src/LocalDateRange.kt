@@ -5,11 +5,8 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.clampToInt
-import kotlinx.datetime.internal.safeAdd
-import kotlinx.datetime.internal.safeMultiplyOrClamp
+import kotlinx.datetime.internal.*
 import kotlin.random.Random
-import kotlin.random.nextLong
 
 private class LocalDateProgressionIterator(private val iterator: LongIterator) : Iterator<LocalDate> {
     override fun hasNext(): Boolean = iterator.hasNext()
@@ -67,7 +64,7 @@ internal constructor(internal val longProgression: LongProgression) : Collection
      * Returns [Int.MAX_VALUE] if the number of dates overflows [Int]
      */
     override val size: Int
-        get() = longProgression.size
+        get() = longProgression.sizeUnsafe
 
     /**
      * Returns true iff every element in [elements] is a member of the progression.
@@ -82,7 +79,7 @@ internal constructor(internal val longProgression: LongProgression) : Collection
         @Suppress("USELESS_CAST")
         if ((value as Any?) !is LocalDate) return false
 
-        return longProgression.contains(value.toEpochDays())
+        return longProgression.containsUnsafe(value.toEpochDays())
     }
 
     override fun equals(other: Any?): Boolean =
@@ -261,13 +258,13 @@ public infix fun LocalDate.downTo(that: LocalDate): LocalDateProgression =
  * Takes the step into account;
  * will not return any value within the range that would be skipped over by the progression.
  *
- * @throws IllegalArgumentException if the progression is empty.
+ * @throws NoSuchElementException if the progression is empty.
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.random
  */
 public fun LocalDateProgression.random(random: Random = Random): LocalDate =
     if (isEmpty()) throw NoSuchElementException("Cannot get random in empty range: $this")
-    else longProgression.random(random).let(LocalDate.Companion::fromEpochDays)
+    else longProgression.randomUnsafe(random).let(LocalDate.Companion::fromEpochDays)
 
 /**
  * Returns a random [LocalDate] within the bounds of the [LocalDateProgression] or null if the progression is empty.
@@ -277,29 +274,5 @@ public fun LocalDateProgression.random(random: Random = Random): LocalDate =
  *
  * @sample kotlinx.datetime.test.samples.LocalDateRangeSamples.random
  */
-public fun LocalDateProgression.randomOrNull(random: Random = Random): LocalDate? = longProgression.randomOrNull(random)
+public fun LocalDateProgression.randomOrNull(random: Random = Random): LocalDate? = longProgression.randomUnsafeOrNull(random)
     ?.let(LocalDate.Companion::fromEpochDays)
-
-// this implementation is incorrect in general
-// (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).random()` throws an exception),
-// but for the range of epoch days in LocalDate it's good enough
-private fun LongProgression.random(random: Random = Random): Long =
-    random.nextLong(0L..(last - first) / step) * step + first
-
-// incorrect in general; see `random` just above
-private fun LongProgression.randomOrNull(random: Random = Random): Long? = if (isEmpty()) null else random(random)
-
-// this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).step(5).contains(2)`
-// returns `false` incorrectly https://www.wolframalpha.com/input?i=-2%5E63+%2B+1844674407370955162+*+5),
-// but for the range of epoch days in LocalDate it's good enough
-private fun LongProgression.contains(value: Long): Boolean =
-    value in (if (step > 0) first..last else last..first) && (value - first) % step == 0L
-
-// this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
-// but for the range of epoch days in LocalDate it's good enough
-private val LongProgression.size: Int
-    get() = if (isEmpty()) 0 else try {
-        (safeAdd(last, -first) / step + 1).clampToInt()
-    } catch (e: ArithmeticException) {
-        Int.MAX_VALUE
-    }
