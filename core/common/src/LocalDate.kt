@@ -35,6 +35,9 @@ import kotlin.internal.*
  *
  * ### Platform specifics
  *
+ * The range of supported years is unspecified, but at least is enough to represent dates of all instants between
+ * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
+ *
  * On the JVM,
  * there are `LocalDate.toJavaLocalDate()` and `java.time.LocalDate.toKotlinLocalDate()`
  * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
