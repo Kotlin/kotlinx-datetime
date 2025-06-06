@@ -29,7 +29,7 @@ import kotlinx.serialization.Serializable
  *
  * ### Platform specifics
  *
- * The range of supported years is platform-dependent, but at least is enough to represent year-months of all instants
+ * The range of supported years is unspecified, but at least is enough to represent year-months of all instants
  * between [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
  *
  * On the JVM,
@@ -236,6 +236,7 @@ public val LocalDate.yearMonth: YearMonth get() = YearMonth(year, month)
 /**
  * Combines this year-month with the specified day-of-month into a [LocalDate] value.
  *
+ * @throw IllegalArgumentException if the [day] is out of range for this year-month.
  * @sample kotlinx.datetime.test.samples.YearMonthSamples.onDay
  */
 public fun YearMonth.onDay(day: Int): LocalDate = LocalDate(year, month, day)
