@@ -40,7 +40,7 @@ internal class TzFileData(
 }
 
 internal class TzFile(val data: TzFileData, val rules: PosixTzString?) {
-    fun toTimeZoneRules(): TimeZoneRulesImpl {
+    fun toTimeZoneRules(): TimeZoneRules {
         val tzOffsets = buildList {
             add(data.states[0].offset)
             data.transitions.forEach { add(data.states[it.stateIndex].offset) }

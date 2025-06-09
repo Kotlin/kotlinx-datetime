@@ -10,13 +10,13 @@
 package kotlinx.datetime.internal
 
 private class TzdbBionic(private val rules: Map<String, Entry>) : TimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRulesImpl =
+    override fun rulesForId(id: String): TimeZoneRules =
         rules[id]?.readRules() ?: throw IllegalStateException("Unknown time zone $id")
 
     override fun availableTimeZoneIds(): Set<String> = rules.keys
 
     class Entry(val file: ByteArray, val offset: Int, val length: Int) {
-        fun readRules(): TimeZoneRulesImpl = readTzFile(file.copyOfRange(offset, offset + length)).toTimeZoneRules()
+        fun readRules(): TimeZoneRules = readTzFile(file.copyOfRange(offset, offset + length)).toTimeZoneRules()
     }
 }
 

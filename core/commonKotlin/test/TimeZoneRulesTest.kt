@@ -12,7 +12,7 @@ import kotlin.test.*
 class TimeZoneRulesTest {
     @Test
     fun ruleStrings() {
-        val rules = readTzFile(EuropeBerlinTzFile2023c).toTimeZoneRules()
+        val rules = readTzFile(EuropeBerlinTzFile2023c).toTimeZoneRules() as TimeZoneRulesImpl
         // first, check that for the future, there are no explicitly defined transitions
         assertTrue(rules.transitionEpochSeconds.all {
             Instant.fromEpochSeconds(it) < LocalDateTime(2038, 1, 1, 0, 0).toInstant(UtcOffset.ZERO)

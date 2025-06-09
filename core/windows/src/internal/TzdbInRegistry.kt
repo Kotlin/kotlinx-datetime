@@ -14,7 +14,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
 
     // TODO: starting version 1703 of Windows 10, the ICU library is also bundled, with more accurate/ timezone information.
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
-    private val windowsToRules: Map<String, TimeZoneRulesImpl> = buildMap {
+    private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
             val recurringRules = RecurringZoneRules(recurring.transitions)
             val rules = run {
@@ -76,7 +76,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         }
     }
 
-    override fun rulesForId(id: String): TimeZoneRulesImpl {
+    override fun rulesForId(id: String): TimeZoneRules {
         val standardName = standardToWindows[id] ?: throw IllegalTimeZoneException("Unknown time zone $id")
         return windowsToRules[standardName]
                 ?: throw IllegalTimeZoneException("The rules for time zone $id are absent in the Windows registry")
