@@ -28,7 +28,7 @@ internal class TimeZoneRulesImpl(
      * [recurringZoneRules].
      */
     val recurringZoneRules: RecurringZoneRules?,
-) {
+) : TimeZoneRules {
     init {
         require(offsets.size == transitionEpochSeconds.size + 1) {
             "offsets.size must be one more than transitionEpochSeconds.size"
@@ -65,7 +65,7 @@ internal class TimeZoneRulesImpl(
         }
     }
 
-    fun infoAtInstant(instant: Instant): UtcOffset {
+    override fun infoAtInstant(instant: Instant): UtcOffset {
         val epochSeconds = instant.epochSeconds
         // good: no transitions, or instant is after the last transition
         if (recurringZoneRules != null && transitionEpochSeconds.lastOrNull()?.let { epochSeconds >= it } != false) {
@@ -81,7 +81,7 @@ internal class TimeZoneRulesImpl(
         return offsets[index]
     }
 
-    fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
+    override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
         if (recurringZoneRules != null && transitionLocalDateTimes.lastOrNull()?.let { localDateTime > it } != false) {
             return recurringZoneRules.infoAtLocalDateTime(localDateTime, offsets.last())
         }
