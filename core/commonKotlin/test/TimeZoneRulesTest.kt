@@ -36,7 +36,7 @@ class TimeZoneRulesTest {
         val ruleString = "AST4ADT,M3.2.0,M11.1.0\n" // Atlantic/Bermuda
         val recurringRules =
             PosixTzString.readIfPresent(BinaryDataReader(ruleString.encodeToByteArray()))!!.toRecurringZoneRules()!!
-        val rules = TimeZoneRules(UtcOffset(hours = -4), recurringRules)
+        val rules = TimeZoneRulesImpl(UtcOffset(hours = -4), recurringRules)
         val dstStartTime = LocalDateTime(2020, 3, 8, 2, 1)
         val infoAtDstStart = rules.infoAtDatetime(dstStartTime)
         assertTrue(infoAtDstStart is OffsetInfo.Gap, "Expected Gap, got $infoAtDstStart")

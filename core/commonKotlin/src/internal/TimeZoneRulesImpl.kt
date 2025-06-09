@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlin.math.*
 
-internal class TimeZoneRules(
+internal class TimeZoneRulesImpl(
     /**
      * The list of [Instant.epochSeconds] parts of the instants when recorded transitions occur, in ascending order.
      */
@@ -36,7 +36,7 @@ internal class TimeZoneRules(
     }
 
     /**
-     * Constructs a [TimeZoneRules] without any historic data.
+     * Constructs a [TimeZoneRulesImpl] without any historic data.
      */
     constructor(initialOffset: UtcOffset, rules: RecurringZoneRules) : this(
         transitionEpochSeconds = emptyList(),
