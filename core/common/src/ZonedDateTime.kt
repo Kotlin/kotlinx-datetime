@@ -14,7 +14,7 @@ public interface UnresolvedZonedDateTime {
     public val timeZone: TimeZone
     public val preferredOffset: UtcOffset?
 
-    public fun resolve(): ZonedDateTime
+    public fun resolve(resolver: TransitionResolver): ZonedDateTime
 
     public object Formats {
         public val RFC_9557: DateTimeFormat<UnresolvedZonedDateTime> = Format {
@@ -45,8 +45,8 @@ private class UnresolvedZonedDateTimeImpl(
     override val rawLocalDateTime: LocalDateTime,
     override val timeZone: TimeZone,
     override val preferredOffset: UtcOffset? = null,
-): UnresolvedZonedDateTime {
-    override fun resolve(): ZonedDateTime =
+) : UnresolvedZonedDateTime {
+    override fun resolve(resolver: TransitionResolver): ZonedDateTime =
         localDateTimeToInstant(rawLocalDateTime, timeZone, preferredOffset).atZone(timeZone)
 
     override fun equals(other: Any?): Boolean =
@@ -76,13 +76,13 @@ public class ZonedDateTime(
     public val localDateTime: LocalDateTime,
     public val utcOffset: UtcOffset,
     override val timeZone: TimeZone,
-): UnresolvedZonedDateTime {
+) : UnresolvedZonedDateTime {
     public fun toInstant(): Instant = localDateTime.toInstant(utcOffset)
 
     override val rawLocalDateTime: LocalDateTime get() = localDateTime
     override val preferredOffset: UtcOffset get() = utcOffset
 
-    override fun resolve(): ZonedDateTime = this
+    override fun resolve(resolver: TransitionResolver): ZonedDateTime = this
 
     override fun equals(other: Any?): Boolean =
         this === other || other is ZonedDateTime && localDateTime == other.localDateTime &&
@@ -111,8 +111,6 @@ private fun t() {
 }
 
 
-
-
 /// CONVERSION FUNCTIONS
 
 public fun LocalDateTime.atZone(timeZone: TimeZone): UnresolvedZonedDateTime =
@@ -126,9 +124,6 @@ public fun Instant.atZone(timeZone: TimeZone): ZonedDateTime {
         timeZone = timeZone
     )
 }
-
-
-
 
 
 /// CALENDAR-BASED MODIFICATION FUNCTIONS
@@ -164,8 +159,6 @@ public fun UnresolvedZonedDateTime.minus(value: Int, unit: DateTimeUnit.DateBase
     withDate { it.minus(value, unit) }
 
 
-
-
 /// ELAPSED-TIME-BASED MODIFICATION FUNCTIONS
 
 // Adds the real-world time to the instant.
@@ -186,9 +179,6 @@ public fun ZonedDateTime.minus(value: Long, unit: DateTimeUnit.TimeBased): Zoned
     }
 
 
-
-
-
 /// COMBINED MODIFICATION FUNCTIONS
 
 public fun ZonedDateTime.plus(value: Long, unit: DateTimeUnit): UnresolvedZonedDateTime = when (unit) {
@@ -206,29 +196,26 @@ public fun ZonedDateTime.plus(value: Int, unit: DateTimeUnit): UnresolvedZonedDa
 
 public fun ZonedDateTime.minus(value: Int, unit: DateTimeUnit): UnresolvedZonedDateTime = plus(-value.toLong(), unit)
 
-public fun UnresolvedZonedDateTime.plus(period: DateTimePeriod): ZonedDateTime = try {
+public fun UnresolvedZonedDateTime.plus(period: DateTimePeriod, resolver: TransitionResolver): ZonedDateTime = try {
     plus(period.datePeriodPortion())
-        .resolve().plus(period.totalNanoseconds, DateTimeUnit.NANOSECOND)
+        .resolve(resolver).plus(period.totalNanoseconds, DateTimeUnit.NANOSECOND)
 } catch (e: ArithmeticException) {
     throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
 } catch (e: IllegalArgumentException) {
     throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
 }
 
-public fun UnresolvedZonedDateTime.minus(period: DateTimePeriod): ZonedDateTime =
+public fun UnresolvedZonedDateTime.minus(period: DateTimePeriod, resolver: TransitionResolver): ZonedDateTime =
     /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
     any other component means that `plus` will throw due to the minimum value of the numeric type overflowing the
     `ZonedDateTime` limits. */
     if (period.totalNanoseconds != Long.MIN_VALUE) {
         val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -totalNanoseconds) }
-        plus(negatedPeriod)
+        plus(negatedPeriod, resolver)
     } else {
-        val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -(totalNanoseconds+1)) }
-        plus(negatedPeriod).plus(1L, DateTimeUnit.NANOSECOND)
+        val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -(totalNanoseconds + 1)) }
+        plus(negatedPeriod, resolver).plus(1L, DateTimeUnit.NANOSECOND)
     }
-
-
-
 
 
 /// TIME-BASED DISTANCE FUNCTIONS
@@ -237,9 +224,6 @@ public fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit.TimeBase
     toInstant().until(other.toInstant(), unit)
 
 public fun ZonedDateTime.minus(other: ZonedDateTime, unit: DateTimeUnit.TimeBased): Long = other.until(this, unit)
-
-
-
 
 
 /// DATE-BASED DISTANCE FUNCTIONS :(
@@ -251,11 +235,15 @@ public fun ZonedDateTime.minus(other: ZonedDateTime, unit: DateTimeUnit.TimeBase
 // Depending on the resolver and on whether the 'other' is the moment before or after the DST change,
 // the result of 'other.until(this, DateTimeUnit.DAY)' can be either 1 or 0 days.
 
-public fun UnresolvedZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit.DateBased): Long {
+public fun UnresolvedZonedDateTime.until(
+    other: ZonedDateTime,
+    unit: DateTimeUnit.DateBased,
+    resolver: TransitionResolver
+): Long {
     require(this.timeZone == other.timeZone) {
         "ZonedDateTime.until: time zones must be the same, but was '${this.timeZone}' and '${other.timeZone}'"
     }
-    val timeAfterAddingDate = withDate { other.rawLocalDateTime.date }.resolve().toInstant()
+    val timeAfterAddingDate = withDate { other.rawLocalDateTime.date }.resolve(resolver).toInstant()
     val delta = when {
         other.rawLocalDateTime.date > rawLocalDateTime.date && timeAfterAddingDate > other.toInstant() -> -1 // addition won't throw: end date - date >= 1
         other.rawLocalDateTime.date < rawLocalDateTime.date && timeAfterAddingDate < other.toInstant() -> 1 // addition won't throw: date - end date >= 1
@@ -264,20 +252,27 @@ public fun UnresolvedZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUni
     return rawLocalDateTime.date.until(other.rawLocalDateTime.date.plus(delta, DateTimeUnit.DAY), unit)
 }
 
-public fun ZonedDateTime.minus(other: UnresolvedZonedDateTime, unit: DateTimeUnit.DateBased): Long = other.until(this, unit)
+public fun ZonedDateTime.minus(
+    other: UnresolvedZonedDateTime,
+    unit: DateTimeUnit.DateBased,
+    resolver: TransitionResolver
+): Long = other.until(this, unit, resolver)
 
-public fun UnresolvedZonedDateTime.daysUntil(other: ZonedDateTime): Int = until(other, DateTimeUnit.DAY).clampToInt()
+public fun UnresolvedZonedDateTime.daysUntil(other: ZonedDateTime, resolver: TransitionResolver): Int =
+    until(other, DateTimeUnit.DAY, resolver).clampToInt()
 
-public fun UnresolvedZonedDateTime.monthsUntil(other: ZonedDateTime): Int = until(other, DateTimeUnit.MONTH).clampToInt()
+public fun UnresolvedZonedDateTime.monthsUntil(other: ZonedDateTime, resolver: TransitionResolver): Int =
+    until(other, DateTimeUnit.MONTH, resolver).clampToInt()
 
-public fun UnresolvedZonedDateTime.yearsUntil(other: ZonedDateTime): Int = until(other, DateTimeUnit.YEAR).clampToInt()
+public fun UnresolvedZonedDateTime.yearsUntil(other: ZonedDateTime, resolver: TransitionResolver): Int =
+    until(other, DateTimeUnit.YEAR, resolver).clampToInt()
 
-public fun UnresolvedZonedDateTime.periodUntil(other: ZonedDateTime): DateTimePeriod {
+public fun UnresolvedZonedDateTime.periodUntil(other: ZonedDateTime, resolver: TransitionResolver): DateTimePeriod {
     require(this.timeZone == other.timeZone) {
         "ZonedDateTime.periodUntil: time zones must be the same, but was '${this.timeZone}' and '${other.timeZone}'"
     }
     val otherInstant = other.toInstant()
-    val timeAfterAddingDate = withDate { other.rawLocalDateTime.date }.resolve().toInstant()
+    val timeAfterAddingDate = withDate { other.rawLocalDateTime.date }.resolve(resolver).toInstant()
     val delta = when {
         other.rawLocalDateTime.date > rawLocalDateTime.date && timeAfterAddingDate > otherInstant -> -1 // addition won't throw: end date - date >= 1
         other.rawLocalDateTime.date < rawLocalDateTime.date && timeAfterAddingDate < otherInstant -> 1 // addition won't throw: date - end date >= 1
@@ -285,21 +280,23 @@ public fun UnresolvedZonedDateTime.periodUntil(other: ZonedDateTime): DateTimePe
     }
     val endDate = other.rawLocalDateTime.date.plus(delta, DateTimeUnit.DAY) // `endDate` is guaranteed to be valid
     // won't throw: thisLdt + days <= otherLdt
-    val nanoseconds = withDate { endDate }.resolve().until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
+    val nanoseconds =
+        withDate { endDate }.resolve(resolver).until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
     val datePeriod = endDate - rawLocalDateTime.date
     return buildDateTimePeriod(datePeriod.totalMonths, datePeriod.days, nanoseconds)
 }
 
-public fun ZonedDateTime.minus(other: ZonedDateTime): DateTimePeriod = other.periodUntil(this)
-
-
+public fun ZonedDateTime.minus(other: ZonedDateTime, resolver: TransitionResolver): DateTimePeriod =
+    other.periodUntil(this, resolver)
 
 
 /// COMBINED DISTANCE FUNCTIONS
 
-public fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit): Long = when (unit) {
-    is DateTimeUnit.DateBased -> (this as UnresolvedZonedDateTime).until(other, unit)
-    is DateTimeUnit.TimeBased -> until(other, unit)
-}
+public fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit, resolver: TransitionResolver): Long =
+    when (unit) {
+        is DateTimeUnit.DateBased -> (this as UnresolvedZonedDateTime).until(other, unit, resolver)
+        is DateTimeUnit.TimeBased -> until(other, unit)
+    }
 
-public fun ZonedDateTime.minus(other: ZonedDateTime, unit: DateTimeUnit): Long = other.until(this, unit)
+public fun ZonedDateTime.minus(other: ZonedDateTime, unit: DateTimeUnit, resolver: TransitionResolver): Long =
+    other.until(this, unit, resolver)
