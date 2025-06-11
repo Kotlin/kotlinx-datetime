@@ -147,9 +147,8 @@ sealed interface kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.date
         abstract fun dateTime(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime>) // kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTime.dateTime|dateTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
     }
 
-    sealed interface WithDateTimeComponents : kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTime, kotlinx.datetime.format/DateTimeFormatBuilder.WithUtcOffset { // kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTimeComponents|null[0]
+    sealed interface WithDateTimeComponents : kotlinx.datetime.format/DateTimeFormatBuilder.WithZonedDateTime { // kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTimeComponents|null[0]
         abstract fun dateTimeComponents(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>) // kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTimeComponents.dateTimeComponents|dateTimeComponents(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
-        abstract fun timeZoneId() // kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTimeComponents.timeZoneId|timeZoneId(){}[0]
     }
 
     sealed interface WithTime : kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.datetime.format/DateTimeFormatBuilder.WithTime|null[0]
@@ -176,6 +175,11 @@ sealed interface kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.date
         abstract fun year(kotlinx.datetime.format/Padding = ...) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.year|year(kotlinx.datetime.format.Padding){}[0]
         abstract fun yearMonth(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth>) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.yearMonth|yearMonth(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
         abstract fun yearTwoDigits(kotlin/Int) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.yearTwoDigits|yearTwoDigits(kotlin.Int){}[0]
+    }
+
+    sealed interface WithZonedDateTime : kotlinx.datetime.format/DateTimeFormatBuilder.WithDateTime, kotlinx.datetime.format/DateTimeFormatBuilder.WithUtcOffset { // kotlinx.datetime.format/DateTimeFormatBuilder.WithZonedDateTime|null[0]
+        abstract fun timeZoneId() // kotlinx.datetime.format/DateTimeFormatBuilder.WithZonedDateTime.timeZoneId|timeZoneId(){}[0]
+        abstract fun zonedDateTime(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UnresolvedZonedDateTime>) // kotlinx.datetime.format/DateTimeFormatBuilder.WithZonedDateTime.zonedDateTime|zonedDateTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UnresolvedZonedDateTime>){}[0]
     }
 }
 
@@ -685,6 +689,32 @@ final class kotlinx.datetime/LocalTime : kotlin/Comparable<kotlinx.datetime/Loca
 }
 
 final class kotlinx.datetime/OverloadMarker // kotlinx.datetime/OverloadMarker|null[0]
+
+final class kotlinx.datetime/UnresolvedZonedDateTime { // kotlinx.datetime/UnresolvedZonedDateTime|null[0]
+    constructor <init>(kotlinx.datetime/LocalDateTime, kotlinx.datetime/TimeZone, kotlinx.datetime/UtcOffset? = ...) // kotlinx.datetime/UnresolvedZonedDateTime.<init>|<init>(kotlinx.datetime.LocalDateTime;kotlinx.datetime.TimeZone;kotlinx.datetime.UtcOffset?){}[0]
+
+    final val preferredOffset // kotlinx.datetime/UnresolvedZonedDateTime.preferredOffset|{}preferredOffset[0]
+        final fun <get-preferredOffset>(): kotlinx.datetime/UtcOffset? // kotlinx.datetime/UnresolvedZonedDateTime.preferredOffset.<get-preferredOffset>|<get-preferredOffset>(){}[0]
+    final val rawLocalDateTime // kotlinx.datetime/UnresolvedZonedDateTime.rawLocalDateTime|{}rawLocalDateTime[0]
+        final fun <get-rawLocalDateTime>(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/UnresolvedZonedDateTime.rawLocalDateTime.<get-rawLocalDateTime>|<get-rawLocalDateTime>(){}[0]
+    final val timeZone // kotlinx.datetime/UnresolvedZonedDateTime.timeZone|{}timeZone[0]
+        final fun <get-timeZone>(): kotlinx.datetime/TimeZone // kotlinx.datetime/UnresolvedZonedDateTime.timeZone.<get-timeZone>|<get-timeZone>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/UnresolvedZonedDateTime.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.datetime/UnresolvedZonedDateTime.hashCode|hashCode(){}[0]
+    final fun resolve(kotlinx.datetime/TransitionHandler): kotlin.time/Instant // kotlinx.datetime/UnresolvedZonedDateTime.resolve|resolve(kotlinx.datetime.TransitionHandler){}[0]
+    final fun toString(): kotlin/String // kotlinx.datetime/UnresolvedZonedDateTime.toString|toString(){}[0]
+
+    final object Companion { // kotlinx.datetime/UnresolvedZonedDateTime.Companion|null[0]
+        final fun Format(kotlin/Function1<kotlinx.datetime.format/DateTimeFormatBuilder.WithZonedDateTime, kotlin/Unit>): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UnresolvedZonedDateTime> // kotlinx.datetime/UnresolvedZonedDateTime.Companion.Format|Format(kotlin.Function1<kotlinx.datetime.format.DateTimeFormatBuilder.WithZonedDateTime,kotlin.Unit>){}[0]
+        final fun parse(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UnresolvedZonedDateTime> = ...): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/UnresolvedZonedDateTime.Companion.parse|parse(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UnresolvedZonedDateTime>){}[0]
+    }
+
+    final object Formats { // kotlinx.datetime/UnresolvedZonedDateTime.Formats|null[0]
+        final val RFC_9557 // kotlinx.datetime/UnresolvedZonedDateTime.Formats.RFC_9557|{}RFC_9557[0]
+            final fun <get-RFC_9557>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UnresolvedZonedDateTime> // kotlinx.datetime/UnresolvedZonedDateTime.Formats.RFC_9557.<get-RFC_9557>|<get-RFC_9557>(){}[0]
+    }
+}
 
 final class kotlinx.datetime/UtcOffset { // kotlinx.datetime/UtcOffset|null[0]
     final val totalSeconds // kotlinx.datetime/UtcOffset.totalSeconds|{}totalSeconds[0]
@@ -1237,6 +1267,7 @@ final fun (kotlin.time/Instant).kotlinx.datetime/daysUntil(kotlin.time/Instant, 
 final fun (kotlin.time/Instant).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>, kotlinx.datetime/UtcOffset = ...): kotlin/String // kotlinx.datetime/format|format@kotlin.time.Instant(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>;kotlinx.datetime.UtcOffset){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TransitionHandler, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TransitionHandler;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
@@ -1250,6 +1281,8 @@ final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTime
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/UnresolvedZonedDateTime, kotlinx.datetime/DateTimeUnit.DateBased, kotlinx.datetime/TransitionHandler): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.UnresolvedZonedDateTime;kotlinx.datetime.DateTimeUnit.DateBased;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/UnresolvedZonedDateTime, kotlinx.datetime/TransitionHandler): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.UnresolvedZonedDateTime;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/monthsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/monthsUntil|monthsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/monthsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Int // kotlinx.datetime/monthsUntil|monthsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/offsetIn(kotlinx.datetime/TimeZone): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetIn|offsetIn@kotlin.time.Instant(kotlinx.datetime.TimeZone){}[0]
@@ -1267,8 +1300,10 @@ final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimeU
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/toDeprecatedInstant(): kotlinx.datetime/Instant // kotlinx.datetime/toDeprecatedInstant|toDeprecatedInstant@kotlin.time.Instant(){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/toLocalDateTime(kotlinx.datetime/TimeZone): kotlinx.datetime/LocalDateTime // kotlinx.datetime/toLocalDateTime|toLocalDateTime@kotlin.time.Instant(kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/unresolve(kotlinx.datetime/TimeZone): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/unresolve|unresolve@kotlin.time.Instant(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TransitionHandler, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TransitionHandler;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
@@ -1356,6 +1391,7 @@ final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/randomOrNull(
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/reversed(): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/reversed|reversed@kotlinx.datetime.LocalDateProgression(){}[0]
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Int, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Int;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Long, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Long;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
+final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/atZone(kotlinx.datetime/TimeZone): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/atZone|atZone@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.LocalDateTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/FixedOffsetTimeZone): kotlin.time/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.FixedOffsetTimeZone){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/TimeZone): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone){}[0]
@@ -1373,6 +1409,21 @@ final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/format(kotlinx.datetime.
 final fun (kotlinx.datetime/LocalTime.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> = ...): kotlinx.datetime/LocalTime? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.LocalTime.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalTime>){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlin.time.Instant){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlinx.datetime/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlinx.datetime.Instant){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/daysUntil(kotlin.time/Instant, kotlinx.datetime/TransitionHandler): kotlin/Int // kotlinx.datetime/daysUntil|daysUntil@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.time.Instant;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/minus|minus@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Int;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/minus|minus@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Long;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/minus(kotlinx.datetime/DatePeriod): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/minus|minus@kotlinx.datetime.UnresolvedZonedDateTime(kotlinx.datetime.DatePeriod){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/minus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TransitionHandler): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlinx.datetime.UnresolvedZonedDateTime(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/monthsUntil(kotlin.time/Instant, kotlinx.datetime/TransitionHandler): kotlin/Int // kotlinx.datetime/monthsUntil|monthsUntil@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.time.Instant;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/periodUntil(kotlin.time/Instant, kotlinx.datetime/TransitionHandler): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/periodUntil|periodUntil@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.time.Instant;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/plus(kotlin/Int, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/plus|plus@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Int;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/plus(kotlin/Long, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/plus|plus@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Long;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/plus(kotlinx.datetime/DatePeriod): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/plus|plus@kotlinx.datetime.UnresolvedZonedDateTime(kotlinx.datetime.DatePeriod){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/plus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TransitionHandler): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlinx.datetime.UnresolvedZonedDateTime(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit.DateBased, kotlinx.datetime/TransitionHandler): kotlin/Long // kotlinx.datetime/until|until@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit.DateBased;kotlinx.datetime.TransitionHandler){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/withDate(kotlin/Function1<kotlinx.datetime/LocalDate, kotlinx.datetime/LocalDate>): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/withDate|withDate@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Function1<kotlinx.datetime.LocalDate,kotlinx.datetime.LocalDate>){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/withTime(kotlin/Function1<kotlinx.datetime/LocalTime, kotlinx.datetime/LocalTime>): kotlinx.datetime/UnresolvedZonedDateTime // kotlinx.datetime/withTime|withTime@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.Function1<kotlinx.datetime.LocalTime,kotlinx.datetime.LocalTime>){}[0]
+final fun (kotlinx.datetime/UnresolvedZonedDateTime).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TransitionHandler): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlinx.datetime.UnresolvedZonedDateTime(kotlin.time.Instant;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/asTimeZone(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/asTimeZone|asTimeZone@kotlinx.datetime.UtcOffset(){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.UtcOffset(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
 final fun (kotlinx.datetime/UtcOffset.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset> = ...): kotlinx.datetime/UtcOffset? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.UtcOffset.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
