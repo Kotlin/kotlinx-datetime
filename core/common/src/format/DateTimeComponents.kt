@@ -262,7 +262,7 @@ public class DateTimeComponents internal constructor(internal val contents: Inco
      * The year component of the date.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.date
      */
-    public var year: Int? by contents.date::year
+    public var year: Int? by contents::year
 
     /**
      * The number-of-month (1..12) component of the date.
@@ -338,7 +338,7 @@ public class DateTimeComponents internal constructor(internal val contents: Inco
      * @see hourOfAmPm
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.timeAmPm
      */
-    public var amPm: AmPmMarker? by contents.time::amPm
+    public var amPm: AmPmMarker? by contents::amPm
 
     /**
      * The minute-of-hour component.
@@ -372,7 +372,7 @@ public class DateTimeComponents internal constructor(internal val contents: Inco
      * True if the offset is negative.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.offset
      */
-    public var offsetIsNegative: Boolean? by contents.offset::offsetIsNegative
+    public var offsetIsNegative: Boolean? by contents::offsetIsNegative
 
     /**
      * The total amount of full hours in the UTC offset, in the range [0; 18].
