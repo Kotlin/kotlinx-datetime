@@ -587,6 +587,34 @@ public final class kotlinx/datetime/TimeZoneKt {
 	public static final fun toLocalDateTime (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDateTime;
 }
 
+public final class kotlinx/datetime/TransitionResolver {
+	public fun <init> ()V
+}
+
+public final class kotlinx/datetime/UnresolvedZonedDateTime {
+	public static final field Companion Lkotlinx/datetime/UnresolvedZonedDateTime$Companion;
+	public fun <init> (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/UtcOffset;)V
+	public synthetic fun <init> (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/UtcOffset;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPreferredOffset ()Lkotlinx/datetime/UtcOffset;
+	public final fun getRawLocalDateTime ()Lkotlinx/datetime/LocalDateTime;
+	public final fun getTimeZone ()Lkotlinx/datetime/TimeZone;
+	public fun hashCode ()I
+	public final fun resolve (Lkotlinx/datetime/TransitionResolver;)Lkotlinx/datetime/Instant;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/UnresolvedZonedDateTime$Companion {
+	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static synthetic fun parse$default (Lkotlinx/datetime/UnresolvedZonedDateTime$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+}
+
+public final class kotlinx/datetime/UnresolvedZonedDateTime$Formats {
+	public static final field INSTANCE Lkotlinx/datetime/UnresolvedZonedDateTime$Formats;
+	public final fun getRFC_9557 ()Lkotlinx/datetime/format/DateTimeFormat;
+}
+
 public final class kotlinx/datetime/UtcOffset : java/io/Serializable {
 	public static final field Companion Lkotlinx/datetime/UtcOffset$Companion;
 	public fun <init> (Ljava/time/ZoneOffset;)V
@@ -621,6 +649,30 @@ public final class kotlinx/datetime/UtcOffsetKt {
 	public static final fun UtcOffset ()Lkotlinx/datetime/UtcOffset;
 	public static final fun asTimeZone (Lkotlinx/datetime/UtcOffset;)Lkotlinx/datetime/FixedOffsetTimeZone;
 	public static final fun format (Lkotlinx/datetime/UtcOffset;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/ZonedDateTime2Kt {
+	public static final fun atZone (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun daysUntil (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TransitionResolver;)I
+	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TransitionResolver;Lkotlinx/datetime/TimeZone;)J
+	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/DateTimeUnit$DateBased;Lkotlinx/datetime/TransitionResolver;)J
+	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/TransitionResolver;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun minus (Lkotlinx/datetime/UnresolvedZonedDateTime;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun minus (Lkotlinx/datetime/UnresolvedZonedDateTime;JLkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun minus (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/DatePeriod;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun minus (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TransitionResolver;)Lkotlinx/datetime/Instant;
+	public static final fun monthsUntil (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TransitionResolver;)I
+	public static final fun periodUntil (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TransitionResolver;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun plus (Lkotlinx/datetime/UnresolvedZonedDateTime;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun plus (Lkotlinx/datetime/UnresolvedZonedDateTime;JLkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun plus (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/DatePeriod;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun plus (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TransitionResolver;)Lkotlinx/datetime/Instant;
+	public static final fun unresolve (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun until (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TransitionResolver;Lkotlinx/datetime/TimeZone;)J
+	public static final fun until (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$DateBased;Lkotlinx/datetime/TransitionResolver;)J
+	public static final fun withDate (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun withTime (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/UnresolvedZonedDateTime;
+	public static final fun yearsUntil (Lkotlinx/datetime/UnresolvedZonedDateTime;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TransitionResolver;)I
 }
 
 public final class kotlinx/datetime/format/AmPmMarker : java/lang/Enum {
@@ -744,9 +796,8 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime$De
 	public static fun secondFraction (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime;I)V
 }
 
-public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents : kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime, kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset {
+public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents : kotlinx/datetime/format/DateTimeFormatBuilder$WithZonedDateTime {
 	public abstract fun dateTimeComponents (Lkotlinx/datetime/format/DateTimeFormat;)V
-	public abstract fun timeZoneId ()V
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTimeComponents$DefaultImpls {
@@ -785,6 +836,16 @@ public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset$D
 	public static synthetic fun offsetHours$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun offsetMinutesOfHour$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 	public static synthetic fun offsetSecondsOfMinute$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+}
+
+public abstract interface class kotlinx/datetime/format/DateTimeFormatBuilder$WithZonedDateTime : kotlinx/datetime/format/DateTimeFormatBuilder$WithDateTime, kotlinx/datetime/format/DateTimeFormatBuilder$WithUtcOffset {
+	public abstract fun timeZoneId ()V
+	public abstract fun zonedDateTime (Lkotlinx/datetime/format/DateTimeFormat;)V
+}
+
+public final class kotlinx/datetime/format/DateTimeFormatBuilder$WithZonedDateTime$DefaultImpls {
+	public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithZonedDateTime;Lkotlinx/datetime/format/Padding;)V
+	public static fun secondFraction (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithZonedDateTime;I)V
 }
 
 public final class kotlinx/datetime/format/DateTimeFormatBuilderKt {

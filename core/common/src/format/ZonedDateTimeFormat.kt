@@ -7,7 +7,6 @@ package kotlinx.datetime.format
 
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.UnresolvedZonedDateTime
-import kotlinx.datetime.ZonedDateTime
 import kotlinx.datetime.atTime
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.formatter.FormatterStructure
@@ -42,9 +41,9 @@ internal class IncompleteDateTimeOffsetZone internal constructor(
             "ZonedDateTimeFormat requires a time zone ID to be set."
         )
         return UnresolvedZonedDateTime(
-            localDateTime = date.toLocalDate().atTime(time.toLocalTime()),
+            rawLocalDateTime = date.toLocalDate().atTime(time.toLocalTime()),
             timeZone = TimeZone.of(timeZoneId),
-            preferredUtcOffset = offset.offsetIsNegative?.let { offset.toUtcOffset() },
+            preferredOffset = offset.offsetIsNegative?.let { offset.toUtcOffset() },
         )
     }
 }

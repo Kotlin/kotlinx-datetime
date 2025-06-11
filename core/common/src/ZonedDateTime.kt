@@ -9,6 +9,7 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.clampToInt
 import kotlinx.datetime.internal.format.AppendableFormatStructure
 
+/*
 public interface UnresolvedZonedDateTime {
     public val rawLocalDateTime: LocalDateTime
     public val timeZone: TimeZone
@@ -26,9 +27,7 @@ public interface UnresolvedZonedDateTime {
         public fun parse(
             input: CharSequence,
             format: DateTimeFormat<UnresolvedZonedDateTime> = Formats.RFC_9557
-        ): UnresolvedZonedDateTime {
-            throw NotImplementedError("UnresolvedZonedDateTime.parse is not implemented yet")
-        }
+        ): UnresolvedZonedDateTime = format.parse(input)
 
         public fun Format(
             block: DateTimeFormatBuilder.WithZonedDateTime.() -> Unit
@@ -286,7 +285,7 @@ public fun UnresolvedZonedDateTime.periodUntil(other: ZonedDateTime, resolver: T
     return buildDateTimePeriod(datePeriod.totalMonths, datePeriod.days, nanoseconds)
 }
 
-public fun ZonedDateTime.minus(other: ZonedDateTime, resolver: TransitionResolver): DateTimePeriod =
+public fun ZonedDateTime.minus(other: UnresolvedZonedDateTime, resolver: TransitionResolver): DateTimePeriod =
     other.periodUntil(this, resolver)
 
 
@@ -300,3 +299,6 @@ public fun ZonedDateTime.until(other: ZonedDateTime, unit: DateTimeUnit, resolve
 
 public fun ZonedDateTime.minus(other: ZonedDateTime, unit: DateTimeUnit, resolver: TransitionResolver): Long =
     other.until(this, unit, resolver)
+
+
+ */
