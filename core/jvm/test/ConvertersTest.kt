@@ -2,6 +2,7 @@
  * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
+@file:Suppress("DEPRECATION")
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
@@ -14,19 +15,21 @@ import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
 import java.time.ZoneOffset as JTZoneOffset
+import kotlinx.datetime.Instant as kxdtInstant
 
 class ConvertersTest {
 
     @Test
     fun instant() {
+
         fun test(seconds: Long, nanosecond: Int) {
-            val ktInstant = Instant.fromEpochSeconds(seconds, nanosecond.toLong())
+            val ktInstant = kxdtInstant.fromEpochSeconds(seconds, nanosecond.toLong())
             val jtInstant = JTInstant.ofEpochSecond(seconds, nanosecond.toLong())
 
             assertEquals(ktInstant, jtInstant.toKotlinInstant())
             assertEquals(jtInstant, ktInstant.toJavaInstant())
 
-            assertEquals(ktInstant, jtInstant.toString().let(Instant::parse))
+            assertEquals(ktInstant, jtInstant.toString().let(kxdtInstant::parse))
             assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
         }
 
@@ -173,7 +176,7 @@ class ConvertersTest {
     @Test
     fun zoneOffset() {
         fun test(offsetString: String) {
-            val ktUtcOffset = TimeZone.of(offsetString).offsetAt(Instant.fromEpochMilliseconds(0))
+            val ktUtcOffset = TimeZone.of(offsetString).offsetAt(kotlin.time.Instant.fromEpochMilliseconds(0))
             val ktZoneOffset = ktUtcOffset.asTimeZone()
             val jtZoneOffset = JTZoneOffset.of(offsetString)
 

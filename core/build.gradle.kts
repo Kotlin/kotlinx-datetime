@@ -221,6 +221,10 @@ kotlin {
             }
         }
     }
+
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
 }
 
 tasks {
