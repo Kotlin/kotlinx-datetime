@@ -11,7 +11,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.math.*
 import kotlin.time.Instant
 
-internal class TimeZoneRules(
+internal class TimeZoneRulesCommon(
     /**
      * The list of [Instant.epochSeconds] parts of the instants when recorded transitions occur, in ascending order.
      */
@@ -39,7 +39,7 @@ internal class TimeZoneRules(
     }
 
     /**
-     * Constructs a [TimeZoneRules] without any historic data.
+     * Constructs a [TimeZoneRulesCommon] without any historic data.
      */
     constructor(initialOffset: UtcOffset, rules: RecurringZoneRules) : this(
         transitionEpochSeconds = emptyList(),

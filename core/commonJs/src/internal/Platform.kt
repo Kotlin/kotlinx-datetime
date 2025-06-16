@@ -61,7 +61,7 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         return (wholeMinutes * SECONDS_PER_MINUTE + seconds) * sign
     }
 
-    val zones = mutableMapOf<String, TimeZoneRules>()
+    val zones = mutableMapOf<String, TimeZoneRulesCommon>()
     val (zonesPacked, linksPacked) = readTzdb() ?: return@runCatching null
     for (zone in zonesPacked) {
         val components = zone.split('|')
@@ -70,7 +70,7 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         }
         val indices = components[3].map { charCodeToInt(it) }
         val lengthsOfPeriodsWithOffsets = components[4].split(' ').map(::base60MinutesInSeconds)
-        zones[components[0]] = TimeZoneRules(
+        zones[components[0]] = TimeZoneRulesCommon(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).let {
                 if (it.size == indices.size - 1) it else it.take<Long>(indices.size - 1)
             },
@@ -85,7 +85,7 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         }
     }
     object : TimeZoneDatabase {
-        override fun rulesForId(id: String): TimeZoneRules =
+        override fun rulesForId(id: String): TimeZoneRulesCommon =
             zones[id] ?: throw IllegalTimeZoneException("Unknown time zone: $id")
 
         override fun availableTimeZoneIds(): Set<String> = zones.keys
@@ -135,7 +135,7 @@ internal actual fun timeZoneById(zoneId: String): TimeZone {
     throw IllegalTimeZoneException("js-joda timezone database is not available")
 }
 
-internal fun rulesForId(zoneId: String): TimeZoneRules? = tzdb.getOrThrow()?.rulesForId(zoneId)
+internal fun rulesForId(zoneId: String): TimeZoneRulesCommon? = tzdb.getOrThrow()?.rulesForId(zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
     tzdb.getOrThrow()?.availableTimeZoneIds() ?: setOf("UTC")
