@@ -12,7 +12,11 @@ import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
 internal actual fun timeZoneById(zoneId: String): TimeZone =
-    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+    runCatching { RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId) }
+        .getOrElse { timeZoneByIdFoundation(zoneId) }
+
+internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
+    RegionTimeZone(TimeZoneRulesFoundation(), zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
     runCatching { tzdb.getOrThrow().availableTimeZoneIds() }
