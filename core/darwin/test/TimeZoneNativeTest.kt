@@ -5,9 +5,13 @@
 
 package kotlinx.datetime.test
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.internal.getAvailableZoneIds
 import kotlinx.datetime.internal.getAvailableZoneIdsFoundation
+import kotlinx.datetime.internal.timeZoneById
+import kotlinx.datetime.internal.timeZoneByIdFoundation
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TimeZoneNativeTest {
@@ -30,6 +34,17 @@ class TimeZoneNativeTest {
     @Test
     fun getAvailableZoneIdsFoundationContainsExpectedTimezoneIDs() {
         assertAvailableZoneIdsContainsExpectedTimezoneIDs(getAvailableZoneIdsFoundation())
+    }
+
+    @Test
+    fun testTimeZoneByIdFoundationAlwaysReturnsTimeZone() {
+        val ldt = LocalDateTime(2025, 1, 1, 0, 0, 0)
+        for (zoneId in validTimeZones) {
+            val expected = timeZoneById(zoneId).atZone(ldt)
+            val actual = timeZoneByIdFoundation(zoneId).atZone(ldt)
+            println("$zoneId: $expected, $actual")
+            assertEquals(expected, actual)
+        }
     }
 
     private fun assertReturnsNonEmptySetOfTimezoneStrings(zoneIds: Set<String>) {
