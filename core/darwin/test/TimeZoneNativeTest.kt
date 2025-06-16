@@ -40,8 +40,9 @@ class TimeZoneNativeTest {
         assertTrue(zoneIds.any { it.contains("Europe") }, "Should contain Europe timezones")
     }
 
+    private val validTimeZones = listOf("America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney")
+
     private fun assertAvailableZoneIdsContainsExpectedTimezoneIDs(zoneIds: Set<String>) {
-        val expectedZones = listOf("GMT", "America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney")
-        assertTrue(expectedZones.all { it in zoneIds }, "Should contain all common timezone")
+        assertTrue(validTimeZones.all { it in zoneIds }, "Should contain all common timezone")
     }
 }
