@@ -11,7 +11,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
         tabPaths.any { path.containsFile(it) }
     } ?: throw IllegalStateException("Could not find the path to the timezone database")
 
-    override fun rulesForId(id: String): TimeZoneRules {
+    override fun rulesForId(id: String): TimeZoneRulesCommon {
         val idAsPath = Path.fromString(id)
         require(!idAsPath.isAbsolute) { "Timezone ID '$idAsPath' must not begin with a '/'" }
         require(idAsPath.components.none { it == ".." }) { "'$idAsPath' must not contain '..' as a component" }
