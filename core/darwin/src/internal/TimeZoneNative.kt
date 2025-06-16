@@ -15,7 +15,11 @@ internal actual fun timeZoneById(zoneId: String): TimeZone =
     RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
-    tzdb.getOrThrow().availableTimeZoneIds()
+    runCatching { tzdb.getOrThrow().availableTimeZoneIds() }
+        .getOrElse { getAvailableZoneIdsFoundation() }
+
+internal fun getAvailableZoneIdsFoundation(): Set<String> =
+    NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf()) { it.toString() }
 
 private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 
