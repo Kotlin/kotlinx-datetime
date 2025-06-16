@@ -42,7 +42,6 @@ class TimeZoneNativeTest {
         for (zoneId in validTimeZones) {
             val expected = timeZoneById(zoneId).atZone(ldt)
             val actual = timeZoneByIdFoundation(zoneId).atZone(ldt)
-            println("$zoneId: $expected, $actual")
             assertEquals(expected, actual)
         }
     }
