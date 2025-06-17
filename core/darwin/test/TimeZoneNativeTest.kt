@@ -51,7 +51,6 @@ class TimeZoneNativeTest {
 
         while (currentDate <= endLocalDateTime) {
             val instant = currentDate.toInstant(timeZone)
-
             val offset = timeZone.offsetAt(instant)
             val offsetFoundation = timeZoneFoundation.offsetAt(instant)
 
