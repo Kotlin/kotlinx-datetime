@@ -10,6 +10,9 @@ import kotlinx.datetime.internal.getAvailableZoneIds
 import kotlinx.datetime.internal.getAvailableZoneIdsFoundation
 import kotlinx.datetime.internal.timeZoneById
 import kotlinx.datetime.internal.timeZoneByIdFoundation
+import kotlinx.datetime.offsetAt
+import kotlinx.datetime.plusSeconds
+import kotlinx.datetime.toInstant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -34,6 +37,28 @@ class TimeZoneNativeTest {
     @Test
     fun getAvailableZoneIdsFoundationContainsExpectedTimezoneIDs() {
         assertAvailableZoneIdsContainsExpectedTimezoneIDs(getAvailableZoneIdsFoundation())
+    }
+
+    @Test
+    fun infoAtInstantViaOffsetAtTest() {
+        val zoneId = "America/New_York"
+        val timeZone = timeZoneById(zoneId)
+        val timeZoneFoundation = timeZoneByIdFoundation(zoneId)
+
+        val startLocalDateTime = LocalDateTime(2025, 3, 8, 0, 0, 0)
+        val endLocalDateTime = LocalDateTime(2025, 3, 10, 0, 0, 0)
+        var currentDate = startLocalDateTime
+
+        while (currentDate <= endLocalDateTime) {
+            val instant = currentDate.toInstant(timeZone)
+
+            val offset = timeZone.offsetAt(instant)
+            val offsetFoundation = timeZoneFoundation.offsetAt(instant)
+
+            assertEquals(offset, offsetFoundation)
+
+            currentDate = currentDate.plusSeconds(1)
+        }
     }
 
     @Test
