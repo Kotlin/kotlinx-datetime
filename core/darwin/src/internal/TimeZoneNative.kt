@@ -16,7 +16,7 @@ internal actual fun timeZoneById(zoneId: String): TimeZone =
         .getOrElse { timeZoneByIdFoundation(zoneId) }
 
 internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
-    RegionTimeZone(TimeZoneRulesFoundation(), zoneId)
+    RegionTimeZone(TimeZoneRulesFoundation(zoneId), zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
     runCatching { tzdb.getOrThrow().availableTimeZoneIds() }

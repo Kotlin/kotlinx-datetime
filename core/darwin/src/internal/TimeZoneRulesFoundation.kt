@@ -9,7 +9,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 
-internal class TimeZoneRulesFoundation : TimeZoneRules {
+internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRules {
     override fun infoAtInstant(instant: Instant): UtcOffset {
         TODO("Not yet implemented")
     }
