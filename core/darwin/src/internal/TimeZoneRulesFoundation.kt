@@ -11,10 +11,10 @@ import kotlinx.datetime.UtcOffset
 
 internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRules {
     override fun infoAtInstant(instant: Instant): UtcOffset {
-        TODO("Not yet implemented")
+        TODO("TimeZoneRulesFoundation.infoAtInstant: not yet implemented")
     }
 
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
-        TODO("Not yet implemented")
+        TODO("TimeZoneRulesFoundation.infoAtDatetime: not yet implemented")
     }
 }
