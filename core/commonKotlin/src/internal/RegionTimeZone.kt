@@ -20,7 +20,7 @@ internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: 
     }
 
     override fun atZone(dateTime: LocalDateTime, preferred: UtcOffset?): ZonedDateTime =
-        when (val info = tzid.infoAtDatetime(dateTime)) {
+        when (val info = tzid.infoAtDatetime(dateTime).also { println("OffsetInfo = $it") }) {
             is OffsetInfo.Regular -> ZonedDateTime(dateTime, this, info.offset)
             is OffsetInfo.Gap -> {
                 try {
