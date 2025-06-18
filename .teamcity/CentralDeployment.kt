@@ -70,7 +70,7 @@ fun Project.startDeployment() = BuildType {
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams =
-                "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -Pzoneinfo.version.tc.parameter=ZoneInfoVersion"
+                "--info --stacktrace -P$versionSuffixParameter=%VersionSuffix% -P$releaseVersionParameter=%Version% -Pzoneinfo.version.tc.parameter=ZoneInfoVersion"
             tasks = ":kotlinx-datetime-zoneinfo:setZoneInfoVersionToTeamcity"
             buildFile = ""
             gradleWrapperPath = ""
