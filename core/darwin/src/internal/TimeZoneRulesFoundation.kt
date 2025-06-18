@@ -9,6 +9,7 @@ import kotlinx.cinterop.UnsafeNumber
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toNSDate
 import kotlinx.datetime.toNSDateComponents
 import platform.Foundation.NSCalendar
@@ -30,6 +31,6 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         val calendar = NSCalendar.currentCalendar().apply { timeZone = nsTimeZone }
         val components = localDateTime.toNSDateComponents()
 
-        TODO("TimeZoneRulesFoundation.infoAtDatetime: not yet implemented")
+        return OffsetInfo.Regular(UtcOffset.ofSeconds(0))
     }
 }
