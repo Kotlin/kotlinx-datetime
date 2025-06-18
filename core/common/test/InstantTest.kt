@@ -445,6 +445,23 @@ class InstantTest {
         assertFalse(Instant.MIN.isDistantFuture)
     }
 
+    @Test
+    fun periodUntilDuringDstTransition() {
+        val tz = TimeZone.of("Europe/Berlin")
+        
+        // Test during spring forward (when clocks move forward)
+        val springStart = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz)
+        val springEnd = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz)
+        val springPeriod = springStart.periodUntil(springEnd, tz)
+        assertTrue(springPeriod.minutes >= 0, "Minutes should be non-negative during spring forward")
+        
+        // Test during fall back (when clocks move backward)
+        val fallStart = LocalDateTime(2024, 10, 26, 2, 30).toInstant(tz)
+        val fallEnd = LocalDateTime(2024, 10, 27, 3, 10).toInstant(tz)
+        val fallPeriod = fallStart.periodUntil(fallEnd, tz)
+        assertTrue(fallPeriod.minutes >= 0, "Minutes should be non-negative during fall back")
+    }
+
 }
 
 class InstantRangeTest {

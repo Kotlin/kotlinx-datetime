@@ -162,11 +162,24 @@ public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     var thisZdt = this.atZone(timeZone)
     val otherZdt = other.atZone(timeZone)
 
-    val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS); thisZdt = thisZdt.plusMonths(months)
-    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS); thisZdt = thisZdt.plusDays(days)
-    val nanoseconds = thisZdt.until(otherZdt, ChronoUnit.NANOS)
+    // Calculate date-based components first
+    val months = thisZdt.until(otherZdt, ChronoUnit.MONTHS)
+    thisZdt = thisZdt.plusMonths(months)
+    val days = thisZdt.until(otherZdt, ChronoUnit.DAYS)
+    thisZdt = thisZdt.plusDays(days)
 
-    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
+    // Calculate time-based components using the actual duration
+    val remainingDuration = java.time.Duration.between(thisZdt, otherZdt)
+    val hours = remainingDuration.toHours()
+    val minutes = remainingDuration.toMinutesPart()
+    val seconds = remainingDuration.toSecondsPart()
+    val nanos = remainingDuration.toNanosPart()
+
+    return buildDateTimePeriod(
+        months,
+        days.toInt(),
+        hours * 3600_000_000_000L + minutes * 60_000_000_000L + seconds * 1_000_000_000L + nanos
+    )
 }
 
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long = try {
