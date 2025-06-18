@@ -10,6 +10,8 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toNSDate
+import kotlinx.datetime.toNSDateComponents
+import platform.Foundation.NSCalendar
 import platform.Foundation.NSTimeZone
 import platform.Foundation.timeZoneWithName
 
@@ -25,6 +27,9 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     }
 
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
+        val calendar = NSCalendar.currentCalendar().apply { timeZone = nsTimeZone }
+        val components = localDateTime.toNSDateComponents()
+
         TODO("TimeZoneRulesFoundation.infoAtDatetime: not yet implemented")
     }
 }
