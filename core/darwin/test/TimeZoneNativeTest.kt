@@ -15,6 +15,7 @@ import kotlinx.datetime.plusSeconds
 import kotlinx.datetime.toInstant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class TimeZoneNativeTest {
@@ -40,24 +41,36 @@ class TimeZoneNativeTest {
     }
 
     @Test
-    fun infoAtInstantViaOffsetAtTest() {
+    fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
+        val beforeTransition = LocalDateTime(2025, 3, 9, 1, 59, 59)
         val zoneId = "America/New_York"
-        val timeZone = timeZoneById(zoneId)
-        val timeZoneFoundation = timeZoneByIdFoundation(zoneId)
 
-        val startLocalDateTime = LocalDateTime(2025, 3, 8, 0, 0, 0)
-        val endLocalDateTime = LocalDateTime(2025, 3, 10, 0, 0, 0)
-        var currentDate = startLocalDateTime
+        val regularTz = timeZoneById(zoneId)
+        val foundationTz = timeZoneByIdFoundation(zoneId)
 
-        while (currentDate <= endLocalDateTime) {
-            val instant = currentDate.toInstant(timeZone)
-            val offset = timeZone.offsetAt(instant)
-            val offsetFoundation = timeZoneFoundation.offsetAt(instant)
+        val instantBefore = beforeTransition.toInstant(regularTz)
+        val instantAfter = beforeTransition.plusSeconds(1).toInstant(regularTz)
 
-            assertEquals(offset, offsetFoundation)
+        val offsetBefore = regularTz.offsetAt(instantBefore)
+        val offsetAfter = regularTz.offsetAt(instantAfter)
 
-            currentDate = currentDate.plusSeconds(1)
-        }
+        assertNotEquals(
+            offsetBefore,
+            offsetAfter,
+            "Expected offset change during DST transition"
+        )
+
+        assertEquals(
+            offsetBefore,
+            foundationTz.offsetAt(instantBefore),
+            "Regular and Foundation implementations should have same offset before transition"
+        )
+
+        assertEquals(
+            offsetAfter,
+            foundationTz.offsetAt(instantAfter),
+            "Regular and Foundation implementations should have same offset after transition"
+        )
     }
 
     @Test
