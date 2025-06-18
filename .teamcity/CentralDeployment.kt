@@ -4,7 +4,7 @@
  */
 
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 
 fun deploymentProject() = Project {
@@ -18,6 +18,7 @@ fun deploymentProject() = Project {
     val startDeploymentTask = startDeployment()
 
     val copyToCentralTask = copyToCentral(startDeploymentTask)
+    val copyZoneInfoTask = copyZoneInfoToCentral(startDeploymentTask)
 
     val deployTasks = buildList {
         Platform.entries.forEach {
@@ -27,9 +28,10 @@ fun deploymentProject() = Project {
 
     deployTasks.forEach { deploy ->
         copyToCentralTask.dependsOnSnapshot(deploy, onFailure = FailureAction.CANCEL)
+        copyZoneInfoTask.dependsOnSnapshot(deploy, onFailure = FailureAction.CANCEL)
     }
 
-    buildTypesOrder = listOf(startDeploymentTask, *deployTasks.toTypedArray()) + listOf(copyToCentralTask)
+    buildTypesOrder = listOf(startDeploymentTask, *deployTasks.toTypedArray()) + listOf(copyToCentralTask, copyZoneInfoTask)
 }
 
 fun Project.startDeployment() = BuildType {
@@ -44,12 +46,35 @@ fun Project.startDeployment() = BuildType {
             display = ParameterDisplay.PROMPT,
             allowEmpty = false
         )
+        text(
+            "VersionSuffix",
+            "",
+            display = ParameterDisplay.PROMPT
+        )
         select(
             "Repository",
             "central",
             options = listOf("central", "sonatype"),
             display = ParameterDisplay.PROMPT
         )
+        text(
+            "ZoneInfoVersion",
+            "",
+            display = ParameterDisplay.HIDDEN
+        )
+    }
+
+    steps {
+        script {
+            scriptContent = """
+            ZONE_INFO_VER=${'$'}(./gradlew :kotlinx-datetime-zoneinfo:properties -P$versionSuffixParameter=%VersionSuffix% -P$releaseVersionParameter=%Version% | grep 'version:' | cut -d' ' -f2)
+            echo "##teamcity[setParameter name='ZoneInfoVersion' value='"${'$'}ZONE_INFO_VER"']"
+        """.trimIndent()
+        }
+    }
+
+    requirements {
+        doesNotMatch("teamcity.agent.jvm.os.name", "Windows")
     }
 
     commonConfigure()
@@ -60,7 +85,7 @@ fun Project.deployToCentral(platform: Platform, startDeployment: BuildType) = bu
     enablePersonalBuilds = false
     maxRunningBuilds = 1
     params {
-        //param(versionSuffixParameter, "${startDeployment.depParamRefs["VERSION"]}")
+        param(versionSuffixParameter, "${startDeployment.depParamRefs["VersionSuffix"]}")
         param(releaseVersionParameter, "${startDeployment.depParamRefs["Version"]}")
         param("system.publication_repository", "${startDeployment.depParamRefs["Repository"]}")
     }
@@ -126,7 +151,7 @@ fun Project.deployToCentral(platform: Platform, startDeployment: BuildType) = bu
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams =
-                "--info --stacktrace -P$versionSuffixParameter=WHAT -P$releaseVersionParameter=%$releaseVersionParameter%"
+                "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
             tasks = taskNames.joinToString(" ")
             buildFile = ""
             gradleWrapperPath = ""
@@ -144,6 +169,33 @@ fun Project.copyToCentral(startDeployment: BuildType) = BuildType {
     params {
         param("DeployVersion", startDeployment.depParamRefs["Version"].ref)
         param("ArtifactPrefix", "kotlinx-datetime")
+    }
+
+    requirements {
+        doesNotMatch("teamcity.agent.jvm.os.name", "Windows")
+    }
+
+    dependsOnSnapshot(startDeployment)
+
+    triggers {
+        finishBuildTrigger {
+            buildType = "${startDeployment.id}"
+            successfulOnly = true
+            branchFilter = "+:*"
+        }
+    }
+}.also { buildType(it) }
+
+fun Project.copyZoneInfoToCentral(startDeployment: BuildType) = BuildType {
+    id("CopyZoneInfoToCentral")
+    this.name = "Deploy ZoneInfo To Central"
+    type = BuildTypeSettings.Type.DEPLOYMENT
+
+    templates(AbsoluteId("KotlinTools_DeployToCentral"))
+
+    params {
+        param("DeployVersion", startDeployment.depParamRefs["ZoneInfoVersion"].ref)
+        param("ArtifactPrefix", "kotlinx-datetime-zoneinfo")
     }
 
     requirements {
