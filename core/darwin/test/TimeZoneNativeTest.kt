@@ -51,11 +51,11 @@ class TimeZoneNativeTest {
         val insideOverlap = LocalDateTime(2025, 11, 2, 1, 30, 0)
         val afterOverlap = LocalDateTime(2025, 12, 31, 2, 0, 0)
 
-        val zdtBeforeGap = timeZone.atZone(beforeGap)
-        val zdtInsideGap = timeZone.atZone(insideGap)
-        val zdtBetweenGapAndOverlap = timeZone.atZone(betweenGapAndOverlap)
-        val zdtInsideOverlap = timeZone.atZone(insideOverlap)
-        val zdtAfterOverlap = timeZone.atZone(afterOverlap)
+        val zdtBeforeGap = timeZone.atZone(beforeGap)  // -05:00
+        val zdtInsideGap = timeZone.atZone(insideGap)  // -04:00
+        val zdtBetweenGapAndOverlap = timeZone.atZone(betweenGapAndOverlap)  // -04:00
+        val zdtInsideOverlap = timeZone.atZone(insideOverlap)  // -04:00
+        val zdtAfterOverlap = timeZone.atZone(afterOverlap)  // -05:00
 
         println("beforeGap: $zdtBeforeGap")
         println("insideGap: $zdtInsideGap")
