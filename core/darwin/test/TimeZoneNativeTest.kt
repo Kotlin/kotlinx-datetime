@@ -41,6 +41,30 @@ class TimeZoneNativeTest {
     }
 
     @Test
+    fun foo() {
+        val zoneId = "America/New_York"
+        val timeZone = timeZoneById(zoneId)
+
+        val beforeGap = LocalDateTime(2025, 1, 1, 5, 0, 0)
+        val insideGap = LocalDateTime(2025, 3, 9, 2, 30, 0)
+        val betweenGapAndOverlap = LocalDateTime(2025, 6, 30, 3, 0, 0)
+        val insideOverlap = LocalDateTime(2025, 11, 2, 1, 30, 0)
+        val afterOverlap = LocalDateTime(2025, 12, 31, 2, 0, 0)
+
+        val zdtBeforeGap = timeZone.atZone(beforeGap)
+        val zdtInsideGap = timeZone.atZone(insideGap)
+        val zdtBetweenGapAndOverlap = timeZone.atZone(betweenGapAndOverlap)
+        val zdtInsideOverlap = timeZone.atZone(insideOverlap)
+        val zdtAfterOverlap = timeZone.atZone(afterOverlap)
+
+        println("beforeGap: $zdtBeforeGap")
+        println("insideGap: $zdtInsideGap")
+        println("betweenGapAndOverlap: $zdtBetweenGapAndOverlap")
+        println("insideOverlap: $zdtInsideOverlap")
+        println("afterOverlap: $zdtAfterOverlap")
+    }
+
+    @Test
     fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
         verifyDstTransitionConsistency(
             transitionTime = LocalDateTime(2025, 3, 9, 1, 59, 59),
