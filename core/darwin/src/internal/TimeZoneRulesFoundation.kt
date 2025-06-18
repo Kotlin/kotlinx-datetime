@@ -9,11 +9,13 @@ import kotlinx.cinterop.UnsafeNumber
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toNSDate
 import kotlinx.datetime.toNSDateComponents
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
+import platform.Foundation.addTimeInterval
 import platform.Foundation.timeZoneWithName
 
 internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
@@ -32,15 +34,35 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
             throw IllegalArgumentException("Invalid LocalDateTime components: $localDateTime")
         }
 
-        val utcOffset = infoAtNsDate(nsDate)
-        println("utcOffset = $utcOffset")
+        val gapDetected = !components.isValidDateInCalendar(calendar)
 
-        return OffsetInfo.Regular(UtcOffset.ofSeconds(0))
+        val currentOffset = infoAtNsDate(nsDate)
+        val prevDay = nsDate.addTimeInterval(-SECS_PER_DAY) as NSDate
+        val nextDay = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
+
+        if (gapDetected) return OffsetInfo.Gap(
+            start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(prevDay)!!.toKotlinInstant(),
+            offsetBefore = infoAtNsDate(prevDay),
+            offsetAfter = currentOffset
+        )
+
+        val currentTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)
+        val nextDayTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nextDay)
+        if (currentTransition != nextDayTransition) return OffsetInfo.Overlap(
+            start = currentTransition!!.toKotlinInstant(),
+            offsetBefore = currentOffset,
+            offsetAfter = infoAtNsDate(nextDay),
+        )
+
+        return OffsetInfo.Regular(currentOffset)
     }
 
     @OptIn(UnsafeNumber::class)
     private fun infoAtNsDate(nsDate: NSDate): UtcOffset {
         val offsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate)
         return UtcOffset.ofSeconds(offsetSeconds.toInt())
+    }
+    companion object {
+        const val SECS_PER_DAY = 24 * 60 * 60.0
     }
 }
