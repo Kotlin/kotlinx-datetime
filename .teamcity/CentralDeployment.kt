@@ -65,16 +65,16 @@ fun Project.startDeployment() = BuildType {
     }
 
     steps {
-        script {
-            scriptContent = """
-            ZONE_INFO_VER=${'$'}(./gradlew :kotlinx-datetime-zoneinfo:properties -P$versionSuffixParameter=%VersionSuffix% -P$releaseVersionParameter=%Version% | grep 'version:' | cut -d' ' -f2)
-            echo "##teamcity[setParameter name='ZoneInfoVersion' value='"${'$'}ZONE_INFO_VER"']"
-        """.trimIndent()
+        gradle {
+            name = "Get ZoneInfoVersion"
+            jdkHome = "%env.$jdk%"
+            jvmArgs = "-Xmx1g"
+            gradleParams =
+                "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter% -Pzoneinfo.version.tc.parameter=ZoneInfoVersion"
+            tasks = ":kotlinx-datetime-zoneinfo:setZoneInfoVersionToTeamcity"
+            buildFile = ""
+            gradleWrapperPath = ""
         }
-    }
-
-    requirements {
-        doesNotMatch("teamcity.agent.jvm.os.name", "Windows")
     }
 
     commonConfigure()
