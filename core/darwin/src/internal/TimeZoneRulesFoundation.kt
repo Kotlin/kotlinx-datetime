@@ -22,7 +22,6 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     private val nsTimeZone: NSTimeZone = NSTimeZone.timeZoneWithName(zoneId)
         ?: throw IllegalArgumentException("Unknown timezone: $zoneId")
 
-    @OptIn(UnsafeNumber::class)
     override fun infoAtInstant(instant: Instant): UtcOffset =
         infoAtNsDate(instant.toNSDate())
 
@@ -65,6 +64,7 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         val offsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate)
         return UtcOffset.ofSeconds(offsetSeconds.toInt())
     }
+
     companion object {
         const val SECS_PER_DAY = 24 * 60 * 60.0
     }
