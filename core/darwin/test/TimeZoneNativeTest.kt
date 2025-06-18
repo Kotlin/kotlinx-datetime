@@ -42,14 +42,27 @@ class TimeZoneNativeTest {
 
     @Test
     fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
-        val beforeTransition = LocalDateTime(2025, 3, 9, 1, 59, 59)
-        val zoneId = "America/New_York"
+        verifyDstTransitionConsistency(
+            transitionTime = LocalDateTime(2025, 3, 9, 1, 59, 59),
+            transitionName = "DST spring forward transition"
+        )
+    }
 
+    @Test
+    fun shouldHandleDstFallBackTransitionConsistentlyBetweenImplementations() {
+        verifyDstTransitionConsistency(
+            transitionTime = LocalDateTime(2025, 11, 2, 1, 59, 59),
+            transitionName = "DST fall back transition"
+        )
+    }
+
+    private fun verifyDstTransitionConsistency(transitionTime: LocalDateTime, transitionName: String) {
+        val zoneId = "America/New_York"
         val regularTz = timeZoneById(zoneId)
         val foundationTz = timeZoneByIdFoundation(zoneId)
 
-        val instantBefore = beforeTransition.toInstant(regularTz)
-        val instantAfter = beforeTransition.plusSeconds(1).toInstant(regularTz)
+        val instantBefore = transitionTime.toInstant(regularTz)
+        val instantAfter = transitionTime.plusSeconds(1).toInstant(regularTz)
 
         val offsetBefore = regularTz.offsetAt(instantBefore)
         val offsetAfter = regularTz.offsetAt(instantAfter)
@@ -57,7 +70,7 @@ class TimeZoneNativeTest {
         assertNotEquals(
             offsetBefore,
             offsetAfter,
-            "Expected offset change during DST transition"
+            "Expected offset change during $transitionName"
         )
 
         assertEquals(
@@ -71,6 +84,44 @@ class TimeZoneNativeTest {
             foundationTz.offsetAt(instantAfter),
             "Regular and Foundation implementations should have same offset after transition"
         )
+    }
+
+    @Test
+    fun shouldHandleNoTransitionPeriodConsistentlyBetweenImplementations() {
+        val summerTime = LocalDateTime(2025, 7, 15, 12, 30, 45)
+        val zoneId = "America/New_York"
+
+        val regularTz = timeZoneById(zoneId)
+        val foundationTz = timeZoneByIdFoundation(zoneId)
+
+        val testPoints = listOf(
+            summerTime,
+            summerTime.plusSeconds(60 * 60),
+            summerTime.plusSeconds(24 * 60 * 60),
+            summerTime.plusSeconds(7 * 24 * 60 * 60)
+        )
+
+        testPoints.forEach { dateTime ->
+            val instant = dateTime.toInstant(regularTz)
+            val regularOffset = regularTz.offsetAt(instant)
+            val foundationOffset = foundationTz.offsetAt(instant)
+
+            assertEquals(
+                regularOffset,
+                foundationOffset,
+                "Regular and Foundation implementations should have same offset during stable period at $dateTime"
+            )
+        }
+
+        val firstOffset = regularTz.offsetAt(testPoints.first().toInstant(regularTz))
+        testPoints.drop(1).forEach { dateTime ->
+            val offset = regularTz.offsetAt(dateTime.toInstant(regularTz))
+            assertEquals(
+                firstOffset,
+                offset,
+                "Offset should remain constant during stable summer period"
+            )
+        }
     }
 
     @Test
