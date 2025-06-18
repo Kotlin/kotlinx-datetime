@@ -29,30 +29,33 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
         val calendar = NSCalendar.currentCalendar().apply { timeZone = nsTimeZone }
         val components = localDateTime.toNSDateComponents()
-        val nsDate = calendar.dateFromComponents(components)
-        if (nsDate == null) {
-            throw IllegalArgumentException("Invalid LocalDateTime components: $localDateTime")
+
+        val nsDate = requireNotNull(calendar.dateFromComponents(components)) {
+            "Invalid LocalDateTime components: $localDateTime"
         }
 
-        val gapDetected = !components.isValidDateInCalendar(calendar)
-
         val currentOffset = infoAtNsDate(nsDate)
-        val prevDay = nsDate.addTimeInterval(-SECS_PER_DAY) as NSDate
-        val nextDay = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
 
-        if (gapDetected) return OffsetInfo.Gap(
-            start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(prevDay)!!.toKotlinInstant(),
-            offsetBefore = infoAtNsDate(prevDay),
-            offsetAfter = currentOffset
-        )
+        if (!components.isValidDateInCalendar(calendar)) {
+            val prevDay = nsDate.addTimeInterval(-SECS_PER_DAY) as NSDate
+            return OffsetInfo.Gap(
+                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(prevDay)!!.toKotlinInstant(),
+                offsetBefore = infoAtNsDate(prevDay),
+                offsetAfter = currentOffset
+            )
+        }
 
         val currentTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)
+        val nextDay = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
         val nextDayTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nextDay)
-        if (currentTransition != nextDayTransition) return OffsetInfo.Overlap(
-            start = currentTransition!!.toKotlinInstant(),
-            offsetBefore = currentOffset,
-            offsetAfter = infoAtNsDate(nextDay),
-        )
+
+        if (currentTransition != nextDayTransition) {
+            return OffsetInfo.Overlap(
+                start = currentTransition!!.toKotlinInstant(),
+                offsetBefore = currentOffset,
+                offsetAfter = infoAtNsDate(nextDay)
+            )
+        }
 
         return OffsetInfo.Regular(currentOffset)
     }
