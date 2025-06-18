@@ -15,6 +15,8 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
 
 fun Project.additionalConfiguration() {
+    subProjects(deploymentProject())
+
     knownBuilds.buildAll.features {
         commitStatusPublisher {
             vcsRootExtId = "${DslContext.settingsRoot.id}"
