@@ -157,6 +157,15 @@ class TimeZoneNativeTest {
     fun setupTimeZoneRulesTestCases() {
         timeZoneRulesTestCases = listOf(
             TimeZoneRulesTestData(
+                "UTC",
+                listOf(
+                    // UTC has no DST transitions
+                    LocalDateTime(2025, 1, 1, 0, 0, 0),
+                    LocalDateTime(2025, 6, 15, 12, 0, 0),
+                    LocalDateTime(2025, 12, 31, 23, 59, 59)
+                )
+            ),
+            TimeZoneRulesTestData(
                 "America/New_York",
                 listOf(
                     // Before gap
@@ -177,15 +186,6 @@ class TimeZoneNativeTest {
                     LocalDateTime(2025, 11, 2, 1, 0, 0),
                     // After overlap
                     LocalDateTime(2025, 12, 31, 2, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "UTC",
-                listOf(
-                    // UTC has no DST transitions
-                    LocalDateTime(2025, 1, 1, 0, 0, 0),
-                    LocalDateTime(2025, 6, 15, 12, 0, 0),
-                    LocalDateTime(2025, 12, 31, 23, 59, 59)
                 )
             ),
             TimeZoneRulesTestData(
