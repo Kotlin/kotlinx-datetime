@@ -122,7 +122,7 @@ class TimeZoneNativeTest {
             summerTime.plusSeconds(7 * 24 * 60 * 60)
         )
 
-        testPoints.forEach { dateTime ->
+        for (dateTime in testPoints) {
             val instant = dateTime.toInstant(regularTz)
             val regularOffset = regularTz.offsetAt(instant)
             val foundationOffset = foundationTz.offsetAt(instant)
@@ -135,7 +135,7 @@ class TimeZoneNativeTest {
         }
 
         val firstOffset = regularTz.offsetAt(testPoints.first().toInstant(regularTz))
-        testPoints.drop(1).forEach { dateTime ->
+        for (dateTime in testPoints.drop(1)) {
             val offset = regularTz.offsetAt(dateTime.toInstant(regularTz))
             assertEquals(
                 firstOffset,
