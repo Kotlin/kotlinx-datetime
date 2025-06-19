@@ -242,6 +242,21 @@ class TimeZoneNativeTest {
                     LocalDateTime(2025, 6, 15, 5, 30, 0),
                     LocalDateTime(2025, 12, 31, 23, 59, 59)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "America/Sao_Paulo",
+                listOf(
+                    // Brazil - DST rules have changed multiple times
+                    // Currently no DST (as of 2019), but testing historical transitions
+                    LocalDateTime(2018, 2, 17, 23, 59, 59),
+                    LocalDateTime(2018, 2, 18, 0, 0, 0),
+                    LocalDateTime(2018, 11, 3, 23, 59, 59),
+                    LocalDateTime(2018, 11, 4, 0, 0, 0),
+                    LocalDateTime(2025, 2, 17, 23, 59, 59),
+                    LocalDateTime(2025, 2, 18, 0, 0, 0),
+                    LocalDateTime(2025, 11, 3, 23, 59, 59),
+                    LocalDateTime(2025, 11, 4, 0, 0, 0)
+                )
             )
         )
     }
