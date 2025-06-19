@@ -214,12 +214,12 @@ class TimeZoneNativeTest {
         )
     }
 
-    private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
+    private val tzdb = TzdbOnFilesystem()
 
     @Test
     fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularRules = tzdb.getOrThrow().rulesForId(zoneId)
+            val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
             for (ldt in localDateTimes) {
                 val expected = regularRules.infoAtDatetime(ldt)
