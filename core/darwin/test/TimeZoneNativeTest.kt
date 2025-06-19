@@ -210,6 +210,29 @@ class TimeZoneNativeTest {
                     // After overlap
                     LocalDateTime(2025, 10, 26, 2, 0, 1)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "Australia/Sydney",
+                listOf(
+                    // Before overlap
+                    LocalDateTime(2025, 4, 6, 2, 59, 59),
+                    // At the beginning of the overlap
+                    LocalDateTime(2025, 4, 6, 3, 0, 0),
+                    // Inside overlap
+                    LocalDateTime(2025, 4, 6, 2, 30, 0),
+                    // At the end of the overlap
+                    LocalDateTime(2025, 4, 6, 2, 0, 0),
+                    // Before gap
+                    LocalDateTime(2025, 10, 5, 1, 59, 59),
+                    // At the beginning of the gap
+                    LocalDateTime(2025, 10, 5, 2, 0, 0),
+                    // Inside gap
+                    LocalDateTime(2025, 10, 5, 2, 30, 0),
+                    // At the end of the gap
+                    LocalDateTime(2025, 10, 5, 3, 0, 0),
+                    // After gap
+                    LocalDateTime(2025, 10, 5, 3, 0, 1)
+                )
             )
         )
     }
