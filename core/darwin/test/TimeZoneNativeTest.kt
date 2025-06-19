@@ -326,7 +326,7 @@ class TimeZoneNativeTest {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
-            println("------------------------------------------")
+            println("----------------------------------------------------------------")
             for (ldt in localDateTimes) {
                 val expected = regularRules.infoAtDatetime(ldt)
                 val actual = foundationRules.infoAtDatetime(ldt)
