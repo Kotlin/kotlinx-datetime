@@ -306,6 +306,15 @@ class TimeZoneNativeTest {
                     LocalDateTime(2011, 12, 30, 23, 59, 59),  // This date doesn't exist, in the gap
                     LocalDateTime(2011, 12, 31, 0, 0, 0)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "America/Caracas",
+                listOf(
+                    // Venezuela changed from UTC-4:30 to UTC-4 on May 1, 2016
+                    LocalDateTime(2016, 5, 1, 2, 0, 0),
+                    LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
+                    LocalDateTime(2016, 5, 1, 3, 0, 0)
+                )
             )
         )
     }
