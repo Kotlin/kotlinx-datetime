@@ -26,6 +26,8 @@ import kotlin.test.assertTrue
 
 class TimeZoneNativeTest {
 
+    // getAvailableZoneIdsFoundation() tests
+
     @Test
     fun getAvailableZoneIdsReturnsValidTimezoneSet() {
         assertReturnsNonEmptySetOfTimezoneStrings(getAvailableZoneIds())
@@ -46,53 +48,21 @@ class TimeZoneNativeTest {
         assertAvailableZoneIdsContainsExpectedTimezoneIDs(getAvailableZoneIdsFoundation())
     }
 
-    private data class TimeZoneRulesTestData(val zodeId: String, val localDateTimes: List<LocalDateTime>)
-
-    private lateinit var timeZoneRulesTestCases: List<TimeZoneRulesTestData>
-
-    @BeforeTest
-    fun setupTimeZoneRulesTestCases() {
-        timeZoneRulesTestCases = listOf(
-            TimeZoneRulesTestData(
-                "America/New_York",
-                listOf(
-                    // Before gap
-                    LocalDateTime(2025, 1, 1, 5, 0, 0),
-                    // At the beginning of the gap
-                    LocalDateTime(2025, 3, 9, 2, 0, 0),
-                    // Inside gap
-                    LocalDateTime(2025, 3, 9, 2, 30, 0),
-                    // At the end of the gap
-                    LocalDateTime(2025, 3, 9, 3, 0, 0),
-                    // Between gap and overlap
-                    LocalDateTime(2025, 6, 30, 3, 0, 0),
-                    // At the beginning of the overlap
-                    LocalDateTime(2025, 11, 2, 2, 0, 0),
-                    // Inside overlap
-                    LocalDateTime(2025, 11, 2, 1, 30, 0),
-                    // At the end of the overlap
-                    LocalDateTime(2025, 11, 2, 1, 0, 0),
-                    // After overlap
-                    LocalDateTime(2025, 12, 31, 2, 0, 0)
-                )
-            )
-        )
+    private fun assertReturnsNonEmptySetOfTimezoneStrings(zoneIds: Set<String>) {
+        assertTrue(zoneIds.isNotEmpty(), "Zone IDs should not be empty")
+        assertTrue(zoneIds.all { it.isNotBlank() }, "All zone IDs should be non-blank")
+        assertTrue("UTC" in zoneIds || "GMT" in zoneIds, "Should contain UTC or GMT")
+        assertTrue(zoneIds.any { it.contains("America") }, "Should contain America timezones")
+        assertTrue(zoneIds.any { it.contains("Europe") }, "Should contain Europe timezones")
     }
 
-    private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
+    private val validTimeZones = listOf("America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney")
 
-    @Test
-    fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
-        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularRules = tzdb.getOrThrow().rulesForId(zoneId)
-            val foundationRules = TimeZoneRulesFoundation(zoneId)
-            for (ldt in localDateTimes) {
-                val expected = regularRules.infoAtDatetime(ldt)
-                val actual = foundationRules.infoAtDatetime(ldt)
-                assertEquals(expected, actual)
-            }
-        }
+    private fun assertAvailableZoneIdsContainsExpectedTimezoneIDs(zoneIds: Set<String>) {
+        assertTrue(validTimeZones.all { it in zoneIds }, "Should contain all common timezone")
     }
+
+    // timeZone.offsetAt(Instant) tests
 
     @Test
     fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
@@ -178,6 +148,58 @@ class TimeZoneNativeTest {
         }
     }
 
+    // TimeZoneRules.infoAtDatetime(LocalDateTime) tests
+
+    private data class TimeZoneRulesTestData(val zodeId: String, val localDateTimes: List<LocalDateTime>)
+
+    private lateinit var timeZoneRulesTestCases: List<TimeZoneRulesTestData>
+
+    @BeforeTest
+    fun setupTimeZoneRulesTestCases() {
+        timeZoneRulesTestCases = listOf(
+            TimeZoneRulesTestData(
+                "America/New_York",
+                listOf(
+                    // Before gap
+                    LocalDateTime(2025, 1, 1, 5, 0, 0),
+                    // At the beginning of the gap
+                    LocalDateTime(2025, 3, 9, 2, 0, 0),
+                    // Inside gap
+                    LocalDateTime(2025, 3, 9, 2, 30, 0),
+                    // At the end of the gap
+                    LocalDateTime(2025, 3, 9, 3, 0, 0),
+                    // Between gap and overlap
+                    LocalDateTime(2025, 6, 30, 3, 0, 0),
+                    // At the beginning of the overlap
+                    LocalDateTime(2025, 11, 2, 2, 0, 0),
+                    // Inside overlap
+                    LocalDateTime(2025, 11, 2, 1, 30, 0),
+                    // At the end of the overlap
+                    LocalDateTime(2025, 11, 2, 1, 0, 0),
+                    // After overlap
+                    LocalDateTime(2025, 12, 31, 2, 0, 0)
+                )
+            )
+        )
+    }
+
+    private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
+
+    @Test
+    fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
+        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
+            val regularRules = tzdb.getOrThrow().rulesForId(zoneId)
+            val foundationRules = TimeZoneRulesFoundation(zoneId)
+            for (ldt in localDateTimes) {
+                val expected = regularRules.infoAtDatetime(ldt)
+                val actual = foundationRules.infoAtDatetime(ldt)
+                assertEquals(expected, actual)
+            }
+        }
+    }
+
+    // timeZone.atZone(LocalDateTime) tests
+
     @Test
     fun testTimeZoneByIdFoundationAlwaysReturnsTimeZone() {
         val ldt = LocalDateTime(2025, 1, 1, 0, 0, 0)
@@ -186,19 +208,5 @@ class TimeZoneNativeTest {
             val actual = timeZoneByIdFoundation(zoneId).atZone(ldt)
             assertEquals(expected, actual)
         }
-    }
-
-    private fun assertReturnsNonEmptySetOfTimezoneStrings(zoneIds: Set<String>) {
-        assertTrue(zoneIds.isNotEmpty(), "Zone IDs should not be empty")
-        assertTrue(zoneIds.all { it.isNotBlank() }, "All zone IDs should be non-blank")
-        assertTrue("UTC" in zoneIds || "GMT" in zoneIds, "Should contain UTC or GMT")
-        assertTrue(zoneIds.any { it.contains("America") }, "Should contain America timezones")
-        assertTrue(zoneIds.any { it.contains("Europe") }, "Should contain Europe timezones")
-    }
-
-    private val validTimeZones = listOf("America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney")
-
-    private fun assertAvailableZoneIdsContainsExpectedTimezoneIDs(zoneIds: Set<String>) {
-        assertTrue(validTimeZones.all { it in zoneIds }, "Should contain all common timezone")
     }
 }
