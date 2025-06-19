@@ -178,7 +178,17 @@ class TimeZoneNativeTest {
                     // After overlap
                     LocalDateTime(2025, 12, 31, 2, 0, 0)
                 )
-            )
+            ),
+            TimeZoneRulesTestData(
+                "UTC",
+                listOf(
+                    // UTC has no DST transitions
+                    LocalDateTime(2025, 1, 1, 0, 0, 0),
+                    LocalDateTime(2025, 6, 15, 12, 0, 0),
+                    LocalDateTime(2025, 12, 31, 23, 59, 59)
+                )
+            ),
+
         )
     }
 
