@@ -34,10 +34,10 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         val currentOffset = infoAtNsDate(nsDate)
 
         if (!components.isValidDateInCalendar(calendar)) {
-            val oneHourBefore = nsDate.addTimeInterval(-SECS_PER_HOUR) as NSDate
+            val oneHourEarlier = nsDate.addTimeInterval(-SECS_PER_HOUR) as NSDate
             return OffsetInfo.Gap(
-                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(oneHourBefore)!!.toKotlinInstant(),
-                offsetBefore = infoAtNsDate(oneHourBefore),
+                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(oneHourEarlier)!!.toKotlinInstant(),
+                offsetBefore = infoAtNsDate(oneHourEarlier),
                 offsetAfter = currentOffset
             )
         }
