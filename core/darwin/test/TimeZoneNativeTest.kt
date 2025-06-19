@@ -257,6 +257,22 @@ class TimeZoneNativeTest {
                     LocalDateTime(2025, 11, 3, 23, 59, 59),
                     LocalDateTime(2025, 11, 4, 0, 0, 0)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "Pacific/Chatham",
+                listOf(
+                    // Chatham Islands - UTC+12:45/+13:45, unusual 45-minute offset
+                    // DST starts last Sunday in September at 2:45 AM
+                    LocalDateTime(2025, 9, 28, 2, 44, 59),
+                    LocalDateTime(2025, 9, 28, 2, 45, 0),
+                    LocalDateTime(2025, 9, 28, 3, 15, 0),
+                    LocalDateTime(2025, 9, 28, 3, 45, 0),
+                    // DST ends the first Sunday in April at 3:45 AM
+                    LocalDateTime(2025, 4, 6, 3, 44, 59),
+                    LocalDateTime(2025, 4, 6, 3, 45, 0),
+                    LocalDateTime(2025, 4, 6, 3, 15, 0),
+                    LocalDateTime(2025, 4, 6, 2, 45, 0)
+                )
             )
         )
     }
