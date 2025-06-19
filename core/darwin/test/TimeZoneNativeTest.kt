@@ -188,7 +188,13 @@ class TimeZoneNativeTest {
                     LocalDateTime(2025, 12, 31, 23, 59, 59)
                 )
             ),
-
+            TimeZoneRulesTestData(
+                "Europe/London",
+                listOf(
+                    // Before gap
+                    LocalDateTime(2025, 3, 30, 0, 59, 59)
+                )
+            )
         )
     }
 
