@@ -233,6 +233,15 @@ class TimeZoneNativeTest {
                     // After gap
                     LocalDateTime(2025, 10, 5, 3, 0, 1)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "Asia/Kolkata",
+                listOf(
+                    // India Standard Time - UTC+5:30, no DST
+                    LocalDateTime(2025, 1, 1, 0, 0, 0),
+                    LocalDateTime(2025, 6, 15, 5, 30, 0),
+                    LocalDateTime(2025, 12, 31, 23, 59, 59)
+                )
             )
         )
     }
