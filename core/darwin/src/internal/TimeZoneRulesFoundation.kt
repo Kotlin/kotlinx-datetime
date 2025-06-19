@@ -28,11 +28,9 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
         val calendar = NSCalendar.currentCalendar().apply { timeZone = nsTimeZone }
         val components = localDateTime.toNSDateComponents()
-
         val nsDate = requireNotNull(calendar.dateFromComponents(components)) {
             "Invalid LocalDateTime components: $localDateTime"
         }
-
         val currentOffset = infoAtNsDate(nsDate)
 
         if (!components.isValidDateInCalendar(calendar)) {
