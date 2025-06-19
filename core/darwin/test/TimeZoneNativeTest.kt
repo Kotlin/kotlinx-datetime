@@ -192,7 +192,23 @@ class TimeZoneNativeTest {
                 "Europe/London",
                 listOf(
                     // Before gap
-                    LocalDateTime(2025, 3, 30, 0, 59, 59)
+                    LocalDateTime(2025, 3, 30, 0, 59, 59),
+                    // At the beginning of the gap
+                    LocalDateTime(2025, 3, 30, 1, 0, 0),
+                    // Inside gap
+                    LocalDateTime(2025, 3, 30, 1, 30, 0),
+                    // At the end of the gap
+                    LocalDateTime(2025, 3, 30, 2, 0, 0),
+                    // Between gap and overlap
+                    LocalDateTime(2025, 10, 26, 0, 59, 59),
+                    // At the beginning of the overlap
+                    LocalDateTime(2025, 10, 26, 1, 0, 0),
+                    // Inside overlap
+                    LocalDateTime(2025, 10, 26, 1, 30, 0),
+                    // At the end of the overlap
+                    LocalDateTime(2025, 10, 26, 2, 0, 0),
+                    // After overlap
+                    LocalDateTime(2025, 10, 26, 2, 0, 1)
                 )
             )
         )
