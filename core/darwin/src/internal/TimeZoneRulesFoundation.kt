@@ -36,23 +36,23 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         val currentOffset = infoAtNsDate(nsDate)
 
         if (!components.isValidDateInCalendar(calendar)) {
-            val prevDay = nsDate.addTimeInterval(-SECS_PER_DAY) as NSDate
+            val oneHourBefore = nsDate.addTimeInterval(-SECS_PER_HOUR) as NSDate
             return OffsetInfo.Gap(
-                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(prevDay)!!.toKotlinInstant(),
-                offsetBefore = infoAtNsDate(prevDay),
+                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(oneHourBefore)!!.toKotlinInstant(),
+                offsetBefore = infoAtNsDate(oneHourBefore),
                 offsetAfter = currentOffset
             )
         }
 
-        val currentTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)
-        val nextDay = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
-        val nextDayTransition = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nextDay)
+        val oneHourLater = nsDate.addTimeInterval(SECS_PER_HOUR) as NSDate
+        val isDSTNow = nsTimeZone.isDaylightSavingTimeForDate(nsDate)
+        val isDSTLater = nsTimeZone.isDaylightSavingTimeForDate(oneHourLater)
 
-        if (currentTransition != nextDayTransition) {
+        if (isDSTNow && !isDSTLater) {
             return OffsetInfo.Overlap(
-                start = currentTransition!!.toKotlinInstant(),
+                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)!!.toKotlinInstant(),
                 offsetBefore = currentOffset,
-                offsetAfter = infoAtNsDate(nextDay)
+                offsetAfter = infoAtNsDate(oneHourLater)
             )
         }
 
@@ -66,6 +66,6 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     }
 
     companion object {
-        const val SECS_PER_DAY = 24 * 60 * 60.0
+        const val SECS_PER_HOUR = 60 * 60.0
     }
 }
