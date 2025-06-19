@@ -271,7 +271,19 @@ class TimeZoneNativeTest {
                     LocalDateTime(2025, 4, 6, 3, 15, 0),
                     LocalDateTime(2025, 4, 6, 2, 45, 0)
                 )
-            )
+            ),
+            TimeZoneRulesTestData(
+                "Asia/Pyongyang",
+                listOf(
+                    // North Korea changed from UTC+9 to UTC+8:30 on May 5, 2015
+                    LocalDateTime(2015, 5, 4, 23, 59, 59),
+                    LocalDateTime(2015, 5, 5, 0, 0, 0),
+                    // Changed back to UTC+9 on May 5, 2018
+                    LocalDateTime(2018, 5, 4, 23, 29, 59),
+                    LocalDateTime(2018, 5, 4, 23, 30, 0),  // This would be in the gap
+                    LocalDateTime(2018, 5, 5, 0, 0, 0)
+                )
+            ),
         )
     }
 
@@ -282,9 +294,11 @@ class TimeZoneNativeTest {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
+            println("------------------------------------------")
             for (ldt in localDateTimes) {
                 val expected = regularRules.infoAtDatetime(ldt)
                 val actual = foundationRules.infoAtDatetime(ldt)
+                println("expected: $expected, actual: $actual")
                 assertEquals(expected, actual)
             }
         }
