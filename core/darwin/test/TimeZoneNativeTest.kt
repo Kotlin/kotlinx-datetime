@@ -202,11 +202,11 @@ class TimeZoneNativeTest {
                     // Between gap and overlap
                     LocalDateTime(2025, 10, 26, 0, 59, 59),
                     // At the beginning of the overlap
-                    LocalDateTime(2025, 10, 26, 1, 0, 0),
+                    LocalDateTime(2025, 10, 26, 2, 0, 0),
                     // Inside overlap
                     LocalDateTime(2025, 10, 26, 1, 30, 0),
                     // At the end of the overlap
-                    LocalDateTime(2025, 10, 26, 2, 0, 0),
+                    LocalDateTime(2025, 10, 26, 1, 0, 0),
                     // After overlap
                     LocalDateTime(2025, 10, 26, 2, 0, 1)
                 )
