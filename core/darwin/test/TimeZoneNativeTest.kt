@@ -293,6 +293,18 @@ class TimeZoneNativeTest {
                     LocalDateTime(1993, 8, 21, 0, 0, 0),  // This date doesn't exist, in the gap
                     LocalDateTime(1993, 8, 22, 0, 0, 0)
                 )
+            ),
+            TimeZoneRulesTestData(
+                "Pacific/Apia",
+                listOf(
+                    // Apia is the capital of Samoa, Pacific/Samoa timezone is deprecated
+                    // Samoa skipped December 30, 2011 entirely
+                    // Moved from UTC-11 to UTC+13 (crossed International Date Line)
+                    LocalDateTime(2011, 12, 29, 23, 59, 59),
+                    LocalDateTime(2011, 12, 30, 0, 0, 0),  // This date doesn't exist, in the gap
+                    LocalDateTime(2011, 12, 30, 23, 59, 59),  // This date doesn't exist, in the gap
+                    LocalDateTime(2011, 12, 31, 0, 0, 0)
+                )
             )
         )
     }
