@@ -7,6 +7,10 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.internal.Path
+import kotlinx.datetime.internal.TimeZoneRulesFoundation
+import kotlinx.datetime.internal.TzdbOnFilesystem
+import kotlinx.datetime.internal.defaultTzdbPath
 import kotlinx.datetime.internal.getAvailableZoneIds
 import kotlinx.datetime.internal.getAvailableZoneIdsFoundation
 import kotlinx.datetime.internal.timeZoneById
@@ -14,6 +18,7 @@ import kotlinx.datetime.internal.timeZoneByIdFoundation
 import kotlinx.datetime.offsetAt
 import kotlinx.datetime.plusSeconds
 import kotlinx.datetime.toInstant
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -41,37 +46,52 @@ class TimeZoneNativeTest {
         assertAvailableZoneIdsContainsExpectedTimezoneIDs(getAvailableZoneIdsFoundation())
     }
 
-    @Test
-    fun foo() {
-        val zoneId = "America/New_York"
+    private data class TimeZoneRulesTestData(val zodeId: String, val localDateTimes: List<LocalDateTime>)
 
-        val regularTz = timeZoneById(zoneId)
-        debugOffsetsInIntervals(regularTz)
+    private lateinit var timeZoneRulesTestCases: List<TimeZoneRulesTestData>
 
-        val foundationTz = timeZoneByIdFoundation(zoneId)
-        debugOffsetsInIntervals(foundationTz)
+    @BeforeTest
+    fun setupTimeZoneRulesTestCases() {
+        timeZoneRulesTestCases = listOf(
+            TimeZoneRulesTestData(
+                "America/New_York",
+                listOf(
+                    // Before gap
+                    LocalDateTime(2025, 1, 1, 5, 0, 0),
+                    // At the beginning of the gap
+                    LocalDateTime(2025, 3, 9, 2, 0, 0),
+                    // Inside gap
+                    LocalDateTime(2025, 3, 9, 2, 30, 0),
+                    // At the end of the gap
+                    LocalDateTime(2025, 3, 9, 3, 0, 0),
+                    // Between gap and overlap
+                    LocalDateTime(2025, 6, 30, 3, 0, 0),
+                    // At the beginning of the overlap
+                    LocalDateTime(2025, 11, 2, 2, 0, 0),
+                    // Inside overlap
+                    LocalDateTime(2025, 11, 2, 1, 30, 0),
+                    // At the end of the overlap
+                    LocalDateTime(2025, 11, 2, 1, 0, 0),
+                    // After overlap
+                    LocalDateTime(2025, 12, 31, 2, 0, 0)
+                )
+            )
+        )
     }
 
-    private fun debugOffsetsInIntervals(timeZone: TimeZone) {
-        val beforeGap = LocalDateTime(2025, 1, 1, 5, 0, 0)
-        val insideGap = LocalDateTime(2025, 3, 9, 2, 30, 0)
-        val betweenGapAndOverlap = LocalDateTime(2025, 6, 30, 3, 0, 0)
-        val insideOverlap = LocalDateTime(2025, 11, 2, 1, 30, 0)
-        val afterOverlap = LocalDateTime(2025, 12, 31, 2, 0, 0)
+    private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 
-        println("-----------------------------------------------------------------------------------------")
-        val zdtBeforeGap = timeZone.atZone(beforeGap)  // -05:00
-        val zdtInsideGap = timeZone.atZone(insideGap)  // -04:00
-        val zdtBetweenGapAndOverlap = timeZone.atZone(betweenGapAndOverlap)  // -04:00
-        val zdtInsideOverlap = timeZone.atZone(insideOverlap)  // -04:00
-        val zdtAfterOverlap = timeZone.atZone(afterOverlap)  // -05:00
-        println("-----------------------------------------------------------------------------------------")
-
-        println("beforeGap: $zdtBeforeGap")
-        println("insideGap: $zdtInsideGap")
-        println("betweenGapAndOverlap: $zdtBetweenGapAndOverlap")
-        println("insideOverlap: $zdtInsideOverlap")
-        println("afterOverlap: $zdtAfterOverlap")
+    @Test
+    fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
+        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
+            val regularRules = tzdb.getOrThrow().rulesForId(zoneId)
+            val foundationRules = TimeZoneRulesFoundation(zoneId)
+            for (ldt in localDateTimes) {
+                val expected = regularRules.infoAtDatetime(ldt)
+                val actual = foundationRules.infoAtDatetime(ldt)
+                assertEquals(expected, actual)
+            }
+        }
     }
 
     @Test
