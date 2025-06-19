@@ -6,7 +6,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.internal.Path
 import kotlinx.datetime.internal.TimeZoneRulesFoundation
 import kotlinx.datetime.internal.TzdbOnFilesystem
