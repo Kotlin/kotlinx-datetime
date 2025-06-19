@@ -284,6 +284,16 @@ class TimeZoneNativeTest {
                     LocalDateTime(2018, 5, 5, 0, 0, 0)
                 )
             ),
+            TimeZoneRulesTestData(
+                "Pacific/Kwajalein",
+                listOf(
+                    // Kwajalein skipped August 21, 1993 entirely
+                    // Moved from UTC-12 to UTC+12 (crossed International Date Line)
+                    LocalDateTime(1993, 8, 20, 23, 59, 59),
+                    LocalDateTime(1993, 8, 21, 0, 0, 0),  // This date doesn't exist, in the gap
+                    LocalDateTime(1993, 8, 22, 0, 0, 0)
+                )
+            )
         )
     }
 
