@@ -15,7 +15,6 @@ import kotlinx.datetime.internal.timeZoneByIdFoundation
 import kotlinx.datetime.offsetAt
 import kotlinx.datetime.plusSeconds
 import kotlinx.datetime.toInstant
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -147,177 +146,172 @@ class TimeZoneNativeTest {
 
     // TimeZoneRules.infoAtDatetime(LocalDateTime) tests
 
-    private data class TimeZoneRulesTestData(val zodeId: String, val localDateTimes: List<LocalDateTime>)
+    private data class TimeZoneRulesTestData(val zoneId: String, val localDateTimes: List<LocalDateTime>)
 
-    private lateinit var timeZoneRulesTestCases: List<TimeZoneRulesTestData>
-
-    @BeforeTest
-    fun setupTimeZoneRulesTestCases() {
-        timeZoneRulesTestCases = listOf(
-            TimeZoneRulesTestData(
-                "UTC",
-                listOf(
-                    // UTC has no DST transitions
-                    LocalDateTime(2025, 1, 1, 0, 0, 0),
-                    LocalDateTime(2025, 6, 15, 12, 0, 0),
-                    LocalDateTime(2025, 12, 31, 23, 59, 59)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "America/New_York",
-                listOf(
-                    // Before gap
-                    LocalDateTime(2025, 1, 1, 5, 0, 0),
-                    // At the beginning of the gap
-                    LocalDateTime(2025, 3, 9, 2, 0, 0),
-                    // Inside gap
-                    LocalDateTime(2025, 3, 9, 2, 30, 0),
-                    // At the end of the gap
-                    LocalDateTime(2025, 3, 9, 3, 0, 0),
-                    // Between gap and overlap
-                    LocalDateTime(2025, 6, 30, 3, 0, 0),
-                    // At the beginning of the overlap
-                    LocalDateTime(2025, 11, 2, 2, 0, 0),
-                    // Inside overlap
-                    LocalDateTime(2025, 11, 2, 1, 30, 0),
-                    // At the end of the overlap
-                    LocalDateTime(2025, 11, 2, 1, 0, 0),
-                    // After overlap
-                    LocalDateTime(2025, 12, 31, 2, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Europe/London",
-                listOf(
-                    // Before gap
-                    LocalDateTime(2025, 3, 30, 0, 59, 59),
-                    // At the beginning of the gap
-                    LocalDateTime(2025, 3, 30, 1, 0, 0),
-                    // Inside gap
-                    LocalDateTime(2025, 3, 30, 1, 30, 0),
-                    // At the end of the gap
-                    LocalDateTime(2025, 3, 30, 2, 0, 0),
-                    // Between gap and overlap
-                    LocalDateTime(2025, 10, 26, 0, 59, 59),
-                    // At the beginning of the overlap
-                    LocalDateTime(2025, 10, 26, 2, 0, 0),
-                    // Inside overlap
-                    LocalDateTime(2025, 10, 26, 1, 30, 0),
-                    // At the end of the overlap
-                    LocalDateTime(2025, 10, 26, 1, 0, 0),
-                    // After overlap
-                    LocalDateTime(2025, 10, 26, 2, 0, 1)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Australia/Sydney",
-                listOf(
-                    // Before overlap
-                    LocalDateTime(2025, 4, 6, 2, 59, 59),
-                    // At the beginning of the overlap
-                    LocalDateTime(2025, 4, 6, 3, 0, 0),
-                    // Inside overlap
-                    LocalDateTime(2025, 4, 6, 2, 30, 0),
-                    // At the end of the overlap
-                    LocalDateTime(2025, 4, 6, 2, 0, 0),
-                    // Before gap
-                    LocalDateTime(2025, 10, 5, 1, 59, 59),
-                    // At the beginning of the gap
-                    LocalDateTime(2025, 10, 5, 2, 0, 0),
-                    // Inside gap
-                    LocalDateTime(2025, 10, 5, 2, 30, 0),
-                    // At the end of the gap
-                    LocalDateTime(2025, 10, 5, 3, 0, 0),
-                    // After gap
-                    LocalDateTime(2025, 10, 5, 3, 0, 1)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Asia/Kolkata",
-                listOf(
-                    // India Standard Time - UTC+5:30, no DST
-                    LocalDateTime(2025, 1, 1, 0, 0, 0),
-                    LocalDateTime(2025, 6, 15, 5, 30, 0),
-                    LocalDateTime(2025, 12, 31, 23, 59, 59)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "America/Sao_Paulo",
-                listOf(
-                    // Brazil - DST rules have changed multiple times
-                    // Currently no DST (as of 2019), but testing historical transitions
-                    LocalDateTime(2018, 2, 17, 23, 59, 59),
-                    LocalDateTime(2018, 2, 18, 0, 0, 0),
-                    LocalDateTime(2018, 11, 3, 23, 59, 59),
-                    LocalDateTime(2018, 11, 4, 0, 0, 0),
-                    LocalDateTime(2025, 2, 17, 23, 59, 59),
-                    LocalDateTime(2025, 2, 18, 0, 0, 0),
-                    LocalDateTime(2025, 11, 3, 23, 59, 59),
-                    LocalDateTime(2025, 11, 4, 0, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Pacific/Chatham",
-                listOf(
-                    // Chatham Islands - UTC+12:45/+13:45, unusual 45-minute offset
-                    // DST starts last Sunday in September at 2:45 AM
-                    LocalDateTime(2025, 9, 28, 2, 44, 59),
-                    LocalDateTime(2025, 9, 28, 2, 45, 0),
-                    LocalDateTime(2025, 9, 28, 3, 15, 0),
-                    LocalDateTime(2025, 9, 28, 3, 45, 0),
-                    // DST ends the first Sunday in April at 3:45 AM
-                    LocalDateTime(2025, 4, 6, 3, 44, 59),
-                    LocalDateTime(2025, 4, 6, 3, 45, 0),
-                    LocalDateTime(2025, 4, 6, 3, 15, 0),
-                    LocalDateTime(2025, 4, 6, 2, 45, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Asia/Pyongyang",
-                listOf(
-                    // North Korea changed from UTC+9 to UTC+8:30 on May 5, 2015
-                    LocalDateTime(2015, 5, 4, 23, 59, 59),
-                    LocalDateTime(2015, 5, 5, 0, 0, 0),
-                    // Changed back to UTC+9 on May 5, 2018
-                    LocalDateTime(2018, 5, 4, 23, 29, 59),
-                    LocalDateTime(2018, 5, 4, 23, 30, 0),  // This would be in the gap
-                    LocalDateTime(2018, 5, 5, 0, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Pacific/Kwajalein",
-                listOf(
-                    // Kwajalein skipped August 21, 1993 entirely
-                    // Moved from UTC-12 to UTC+12 (crossed International Date Line)
-                    LocalDateTime(1993, 8, 20, 23, 59, 59),
-                    LocalDateTime(1993, 8, 21, 0, 0, 0),  // This date doesn't exist, in the gap
-                    LocalDateTime(1993, 8, 21, 23, 59, 59),  // This date doesn't exist, in the gap
-                    LocalDateTime(1993, 8, 22, 0, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "Pacific/Apia",
-                listOf(
-                    // Apia is the capital of Samoa, Pacific/Samoa timezone is deprecated
-                    // Samoa skipped December 30, 2011 entirely
-                    // Moved from UTC-11 to UTC+13 (crossed International Date Line)
-                    LocalDateTime(2011, 12, 29, 23, 59, 59),
-                    LocalDateTime(2011, 12, 30, 0, 0, 0),  // This date doesn't exist, in the gap
-                    LocalDateTime(2011, 12, 30, 23, 59, 59),  // This date doesn't exist, in the gap
-                    LocalDateTime(2011, 12, 31, 0, 0, 0)
-                )
-            ),
-            TimeZoneRulesTestData(
-                "America/Caracas",
-                listOf(
-                    // Venezuela changed from UTC-4:30 to UTC-4 on May 1, 2016
-                    LocalDateTime(2016, 5, 1, 2, 0, 0),
-                    LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
-                    LocalDateTime(2016, 5, 1, 3, 0, 0)
-                )
+    private val timeZoneRulesTestCases = listOf(
+        TimeZoneRulesTestData(
+            "UTC",
+            listOf(
+                // UTC has no DST transitions
+                LocalDateTime(2025, 1, 1, 0, 0, 0),
+                LocalDateTime(2025, 6, 15, 12, 0, 0),
+                LocalDateTime(2025, 12, 31, 23, 59, 59)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "America/New_York",
+            listOf(
+                // Before gap
+                LocalDateTime(2025, 1, 1, 5, 0, 0),
+                // At the beginning of the gap
+                LocalDateTime(2025, 3, 9, 2, 0, 0),
+                // Inside gap
+                LocalDateTime(2025, 3, 9, 2, 30, 0),
+                // At the end of the gap
+                LocalDateTime(2025, 3, 9, 3, 0, 0),
+                // Between gap and overlap
+                LocalDateTime(2025, 6, 30, 3, 0, 0),
+                // At the beginning of the overlap
+                LocalDateTime(2025, 11, 2, 2, 0, 0),
+                // Inside overlap
+                LocalDateTime(2025, 11, 2, 1, 30, 0),
+                // At the end of the overlap
+                LocalDateTime(2025, 11, 2, 1, 0, 0),
+                // After overlap
+                LocalDateTime(2025, 12, 31, 2, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Europe/London",
+            listOf(
+                // Before gap
+                LocalDateTime(2025, 3, 30, 0, 59, 59),
+                // At the beginning of the gap
+                LocalDateTime(2025, 3, 30, 1, 0, 0),
+                // Inside gap
+                LocalDateTime(2025, 3, 30, 1, 30, 0),
+                // At the end of the gap
+                LocalDateTime(2025, 3, 30, 2, 0, 0),
+                // Between gap and overlap
+                LocalDateTime(2025, 10, 26, 0, 59, 59),
+                // At the beginning of the overlap
+                LocalDateTime(2025, 10, 26, 2, 0, 0),
+                // Inside overlap
+                LocalDateTime(2025, 10, 26, 1, 30, 0),
+                // At the end of the overlap
+                LocalDateTime(2025, 10, 26, 1, 0, 0),
+                // After overlap
+                LocalDateTime(2025, 10, 26, 2, 0, 1)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Australia/Sydney",
+            listOf(
+                // Before overlap
+                LocalDateTime(2025, 4, 6, 2, 59, 59),
+                // At the beginning of the overlap
+                LocalDateTime(2025, 4, 6, 3, 0, 0),
+                // Inside overlap
+                LocalDateTime(2025, 4, 6, 2, 30, 0),
+                // At the end of the overlap
+                LocalDateTime(2025, 4, 6, 2, 0, 0),
+                // Before gap
+                LocalDateTime(2025, 10, 5, 1, 59, 59),
+                // At the beginning of the gap
+                LocalDateTime(2025, 10, 5, 2, 0, 0),
+                // Inside gap
+                LocalDateTime(2025, 10, 5, 2, 30, 0),
+                // At the end of the gap
+                LocalDateTime(2025, 10, 5, 3, 0, 0),
+                // After gap
+                LocalDateTime(2025, 10, 5, 3, 0, 1)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Asia/Kolkata",
+            listOf(
+                // India Standard Time - UTC+5:30, no DST
+                LocalDateTime(2025, 1, 1, 0, 0, 0),
+                LocalDateTime(2025, 6, 15, 5, 30, 0),
+                LocalDateTime(2025, 12, 31, 23, 59, 59)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "America/Sao_Paulo",
+            listOf(
+                // Brazil - DST rules have changed multiple times
+                // Currently no DST (as of 2019), but testing historical transitions
+                LocalDateTime(2018, 2, 17, 23, 59, 59),
+                LocalDateTime(2018, 2, 18, 0, 0, 0),
+                LocalDateTime(2018, 11, 3, 23, 59, 59),
+                LocalDateTime(2018, 11, 4, 0, 0, 0),
+                LocalDateTime(2025, 2, 17, 23, 59, 59),
+                LocalDateTime(2025, 2, 18, 0, 0, 0),
+                LocalDateTime(2025, 11, 3, 23, 59, 59),
+                LocalDateTime(2025, 11, 4, 0, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Pacific/Chatham",
+            listOf(
+                // Chatham Islands - UTC+12:45/+13:45, unusual 45-minute offset
+                // DST starts last Sunday in September at 2:45 AM
+                LocalDateTime(2025, 9, 28, 2, 44, 59),
+                LocalDateTime(2025, 9, 28, 2, 45, 0),
+                LocalDateTime(2025, 9, 28, 3, 15, 0),
+                LocalDateTime(2025, 9, 28, 3, 45, 0),
+                // DST ends the first Sunday in April at 3:45 AM
+                LocalDateTime(2025, 4, 6, 3, 44, 59),
+                LocalDateTime(2025, 4, 6, 3, 45, 0),
+                LocalDateTime(2025, 4, 6, 3, 15, 0),
+                LocalDateTime(2025, 4, 6, 2, 45, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Asia/Pyongyang",
+            listOf(
+                // North Korea changed from UTC+9 to UTC+8:30 on May 5, 2015
+                LocalDateTime(2015, 5, 4, 23, 59, 59),
+                LocalDateTime(2015, 5, 5, 0, 0, 0),
+                // Changed back to UTC+9 on May 5, 2018
+                LocalDateTime(2018, 5, 4, 23, 29, 59),
+                LocalDateTime(2018, 5, 4, 23, 30, 0),  // This would be in the gap
+                LocalDateTime(2018, 5, 5, 0, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Pacific/Kwajalein",
+            listOf(
+                // Kwajalein skipped August 21, 1993 entirely
+                // Moved from UTC-12 to UTC+12 (crossed International Date Line)
+                LocalDateTime(1993, 8, 20, 23, 59, 59),
+                LocalDateTime(1993, 8, 21, 0, 0, 0),  // This date doesn't exist, in the gap
+                LocalDateTime(1993, 8, 21, 23, 59, 59),  // This date doesn't exist, in the gap
+                LocalDateTime(1993, 8, 22, 0, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Pacific/Apia",
+            listOf(
+                // Apia is the capital of Samoa, Pacific/Samoa timezone is deprecated
+                // Samoa skipped December 30, 2011 entirely
+                // Moved from UTC-11 to UTC+13 (crossed International Date Line)
+                LocalDateTime(2011, 12, 29, 23, 59, 59),
+                LocalDateTime(2011, 12, 30, 0, 0, 0),  // This date doesn't exist, in the gap
+                LocalDateTime(2011, 12, 30, 23, 59, 59),  // This date doesn't exist, in the gap
+                LocalDateTime(2011, 12, 31, 0, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "America/Caracas",
+            listOf(
+                // Venezuela changed from UTC-4:30 to UTC-4 on May 1, 2016
+                LocalDateTime(2016, 5, 1, 2, 0, 0),
+                LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
+                LocalDateTime(2016, 5, 1, 3, 0, 0)
             )
         )
-    }
+    )
 
     private val tzdb = TzdbOnFilesystem()
 
