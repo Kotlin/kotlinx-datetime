@@ -5,7 +5,6 @@
 
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 
 internal expect fun timeZoneById(zoneId: String): TimeZone
@@ -13,5 +12,3 @@ internal expect fun timeZoneById(zoneId: String): TimeZone
 internal expect fun getAvailableZoneIds(): Set<String>
 
 internal expect fun currentSystemDefaultZone(): Pair<String, TimeZone?>
-
-internal expect fun currentTime(): Instant

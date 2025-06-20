@@ -8,7 +8,9 @@ package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
-import kotlin.time.Duration
+import kotlin.time.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Tests the code snippets in the README.md file.

@@ -11,6 +11,8 @@ import platform.Foundation.*
 import kotlin.math.*
 import kotlin.random.*
 import kotlin.test.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class ConvertersTest {
 
