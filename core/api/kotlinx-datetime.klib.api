@@ -139,14 +139,14 @@ sealed interface kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.date
     }
 }
 
-abstract class kotlinx.datetime.serializers/FormattedInstantSerializer : kotlinx.serialization/KSerializer<kotlinx.datetime/Instant> { // kotlinx.datetime.serializers/FormattedInstantSerializer|null[0]
+abstract class kotlinx.datetime.serializers/FormattedInstantSerializer : kotlinx.serialization/KSerializer<kotlin.time/Instant> { // kotlinx.datetime.serializers/FormattedInstantSerializer|null[0]
     constructor <init>(kotlin/String, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>) // kotlinx.datetime.serializers/FormattedInstantSerializer.<init>|<init>(kotlin.String;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
 
     open val descriptor // kotlinx.datetime.serializers/FormattedInstantSerializer.descriptor|{}descriptor[0]
         open fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.datetime.serializers/FormattedInstantSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
 
-    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.datetime/Instant // kotlinx.datetime.serializers/FormattedInstantSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/Instant) // kotlinx.datetime.serializers/FormattedInstantSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.Instant){}[0]
+    open fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.time/Instant // kotlinx.datetime.serializers/FormattedInstantSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    open fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.time/Instant) // kotlinx.datetime.serializers/FormattedInstantSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.time.Instant){}[0]
     open fun toString(): kotlin/String // kotlinx.datetime.serializers/FormattedInstantSerializer.toString|toString(){}[0]
 }
 

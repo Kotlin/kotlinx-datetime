@@ -1110,10 +1110,10 @@ public final class kotlinx/datetime/serializers/FixedOffsetTimeZoneSerializer : 
 public abstract class kotlinx/datetime/serializers/FormattedInstantSerializer : kotlinx/serialization/KSerializer {
 	public fun <init> (Ljava/lang/String;Lkotlinx/datetime/format/DateTimeFormat;)V
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlinx/datetime/Instant;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lkotlin/time/Instant;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlinx/datetime/Instant;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lkotlin/time/Instant;)V
 	public fun toString ()Ljava/lang/String;
 }
 
