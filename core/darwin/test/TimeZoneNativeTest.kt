@@ -371,4 +371,17 @@ class TimeZoneNativeTest {
             }
         }
     }
+
+    // timeZone.atStartOfDay(LocalDate) tests
+
+    @Test
+    fun shouldProduceConsistentInstanceBetweenRegularAndFoundationTimeZones() {
+        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
+            for (ldt in localDateTimes) {
+                val expected = timeZoneById(zoneId).atStartOfDay(ldt.date)
+                val actual = timeZoneByIdFoundation(zoneId).atStartOfDay(ldt.date)
+                assertEquals(expected, actual)
+            }
+        }
+    }
 }
