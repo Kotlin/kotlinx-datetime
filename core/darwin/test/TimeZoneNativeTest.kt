@@ -305,17 +305,8 @@ class TimeZoneNativeTest {
         TimeZoneRulesTestData(
             "America/Caracas",
             listOf(
-                // Venezuela changed from UTC-4:30 to UTC-4 on May 1, 2016
-                LocalDateTime(2016, 5, 1, 2, 0, 0),
-                LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
-                LocalDateTime(2016, 5, 1, 3, 0, 0)
-            )
-        ),
-        TimeZoneRulesTestData(
-            "America/Caracas",
-            listOf(
                 // Based on this Wikipedia article: https://en.wikipedia.org/wiki/UTC%E2%88%9204:30
-                // UTC−04:30 was used only in Venezuela from December 9, 2007 to May 1, 2016
+                // UTC−04:30 was used only in Venezuela from December 9, 2007, to May 1, 2016
                 LocalDateTime(2007, 12, 9, 2, 29, 59),
                 LocalDateTime(2007, 12, 9, 2, 30, 0),  // This would be in the overlap
                 LocalDateTime(2007, 12, 9, 2, 59, 59),  // This would be in the overlap
@@ -324,6 +315,20 @@ class TimeZoneNativeTest {
                 LocalDateTime(2016, 5, 1, 2, 0, 0),
                 LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
                 LocalDateTime(2016, 5, 1, 3, 0, 0)
+            )
+        ),
+        TimeZoneRulesTestData(
+            "Asia/Magadan",
+            listOf(
+                // Magadan changed from UTC+12 to UTC+10 on October 26, 2014
+                // Creating a 2-hour overlap
+                LocalDateTime(2014, 10, 25, 23, 59, 59),
+                LocalDateTime(2014, 10, 26, 0, 0, 0),  // Start of 2-hour overlap
+                LocalDateTime(2014, 10, 26, 0, 30, 0),  // Inside overlap
+                LocalDateTime(2014, 10, 26, 1, 0, 0),  // Still in overlap
+                LocalDateTime(2014, 10, 26, 1, 59, 59),  // Still in overlap
+                LocalDateTime(2014, 10, 26, 2, 0, 0),  // End of overlap
+                LocalDateTime(2014, 10, 26, 3, 0, 0)  // After overlap
             )
         )
     )
