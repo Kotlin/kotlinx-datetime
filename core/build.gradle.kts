@@ -101,12 +101,6 @@ kotlin {
                 }
             }
         }
-        compilations.all {
-            kotlinOptions {
-                sourceMap = true
-                moduleKind = "umd"
-            }
-        }
 //        compilations["main"].apply {
 //            kotlinOptions {
 //                outputFile = "kotlinx-datetime-tmp.js"
@@ -413,14 +407,6 @@ tasks.configureEach {
     if (name == "compileCommonJsMainKotlinMetadata") {
         enabled = false
     }
-}
-
-// Drop this configuration when the Node.JS version in KGP will support wasm gc milestone 4
-// check it here:
-// https://github.com/JetBrains/kotlin/blob/master/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/js/nodejs/NodeJsRootExtension.kt
-with(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject)) {
-    nodeVersion = "21.0.0-v8-canary202309167e82ab1fa2"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
 }
 
 apiValidation {
