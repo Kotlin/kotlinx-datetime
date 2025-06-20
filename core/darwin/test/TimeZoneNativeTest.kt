@@ -163,6 +163,8 @@ class TimeZoneNativeTest {
             listOf(
                 // Before gap
                 LocalDateTime(2025, 1, 1, 5, 0, 0),
+                // One day before gap
+                LocalDateTime(2025, 3, 8, 2, 30, 0),
                 // At the beginning of the gap
                 LocalDateTime(2025, 3, 9, 2, 0, 0),
                 // Inside gap
