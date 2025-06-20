@@ -342,7 +342,7 @@ class TimeZoneNativeTest {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
-            println("----------------------------------------------------------------")
+            println(formatHeader(zoneId))
             for (ldt in localDateTimes) {
                 val expected = regularRules.infoAtDatetime(ldt)
                 val actual = foundationRules.infoAtDatetime(ldt)
@@ -350,6 +350,13 @@ class TimeZoneNativeTest {
                 assertEquals(expected, actual)
             }
         }
+    }
+
+    private fun formatHeader(zoneId: String, preferredLength: Int = 64): String {
+        val total = preferredLength - zoneId.length - 2
+        val leftPart = "-".repeat(total / 2)
+        val rightPart = "-".repeat(total / 2 + total % 2)
+        return "$leftPart $zoneId $rightPart"
     }
 
     // timeZone.atZone(LocalDateTime) tests
