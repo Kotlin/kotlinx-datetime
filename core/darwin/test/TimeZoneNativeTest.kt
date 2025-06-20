@@ -310,6 +310,21 @@ class TimeZoneNativeTest {
                 LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
                 LocalDateTime(2016, 5, 1, 3, 0, 0)
             )
+        ),
+        TimeZoneRulesTestData(
+            "America/Caracas",
+            listOf(
+                // Based on this Wikipedia article: https://en.wikipedia.org/wiki/UTC%E2%88%9204:30
+                // UTC−04:30 was used only in Venezuela from December 9, 2007 to May 1, 2016
+                LocalDateTime(2007, 12, 9, 2, 29, 59),
+                LocalDateTime(2007, 12, 9, 2, 30, 0),  // This would be in the overlap
+                LocalDateTime(2007, 12, 9, 2, 59, 59),  // This would be in the overlap
+                LocalDateTime(2007, 12, 9, 3, 0, 0),
+                // Venezuela changed back from UTC-4:30 to UTC-4 on May 1, 2016
+                LocalDateTime(2016, 5, 1, 2, 0, 0),
+                LocalDateTime(2016, 5, 1, 2, 30, 0),  // This would be in the gap
+                LocalDateTime(2016, 5, 1, 3, 0, 0)
+            )
         )
     )
 
