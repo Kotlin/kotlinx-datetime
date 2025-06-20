@@ -6,7 +6,6 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.UnsafeNumber
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toKotlinInstant
@@ -17,6 +16,7 @@ import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
 import platform.Foundation.addTimeInterval
 import platform.Foundation.timeZoneWithName
+import kotlin.time.Instant
 
 internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     private val nsTimeZone: NSTimeZone = NSTimeZone.timeZoneWithName(zoneId)
