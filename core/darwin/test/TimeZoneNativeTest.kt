@@ -363,11 +363,12 @@ class TimeZoneNativeTest {
 
     @Test
     fun testTimeZoneByIdFoundationAlwaysReturnsTimeZone() {
-        val ldt = LocalDateTime(2025, 1, 1, 0, 0, 0)
-        for (zoneId in validTimeZones) {
-            val expected = timeZoneById(zoneId).atZone(ldt)
-            val actual = timeZoneByIdFoundation(zoneId).atZone(ldt)
-            assertEquals(expected, actual)
+        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
+            for (ldt in localDateTimes) {
+                val expected = timeZoneById(zoneId).atZone(ldt)
+                val actual = timeZoneByIdFoundation(zoneId).atZone(ldt)
+                assertEquals(expected, actual)
+            }
         }
     }
 }
