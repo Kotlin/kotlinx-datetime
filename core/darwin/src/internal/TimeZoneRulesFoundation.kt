@@ -42,16 +42,19 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
             )
         }
 
-        val oneHourLater = nsDate.addTimeInterval(SECS_PER_HOUR) as NSDate
-        val isDSTNow = nsTimeZone.isDaylightSavingTimeForDate(nsDate)
-        val isDSTLater = nsTimeZone.isDaylightSavingTimeForDate(oneHourLater)
-
-        if (isDSTNow && !isDSTLater) {
-            return OffsetInfo.Overlap(
-                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)!!.toKotlinInstant(),
-                offsetBefore = currentOffset,
-                offsetAfter = infoAtNsDate(oneHourLater)
-            )
+        val oneDayLater = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
+        val oneDayLatterOffset = infoAtNsDate(oneDayLater)
+        val delta = currentOffset.totalSeconds - oneDayLatterOffset.totalSeconds
+        if (delta > 0) {
+            val deltaSecondsLater = nsDate.addTimeInterval(delta.toDouble()) as NSDate
+            val deltaSecondsLaterOffset = infoAtNsDate(deltaSecondsLater)
+            if (currentOffset.totalSeconds > deltaSecondsLaterOffset.totalSeconds) {
+                return OffsetInfo.Overlap(
+                    start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)!!.toKotlinInstant(),
+                    offsetBefore = currentOffset,
+                    offsetAfter = deltaSecondsLaterOffset
+                )
+            }
         }
 
         return OffsetInfo.Regular(currentOffset)
@@ -64,7 +67,6 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
     }
 
     companion object {
-        const val SECS_PER_HOUR = 60 * 60.0
-        const val SECS_PER_DAY = 24 * SECS_PER_HOUR
+        const val SECS_PER_DAY = 24 * 60 * 60.0
     }
 }
