@@ -40,6 +40,7 @@ The library provides a basic set of types for working with date and time:
 - `Clock` to obtain the current instant;
 - `LocalDateTime` to represent date and time components without a reference to the particular time zone; 
 - `LocalDate` to represent the components of date only;
+- `YearMonth` to represent only the year and month components;
 - `LocalTime` to represent the components of time only;
 - `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between `Instant` and `LocalDateTime`;
 - `Month` and `DayOfWeek` enums;
@@ -66,6 +67,9 @@ Here is some basic advice on how to choose which of the date-carrying types to u
   Also, use `LocalDateTime` to decode an `Instant` to its local datetime components for display and UIs.
   
 - Use `LocalDate` to represent the date of an event that does not have a specific time associated with it (like a birth date).
+
+- Use `YearMonth` to represent the year and month of an event that does not have a specific day associated with it
+  or has a day-of-month that is inferred from the context (like a credit card expiration date).
 
 - Use `LocalTime` to represent the time of an event that does not have a specific date associated with it.
  
@@ -148,6 +152,16 @@ Note, that today's date really depends on the time zone in which you're observin
 `LocalDate` can be constructed from three components, year, month, and day:
 ```kotlin
 val knownDate = LocalDate(2020, 2, 21)
+```
+
+### Getting year and month components
+
+A `YearMonth` represents a year and month without a day. You can obtain one from a `LocalDate`
+by taking its `yearMonth` property.
+
+```kotlin
+val day = LocalDate(2020, 2, 21)
+val yearMonth: YearMonth = day.yearMonth
 ```
 
 ### Getting local time components
@@ -273,10 +287,10 @@ collection of all datetime fields, can be used instead.
 ```kotlin
 // import kotlinx.datetime.format.*
 
-val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
-    .parse("2024-01")
-println(yearMonth.year)
-println(yearMonth.monthNumber)
+val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); day() }
+    .parse("12/25")
+println(monthDay.day) // 25
+println(monthDay.monthNumber) // 12
 
 val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
     .parse("2023-01-07T23:16:15.53+02:00")

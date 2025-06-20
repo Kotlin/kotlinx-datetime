@@ -112,3 +112,13 @@ public fun DayOfWeek.toJavaDayOfWeek(): java.time.DayOfWeek = java.time.DayOfWee
  * Converts this [java.time.DayOfWeek][java.time.DayOfWeek] value to a [kotlinx.datetime.DayOfWeek][DayOfWeek] value.
  */
 public fun java.time.DayOfWeek.toKotlinDayOfWeek(): DayOfWeek = DayOfWeek.entries[this.value - 1]
+
+/*
+ * Converts this [kotlinx.datetime.YearMonth][YearMonth] value to a [java.time.YearMonth][java.time.YearMonth] value.
+ */
+public fun YearMonth.toJavaYearMonth(): java.time.YearMonth = this.value
+
+/**
+ * Converts this [java.time.YearMonth][java.time.YearMonth] value to a [kotlinx.datetime.YearMonth][YearMonth] value.
+ */
+public fun java.time.YearMonth.toKotlinYearMonth(): YearMonth = YearMonth(this)
