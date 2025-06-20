@@ -5,9 +5,9 @@
 
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
+import kotlin.time.Instant
 
 internal interface TimeZoneRules {
 
