@@ -11,7 +11,7 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 /**
- * The year-month part of [LocalDate], without the day-of-month.
+ * The year-month part of [LocalDate], without a day-of-month.
  *
  * This class represents years and months without a reference to a particular time zone.
  * As such, these objects may denote different time intervals in different time zones: for someone in Berlin,
@@ -50,6 +50,7 @@ import kotlinx.serialization.Serializable
  * See sample 3.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [YearMonth]:
+ * - The default serializer, delegating to [toString] and [parse].
  * - [YearMonthIso8601Serializer] for the ISO 8601 extended format.
  * - [YearMonthComponentSerializer] for an object with components.
  *
@@ -65,7 +66,7 @@ public expect class YearMonth
  * The [month] component is 1-based.
  *
  * The supported ranges of components:
- * - [year] the range is platform-dependent, but at least is enough to represent year-months of all instants between
+ * - [year] the range is unspecified, but at least is enough to represent year-months of all instants between
  *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
  * - [month] `1..12`
  *
@@ -120,7 +121,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
     /**
      * Constructs a [YearMonth] instance from the given year-month components.
      *
-     * The range for [year] is platform-dependent, but at least is enough to represent year-months of all instants
+     * The range for [year] is unspecified, but at least is enough to represent year-months of all instants
      * between [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
      *
      * @throws IllegalArgumentException if [year] is out of range.
@@ -380,7 +381,6 @@ internal fun YearMonth.Companion.fromProlepticMonth(prolepticMonth: Long): YearM
         "Year $year is out of range: ${LocalDate.MIN.year}..${LocalDate.MAX.year}"
     }
     val month = prolepticMonth.mod(12) + 1
-    println("proleptic month: ${prolepticMonth}, year: $year, month: $month")
     return YearMonth(year.toInt(), month)
 }
 

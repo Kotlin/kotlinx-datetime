@@ -287,9 +287,9 @@ collection of all datetime fields, can be used instead.
 ```kotlin
 // import kotlinx.datetime.format.*
 
-val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); dayOfMonth() }
+val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); day() }
     .parse("12/25")
-println(monthDay.dayOfMonth) // 25
+println(monthDay.day) // 25
 println(monthDay.monthNumber) // 12
 
 val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET

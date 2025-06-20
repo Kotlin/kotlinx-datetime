@@ -45,6 +45,15 @@ class ReadmeTest {
     }
 
     @Test
+    fun testObtainingYearMonth() {
+        val day = LocalDate(2020, 2, 21)
+        val yearMonth: YearMonth = day.yearMonth
+        assertEquals(2020, yearMonth.year)
+        assertEquals(2, yearMonth.monthNumber)
+    }
+
+
+    @Test
     fun testGettingLocalTimeComponents() {
         val now: Instant = Clock.System.now()
         val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
@@ -117,9 +126,9 @@ class ReadmeTest {
 
     @Test
     fun testParsingAndFormattingPartialCompoundOrOutOfBoundsData() {
-        val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); dayOfMonth() }
+        val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); day() }
             .parse("12/25")
-        assertEquals(25, monthDay.dayOfMonth)
+        assertEquals(25, monthDay.day)
         assertEquals(12, monthDay.monthNumber)
 
         val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
