@@ -6,6 +6,6 @@
 package kotlinx.datetime.internal
 
 internal interface TimeZoneDatabase {
-    fun rulesForId(id: String): TimeZoneRulesCommon
+    fun rulesForId(id: String): TimeZoneRules
     fun availableTimeZoneIds(): Set<String>
 }
