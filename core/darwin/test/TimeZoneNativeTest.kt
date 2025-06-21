@@ -365,22 +365,29 @@ class TimeZoneNativeTest {
             val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
             println(formatHeader(zoneId))
-            for ((ldt, offsetInfoType) in localDateTimes) {
-                val expected = regularRules.infoAtDatetime(ldt)
-                val actual = foundationRules.infoAtDatetime(ldt)
-                println("expected: $expected, actual: $actual")
-                assertEquals(expected, actual)
-                val expectedType = when (offsetInfoType) {
-                    REGULAR -> OffsetInfo.Regular::class
-                    GAP -> OffsetInfo.Gap::class
-                    OVERLAP -> OffsetInfo.Overlap::class
-                }
-                assertEquals(expectedType, actual::class)
+
+            for ((localDateTime, expectedType) in localDateTimes) {
+                val regularInfo = regularRules.infoAtDatetime(localDateTime)
+                val foundationInfo = foundationRules.infoAtDatetime(localDateTime)
+                println("regularInfo: $regularInfo, foundationInfo: $foundationInfo")
+
+                assertEquals(regularInfo, foundationInfo)
+
+                assertOffsetInfoType(foundationInfo, expectedType)
             }
         }
     }
 
-    private fun formatHeader(zoneId: String, preferredLength: Int = 64): String {
+    private fun assertOffsetInfoType(info: OffsetInfo, expectedType: OffsetInfoType) {
+        val expectedClass = when (expectedType) {
+            REGULAR -> OffsetInfo.Regular::class
+            GAP -> OffsetInfo.Gap::class
+            OVERLAP -> OffsetInfo.Overlap::class
+        }
+        assertEquals(expectedClass, info::class)
+    }
+
+    private fun formatHeader(zoneId: String, preferredLength: Int = 75): String {
         val total = preferredLength - zoneId.length - 2
         val leftPart = "-".repeat(total / 2)
         val rightPart = "-".repeat(total / 2 + total % 2)
