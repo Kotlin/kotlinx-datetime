@@ -418,10 +418,15 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentInstanceBetweenRegularAndFoundationTimeZones() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            for ((ldt, _) in localDateTimes) {
-                val expected = timeZoneById(zoneId).atStartOfDay(ldt.date)
-                val actual = timeZoneByIdFoundation(zoneId).atStartOfDay(ldt.date)
-                assertEquals(expected, actual)
+            val regularTz = timeZoneById(zoneId)
+            val foundationTz = timeZoneByIdFoundation(zoneId)
+
+            for ((localDateTime, _) in localDateTimes) {
+                val date = localDateTime.date
+                val regularInstance = regularTz.atStartOfDay(date)
+                val foundationInstance = foundationTz.atStartOfDay(date)
+
+                assertEquals(regularInstance, foundationInstance)
             }
         }
     }
