@@ -194,11 +194,11 @@ class TimeZoneNativeTest {
                 // Between gap and overlap
                 LocalDateTime(2025, 6, 30, 3, 0, 0) to REGULAR,
                 // At the beginning of the overlap
-                LocalDateTime(2025, 11, 2, 2, 0, 0) to REGULAR,
+                LocalDateTime(2025, 11, 2, 1, 0, 0) to OVERLAP,
                 // Inside overlap
                 LocalDateTime(2025, 11, 2, 1, 30, 0) to OVERLAP,
                 // At the end of the overlap
-                LocalDateTime(2025, 11, 2, 1, 0, 0) to OVERLAP,
+                LocalDateTime(2025, 11, 2, 2, 0, 0) to REGULAR,
                 // After overlap
                 LocalDateTime(2025, 12, 31, 2, 0, 0) to REGULAR
             )
@@ -217,26 +217,26 @@ class TimeZoneNativeTest {
                 // Between gap and overlap
                 LocalDateTime(2025, 10, 26, 0, 59, 59) to REGULAR,
                 // At the beginning of the overlap
-                LocalDateTime(2025, 10, 26, 2, 0, 0) to REGULAR,
+                LocalDateTime(2025, 10, 26, 1, 0, 0) to OVERLAP,
                 // Inside overlap
                 LocalDateTime(2025, 10, 26, 1, 30, 0) to OVERLAP,
                 // At the end of the overlap
-                LocalDateTime(2025, 10, 26, 1, 0, 0) to OVERLAP,
+                LocalDateTime(2025, 10, 26, 2, 0, 0) to REGULAR,
                 // After overlap
-                LocalDateTime(2025, 10, 26, 2, 0, 1) to REGULAR
+                LocalDateTime(2025, 10, 26, 2, 0, 1) to REGULAR,
             )
         ),
         TimeZoneRulesTestData(
             "Australia/Sydney",
             listOf(
                 // Before overlap
-                LocalDateTime(2025, 4, 6, 2, 59, 59) to OVERLAP,
+                LocalDateTime(2025, 4, 6, 1, 59, 59) to REGULAR,
                 // At the beginning of the overlap
-                LocalDateTime(2025, 4, 6, 3, 0, 0) to REGULAR,
+                LocalDateTime(2025, 4, 6, 2, 0, 0) to OVERLAP,
                 // Inside overlap
                 LocalDateTime(2025, 4, 6, 2, 30, 0) to OVERLAP,
                 // At the end of the overlap
-                LocalDateTime(2025, 4, 6, 2, 0, 0) to OVERLAP,
+                LocalDateTime(2025, 4, 6, 3, 0, 0) to REGULAR,
                 // Before gap
                 LocalDateTime(2025, 10, 5, 1, 59, 59) to REGULAR,
                 // At the beginning of the gap
@@ -294,12 +294,12 @@ class TimeZoneNativeTest {
             listOf(
                 // North Korea changed from UTC+9 to UTC+8:30 on August 14, 2015
                 LocalDateTime(2015, 8, 14, 23, 29, 59) to REGULAR,
-                LocalDateTime(2015, 8, 14, 23, 30, 0) to OVERLAP,  // This would be in the overlap
-                LocalDateTime(2015, 8, 14, 23, 59, 59) to OVERLAP,  // This would be in the overlap
+                LocalDateTime(2015, 8, 14, 23, 30, 0) to OVERLAP,
+                LocalDateTime(2015, 8, 14, 23, 59, 59) to OVERLAP,
                 LocalDateTime(2015, 8, 15, 0, 0, 0) to REGULAR,
                 // Changed back to UTC+9 on May 5, 2018
                 LocalDateTime(2018, 5, 4, 23, 29, 59) to REGULAR,
-                LocalDateTime(2018, 5, 4, 23, 30, 0) to GAP,  // This would be in the gap
+                LocalDateTime(2018, 5, 4, 23, 30, 0) to GAP,
                 LocalDateTime(2018, 5, 5, 0, 0, 0) to REGULAR
             )
         ),
@@ -309,8 +309,8 @@ class TimeZoneNativeTest {
                 // Kwajalein skipped August 21, 1993 entirely
                 // Moved from UTC-12 to UTC+12 (crossed International Date Line)
                 LocalDateTime(1993, 8, 20, 23, 59, 59) to REGULAR,
-                LocalDateTime(1993, 8, 21, 0, 0, 0) to GAP,  // This date doesn't exist, in the gap
-                LocalDateTime(1993, 8, 21, 23, 59, 59) to GAP,  // This date doesn't exist, in the gap
+                LocalDateTime(1993, 8, 21, 0, 0, 0) to GAP,  // This date doesn't exist
+                LocalDateTime(1993, 8, 21, 23, 59, 59) to GAP,  // This date doesn't exist
                 LocalDateTime(1993, 8, 22, 0, 0, 0) to REGULAR
             )
         ),
@@ -321,8 +321,8 @@ class TimeZoneNativeTest {
                 // Samoa skipped December 30, 2011 entirely
                 // Moved from UTC-11 to UTC+13 (crossed International Date Line)
                 LocalDateTime(2011, 12, 29, 23, 59, 59) to REGULAR,
-                LocalDateTime(2011, 12, 30, 0, 0, 0) to GAP,  // This date doesn't exist, in the gap
-                LocalDateTime(2011, 12, 30, 23, 59, 59) to GAP,  // This date doesn't exist, in the gap
+                LocalDateTime(2011, 12, 30, 0, 0, 0) to GAP,  // This date doesn't exist
+                LocalDateTime(2011, 12, 30, 23, 59, 59) to GAP,  // This date doesn't exist
                 LocalDateTime(2011, 12, 31, 0, 0, 0) to REGULAR
             )
         ),
@@ -332,12 +332,12 @@ class TimeZoneNativeTest {
                 // Based on this Wikipedia article: https://en.wikipedia.org/wiki/UTC%E2%88%9204:30
                 // UTC−04:30 was used only in Venezuela from December 9, 2007, to May 1, 2016
                 LocalDateTime(2007, 12, 9, 2, 29, 59) to REGULAR,
-                LocalDateTime(2007, 12, 9, 2, 30, 0) to OVERLAP,  // This would be in the overlap
-                LocalDateTime(2007, 12, 9, 2, 59, 59) to OVERLAP,  // This would be in the overlap
+                LocalDateTime(2007, 12, 9, 2, 30, 0) to OVERLAP,
+                LocalDateTime(2007, 12, 9, 2, 59, 59) to OVERLAP,
                 LocalDateTime(2007, 12, 9, 3, 0, 0) to REGULAR,
                 // Venezuela changed back from UTC-4:30 to UTC-4 on May 1, 2016
                 LocalDateTime(2016, 5, 1, 2, 0, 0) to REGULAR,
-                LocalDateTime(2016, 5, 1, 2, 30, 0) to GAP,  // This would be in the gap
+                LocalDateTime(2016, 5, 1, 2, 30, 0) to GAP,
                 LocalDateTime(2016, 5, 1, 3, 0, 0) to REGULAR
             )
         ),
@@ -347,12 +347,12 @@ class TimeZoneNativeTest {
                 // Magadan changed from UTC+12 to UTC+10 on October 26, 2014
                 // Creating a 2-hour overlap
                 LocalDateTime(2014, 10, 25, 23, 59, 59) to REGULAR,
-                LocalDateTime(2014, 10, 26, 0, 0, 0) to OVERLAP,  // Start of 2-hour overlap
-                LocalDateTime(2014, 10, 26, 0, 30, 0) to OVERLAP,  // Inside overlap
-                LocalDateTime(2014, 10, 26, 1, 0, 0) to OVERLAP,  // Still in overlap
-                LocalDateTime(2014, 10, 26, 1, 59, 59) to OVERLAP,  // Still in overlap
-                LocalDateTime(2014, 10, 26, 2, 0, 0) to REGULAR,  // End of overlap
-                LocalDateTime(2014, 10, 26, 3, 0, 0) to REGULAR  // After overlap
+                LocalDateTime(2014, 10, 26, 0, 0, 0) to OVERLAP,
+                LocalDateTime(2014, 10, 26, 0, 30, 0) to OVERLAP,
+                LocalDateTime(2014, 10, 26, 1, 0, 0) to OVERLAP,
+                LocalDateTime(2014, 10, 26, 1, 59, 59) to OVERLAP,
+                LocalDateTime(2014, 10, 26, 2, 0, 0) to REGULAR,
+                LocalDateTime(2014, 10, 26, 3, 0, 0) to REGULAR
             )
         )
     )
@@ -371,9 +371,9 @@ class TimeZoneNativeTest {
                 val foundationInfo = foundationRules.infoAtDatetime(localDateTime)
                 println("regularInfo: $regularInfo, foundationInfo: $foundationInfo")
 
-                assertEquals(regularInfo, foundationInfo)
-
                 assertOffsetInfoType(foundationInfo, expectedType)
+
+                assertEquals(regularInfo, foundationInfo)
             }
         }
     }
