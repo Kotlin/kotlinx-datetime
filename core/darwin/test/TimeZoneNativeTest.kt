@@ -285,9 +285,11 @@ class TimeZoneNativeTest {
         TimeZoneRulesTestData(
             "Asia/Pyongyang",
             listOf(
-                // North Korea changed from UTC+9 to UTC+8:30 on May 5, 2015
-                LocalDateTime(2015, 5, 4, 23, 59, 59),
-                LocalDateTime(2015, 5, 5, 0, 0, 0),
+                // North Korea changed from UTC+9 to UTC+8:30 on August 14, 2015
+                LocalDateTime(2015, 8, 14, 23, 29, 59),
+                LocalDateTime(2015, 8, 14, 23, 30, 0),  // This would be in the overlap
+                LocalDateTime(2015, 8, 14, 23, 59, 59),  // This would be in the overlap
+                LocalDateTime(2015, 8, 15, 0, 0, 0),
                 // Changed back to UTC+9 on May 5, 2018
                 LocalDateTime(2018, 5, 4, 23, 29, 59),
                 LocalDateTime(2018, 5, 4, 23, 30, 0),  // This would be in the gap
