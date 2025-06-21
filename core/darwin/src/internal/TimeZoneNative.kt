@@ -12,10 +12,18 @@ import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
 internal actual fun timeZoneById(zoneId: String): TimeZone =
-    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+    runCatching { RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId) }
+        .getOrElse { timeZoneByIdFoundation(zoneId) }
+
+internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
+    RegionTimeZone(TimeZoneRulesFoundation(zoneId), zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
-    tzdb.getOrThrow().availableTimeZoneIds()
+    runCatching { tzdb.getOrThrow().availableTimeZoneIds() }
+        .getOrElse { getAvailableZoneIdsFoundation() }
+
+internal fun getAvailableZoneIdsFoundation(): Set<String> =
+    NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf()) { it.toString() }
 
 private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 

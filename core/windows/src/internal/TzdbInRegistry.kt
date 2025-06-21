@@ -70,7 +70,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                     transitionEpochSeconds.add(newYearInLastOffset.epochSeconds)
                 }
                 offsets.add(recurring.offsetAtYearStart())
-                TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
+                TimeZoneRulesCommon(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
         }
@@ -99,7 +99,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
             tz
         } else {
             // the user explicitly disabled DST transitions, so
-            TimeZoneRules(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), RecurringZoneRules(emptyList()))
+            TimeZoneRulesCommon(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), RecurringZoneRules(emptyList()))
         }
         return ianaTzName to RegionTimeZone(rules, ianaTzName)
     }

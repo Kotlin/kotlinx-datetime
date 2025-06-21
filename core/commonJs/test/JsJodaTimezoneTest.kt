@@ -5,6 +5,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.internal.TimeZoneRulesCommon
 import kotlinx.datetime.internal.rulesForId
 import kotlin.math.roundToInt
 import kotlin.test.*
@@ -27,7 +28,7 @@ class JsJodaTimezoneTest {
     @Test
     fun iterateOverAllTimezones() {
         for (id in TimeZone.availableZoneIds) {
-            val rules = rulesForId(id) ?: throw AssertionError("No rules for $id")
+            val rules = (rulesForId(id) as TimeZoneRulesCommon?) ?: throw AssertionError("No rules for $id")
             val jodaZone = jtZoneId.of(id)
             assertNull(rules.recurringZoneRules) // js-joda doesn't expose recurring rules
             fun checkAtInstant(instant: Instant) {
