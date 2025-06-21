@@ -24,9 +24,9 @@ public sealed interface DateTimeFormatBuilder {
     public fun chars(value: String)
 
     /**
-     * Functions specific to the datetime format builders containing the local-date fields.
+     * Functions specific to the datetime format builders containing the year and month fields.
      */
-    public sealed interface WithDate : DateTimeFormatBuilder {
+    public sealed interface WithYearMonth : DateTimeFormatBuilder {
         /**
          * A year number.
          *
@@ -35,7 +35,7 @@ public sealed interface DateTimeFormatBuilder {
          * For years outside this range, it's formatted as a decimal number with a leading sign, so the year 12345
          * is formatted as "+12345".
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.year
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.year
          */
         public fun year(padding: Padding = Padding.ZERO)
 
@@ -54,7 +54,7 @@ public sealed interface DateTimeFormatBuilder {
          * and when given a full year number with a leading sign, it parses the full year number,
          * so "+1850" becomes 1850.
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.yearTwoDigits
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.yearTwoDigits
          */
         public fun yearTwoDigits(baseYear: Int)
 
@@ -63,21 +63,29 @@ public sealed interface DateTimeFormatBuilder {
          *
          * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.monthNumber
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.monthNumber
          */
         public fun monthNumber(padding: Padding = Padding.ZERO)
 
         /**
          * A month name (for example, "January").
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.monthName
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.monthName
          */
         public fun monthName(names: MonthNames)
 
-        /** @suppress */
-        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
-        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
+        /**
+         * An existing [DateTimeFormat] for the date part.
+         *
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.yearMonth
+         */
+        public fun yearMonth(format: DateTimeFormat<YearMonth>)
+    }
 
+    /**
+     * Functions specific to the datetime format builders containing the local-date fields.
+     */
+    public sealed interface WithDate : WithYearMonth {
         /**
          * A day-of-month number, from 1 to 31.
          *
@@ -86,6 +94,10 @@ public sealed interface DateTimeFormatBuilder {
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOfMonth
          */
         public fun day(padding: Padding = Padding.ZERO)
+
+        /** @suppress */
+        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
+        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
 
         /**
          * A day-of-week name (for example, "Thursday").

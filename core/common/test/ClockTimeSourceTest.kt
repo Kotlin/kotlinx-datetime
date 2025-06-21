@@ -7,12 +7,12 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlin.test.*
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TestTimeSource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 @Suppress("DEPRECATION")

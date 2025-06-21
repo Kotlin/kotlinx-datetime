@@ -61,7 +61,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
             }
             var zeroDay = epochDays + DAYS_0000_TO_1970 // -3.7e11 .. 3.7e11
             // find the march-based year
-            zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four year cycle
+            zeroDay -= 60 // adjust to 0000-03-01 so leap day is at end of four-year cycle
 
             var adjust = 0L // -1e9 .. 0
             if (zeroDay < 0) { // adjust negative years to positive for calculation
@@ -243,8 +243,8 @@ public actual operator fun LocalDate.plus(period: DatePeriod): LocalDate =
 
 public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased): Long = when(unit) {
     is DateTimeUnit.MonthBased -> {
-        val packed1 = prolepticMonth * 32 + dayOfMonth
-        val packed2 = other.prolepticMonth * 32 + other.dayOfMonth
+        val packed1 = prolepticMonth * 32 + day
+        val packed2 = other.prolepticMonth * 32 + other.day
         val result = (packed2 - packed1) / 32
         result / unit.months
     }

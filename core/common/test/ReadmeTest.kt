@@ -8,7 +8,9 @@ package kotlinx.datetime.test
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
-import kotlin.time.Duration
+import kotlin.time.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Tests the code snippets in the README.md file.
@@ -43,6 +45,15 @@ class ReadmeTest {
 
         val knownDate = LocalDate(2020, 2, 21)
     }
+
+    @Test
+    fun testObtainingYearMonth() {
+        val day = LocalDate(2020, 2, 21)
+        val yearMonth: YearMonth = day.yearMonth
+        assertEquals(2020, yearMonth.year)
+        assertEquals(2, yearMonth.monthNumber)
+    }
+
 
     @Test
     fun testGettingLocalTimeComponents() {
@@ -117,10 +128,10 @@ class ReadmeTest {
 
     @Test
     fun testParsingAndFormattingPartialCompoundOrOutOfBoundsData() {
-        val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
-            .parse("2024-01")
-        assertEquals(2024, yearMonth.year)
-        assertEquals(1, yearMonth.monthNumber)
+        val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); day() }
+            .parse("12/25")
+        assertEquals(25, monthDay.day)
+        assertEquals(12, monthDay.monthNumber)
 
         val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
             .parse("2023-01-07T23:16:15.53+02:00")

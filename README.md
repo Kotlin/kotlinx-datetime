@@ -1,7 +1,7 @@
 # kotlinx-datetime
 
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
-[![JetBrains official project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub) 
+[![JetBrains official project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-datetime.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.jetbrains.kotlinx%20AND%20a:kotlinx-datetime)
 [![Kotlin](https://img.shields.io/badge/kotlin-1.9.21-blue.svg?logo=kotlin)](http://kotlinlang.org)
@@ -21,77 +21,62 @@ all-encompassing and lacks some domain-specific utilities that special-purpose a
 We chose convenience over generality, so the API surface this library provides is as minimal as possible
 to meet the use-cases.
 
-The library puts a clear boundary between the physical time of an instant and the local, time-zone dependent 
-civil time, consisting of components such as year, month, etc that people use when talking about time. 
+The library puts a clear boundary between the physical time of an instant and the local, time-zone dependent
+civil time, consisting of components such as year, month, etc that people use when talking about time.
 We intentionally avoid entities in the library that mix both together and could be misused.
-However, there are convenience operations that take, for example, a physical instant and perform a calendar-based 
+However, there are convenience operations that take, for example, a physical instant and perform a calendar-based
 adjustment (such as adding a month); all such operations
 explicitly take a time-zone information as parameter to clearly state that their result depends on the civil time-zone
 rules which are subject to change at any time.
 
 The library is based on the ISO 8601 international standard, other ways to represent dates and times are out of
-its scope. Internationalization (such as locale-specific month and day names) is out the scope, too. 
+its scope. Internationalization (such as locale-specific month and day names) is out the scope, too.
 
 ## Types
 
 The library provides a basic set of types for working with date and time:
 
-- `Instant` to represent a moment on the UTC-SLS time scale;
-- `Clock` to obtain the current instant;
-- `LocalDateTime` to represent date and time components without a reference to the particular time zone; 
+- `LocalDateTime` to represent date and time components without a reference to the particular time zone;
 - `LocalDate` to represent the components of date only;
+- `YearMonth` to represent only the year and month components;
 - `LocalTime` to represent the components of time only;
-- `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between `Instant` and `LocalDateTime`;
+- `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between
+  `kotlin.time.Instant` and `LocalDateTime`;
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
 it represents a difference between two LocalDate values decomposed into date units.
-- `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations on `Instant` and `LocalDate`. 
+- `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations
+  on `kotlin.time.Instant` and `LocalDate`.
 - `UtcOffset` represents the amount of time the local datetime at a particular time zone differs from the datetime at UTC.
 
 ### Type use-cases
 
 Here is some basic advice on how to choose which of the date-carrying types to use in what cases:
 
-- Use `Instant` to represent a timestamp of the event that had already happened in the past (like a timestamp of 
-  a log entry) or will definitely happen in a well-defined instant of time in the future not far away from now 
+- Use `kotlin.time.Instant` to represent a timestamp of the event that had already happened in the past
+  (like a timestamp of a log entry) or will definitely happen in a well-defined instant of time in the future
+  not far away from now
   (like an order confirmation deadline in 1 hour from now).
-  
-- Use `LocalDateTime` to represent a time of the event that is scheduled to happen in the far future at a certain 
-  local time (like a scheduled meeting in a few months from now). You'll have to keep track of the `TimeZone` of 
-  the scheduled event separately. Try to avoid converting future events to `Instant` in advance, because time-zone 
-  rules might change unexpectedly in the future. In this [blog post](https://codeblog.jonskeet.uk/2019/03/27/storing-utc-is-not-a-silver-bullet/), you can read more about why it's not always 
+
+- Use `LocalDateTime` to represent a time of the event that is scheduled to happen in the far future at a certain
+  local time (like a scheduled meeting in a few months from now). You'll have to keep track of the `TimeZone` of
+  the scheduled event separately. Try to avoid converting future events to `Instant` in advance, because time-zone
+  rules might change unexpectedly in the future. In this [blog post](https://codeblog.jonskeet.uk/2019/03/27/storing-utc-is-not-a-silver-bullet/), you can read more about why it's not always
   a good idea to use `Instant` everywhere.
-  
-  Also, use `LocalDateTime` to decode an `Instant` to its local datetime components for display and UIs.
-  
+
+  Also use `LocalDateTime` to decode an `Instant` to its local datetime components for display and UIs.
+
 - Use `LocalDate` to represent the date of an event that does not have a specific time associated with it (like a birth date).
 
+- Use `YearMonth` to represent the year and month of an event that does not have a specific day associated with it
+  or has a day-of-month that is inferred from the context (like a credit card expiration date).
+
 - Use `LocalTime` to represent the time of an event that does not have a specific date associated with it.
- 
+
 ## Operations
 
 With the above types you can get the following operations done.
-
-
-### Getting the current moment of time
-
-The current moment of time can be captured with the `Instant` type. 
-To obtain an `Instant` corresponding to the current moment of time, 
-use `now()` function of the `Clock` interface:
-
-```kotlin
-val clock: Clock = ...
-val currentMoment = clock.now()
-```
-
-An instance of `Clock` can be injected through the function/class parameters, 
-or you can use its default implementation `Clock.System` that represents the system clock:
-
-```kotlin
-val currentMoment = Clock.System.now()
-```
-
 
 ### Converting an instant to local date and time components
 
@@ -107,7 +92,7 @@ val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
 val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 ```
 
-A `LocalDateTime` instance exposes familiar components of the Gregorian calendar: 
+A `LocalDateTime` instance exposes familiar components of the Gregorian calendar:
 `year`, `month`, `day`, `hour`, and so on up to `nanosecond`.
 The property `dayOfWeek` shows what weekday that date is,
 and `dayOfYear` shows the day number since the beginning of a year.
@@ -150,6 +135,16 @@ Note, that today's date really depends on the time zone in which you're observin
 val knownDate = LocalDate(2020, 2, 21)
 ```
 
+### Getting year and month components
+
+A `YearMonth` represents a year and month without a day. You can obtain one from a `LocalDate`
+by taking its `yearMonth` property.
+
+```kotlin
+val day = LocalDate(2020, 2, 21)
+val yearMonth: YearMonth = day.yearMonth
+```
+
 ### Getting local time components
 
 A `LocalTime` represents local time without date. You can obtain one from an `Instant`
@@ -167,32 +162,24 @@ val timeWithNanos = LocalTime(hour = 23, minute = 59, second = 12, nanosecond = 
 val hourMinute = LocalTime(hour = 12, minute = 13)
 ```
 
-### Converting instant to and from unix time
-
-An `Instant` can be converted to a number of milliseconds since the Unix/POSIX epoch with the `toEpochMilliseconds()` function.
-To convert back, use the companion object function `Instant.fromEpochMilliseconds(Long)`.
-
 ### Converting instant and local datetime to and from the ISO 8601 string
 
 `Instant`, `LocalDateTime`, `LocalDate` and `LocalTime` provide shortcuts for
 parsing and formatting them using the extended ISO 8601 format.
-The `toString()` function is used to convert the value to a string in that format, and 
-the `parse` function in companion object is used to parse a string representation back. 
+The `toString()` function is used to convert the value to a string in that format, and
+the `parse` function in companion object is used to parse a string representation back.
 
 ```kotlin
-val instantNow = Clock.System.now()
-instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
-val instantBefore = Instant.parse("2010-06-01T22:19:44.475Z")
+val localDateTime = LocalDateTime(2025, 3, 21, 12, 27, 35, 124365453)
+localDateTime.toString()  // 2025-03-21T12:27:35.124365453
+val sameLocalDateTime = LocalDateTime.parse("2025-03-21T12:27:35.124365453")
 ```
-
-`LocalDateTime` uses a similar format, but without `Z` UTC time zone designator in the end.
 
 `LocalDate` uses a format with just year, month, and date components, e.g. `2010-06-01`.
 
 `LocalTime` uses a format with just hour, minute, second and (if non-zero) nanosecond components, e.g. `12:01:03`.
 
 ```kotlin
-LocalDateTime.parse("2010-06-01T22:19:44")
 LocalDate.parse("2010-06-01")
 LocalTime.parse("12:01:03")
 LocalTime.parse("12:00:03.999")
@@ -273,10 +260,10 @@ collection of all datetime fields, can be used instead.
 ```kotlin
 // import kotlinx.datetime.format.*
 
-val yearMonth = DateTimeComponents.Format { year(); char('-'); monthNumber() }
-    .parse("2024-01")
-println(yearMonth.year)
-println(yearMonth.monthNumber)
+val monthDay = DateTimeComponents.Format { monthNumber(); char('/'); day() }
+    .parse("12/25")
+println(monthDay.day) // 25
+println(monthDay.monthNumber) // 12
 
 val dateTimeOffset = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
     .parse("2023-01-07T23:16:15.53+02:00")
@@ -315,6 +302,9 @@ DateTimeComponents.Formats.RFC_1123.format {
 
 ### Instant arithmetic
 
+The `Instant` arithmetic operations that don't involve the calendar are available purely in the standard library
+and do not require using `kotlinx-datetime`:
+
 ```kotlin
 val now = Clock.System.now()
 val instantInThePast: Instant = Instant.parse("2020-01-01T00:00:00Z")
@@ -322,16 +312,13 @@ val durationSinceThen: Duration = now - instantInThePast
 val equidistantInstantInTheFuture: Instant = now + durationSinceThen
 ```
 
-`Duration` is a type from the experimental `kotlin.time` package in the Kotlin standard library.
-This type holds the amount of time that can be represented in different time units: from nanoseconds to 24H days.
-
 To get the calendar difference between two instants you can use the `Instant.periodUntil(Instant, TimeZone)` function.
 
 ```kotlin
 val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.UTC)
 ```
 
-A `DateTimePeriod` represents a difference between two particular moments as a sum of calendar components, 
+A `DateTimePeriod` represents a difference between two particular moments as a sum of calendar components,
 like "2 years, 3 months, 10 days, and 22 hours".
 
 The difference can be calculated as an integer amount of specified date or time units:
@@ -350,7 +337,7 @@ val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
 val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
 ```
 
-Note that `plus` and `...until` operations require a `TimeZone` as a parameter because the calendar interval between 
+Note that `plus` and `...until` operations require a `TimeZone` as a parameter because the calendar interval between
 two particular instants can be different, when calculated in different time zones.
 
 ### Date arithmetic
@@ -395,16 +382,14 @@ val localDateTimeTwoDaysLater = instantTwoDaysLater.toLocalDateTime(timeZone)
 
 ## Implementation
 
-The implementation of datetime types, such as `Instant`, `LocalDateTime`, `TimeZone` and so on, relies on:
+The implementation of datetime types, such as `LocalDateTime`, `TimeZone` and so on, relies on:
 
 - in JVM: [`java.time`](https://docs.oracle.com/javase/8/docs/api/java/time/package-summary.html) API;
-- in Js and Wasm-Js: [`js-joda`](https://js-joda.github.io/js-joda/) library;
-- in Native: based on the [ThreeTen backport project](https://www.threeten.org/threetenbp/)
-  - time zone support is provided by [date](https://github.com/HowardHinnant/date/) C++ library;
+- the other platforms: based on the [ThreeTen backport project](https://www.threeten.org/threetenbp/)
+  - time zone support on JS and Wasm/JS is provided by the [`js-joda`](https://js-joda.github.io/js-joda/) library.
 
 ## Known/open issues, work TBD
 
-- [x] Some kind of `Clock` interface is needed as a pluggable replacement for `Instant.now()`.
 - [ ] Flexible locale-neutral parsing and formatting facilities are needed to support various datetime interchange
   formats that are used in practice (in particular, various RFCs).
 
@@ -414,10 +399,55 @@ The implementation of datetime types, such as `Instant`, `LocalDateTime`, `TimeZ
 
 The library is published to Maven Central.
 
-The library is compatible with the Kotlin Standard Library not lower than `1.9.0`.
+The library is compatible with the Kotlin Standard Library not lower than `2.1.20`.
 
-If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer 
+If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer
 and enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).
+
+### Deprecation of `Instant`
+
+`kotlinx-datetime` versions earlier than `0.7.0` used to provide `kotlinx.datetime.Instant`
+and `kotlinx.datetime.Clock`.
+The Kotlin standard library started including its own, identical `kotlin.time.Instant` and `kotlin.time.Clock`,
+as it became evident that `Instant` was also useful outside the datetime contexts.
+
+Here is the recommended procedure for migrating from `kotlinx-datetime` version `0.6.x` or earlier to `0.7.0`:
+
+* First, simply try upgrading to `0.7.0`.
+  If your project has a dependency on `kotlinx-datetime`, but doesn't have dependencies on other libraries that are
+  *themselves* reliant on an older `kotlinx-datetime`, you are good to go: the code should compile and run.
+  This applies both to applications and to libraries!
+* If your project depends on other libraries that themselves use an older version of `kotlinx-datetime`,
+  then your code may fail at runtime with a `ClassNotFoundException`
+  for `kotlinx.datetime.Instant` or `kotlinx.datetime.Clock`, or maybe even fail to compile.
+  In that case, please check if the affected libraries you have as dependencies have already published a new release
+  adapted to use `Instant` and `Clock` from `kotlin.time`.
+* If all else fails, use the *compatibility release* of `kotlinx-datetime`.
+  Instead of the version `0.7.0`, use `0.7.0-0.6.x-compat`.
+  This artifact still contains `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock`,
+  ensuring that third-party libraries reliant on them can still be used.
+  This artifact is less straightforward to use than `0.7.0`, so only resort to it when libraries you don't control
+  require that the removed classes still exist.
+
+Tips for fixing compilation errors:
+
+* If you encounter resolution ambiguity errors for `Instant` or `Clock`,
+  see if you have `import kotlin.time.*` along with `import kotlinx.datetime.*`.
+  Since both libraries have a `Clock` and an `Instant`, you have to manually add
+  `import kotlin.time.Instant` and/or `import kotlin.time.Clock` explicitly.
+* When using the compatibility release of `kotlinx-datetime`, you may encounter errors like
+  "required `kotlinx.datetime.Instant`, found `kotlin.time.Instant`" or vice versa.
+  - First, please check if you have imported a `kotlinx.datetime` class when a `kotlin.time` class would work.
+    The final goal is getting rid of `kotlinx.datetime.Instant`, so limit its usage as much as possible!
+  - If you have no choice but to use an `Instant` or `Clock` from `kotlinx-datetime` (for example, because a third-party
+    library accepts a `kotlinx.datetime.Instant` as a parameter or returns it as a function result),
+    you can use the compatibility functions:
+    * `kotlin.time.Instant.toDeprecatedInstant(): kotlinx.datetime.Instant`
+    * `kotlin.time.Clock.toDeprecatedClock(): kotlinx.datetime.Clock`
+    * `kotlinx.datetime.Instant.toStdlibInstant(): kotlin.time.Instant`
+    * `kotlinx.datetime.Clock.toStdlibClock(): kotlin.time.Clock`
+
+> Compatibility releases will be published for all `0.7.x` versions of `kotlinx-datetime`, but not longer.
 
 ### Gradle
 
@@ -539,10 +569,10 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 
 ## Building
 
-The project requires JDK 8 to build classes and to run tests. 
+The project requires JDK 8 to build classes and to run tests.
 Gradle will try to find it among the installed JDKs or [provision](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
-The path to JDK 8 can be additionally specified with the environment variable `JDK_8`. 
-For local builds, you can use a later version of JDK if you don't have that 
+The path to JDK 8 can be additionally specified with the environment variable `JDK_8`.
+For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 
 After that, the project can be opened in IDEA and built with Gradle.

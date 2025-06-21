@@ -10,12 +10,16 @@ import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlin.random.*
 import kotlin.test.*
-import kotlin.time.Duration
+import kotlin.time.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.time.isDistantFuture
+import kotlin.time.isDistantPast
 
 class InstantTest {
 
@@ -57,99 +61,6 @@ class InstantTest {
         val now = Clock.System.now()
         println(now.toLocalDateTime(TimeZone.UTC))
         println(now.toLocalDateTime(TimeZone.currentSystemDefault()))
-    }
-
-    /* Based on the ThreeTenBp project.
-     * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
-     */
-    @Test
-    fun parseIsoString() {
-        val instants = arrayOf(
-            Triple("1970-01-01T00:00:00Z", 0, 0),
-            Triple("1970-01-01t00:00:00Z", 0, 0),
-            Triple("1970-01-01T00:00:00z", 0, 0),
-            Triple("1970-01-01T00:00:00.0Z", 0, 0),
-            Triple("1970-01-01T00:00:00.000000000Z", 0, 0),
-            Triple("1970-01-01T00:00:00.000000001Z", 0, 1),
-            Triple("1970-01-01T00:00:00.100000000Z", 0, 100000000),
-            Triple("1970-01-01T00:00:01Z", 1, 0),
-            Triple("1970-01-01T00:01:00Z", 60, 0),
-            Triple("1970-01-01T00:01:01Z", 61, 0),
-            Triple("1970-01-01T00:01:01.000000001Z", 61, 1),
-            Triple("1970-01-01T01:00:00.000000000Z", 3600, 0),
-            Triple("1970-01-01T01:01:01.000000001Z", 3661, 1),
-            Triple("1970-01-02T01:01:01.100000000Z", 90061, 100000000))
-        instants.forEach {
-            val (str, seconds, nanos) = it
-            val instant = Instant.parse(str)
-            assertEquals(seconds.toLong() * 1000 + nanos / 1000000, instant.toEpochMilliseconds())
-        }
-
-        assertInvalidFormat { Instant.parse("1970-01-01T23:59:60Z")}
-        assertInvalidFormat { Instant.parse("1970-01-01T24:00:00Z")}
-        assertInvalidFormat { Instant.parse("1970-01-01T23:59Z")}
-        assertInvalidFormat { Instant.parse("x") }
-        assertInvalidFormat { Instant.parse("12020-12-31T23:59:59.000000000Z") }
-        // this string represents an Instant that is currently larger than Instant.MAX any of the implementations:
-        assertInvalidFormat { Instant.parse("+1000000001-12-31T23:59:59.000000000Z") }
-    }
-
-    @Test
-    fun parseStringsWithOffsets() {
-        val strings = arrayOf(
-            Pair("2020-01-01T00:01:01.02+18:00", "2019-12-31T06:01:01.020Z"),
-            Pair("2020-01-01T00:01:01.123456789-17:59:59", "2020-01-01T18:01:00.123456789Z"),
-            Pair("2020-01-01T00:01:01.010203040+17:59:59", "2019-12-31T06:01:02.010203040Z"),
-            Pair("2020-01-01T00:01:01.010203040+17:59", "2019-12-31T06:02:01.010203040Z"),
-            Pair("2020-01-01T00:01:01+00", "2020-01-01T00:01:01Z"),
-        )
-        strings.forEach { (str, strInZ) ->
-            val instant = Instant.parse(str)
-            assertEquals(Instant.parse(strInZ), instant, str)
-            assertEquals(strInZ, instant.toString(), str)
-        }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+18:01") }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+1801") }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+0") }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+") }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01") }
-        assertInvalidFormat { Instant.parse("2020-01-01T00:01:01+000000") }
-
-        val instants = listOf(
-            Instant.DISTANT_FUTURE,
-            Instant.DISTANT_PAST,
-            Instant.fromEpochSeconds(0, 0))
-
-        val offsetStrings = listOf(
-            "Z",
-            "+03:12:14",
-            "-03:12:14",
-            "+02:35",
-            "-02:35",
-            "+04",
-            "-04",
-        )
-
-        val offsetFormat = UtcOffset.Format {
-            optional("Z") {
-                offsetHours()
-                optional {
-                    char(':'); offsetMinutesOfHour()
-                    optional { char(':'); offsetSecondsOfMinute() }
-                }
-            }
-        }
-        val offsets = offsetStrings.map { UtcOffset.parse(it, offsetFormat) }
-
-        for (instant in instants) {
-            for (offsetIx in offsets.indices) {
-                val str = instant.format(DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET, offsets[offsetIx])
-                val offsetString = offsets[offsetIx].toString()
-                assertEquals(offsetString, offsetString.commonSuffixWith(str))
-                assertEquals(instant, Instant.parse(str, DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET))
-                assertEquals(instant, Instant.parse(str))
-            }
-        }
     }
 
     @Test
@@ -428,9 +339,9 @@ class InstantTest {
         val distantFutureString = "+100000-01-01T00:00:00Z"
         val distantPastString = "-100001-12-31T23:59:59.999999999Z"
         assertEquals(distantFutureString, Instant.DISTANT_FUTURE.toString())
-        assertEquals(Instant.DISTANT_FUTURE, distantFutureString.toInstant())
+        assertEquals(Instant.DISTANT_FUTURE, distantFutureString.let(Instant::parse))
         assertEquals(distantPastString, Instant.DISTANT_PAST.toString())
-        assertEquals(Instant.DISTANT_PAST, distantPastString.toInstant())
+        assertEquals(Instant.DISTANT_PAST, distantPastString.let(Instant::parse))
         assertTrue(Instant.DISTANT_PAST.isDistantPast)
         assertTrue(Instant.DISTANT_FUTURE.isDistantFuture)
         assertFalse(Instant.DISTANT_PAST.isDistantFuture)
@@ -638,3 +549,9 @@ class InstantRangeTest {
         assertEquals(max.epochSeconds - min.epochSeconds, (max - min).inWholeSeconds)
     }
 }
+
+private val maxInstant = Instant.fromEpochSeconds(Long.MAX_VALUE)
+private val minInstant = Instant.fromEpochSeconds(Long.MIN_VALUE)
+
+internal val Instant.Companion.MAX get() = maxInstant
+internal val Instant.Companion.MIN get() = minInstant
