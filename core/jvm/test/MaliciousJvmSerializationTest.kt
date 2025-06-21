@@ -53,10 +53,10 @@ class MaliciousJvmSerializationTest {
         val withIncorrectSVUID: Streams,
     ) {
         class Streams(
-            /** `z` was set to `null` in the Java code. */
-            val delegateNull: String,
             /** `z` was set to [delegate] in the Java code. */
             val delegateValid: String,
+            /** `z` was set to `null` in the Java code. */
+            val delegateNull: String,
         )
     }
 
@@ -111,6 +111,19 @@ class MaliciousJvmSerializationTest {
             withIncorrectSVUID = Streams(
                 delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574000000000000002a0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c000078707702080078",
                 delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e5574634f6666736574000000000000002a0200014c000a7a6f6e654f66667365747400164c6a6176612f74696d652f5a6f6e654f66667365743b787070",
+            ),
+        ),
+        TestCase(
+            kotlinx.datetime.YearMonth::class,
+            delegateFieldName = "value",
+            delegate = java.time.YearMonth.of(2025, 4),
+            withCorrectSVUID = Streams(
+                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e596561724d6f6e746800000000000000000200014c000576616c75657400154c6a6176612f74696d652f596561724d6f6e74683b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c0000787077060c000007e90478",
+                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e596561724d6f6e746800000000000000000200014c000576616c75657400154c6a6176612f74696d652f596561724d6f6e74683b787070",
+            ),
+            withIncorrectSVUID = Streams(
+                delegateValid = "aced00057372001a6b6f746c696e782e6461746574696d652e596561724d6f6e7468000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f596561724d6f6e74683b78707372000d6a6176612e74696d652e536572955d84ba1b2248b20c0000787077060c000007e90478",
+                delegateNull = "aced00057372001a6b6f746c696e782e6461746574696d652e596561724d6f6e7468000000000000002a0200014c000576616c75657400154c6a6176612f74696d652f596561724d6f6e74683b787070",
             ),
         ),
     )
