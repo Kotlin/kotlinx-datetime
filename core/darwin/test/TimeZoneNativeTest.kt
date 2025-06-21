@@ -163,7 +163,7 @@ class TimeZoneNativeTest {
 
     // TimeZoneRules.infoAtDatetime(LocalDateTime) tests
 
-    enum class OffsetInfoType { REGULAR, GAP, OVERLAP }
+    private enum class OffsetInfoType { REGULAR, GAP, OVERLAP }
 
     private data class TimeZoneRulesTestData(
         val zoneId: String,
