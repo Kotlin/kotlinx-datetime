@@ -149,12 +149,14 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentUtcOffsetBetweenRegularAndFoundationTimeZones() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            for ((ldt, _) in localDateTimes) {
-                val regularTz = timeZoneById(zoneId)
-                val foundationTz = timeZoneByIdFoundation(zoneId)
-                val expected = regularTz.offsetAt(ldt.toInstant(regularTz))
-                val actual = foundationTz.offsetAt(ldt.toInstant(foundationTz))
-                assertEquals(expected, actual)
+            val regularTz = timeZoneById(zoneId)
+            val foundationTz = timeZoneByIdFoundation(zoneId)
+
+            for ((localDateTime, _) in localDateTimes) {
+                val regularOffset = regularTz.offsetAt(localDateTime.toInstant(regularTz))
+                val foundationOffset = foundationTz.offsetAt(localDateTime.toInstant(foundationTz))
+
+                assertEquals(regularOffset, foundationOffset)
             }
         }
     }
