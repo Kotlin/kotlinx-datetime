@@ -261,15 +261,6 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         year = year!! + ((instant.epochSeconds / SECONDS_PER_10000_YEARS) * 10000).toInt()
     }
 
-    @Suppress("DEPRECATION")
-    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.setDateTimeOffset(instant.toStdlibInstant(), utcOffset)")
-    )
-    public fun setDateTimeOffset(instant: kotlinx.datetime.Instant, utcOffset: UtcOffset) {
-        setDateTimeOffset(instant.toStdlibInstant(), utcOffset)
-    }
-
     /**
      * Writes the contents of the specified [localDateTime] and [utcOffset] to this [DateTimeComponents].
      *
@@ -548,11 +539,6 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant")
         return result
     }
-
-    @PublishedApi
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    internal fun toInstantUsingOffset(): kotlinx.datetime.Instant = toInstantUsingOffset().toDeprecatedInstant()
 }
 
 /**
