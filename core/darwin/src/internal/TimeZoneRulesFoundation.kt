@@ -5,7 +5,9 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.convert
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toKotlinInstant
@@ -60,10 +62,10 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         return OffsetInfo.Regular(currentOffset)
     }
 
-    @OptIn(UnsafeNumber::class)
+    @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
     private fun infoAtNsDate(nsDate: NSDate): UtcOffset {
         val offsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate)
-        return UtcOffset.ofSeconds(offsetSeconds.toInt())
+        return UtcOffset(seconds = offsetSeconds.convert())
     }
 
     companion object {
