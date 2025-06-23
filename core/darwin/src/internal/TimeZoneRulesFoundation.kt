@@ -14,6 +14,7 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toNSDate
 import kotlinx.datetime.toNSDateComponents
 import platform.Foundation.NSCalendar
+import platform.Foundation.NSCalendarIdentifierISO8601
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
 import platform.Foundation.addTimeInterval
@@ -28,9 +29,10 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         infoAtNsDate(instant.toNSDate())
 
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
-        val calendar = NSCalendar.currentCalendar().apply { timeZone = nsTimeZone }
+        val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
+            ?.apply { timeZone = nsTimeZone }
         val components = localDateTime.toNSDateComponents()
-        val nsDate = requireNotNull(calendar.dateFromComponents(components)) {
+        val nsDate = requireNotNull(calendar?.dateFromComponents(components)) {
             "Invalid LocalDateTime components: $localDateTime"
         }
         val currentOffset = infoAtNsDate(nsDate)
