@@ -55,6 +55,10 @@ public actual class YearMonth internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithYearMonth.() -> Unit): DateTimeFormat<YearMonth> =
             YearMonthFormat.build(block)
+
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
@@ -72,6 +76,9 @@ public actual class YearMonth internal constructor(
     override fun equals(other: Any?): Boolean = this === other || other is YearMonth && value == other.value
 
     override fun hashCode(): Int = value.hashCode()
+
+    private fun readObject(ois: java.io.ObjectInputStream): Unit =
+        throw java.io.InvalidObjectException("kotlinx.datetime.YearMonth must be deserialized via kotlinx.datetime.Ser")
 
     private fun writeReplace(): Any = Ser(Ser.YEAR_MONTH_TAG, this)
 }
