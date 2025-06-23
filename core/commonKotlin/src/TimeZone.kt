@@ -89,20 +89,6 @@ public actual open class TimeZone internal constructor() {
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
         localDateTimeToInstant(this)
 
-    @Suppress("DEPRECATION")
-    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
-    )
-    public actual fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime =
-        toStdlibInstant().toLocalDateTime()
-
-    @PublishedApi
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
-        toInstant(this@TimeZone).toDeprecatedInstant()
-
     internal open fun atStartOfDay(date: LocalDate): Instant = error("Should be overridden") //value.atStartOfDay(date)
     internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
 
