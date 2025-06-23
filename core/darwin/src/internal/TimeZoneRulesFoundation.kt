@@ -21,7 +21,7 @@ import platform.Foundation.addTimeInterval
 import platform.Foundation.timeZoneWithName
 import kotlin.time.Instant
 
-internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
+internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRules {
     private val nsTimeZone: NSTimeZone = NSTimeZone.timeZoneWithName(zoneId)
         ?: throw IllegalArgumentException("Unknown timezone: $zoneId")
 
@@ -32,8 +32,9 @@ internal class TimeZoneRulesFoundation(zoneId: String) : TimeZoneRules {
         val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
             ?.apply { timeZone = nsTimeZone }
         val components = localDateTime.toNSDateComponents()
-        val nsDate = requireNotNull(calendar?.dateFromComponents(components)) {
-            "Invalid LocalDateTime components: $localDateTime"
+        val nsDate = calendar?.dateFromComponents(components)
+        check(nsDate != null) {
+            "Failed to create NSDate from LocalDateTime components: $localDateTime, timezone: $zoneId"
         }
         val currentOffset = infoAtNsDate(nsDate)
 
