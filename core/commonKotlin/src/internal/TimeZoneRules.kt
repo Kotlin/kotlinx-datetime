@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toLocalDateTime
-import kotlin.math.absoluteValue
+import kotlin.math.*
 import kotlin.time.Instant
 
 internal interface TimeZoneRules {
