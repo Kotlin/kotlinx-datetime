@@ -110,6 +110,7 @@ public actual class LocalDateTime internal constructor(
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalDateTime> = ISO_DATETIME_BASIC
     }
 
     private fun writeReplace(): Any = Ser(Ser.DATE_TIME_TAG, this)
