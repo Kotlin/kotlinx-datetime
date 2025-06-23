@@ -232,6 +232,21 @@ class LocalDateTest {
     }
 
     @Test
+    fun orNull() {
+        validDates.forEach { (year, month, day) ->
+            val expected = LocalDate(year, month, day)
+            assertEquals(expected, LocalDate.orNull(year, month, day))
+            assertEquals(expected, LocalDate.orNull(year, Month(month), day))
+        }
+        invalidDates.forEach { (year, month, day) ->
+            assertNull(LocalDate.orNull(year, month, day))
+            runCatching { Month(month) }.onSuccess { monthEnum ->
+                assertNull(LocalDate.orNull(year, monthEnum, day))
+            }
+        }
+    }
+
+    @Test
     fun fromEpochDays() {
         /** This test uses [LocalDate.next] and [LocalDate.previous] and not [LocalDate.plus] because, on Native,
          * [LocalDate.plus] is implemented via [LocalDate.toEpochDays]/[LocalDate.fromEpochDays], and so it's better to
@@ -286,16 +301,43 @@ class LocalDateTest {
 }
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 2, 29) }
-    assertEquals(29, constructor(2008, 2, 29).day)
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 4, 31) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 0) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007,1, 32) }
-    assertFailsWith<IllegalArgumentException> { constructor(Int.MIN_VALUE, 1, 1) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 1, 32) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 0, 1) }
-    assertFailsWith<IllegalArgumentException> { constructor(2007, 13, 1) }
+    invalidDates.forEach { (year, month, day) ->
+        assertFailsWith<IllegalArgumentException> { constructor(year, month, day) }
+    }
+    validDates.forEach { (year, month, day) ->
+        val date = constructor(year, month, day)
+        assertEquals(year, date.year)
+        assertEquals(month, date.month.number)
+        assertEquals(day, date.day)
+    }
 }
+
+val invalidDates = listOf(
+    Triple(2007, 2, 29),
+    Triple(2007, 4, 31),
+    Triple(2007, 1, 0),
+    Triple(2007, 1, 32),
+    Triple(Int.MIN_VALUE, 1, 1),
+    Triple(2007, 1, 32),
+    Triple(2007, 0, 1),
+    Triple(2007, 13, 1),
+)
+
+val validDates = listOf(
+    Triple(2007, 1, 1),
+    Triple(2007, 2, 28),
+    Triple(2008, 2, 29),
+    Triple(2007, 3, 31),
+    Triple(2007, 4, 30),
+    Triple(2007, 5, 31),
+    Triple(2007, 6, 30),
+    Triple(2007, 7, 31),
+    Triple(2007, 8, 31),
+    Triple(2007, 9, 30),
+    Triple(2007, 10, 31),
+    Triple(2007, 11, 30),
+    Triple(2007, 12, 31),
+)
 
 private val LocalDate.next: LocalDate get() =
     if (day != month.number.monthLength(isLeapYear(year))) {
