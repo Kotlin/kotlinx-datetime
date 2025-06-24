@@ -11,7 +11,6 @@ import java.util.*
 
 plugins {
     kotlin("multiplatform")
-    id("maven-publish")
     id("com.github.node-gradle.node") version "7.0.2"
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
