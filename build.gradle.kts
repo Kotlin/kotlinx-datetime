@@ -30,7 +30,7 @@ allprojects {
         kotlinOptions.freeCompilerArgs += "-version"
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xjvm-default=disable") }
+        compilerOptions { freeCompilerArgs.add("-Xjvm-default=all-compatibility") }
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
         compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
