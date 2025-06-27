@@ -13,7 +13,7 @@ import kotlin.time.Instant
 class TimeZoneRulesTest {
     @Test
     fun ruleStrings() {
-        val rules = readTzFile(EuropeBerlinTzFile2023c).toTimeZoneRules()
+        val rules = readTzFile(EuropeBerlinTzFile2023c).toTimeZoneRules() as TimeZoneRulesCommon
         // first, check that for the future, there are no explicitly defined transitions
         assertTrue(rules.transitionEpochSeconds.all {
             Instant.fromEpochSeconds(it) < LocalDateTime(2038, 1, 1, 0, 0).toInstant(UtcOffset.ZERO)
@@ -37,7 +37,7 @@ class TimeZoneRulesTest {
         val ruleString = "AST4ADT,M3.2.0,M11.1.0\n" // Atlantic/Bermuda
         val recurringRules =
             PosixTzString.readIfPresent(BinaryDataReader(ruleString.encodeToByteArray()))!!.toRecurringZoneRules()!!
-        val rules = TimeZoneRules(UtcOffset(hours = -4), recurringRules)
+        val rules = TimeZoneRulesCommon(UtcOffset(hours = -4), recurringRules)
         val dstStartTime = LocalDateTime(2020, 3, 8, 2, 1)
         val infoAtDstStart = rules.infoAtDatetime(dstStartTime)
         assertTrue(infoAtDstStart is OffsetInfo.Gap, "Expected Gap, got $infoAtDstStart")

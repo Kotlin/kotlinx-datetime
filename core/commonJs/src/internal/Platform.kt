@@ -70,7 +70,7 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
         }
         val indices = components[3].map { charCodeToInt(it) }
         val lengthsOfPeriodsWithOffsets = components[4].split(' ').map(::base60MinutesInSeconds)
-        zones[components[0]] = TimeZoneRules(
+        zones[components[0]] = TimeZoneRulesCommon(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).let {
                 if (it.size == indices.size - 1) it else it.take<Long>(indices.size - 1)
             },
