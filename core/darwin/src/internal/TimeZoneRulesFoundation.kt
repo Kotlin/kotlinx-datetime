@@ -72,8 +72,4 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
         val offsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate)
         return UtcOffset(seconds = offsetSeconds.convert())
     }
-
-    companion object {
-        const val SECS_PER_DAY = 24 * 60 * 60.0
-    }
 }
