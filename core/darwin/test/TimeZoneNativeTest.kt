@@ -366,12 +366,10 @@ class TimeZoneNativeTest {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.rulesForId(zoneId)
             val foundationRules = TimeZoneRulesFoundation(zoneId)
-            println(formatHeader(zoneId))
 
             for ((localDateTime, expectedType) in localDateTimes) {
                 val regularInfo = regularRules.infoAtDatetime(localDateTime)
                 val foundationInfo = foundationRules.infoAtDatetime(localDateTime)
-                println("regularInfo: $regularInfo, foundationInfo: $foundationInfo")
 
                 assertOffsetInfoType(foundationInfo, expectedType)
 
@@ -387,13 +385,6 @@ class TimeZoneNativeTest {
             is OffsetInfo.Overlap -> OVERLAP
         }
         assertEquals(expectedType, actualType)
-    }
-
-    private fun formatHeader(zoneId: String, preferredLength: Int = 75): String {
-        val total = preferredLength - zoneId.length - 2
-        val leftPart = "-".repeat(total / 2)
-        val rightPart = "-".repeat(total / 2 + total % 2)
-        return "$leftPart $zoneId $rightPart"
     }
 
     // timeZone.atZone(LocalDateTime) tests
