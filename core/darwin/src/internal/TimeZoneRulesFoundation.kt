@@ -55,7 +55,6 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
                 OffsetInfo.Regular(offsetBefore)
             } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
                 offset = offsetAfter
-                println("HERE!!!")
                 currentDate = transitionDateTime
                 continue
             } else if (ldtAfter < ldtBefore) {
