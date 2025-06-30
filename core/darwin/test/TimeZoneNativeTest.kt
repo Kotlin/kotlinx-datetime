@@ -50,8 +50,8 @@ class TimeZoneNativeTest {
         assertTrue(zoneIds.isNotEmpty(), "Zone IDs should not be empty")
         assertTrue(zoneIds.all { it.isNotBlank() }, "All zone IDs should be non-blank")
         assertTrue("UTC" in zoneIds || "GMT" in zoneIds, "Should contain UTC or GMT")
-        assertTrue(zoneIds.any { it.contains("America") }, "Should contain America timezones")
-        assertTrue(zoneIds.any { it.contains("Europe") }, "Should contain Europe timezones")
+        assertTrue(zoneIds.any { it.startsWith("America") }, "Should contain America timezones")
+        assertTrue(zoneIds.any { it.startsWith("Europe") }, "Should contain Europe timezones")
     }
 
     private val validTimeZones = listOf("America/New_York", "Europe/London", "Asia/Tokyo", "Australia/Sydney")
