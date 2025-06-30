@@ -1,26 +1,30 @@
 /*
- * Copyright 2019-2020 JetBrains s.r.o.
+ * Copyright 2019-2025 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
 @file:OptIn(ExperimentalForeignApi::class)
+
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.internal.*
 import platform.Foundation.*
 
 internal actual fun timeZoneById(zoneId: String): TimeZone =
-    runCatching { RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId) }
-        .getOrElse { timeZoneByIdFoundation(zoneId) }
+    if (tzdb.isSuccess)
+        RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
+    else
+        timeZoneByIdFoundation(zoneId)
 
 internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
     RegionTimeZone(TimeZoneRulesFoundation(zoneId), zoneId)
 
 internal actual fun getAvailableZoneIds(): Set<String> =
-    runCatching { tzdb.getOrThrow().availableTimeZoneIds() }
-        .getOrElse { getAvailableZoneIdsFoundation() }
+    if (tzdb.isSuccess)
+        tzdb.getOrThrow().availableTimeZoneIds()
+    else
+        getAvailableZoneIdsFoundation()
 
 internal fun getAvailableZoneIdsFoundation(): Set<String> =
     NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf()) { it.toString() }
