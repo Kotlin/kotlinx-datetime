@@ -11,10 +11,12 @@ import kotlinx.cinterop.convert
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toKotlinInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toNSDate
 import kotlinx.datetime.toNSDateComponents
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSCalendarIdentifierISO8601
+import platform.Foundation.NSCalendarUnitYear
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
 import platform.Foundation.addTimeInterval
@@ -28,41 +30,43 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
     override fun infoAtInstant(instant: Instant): UtcOffset =
         infoAtNsDate(instant.toNSDate())
 
+    @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
         val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
             ?.apply { timeZone = nsTimeZone }
-        val components = localDateTime.toNSDateComponents()
-        val nsDate = calendar?.dateFromComponents(components)
-        check(nsDate != null) {
-            "Failed to create NSDate from LocalDateTime components: $localDateTime, timezone: $zoneId"
-        }
-        val currentOffset = infoAtNsDate(nsDate)
 
-        if (!components.isValidDateInCalendar(calendar)) {
-            val oneDayEarlier = nsDate.addTimeInterval(-SECS_PER_DAY) as NSDate
-            return OffsetInfo.Gap(
-                start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(oneDayEarlier)!!.toKotlinInstant(),
-                offsetBefore = infoAtNsDate(oneDayEarlier),
-                offsetAfter = currentOffset
-            )
-        }
+        val year = localDateTime.year
+        val startOfTheYear = calendar?.dateFromComponents(LocalDateTime(year, 1, 1, 0, 0).toNSDateComponents())
+        check(startOfTheYear != null) { "Failed to get the start of the year for $localDateTime, timezone: $zoneId" }
 
-        val oneDayLater = nsDate.addTimeInterval(SECS_PER_DAY) as NSDate
-        val oneDayLatterOffset = infoAtNsDate(oneDayLater)
-        val delta = currentOffset.totalSeconds - oneDayLatterOffset.totalSeconds
-        if (delta > 0) {
-            val deltaSecondsLater = nsDate.addTimeInterval(delta.toDouble()) as NSDate
-            val deltaSecondsLaterOffset = infoAtNsDate(deltaSecondsLater)
-            if (currentOffset.totalSeconds > deltaSecondsLaterOffset.totalSeconds) {
-                return OffsetInfo.Overlap(
-                    start = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(nsDate)!!.toKotlinInstant(),
-                    offsetBefore = currentOffset,
-                    offsetAfter = deltaSecondsLaterOffset
-                )
+        var currentDate: NSDate = startOfTheYear
+        var offset = infoAtNsDate(startOfTheYear)
+        do {
+            val transitionDateTime = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(currentDate)
+            if (transitionDateTime == null) break
+
+            val yearOfNextDate = calendar.component(NSCalendarUnitYear.convert(), fromDate = transitionDateTime)
+
+            val offsetBefore = infoAtNsDate(currentDate)
+            val ldtBefore = transitionDateTime.toKotlinInstant().toLocalDateTime(offsetBefore)
+            val offsetAfter = infoAtNsDate(transitionDateTime)
+            val ldtAfter = transitionDateTime.toKotlinInstant().toLocalDateTime(offsetAfter)
+
+            return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
+                OffsetInfo.Regular(offsetBefore)
+            } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
+                offset = offsetAfter
+                println("HERE!!!")
+                currentDate = transitionDateTime
+                continue
+            } else if (ldtAfter < ldtBefore) {
+                OffsetInfo.Overlap(transitionDateTime.toKotlinInstant(), offsetBefore, offsetAfter)
+            } else {
+                OffsetInfo.Gap(transitionDateTime.toKotlinInstant(), offsetBefore, offsetAfter)
             }
-        }
+        } while (yearOfNextDate <= year)
 
-        return OffsetInfo.Regular(currentOffset)
+        return OffsetInfo.Regular(offset)
     }
 
     @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
