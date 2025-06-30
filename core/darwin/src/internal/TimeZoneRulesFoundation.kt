@@ -45,11 +45,12 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
             if (transitionDateTime == null) break
 
             val yearOfNextDate = calendar.component(NSCalendarUnitYear.convert(), fromDate = transitionDateTime)
+            val transitionDateTimeInstant = transitionDateTime.toKotlinInstant()
 
             val offsetBefore = infoAtNsDate(currentDate)
-            val ldtBefore = transitionDateTime.toKotlinInstant().toLocalDateTime(offsetBefore)
+            val ldtBefore = transitionDateTimeInstant.toLocalDateTime(offsetBefore)
             val offsetAfter = infoAtNsDate(transitionDateTime)
-            val ldtAfter = transitionDateTime.toKotlinInstant().toLocalDateTime(offsetAfter)
+            val ldtAfter = transitionDateTimeInstant.toLocalDateTime(offsetAfter)
 
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
                 OffsetInfo.Regular(offsetBefore)
@@ -58,9 +59,9 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
                 currentDate = transitionDateTime
                 continue
             } else if (ldtAfter < ldtBefore) {
-                OffsetInfo.Overlap(transitionDateTime.toKotlinInstant(), offsetBefore, offsetAfter)
+                OffsetInfo.Overlap(transitionDateTimeInstant, offsetBefore, offsetAfter)
             } else {
-                OffsetInfo.Gap(transitionDateTime.toKotlinInstant(), offsetBefore, offsetAfter)
+                OffsetInfo.Gap(transitionDateTimeInstant, offsetBefore, offsetAfter)
             }
         } while (yearOfNextDate <= year)
 
