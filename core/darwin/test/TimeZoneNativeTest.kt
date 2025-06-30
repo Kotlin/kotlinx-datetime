@@ -381,12 +381,12 @@ class TimeZoneNativeTest {
     }
 
     private fun assertOffsetInfoType(info: OffsetInfo, expectedType: OffsetInfoType) {
-        val expectedClass = when (expectedType) {
-            REGULAR -> OffsetInfo.Regular::class
-            GAP -> OffsetInfo.Gap::class
-            OVERLAP -> OffsetInfo.Overlap::class
+        val actualType = when (info) {
+            is OffsetInfo.Regular -> REGULAR
+            is OffsetInfo.Gap -> GAP
+            is OffsetInfo.Overlap -> OVERLAP
         }
-        assertEquals(expectedClass, info::class)
+        assertEquals(expectedType, actualType)
     }
 
     private fun formatHeader(zoneId: String, preferredLength: Int = 75): String {
