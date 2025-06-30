@@ -69,7 +69,7 @@ class TimeZoneRulesCompleteTest {
                             )
                             continue
                         }
-                        val rules = tzdb.rulesForId(id) as TimeZoneRulesCommon
+                        val rules = tzdb.rulesForId(id)
                         fun MutableList<Mismatch>.checkAtInstant(instant: Instant) {
                             val ldt = instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                             val offset = rules.infoAtInstant(instant)
