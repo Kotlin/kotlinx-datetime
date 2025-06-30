@@ -9,6 +9,10 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
+@OptIn(ExperimentalMultiplatform::class)
+@OptionalExpectation
+internal expect annotation class MyJvmDefaultWithoutCompatibility()
+
 /**
  * Common functions for all format builders.
  */
@@ -85,6 +89,7 @@ public sealed interface DateTimeFormatBuilder {
     /**
      * Functions specific to the datetime format builders containing the local-date fields.
      */
+    @MyJvmDefaultWithoutCompatibility
     public sealed interface WithDate : WithYearMonth {
         /**
          * A day-of-month number, from 1 to 31.
