@@ -5,7 +5,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.internal.TimeZoneRulesCommon
 import kotlinx.datetime.internal.rulesForId
 import kotlin.math.roundToInt
 import kotlin.test.*
