@@ -19,7 +19,6 @@ import platform.Foundation.NSCalendarIdentifierISO8601
 import platform.Foundation.NSCalendarUnitYear
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
-import platform.Foundation.addTimeInterval
 import platform.Foundation.timeZoneWithName
 import kotlin.time.Instant
 
