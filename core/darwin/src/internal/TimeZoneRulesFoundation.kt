@@ -29,6 +29,12 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
     override fun infoAtInstant(instant: Instant): UtcOffset =
         infoAtNsDate(instant.toNSDate())
 
+    /**
+     * IMPORTANT: mirrors the logic in [RecurringZoneRules.infoAtLocalDateTime].
+     * Any update to offset calculations, transition handling, or edge cases
+     * must be duplicated there to maintain consistent behavior across
+     * all platforms.
+     */
     @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
     override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
         val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
