@@ -67,7 +67,7 @@ class TimeZoneNativeTest {
     @Test
     fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
         verifyDstTransitionConsistency(
-            transitionTime = LocalDateTime(2025, 3, 9, 1, 59, 59),
+            timeJustBeforeTransition = LocalDateTime(2025, 3, 9, 1, 59, 59),
             transitionName = "DST spring forward transition"
         )
     }
@@ -75,18 +75,18 @@ class TimeZoneNativeTest {
     @Test
     fun shouldHandleDstFallBackTransitionConsistentlyBetweenImplementations() {
         verifyDstTransitionConsistency(
-            transitionTime = LocalDateTime(2025, 11, 2, 1, 59, 59),
+            timeJustBeforeTransition = LocalDateTime(2025, 11, 2, 1, 59, 59),
             transitionName = "DST fall back transition"
         )
     }
 
-    private fun verifyDstTransitionConsistency(transitionTime: LocalDateTime, transitionName: String) {
+    private fun verifyDstTransitionConsistency(timeJustBeforeTransition: LocalDateTime, transitionName: String) {
         val zoneId = "America/New_York"
         val regularTz = timeZoneById(zoneId)
         val foundationTz = timeZoneByIdFoundation(zoneId)
 
-        val instantBefore = transitionTime.toInstant(regularTz)
-        val instantAfter = transitionTime.plusSeconds(1).toInstant(regularTz)
+        val instantBefore = timeJustBeforeTransition.toInstant(regularTz)
+        val instantAfter = timeJustBeforeTransition.plusSeconds(1).toInstant(regularTz)
 
         val offsetBefore = regularTz.offsetAt(instantBefore)
         val offsetAfter = regularTz.offsetAt(instantAfter)
