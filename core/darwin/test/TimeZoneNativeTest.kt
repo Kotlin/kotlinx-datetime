@@ -5,6 +5,7 @@
 
 package kotlinx.datetime.test
 
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.internal.OffsetInfo
 import kotlinx.datetime.internal.TimeZoneRulesFoundation
@@ -14,6 +15,7 @@ import kotlinx.datetime.internal.getAvailableZoneIdsFoundation
 import kotlinx.datetime.internal.timeZoneById
 import kotlinx.datetime.internal.timeZoneByIdFoundation
 import kotlinx.datetime.offsetAt
+import kotlinx.datetime.plus
 import kotlinx.datetime.plusSeconds
 import kotlinx.datetime.toInstant
 import kotlin.test.Test
@@ -112,36 +114,30 @@ class TimeZoneNativeTest {
     fun shouldHandleNoTransitionPeriodConsistentlyBetweenImplementations() {
         val summerTime = LocalDateTime(2025, 7, 15, 12, 30, 45)
         val zoneId = "America/New_York"
-
         val regularTz = timeZoneById(zoneId)
         val foundationTz = timeZoneByIdFoundation(zoneId)
-
-        val testPoints = listOf(
-            summerTime,
-            summerTime.plusSeconds(60 * 60),
-            summerTime.plusSeconds(24 * 60 * 60),
-            summerTime.plusSeconds(7 * 24 * 60 * 60)
-        )
-
-        for (dateTime in testPoints) {
-            val instant = dateTime.toInstant(regularTz)
+        val summerTimeInstant = summerTime.toInstant(regularTz)
+        val firstOffset = regularTz.offsetAt(summerTimeInstant)
+        for (period in listOf(
+            DateTimePeriod(),
+            DateTimePeriod(hours = 1),
+            DateTimePeriod(days = 1),
+            DateTimePeriod(days = 7),
+        )) {
+            val instant = summerTimeInstant.plus(period, regularTz)
             val regularOffset = regularTz.offsetAt(instant)
             val foundationOffset = foundationTz.offsetAt(instant)
 
             assertEquals(
                 regularOffset,
                 foundationOffset,
-                "Regular and Foundation implementations should have same offset during stable period at $dateTime"
+                "Regular and Foundation implementations should have same offset during stable period at $instant"
             )
-        }
 
-        val firstOffset = regularTz.offsetAt(testPoints.first().toInstant(regularTz))
-        for (dateTime in testPoints.drop(1)) {
-            val offset = regularTz.offsetAt(dateTime.toInstant(regularTz))
             assertEquals(
                 firstOffset,
-                offset,
-                "Offset should remain constant during stable summer period"
+                regularOffset,
+                "Regular implementation should have same offset as at summer time for period $period"
             )
         }
     }
