@@ -27,7 +27,7 @@ internal actual fun getAvailableZoneIds(): Set<String> =
         getAvailableZoneIdsFoundation()
 
 internal fun getAvailableZoneIdsFoundation(): Set<String> =
-    NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf()) { it.toString() }
+    NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf("UTC")) { it.toString() }
 
 private val tzdb = runCatching { TzdbOnFilesystem(Path.fromString(defaultTzdbPath())) }
 
