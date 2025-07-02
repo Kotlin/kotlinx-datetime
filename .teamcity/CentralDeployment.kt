@@ -168,7 +168,7 @@ fun Project.copyToCentral(startDeployment: BuildType) = BuildType {
 
     params {
         param("DeployVersion", startDeployment.depParamRefs["Version"].ref)
-        param("ArtifactPrefix", "kotlinx-datetime")
+        param("ArtifactPrefixes", "[kotlinx-datetime]")
     }
 
     requirements {
@@ -195,7 +195,7 @@ fun Project.copyZoneInfoToCentral(startDeployment: BuildType) = BuildType {
 
     params {
         param("DeployVersion", startDeployment.depParamRefs["ZoneInfoVersion"].ref)
-        param("ArtifactPrefix", "kotlinx-datetime-zoneinfo")
+        param("ArtifactPrefixes", "[kotlinx-datetime-zoneinfo]")
     }
 
     requirements {
