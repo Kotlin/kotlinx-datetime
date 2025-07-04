@@ -422,6 +422,8 @@ Here is the recommended procedure for migrating from `kotlinx-datetime` version 
   for `kotlinx.datetime.Instant` or `kotlinx.datetime.Clock`, or maybe even fail to compile.
   In that case, please check if the affected libraries you have as dependencies have already published a new release
   adapted to use `Instant` and `Clock` from `kotlin.time`.
+* If you use `kotlinx-serialization` to serialize the `Instant` type, update that dependency to use
+  [1.9.0](https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.9.0) or a newer version.
 * If all else fails, use the *compatibility release* of `kotlinx-datetime`.
   Instead of the version `0.7.0`, use `0.7.0-0.6.x-compat`.
   This artifact still contains `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock`,
