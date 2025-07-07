@@ -20,18 +20,12 @@ fun deploymentProject() = Project {
     val copyToCentralTask = copyToCentral(startDeploymentTask)
     val copyZoneInfoTask = copyZoneInfoToCentral(startDeploymentTask)
 
-    val deployTasks = buildList {
-        Platform.entries.forEach {
-            add(deployToCentral(it, startDeploymentTask))
-        }
-    }
+    val deployTask = deployToCentral(startDeploymentTask)
 
-    deployTasks.forEach { deploy ->
-        copyToCentralTask.dependsOnSnapshot(deploy, onFailure = FailureAction.CANCEL)
-        copyZoneInfoTask.dependsOnSnapshot(deploy, onFailure = FailureAction.CANCEL)
-    }
+    copyToCentralTask.dependsOnSnapshot(deployTask, onFailure = FailureAction.CANCEL)
+    copyZoneInfoTask.dependsOnSnapshot(deployTask, onFailure = FailureAction.CANCEL)
 
-    buildTypesOrder = listOf(startDeploymentTask, *deployTasks.toTypedArray()) + listOf(copyToCentralTask, copyZoneInfoTask)
+    buildTypesOrder = listOf(startDeploymentTask, deployTask, copyToCentralTask, copyZoneInfoTask)
 }
 
 fun Project.startDeployment() = BuildType {
@@ -80,7 +74,7 @@ fun Project.startDeployment() = BuildType {
     commonConfigure()
 }.also { buildType(it) }
 
-fun Project.deployToCentral(platform: Platform, startDeployment: BuildType) = buildType("DeployCentral", platform) {
+fun Project.deployToCentral(startDeployment: BuildType) = buildType("DeployCentral", Platform.MacOS) {
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
     maxRunningBuilds = 1
@@ -94,60 +88,11 @@ fun Project.deployToCentral(platform: Platform, startDeployment: BuildType) = bu
         cleanCheckout = true
     }
 
-    val taskNames = buildList {
-        add("clean")
-        when (platform) {
-            Platform.Linux -> {
-                addAll(
-                    listOf(
-                        "publishAndroidNativeArm32PublicationToCentralRepository",
-                        "publishAndroidNativeArm64PublicationToCentralRepository",
-                        "publishAndroidNativeX64PublicationToCentralRepository",
-                        "publishAndroidNativeX86PublicationToCentralRepository",
-                        "publishLinuxArm64PublicationToCentralRepository",
-                        "publishLinuxX64PublicationToCentralRepository"
-                    )
-                )
-            }
-
-            Platform.Windows -> {
-                add("publishMingwX64PublicationToCentralRepository")
-            }
-
-            Platform.MacOS -> {
-                addAll(
-                    listOf(
-                        // metadata
-                        "publishKotlinMultiplatformPublicationToCentralRepository",
-                        // web
-                        "publishJsPublicationToCentralRepository",
-                        "publishWasmJsPublicationToCentralRepository",
-                        "publishWasmWasiPublicationToCentralRepository",
-                        // jvm
-                        "publishJvmPublicationToCentralRepository",
-                        // native
-                        "publishIosArm64PublicationToCentralRepository",
-                        "publishIosSimulatorArm64PublicationToCentralRepository",
-                        "publishIosX64PublicationToCentralRepository",
-                        "publishMacosArm64PublicationToCentralRepository",
-                        "publishMacosX64PublicationToCentralRepository",
-                        "publishTvosArm64PublicationToCentralRepository",
-                        "publishTvosSimulatorArm64PublicationToCentralRepository",
-                        "publishTvosX64PublicationToCentralRepository",
-                        "publishWatchosArm32PublicationToCentralRepository",
-                        "publishWatchosArm64PublicationToCentralRepository",
-                        "publishWatchosDeviceArm64PublicationToCentralRepository",
-                        "publishWatchosSimulatorArm64PublicationToCentralRepository",
-                        "publishWatchosX64PublicationToCentralRepository"
-                    )
-                )
-            }
-        }
-    }
+    val taskNames = listOf("clean", "publish")
 
     steps {
         gradle {
-            name = "Deploy ${platform.buildTypeName()} Binaries"
+            name = "Deploy All Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams =
