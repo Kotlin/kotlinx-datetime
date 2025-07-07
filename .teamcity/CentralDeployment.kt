@@ -48,21 +48,12 @@ fun Project.startDeployment() = BuildType {
         text(
             "ZoneInfoVersion",
             "",
-            display = ParameterDisplay.HIDDEN
+            display = ParameterDisplay.PROMPT,
+            allowEmpty = false
         )
     }
 
     steps {
-        gradle {
-            name = "Get ZoneInfoVersion"
-            jdkHome = "%env.$jdk%"
-            jvmArgs = "-Xmx1g"
-            gradleParams =
-                "--info --stacktrace -P$versionSuffixParameter=%VersionSuffix% -P$releaseVersionParameter=%Version% -Pzoneinfo.version.tc.parameter=ZoneInfoVersion"
-            tasks = ":kotlinx-datetime-zoneinfo:setZoneInfoVersionToTeamcity"
-            buildFile = ""
-            gradleWrapperPath = ""
-        }
     }
 
     commonConfigure()
