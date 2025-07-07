@@ -11,12 +11,7 @@ infra {
         include(":kotlinx-datetime")
         include(":kotlinx-datetime-zoneinfo")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
-        if (project.findProperty("publication_repository") == "central") {
-            central {}
-        }
-        sonatype {
-            libraryStagingRepoDescription = project.name
-        }
+        central {}
     }
 }
 
