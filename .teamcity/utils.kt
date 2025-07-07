@@ -12,7 +12,7 @@ const val releaseVersionParameter = "releaseVersion"
 const val libraryStagingRepoDescription = "Kotlin-DateTime-library"
 
 val platforms = Platform.values()
-const val jdk = "JDK_18_x64"
+const val jdk = "JDK_18"
 
 enum class Platform {
     Windows, Linux, MacOS;
