@@ -45,12 +45,6 @@ fun Project.startDeployment() = BuildType {
             "",
             display = ParameterDisplay.PROMPT
         )
-        select(
-            "Repository",
-            "central",
-            options = listOf("central", "sonatype"),
-            display = ParameterDisplay.PROMPT
-        )
         text(
             "ZoneInfoVersion",
             "",
@@ -81,7 +75,6 @@ fun Project.deployToCentral(startDeployment: BuildType) = buildType("DeployCentr
     params {
         param(versionSuffixParameter, "${startDeployment.depParamRefs["VersionSuffix"]}")
         param(releaseVersionParameter, "${startDeployment.depParamRefs["Version"]}")
-        param("system.publication_repository", "${startDeployment.depParamRefs["Repository"]}")
     }
 
     vcs {
