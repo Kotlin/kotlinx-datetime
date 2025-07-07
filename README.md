@@ -3,7 +3,7 @@
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains official project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-datetime?filter=0.7.0)](https://search.maven.org/search?q=g:org.jetbrains.kotlinx%20AND%20a:kotlinx-datetime)
+[![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-datetime?filter=0.7.1)](https://search.maven.org/search?q=g:org.jetbrains.kotlinx%20AND%20a:kotlinx-datetime)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.1.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://kotlinlang.org/api/kotlinx-datetime/)
 [![Slack channel](https://img.shields.io/badge/chat-slack-blue.svg?logo=slack)](https://kotlinlang.slack.com/messages/kotlinx-datetime/)
@@ -411,9 +411,9 @@ and `kotlinx.datetime.Clock`.
 The Kotlin standard library started including its own, identical `kotlin.time.Instant` and `kotlin.time.Clock`,
 as it became evident that `Instant` was also useful outside the datetime contexts.
 
-Here is the recommended procedure for migrating from `kotlinx-datetime` version `0.6.x` or earlier to `0.7.0`:
+Here is the recommended procedure for migrating from `kotlinx-datetime` version `0.6.x` or earlier to `0.7.x`:
 
-* First, simply try upgrading to `0.7.0`.
+* First, simply try upgrading to `0.7.1`.
   If your project has a dependency on `kotlinx-datetime`, but doesn't have dependencies on other libraries that are
   *themselves* reliant on an older `kotlinx-datetime`, you are good to go: the code should compile and run.
   This applies both to applications and to libraries!
@@ -425,10 +425,10 @@ Here is the recommended procedure for migrating from `kotlinx-datetime` version 
 * If you use `kotlinx-serialization` to serialize the `Instant` type, update that dependency to use
   [1.9.0](https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.9.0) or a newer version.
 * If all else fails, use the *compatibility release* of `kotlinx-datetime`.
-  Instead of the version `0.7.0`, use `0.7.0-0.6.x-compat`.
+  Instead of the version `0.7.1`, use `0.7.1-0.6.x-compat`.
   This artifact still contains `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock`,
   ensuring that third-party libraries reliant on them can still be used.
-  This artifact is less straightforward to use than `0.7.0`, so only resort to it when libraries you don't control
+  This artifact is less straightforward to use than `0.7.1`, so only resort to it when libraries you don't control
   require that the removed classes still exist.
 
 Tips for fixing compilation errors:
@@ -467,7 +467,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.0")
+                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
              }
         }
     }
@@ -478,7 +478,7 @@ kotlin {
 
 ```groovy
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
 }
 ```
 
@@ -550,7 +550,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2025a-spi.0.7.0")
+                implementation("kotlinx-datetime-zoneinfo", "2025a-spi.0.7.1")
             }
         }
     }
@@ -565,7 +565,7 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 <dependency>
     <groupId>org.jetbrains.kotlinx</groupId>
     <artifactId>kotlinx-datetime-jvm</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
 </dependency>
 ```
 
