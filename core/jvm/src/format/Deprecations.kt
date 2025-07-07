@@ -19,11 +19,17 @@ internal class `DateTimeFormatBuilder$WithDate$DefaultImpls` {
     // public static synthetic fun day$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
     // public static fun dayOfMonth (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;)V
     // public static synthetic fun dayOfMonth$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
+    // public static synthetic fun dayOfYear$default (Lkotlinx/datetime/format/DateTimeFormatBuilder$WithDate;Lkotlinx/datetime/format/Padding;ILjava/lang/Object;)V
 
     companion object {
         @JvmStatic
         fun `monthNumber$default`(format: DateTimeFormatBuilder.WithDate, padding: Padding?, i: Int, j: Any?) {
             format.monthNumber()
+        }
+
+        @JvmStatic
+        fun `dayOfYear$default`(format: DateTimeFormatBuilder.WithDate, padding: Padding?, i: Int, j: Any?) {
+            format.dayOfYear()
         }
 
         @JvmStatic
