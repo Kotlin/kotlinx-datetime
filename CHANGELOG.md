@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.1
+
+- Add `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock` type aliases to, respectively, `kotlin.time.Instant` and `kotlin.time.Clock` to make migration more convenient.
+- Add a fallback timezone database implementation for Darwin that uses the Foundation framework if the timezone database is unavailable on the filesystem ([#485](https://github.com/Kotlin/kotlinx-datetime/issues/485)).
+- Restore binary compatibility in string format definitions utilizing dates on the JVM ([#545](https://github.com/Kotlin/kotlinx-datetime/issues/545)).
+
 ## 0.7.0
 
 Breaking changes:
