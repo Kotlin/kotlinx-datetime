@@ -194,6 +194,25 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalDateTime>
+
+        /**
+         * ISO 8601 basic format.
+         *
+         * Examples of datetime in ISO 8601 format:
+         * - `20200830T1843`
+         * - `+120200830T184300`
+         * - `00000830T184300.5`
+         * - `-00010830T184300.123456789`
+         *
+         * When formatting, seconds always included.
+         * Fractional parts of the second are included if non-zero.
+         *
+         * See ISO-8601-1:2019, 5.4.2.1a), the version without the offset, together with
+         * [LocalDate.Formats.ISO_BASIC] and [LocalTime.Formats.ISO_BASIC].
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.Formats.basicIso
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalDateTime>
     }
 
     /**
