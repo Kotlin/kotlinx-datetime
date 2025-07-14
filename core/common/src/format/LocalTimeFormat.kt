@@ -287,12 +287,10 @@ internal val ISO_TIME_BASIC by lazy {
         alternativeParsing({
             // intentionally empty
         }) {
+            second()
             optional {
-                second()
-                optional {
-                    char('.')
-                    secondFraction(1, 9)
-                }
+                char('.')
+                secondFraction(1, 9)
             }
         }
     }
