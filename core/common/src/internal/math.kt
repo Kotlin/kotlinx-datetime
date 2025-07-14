@@ -5,6 +5,9 @@
 
 package kotlinx.datetime.internal
 
+import kotlin.random.Random
+import kotlin.random.nextLong
+
 internal fun Long.clampToInt(): Int =
         when {
             this > Int.MAX_VALUE -> Int.MAX_VALUE
@@ -257,3 +260,28 @@ internal class DecimalFraction(
         throw UnsupportedOperationException("DecimalFraction is not supposed to be used as a hash key")
     }
 }
+
+// this implementation is incorrect in general
+// (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).random()` throws an exception),
+// but for the range of epoch days in LocalDate it's good enough
+internal fun LongProgression.randomUnsafe(random: Random = Random): Long =
+    random.nextLong(0L..(last - first) / step) * step + first
+
+// incorrect in general; see `randomUnsafe` just above
+internal fun LongProgression.randomUnsafeOrNull(random: Random = Random): Long? =
+    if (isEmpty()) null else randomUnsafe(random)
+
+// this implementation is incorrect in general (for example, `(Long.MIN_VALUE..Long.MAX_VALUE).step(5).contains(2)`
+// returns `false` incorrectly https://www.wolframalpha.com/input?i=-2%5E63+%2B+1844674407370955162+*+5),
+// but for the range of epoch days in LocalDate it's good enough
+internal fun LongProgression.containsUnsafe(value: Long): Boolean =
+    value in (if (step > 0) first..last else last..first) && (value - first) % step == 0L
+
+// this implementation is incorrect in general (for example, `Long.MIN_VALUE..Long.MAX_VALUE` has size == 0),
+// but for the range of epoch days in LocalDate it's good enough
+internal val LongProgression.sizeUnsafe: Int
+    get() = if (isEmpty()) 0 else try {
+        (safeAdd(last, -first) / step + 1).clampToInt()
+    } catch (e: ArithmeticException) {
+        Int.MAX_VALUE
+    }

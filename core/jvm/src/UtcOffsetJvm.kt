@@ -6,13 +6,14 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.UtcOffsetSerializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.*
 
+@Suppress("DEPRECATION")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(
     internal val zoneOffset: ZoneOffset
@@ -39,6 +40,10 @@ public actual class UtcOffset(
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =
             UtcOffsetFormat.build(block)
+
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
@@ -46,6 +51,9 @@ public actual class UtcOffset(
         public actual val ISO_BASIC: DateTimeFormat<UtcOffset> get() = ISO_OFFSET_BASIC
         public actual val FOUR_DIGITS: DateTimeFormat<UtcOffset> get() = FOUR_DIGIT_OFFSET
     }
+
+    private fun readObject(ois: java.io.ObjectInputStream): Unit =
+        throw java.io.InvalidObjectException("kotlinx.datetime.UtcOffset must be deserialized via kotlinx.datetime.Ser")
 
     private fun writeReplace(): Any = Ser(Ser.UTC_OFFSET_TAG, this)
 }

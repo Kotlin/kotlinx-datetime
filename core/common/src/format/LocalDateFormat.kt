@@ -6,98 +6,11 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_ABBREVIATED
-import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_FULL
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-
-/**
- * A description of how month names are formatted.
- *
- * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.monthName].
- *
- * Predefined instances are available as [ENGLISH_FULL] and [ENGLISH_ABBREVIATED].
- * You can also create custom instances using the constructor.
- *
- * An [IllegalArgumentException] will be thrown if some month name is empty or there are duplicate names.
- *
- * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.usage
- * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.constructionFromList
- */
-public class MonthNames(
-    /**
-     * A list of month names in order from January to December.
-     *
-     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.names
-     */
-    public val names: List<String>
-) {
-    init {
-        require(names.size == 12) { "Month names must contain exactly 12 elements" }
-        names.indices.forEach { ix ->
-            require(names[ix].isNotEmpty()) { "A month name can not be empty" }
-            for (ix2 in 0 until ix) {
-                require(names[ix] != names[ix2]) {
-                    "Month names must be unique, but '${names[ix]}' was repeated"
-                }
-            }
-        }
-    }
-
-    /**
-     * Create a [MonthNames] using the month names in order from January to December.
-     *
-     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.constructionFromStrings
-     */
-    public constructor(
-        january: String, february: String, march: String, april: String, may: String, june: String,
-        july: String, august: String, september: String, october: String, november: String, december: String
-    ) :
-        this(listOf(january, february, march, april, may, june, july, august, september, october, november, december))
-
-    public companion object {
-        /**
-         * English month names from 'January' to 'December'.
-         *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishFull
-         */
-        public val ENGLISH_FULL: MonthNames = MonthNames(
-            listOf(
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            )
-        )
-
-        /**
-         * Shortened English month names from 'Jan' to 'Dec'.
-         *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.MonthNamesSamples.englishAbbreviated
-         */
-        public val ENGLISH_ABBREVIATED: MonthNames = MonthNames(
-            listOf(
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-            )
-        )
-    }
-
-    /** @suppress */
-    override fun toString(): String =
-        names.joinToString(", ", "MonthNames(", ")", transform = String::toString)
-
-    /** @suppress */
-    override fun equals(other: Any?): Boolean = other is MonthNames && names == other.names
-
-    /** @suppress */
-    override fun hashCode(): Int = names.hashCode()
-}
-
-private fun MonthNames.toKotlinCode(): String = when (this.names) {
-    MonthNames.ENGLISH_FULL.names -> "MonthNames.${MonthNames.Companion::ENGLISH_FULL.name}"
-    MonthNames.ENGLISH_ABBREVIATED.names -> "MonthNames.${MonthNames.Companion::ENGLISH_ABBREVIATED.name}"
-    else -> names.joinToString(", ", "MonthNames(", ")", transform = String::toKotlinCode)
-}
+import kotlinx.datetime.number
 
 /**
  * A description of how the names of weekdays are formatted.
@@ -146,7 +59,7 @@ public class DayOfWeekNames(
         saturday: String,
         sunday: String
     ) :
-        this(listOf(monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+            this(listOf(monday, tuesday, wednesday, thursday, friday, saturday, sunday))
 
     public companion object {
         /**
@@ -189,24 +102,13 @@ private fun DayOfWeekNames.toKotlinCode(): String = when (this.names) {
     else -> names.joinToString(", ", "DayOfWeekNames(", ")", transform = String::toKotlinCode)
 }
 
-internal fun <T> requireParsedField(field: T?, name: String): T {
-    if (field == null) {
-        throw DateTimeFormatException("Can not create a $name from the given input: the field $name is missing")
-    }
-    return field
-}
-
-internal interface DateFieldContainer {
-    var year: Int?
-    var monthNumber: Int?
+internal interface DateFieldContainer: YearMonthFieldContainer {
     var day: Int?
     var dayOfWeek: Int?
     var dayOfYear: Int?
 }
 
 private object DateFields {
-    val year = GenericFieldSpec(PropertyAccessor(DateFieldContainer::year))
-    val month = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::monthNumber), minValue = 1, maxValue = 12)
     val day = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::day), minValue = 1, maxValue = 31)
     val isoDayOfWeek = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfWeek), minValue = 1, maxValue = 7)
     val dayOfYear = UnsignedFieldSpec(PropertyAccessor(DateFieldContainer::dayOfYear), minValue = 1, maxValue = 366)
@@ -216,12 +118,11 @@ private object DateFields {
  * A [kotlinx.datetime.LocalDate], but potentially incomplete and inconsistent.
  */
 internal class IncompleteLocalDate(
-    override var year: Int? = null,
-    override var monthNumber: Int? = null,
+    val yearMonth: IncompleteYearMonth = IncompleteYearMonth(),
     override var day: Int? = null,
     override var dayOfWeek: Int? = null,
     override var dayOfYear: Int? = null,
-) : DateFieldContainer, Copyable<IncompleteLocalDate> {
+) : YearMonthFieldContainer by yearMonth, DateFieldContainer, Copyable<IncompleteLocalDate> {
     fun toLocalDate(): LocalDate {
         val year = requireParsedField(year, "year")
         val date = when (val dayOfYear = dayOfYear) {
@@ -234,13 +135,13 @@ internal class IncompleteLocalDate(
                 if (it.year != year) {
                     throw DateTimeFormatException(
                         "Can not create a LocalDate from the given input: " +
-                            "the day of year is $dayOfYear, which is not a valid day of year for the year $year"
+                                "the day of year is $dayOfYear, which is not a valid day of year for the year $year"
                     )
                 }
-                if (monthNumber != null && it.monthNumber != monthNumber) {
+                if (monthNumber != null && it.month.number != monthNumber) {
                     throw DateTimeFormatException(
                         "Can not create a LocalDate from the given input: " +
-                            "the day of year is $dayOfYear, which is ${it.month}, " +
+                                "the day of year is $dayOfYear, which is ${it.month}, " +
                                 "but $monthNumber was specified as the month number"
                     )
                 }
@@ -257,7 +158,7 @@ internal class IncompleteLocalDate(
             if (it != date.dayOfWeek.isoDayNumber) {
                 throw DateTimeFormatException(
                     "Can not create a LocalDate from the given input: " +
-                        "the day of week is ${DayOfWeek(it)} but the date is $date, which is a ${date.dayOfWeek}"
+                            "the day of week is ${DayOfWeek(it)} but the date is $date, which is a ${date.dayOfWeek}"
                 )
             }
         }
@@ -273,123 +174,24 @@ internal class IncompleteLocalDate(
     }
 
     override fun copy(): IncompleteLocalDate =
-        IncompleteLocalDate(year, monthNumber, day, dayOfWeek, dayOfYear)
+        IncompleteLocalDate(yearMonth.copy(), day, dayOfWeek, dayOfYear)
 
     override fun equals(other: Any?): Boolean =
-        other is IncompleteLocalDate && year == other.year && monthNumber == other.monthNumber &&
+        other is IncompleteLocalDate && yearMonth == other.yearMonth &&
             day == other.day && dayOfWeek == other.dayOfWeek && dayOfYear == other.dayOfYear
 
-    override fun hashCode(): Int = year.hashCode() * 923521 +
-            monthNumber.hashCode() * 29791 +
+    override fun hashCode(): Int = yearMonth.hashCode() * 29791 +
             day.hashCode() * 961 +
             dayOfWeek.hashCode() * 31 +
             dayOfYear.hashCode()
 
-    override fun toString(): String =
-        "${year ?: "??"}-${monthNumber ?: "??"}-${day ?: "??"} (day of week is ${dayOfWeek ?: "??"})"
-}
-
-private class YearDirective(private val padding: Padding, private val isYearOfEra: Boolean = false) :
-    SignedIntFieldFormatDirective<DateFieldContainer>(
-        DateFields.year,
-        minDigits = padding.minDigits(4),
-        maxDigits = null,
-        spacePadding = padding.spaces(4),
-        outputPlusOnExceededWidth = 4,
-    ) {
-    override val builderRepresentation: String
-        get() = when (padding) {
-            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::year.name}()"
-            else -> "${DateTimeFormatBuilder.WithDate::year.name}(${padding.toKotlinCode()})"
-        }.let {
-            if (isYearOfEra) {
-                it + YEAR_OF_ERA_COMMENT
-            } else it
-        }
-
-    override fun equals(other: Any?): Boolean =
-        other is YearDirective && padding == other.padding && isYearOfEra == other.isYearOfEra
-
-    override fun hashCode(): Int = padding.hashCode() * 31 + isYearOfEra.hashCode()
-}
-
-private class ReducedYearDirective(val base: Int, private val isYearOfEra: Boolean = false) :
-    ReducedIntFieldDirective<DateFieldContainer>(
-        DateFields.year,
-        digits = 2,
-        base = base,
-    ) {
-    override val builderRepresentation: String
-        get() =
-            "${DateTimeFormatBuilder.WithDate::yearTwoDigits.name}($base)".let {
-                if (isYearOfEra) {
-                    it + YEAR_OF_ERA_COMMENT
-                } else it
-            }
-
-    override fun equals(other: Any?): Boolean =
-        other is ReducedYearDirective && base == other.base && isYearOfEra == other.isYearOfEra
-
-    override fun hashCode(): Int = base.hashCode() * 31 + isYearOfEra.hashCode()
-}
-
-private const val YEAR_OF_ERA_COMMENT =
-    " /** TODO: the original format had an `y` directive, so the behavior is different on years earlier than 1 AD. See the [kotlinx.datetime.format.byUnicodePattern] documentation for details. */"
-
-/**
- * A special directive for year-of-era that behaves equivalently to [DateTimeFormatBuilder.WithDate.year].
- * This is the result of calling [byUnicodePattern] on a pattern that uses the ubiquitous "y" symbol.
- * We need a separate directive so that, when using [DateTimeFormat.formatAsKotlinBuilderDsl], we can print an
- * additional comment and explain that the behavior was not preserved exactly.
- */
-internal fun DateTimeFormatBuilder.WithDate.yearOfEra(padding: Padding) {
-    @Suppress("NO_ELSE_IN_WHEN")
-    when (this) {
-        is AbstractWithDateBuilder -> addFormatStructureForDate(
-            BasicFormatStructure(YearDirective(padding, isYearOfEra = true))
-        )
+    override fun toString(): String = when {
+        dayOfYear == null ->
+            "$yearMonth-${day ?: "??"} (day of week is ${dayOfWeek ?: "??"})"
+        day == null && monthNumber == null ->
+            "(${yearMonth.year ?: "??"})-$dayOfYear (day of week is ${dayOfWeek ?: "??"})"
+        else -> "$yearMonth-${day ?: "??"} (day of week is ${dayOfWeek ?: "??"}, day of year is $dayOfYear)"
     }
-}
-
-/**
- * A special directive for year-of-era that behaves equivalently to [DateTimeFormatBuilder.WithDate.year].
- * This is the result of calling [byUnicodePattern] on a pattern that uses the ubiquitous "y" symbol.
- * We need a separate directive so that, when using [DateTimeFormat.formatAsKotlinBuilderDsl], we can print an
- * additional comment and explain that the behavior was not preserved exactly.
- */
-internal fun DateTimeFormatBuilder.WithDate.yearOfEraTwoDigits(baseYear: Int) {
-    @Suppress("NO_ELSE_IN_WHEN")
-    when (this) {
-        is AbstractWithDateBuilder -> addFormatStructureForDate(
-            BasicFormatStructure(ReducedYearDirective(baseYear, isYearOfEra = true))
-        )
-    }
-}
-
-private class MonthDirective(private val padding: Padding) :
-    UnsignedIntFieldFormatDirective<DateFieldContainer>(
-        DateFields.month,
-        minDigits = padding.minDigits(2),
-        spacePadding = padding.spaces(2),
-    ) {
-    override val builderRepresentation: String
-        get() = when (padding) {
-            Padding.ZERO -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}()"
-            else -> "${DateTimeFormatBuilder.WithDate::monthNumber.name}(${padding.toKotlinCode()})"
-        }
-
-    override fun equals(other: Any?): Boolean = other is MonthDirective && padding == other.padding
-    override fun hashCode(): Int = padding.hashCode()
-}
-
-private class MonthNameDirective(private val names: MonthNames) :
-    NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.month, names.names, "monthName") {
-    override val builderRepresentation: String
-        get() =
-            "${DateTimeFormatBuilder.WithDate::monthName.name}(${names.toKotlinCode()})"
-
-    override fun equals(other: Any?): Boolean = other is MonthNameDirective && names.names == other.names.names
-    override fun hashCode(): Int = names.names.hashCode()
 }
 
 private class DayDirective(private val padding: Padding) :
@@ -462,20 +264,12 @@ internal class LocalDateFormat(override val actualFormat: CachedFormatStructure<
     }
 }
 
-internal interface AbstractWithDateBuilder : DateTimeFormatBuilder.WithDate {
+internal interface AbstractWithDateBuilder : AbstractWithYearMonthBuilder, DateTimeFormatBuilder.WithDate {
     fun addFormatStructureForDate(structure: FormatStructure<DateFieldContainer>)
 
-    override fun year(padding: Padding) =
-        addFormatStructureForDate(BasicFormatStructure(YearDirective(padding)))
-
-    override fun yearTwoDigits(baseYear: Int) =
-        addFormatStructureForDate(BasicFormatStructure(ReducedYearDirective(baseYear)))
-
-    override fun monthNumber(padding: Padding) =
-        addFormatStructureForDate(BasicFormatStructure(MonthDirective(padding)))
-
-    override fun monthName(names: MonthNames) =
-        addFormatStructureForDate(BasicFormatStructure(MonthNameDirective(names)))
+    override fun addFormatStructureForYearMonth(structure: FormatStructure<YearMonthFieldContainer>) {
+        addFormatStructureForDate(structure)
+    }
 
     override fun day(padding: Padding) =
         addFormatStructureForDate(BasicFormatStructure(DayDirective(padding)))

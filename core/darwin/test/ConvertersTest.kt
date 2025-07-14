@@ -11,6 +11,8 @@ import platform.Foundation.*
 import kotlin.math.*
 import kotlin.random.*
 import kotlin.test.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class ConvertersTest {
 
@@ -101,6 +103,18 @@ class ConvertersTest {
         components.timeZone = utc
         val nsDate = isoCalendar.dateFromComponents(components)!!
         assertEqualUpToHalfMicrosecond(dateTime.toInstant(TimeZone.UTC), nsDate.toKotlinInstant())
+    }
+
+    @Test
+    fun yearMonthToNSDateComponentsTest() {
+        val yearMonth = YearMonth(2019, 2)
+        val components = yearMonth.toNSDateComponents().apply { timeZone = utc }
+        val nsDate = isoCalendar.dateFromComponents(components)!!
+        val formatter = NSDateFormatter().apply {
+            timeZone = utc
+            dateFormat = "yyyy-MM"
+        }
+        assertEquals("2019-02", formatter.stringFromDate(nsDate))
     }
 
     @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)

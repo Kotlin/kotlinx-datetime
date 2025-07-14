@@ -9,11 +9,14 @@ import kotlinx.datetime.*
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
+import kotlinx.datetime.internal.format.formatter.FormatterStructure
+import kotlinx.datetime.internal.format.formatter.StringFormatterStructure
 import kotlinx.datetime.internal.format.parser.Copyable
 import kotlinx.datetime.internal.format.parser.ParserStructure
 import kotlinx.datetime.internal.format.parser.TimeZoneParserOperation
 import kotlinx.datetime.internal.safeMultiply
 import kotlin.reflect.*
+import kotlin.time.Instant
 
 /**
  * A collection of datetime fields used specifically for parsing and formatting.
@@ -184,8 +187,20 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     }
 
     /**
+     * Writes the contents of the specified [yearMonth] to this [DateTimeComponents].
+     * The [yearMonth] is written to the [year] and [monthNumber] fields.
+     *
+     * If any of the fields are already set, they will be overwritten.
+     *
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.yearMonth
+     */
+    public fun setYearMonth(yearMonth: YearMonth) {
+        contents.date.yearMonth.populateFrom(yearMonth)
+    }
+
+    /**
      * Writes the contents of the specified [localDate] to this [DateTimeComponents].
-     * The [localDate] is written to the [year], [monthNumber], [day], and [dayOfWeek] fields.
+     * The [localDate] is written to the [year], [monthNumber], [day], [dayOfWeek], and [dayOfYear] fields.
      *
      * If any of the fields are already set, they will be overwritten.
      *
@@ -244,6 +259,15 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         setDateTime(smallerInstant.toLocalDateTime(utcOffset))
         setOffset(utcOffset)
         year = year!! + ((instant.epochSeconds / SECONDS_PER_10000_YEARS) * 10000).toInt()
+    }
+
+    @Suppress("DEPRECATION")
+    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith("this.setDateTimeOffset(instant.toStdlibInstant(), utcOffset)")
+    )
+    public fun setDateTimeOffset(instant: kotlinx.datetime.Instant, utcOffset: UtcOffset) {
+        setDateTimeOffset(instant.toStdlibInstant(), utcOffset)
     }
 
     /**
@@ -419,6 +443,18 @@ public class DateTimeComponents internal constructor(internal val contents: Date
     public fun toUtcOffset(): UtcOffset = contents.offset.toUtcOffset()
 
     /**
+     * Builds a [YearMonth] from the fields in this [DateTimeComponents].
+     *
+     * This method uses the following fields:
+     * * [year]
+     * * [monthNumber]
+     *
+     * @throws IllegalArgumentException if any of the fields is missing or invalid.
+     * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toYearMonth
+     */
+    public fun toYearMonth(): YearMonth = contents.date.yearMonth.toYearMonth()
+
+    /**
      * Builds a [LocalDate] from the fields in this [DateTimeComponents].
      *
      * This method uses the following fields:
@@ -426,6 +462,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * * [monthNumber]
      * * [day]
      *
+     * Alternatively, the following fields can be used:
+     * * [year]
+     * * [dayOfYear]
+     *
+     * If both sets of fields are specified, they are checked for consistency.
      * Also, [dayOfWeek] is checked for consistency with the other fields.
      *
      * @throws IllegalArgumentException if any of the fields is missing or invalid.
@@ -483,7 +524,8 @@ public class DateTimeComponents internal constructor(internal val contents: Date
      * with one another.
      * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsSamples.toInstantUsingOffset
      */
-    public fun toInstantUsingOffset(): Instant {
+    @Suppress("DEPRECATION_ERROR")
+    public fun toInstantUsingOffset(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant {
         val offset = toUtcOffset()
         val time = toLocalTime()
         val truncatedDate = contents.date.copy()
@@ -501,10 +543,16 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         } catch (e: ArithmeticException) {
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant", e)
         }
-        if (totalSeconds < Instant.MIN.epochSeconds || totalSeconds > Instant.MAX.epochSeconds)
+        val result = Instant.fromEpochSeconds(totalSeconds, nanosecond ?: 0)
+        if (result.epochSeconds != totalSeconds)
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant")
-        return Instant.fromEpochSeconds(totalSeconds, nanosecond ?: 0)
+        return result
     }
+
+    @PublishedApi
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+    @kotlin.internal.LowPriorityInOverloadResolution
+    internal fun toInstantUsingOffset(): kotlinx.datetime.Instant = toInstantUsingOffset().toDeprecatedInstant()
 }
 
 /**
@@ -565,27 +613,22 @@ internal class DateTimeComponentsContents internal constructor(
 
 internal val timeZoneField = GenericFieldSpec(PropertyAccessor(DateTimeComponentsContents::timeZoneId))
 
-internal class TimeZoneIdDirective(private val knownZones: Set<String>) :
-    StringFieldFormatDirective<DateTimeComponentsContents>(timeZoneField, knownZones) {
+internal class TimeZoneIdDirective() : FieldFormatDirective<DateTimeComponentsContents> {
+    override val field: FieldSpec<DateTimeComponentsContents, String>
+        get() = timeZoneField
 
     override val builderRepresentation: String
-        get() =
-            "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+        get() = "${DateTimeFormatBuilder.WithDateTimeComponents::timeZoneId.name}()"
+
+    override fun formatter(): FormatterStructure<DateTimeComponentsContents> {
+        return StringFormatterStructure(field.accessor::getterNotNull)
+    }
 
     override fun parser(): ParserStructure<DateTimeComponentsContents> =
         ParserStructure(
-            emptyList(),
-            listOf(
-                super.parser(),
-                ParserStructure(
-                    listOf(TimeZoneParserOperation(timeZoneField.accessor)),
-                    emptyList()
-                )
-            )
+            listOf(TimeZoneParserOperation(timeZoneField.accessor)),
+            emptyList()
         )
-
-    override fun equals(other: Any?): Boolean = other is TimeZoneIdDirective && other.knownZones == knownZones
-    override fun hashCode(): Int = knownZones.hashCode()
 }
 
 internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatStructure<DateTimeComponentsContents>) :
@@ -609,7 +652,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatS
         }
 
         override fun timeZoneId() =
-            actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective(TimeZone.availableZoneIds)))
+            actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective()))
 
         @Suppress("NO_ELSE_IN_WHEN")
         override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {

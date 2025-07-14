@@ -20,10 +20,12 @@ include(":core")
 project(":core").name = "kotlinx-datetime"
 include(":timezones/full")
 project(":timezones/full").name = "kotlinx-datetime-zoneinfo"
-include(":serialization")
-project(":serialization").name = "kotlinx-datetime-serialization"
-include(":js-without-timezones")
-project(":js-without-timezones").name = "kotlinx-datetime-js-test-without-timezones"
-include(":js-with-timezones")
-project(":js-with-timezones").name = "kotlinx-datetime-js-test-with-timezones"
+include(":integration-testing/serialization")
+project(":integration-testing/serialization").name = "kotlinx-datetime-serialization"
+include(":integration-testing/js-without-timezones")
+project(":integration-testing/js-without-timezones").name = "kotlinx-datetime-js-test-without-timezones"
+include(":integration-testing/js-with-timezones")
+project(":integration-testing/js-with-timezones").name = "kotlinx-datetime-js-test-with-timezones"
+include(":integration-testing/jpms-test")
+project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
 include(":benchmarks")

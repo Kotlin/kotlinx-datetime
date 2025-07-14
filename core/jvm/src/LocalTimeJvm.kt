@@ -9,13 +9,13 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import java.time.DateTimeException
 import java.time.format.DateTimeParseException
 import java.time.LocalTime as jtLocalTime
 
-@Serializable(with = LocalTimeIso8601Serializer::class)
+@Serializable(with = LocalTimeSerializer::class)
 public actual class LocalTime internal constructor(
     internal val value: jtLocalTime
 ) : Comparable<LocalTime>, java.io.Serializable {
@@ -85,6 +85,10 @@ public actual class LocalTime internal constructor(
         @Suppress("FunctionName")
         public actual fun Format(builder: DateTimeFormatBuilder.WithTime.() -> Unit): DateTimeFormat<LocalTime> =
             LocalTimeFormat.build(builder)
+
+        // Even though this class uses writeReplace (so serialVersionUID is not needed for a stable serialized form), a
+        // stable serialVersionUID is useful for testing, see MaliciousJvmSerializationTest.
+        private const val serialVersionUID: Long = 0L
     }
 
     public actual object Formats {
@@ -92,6 +96,9 @@ public actual class LocalTime internal constructor(
         public actual val ISO: DateTimeFormat<LocalTime> get() = ISO_TIME
 
     }
+
+    private fun readObject(ois: java.io.ObjectInputStream): Unit =
+        throw java.io.InvalidObjectException("kotlinx.datetime.LocalTime must be deserialized via kotlinx.datetime.Ser")
 
     private fun writeReplace(): Any = Ser(Ser.TIME_TAG, this)
 }

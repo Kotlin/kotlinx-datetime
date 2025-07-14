@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## 0.7.1
+
+- Add `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock` type aliases to, respectively, `kotlin.time.Instant` and `kotlin.time.Clock` to make migration more convenient.
+- Add a fallback timezone database implementation for Darwin that uses the Foundation framework if the timezone database is unavailable on the filesystem ([#485](https://github.com/Kotlin/kotlinx-datetime/issues/485)).
+- Restore binary compatibility in string format definitions utilizing dates on the JVM ([#545](https://github.com/Kotlin/kotlinx-datetime/issues/545)).
+
+## 0.7.0
+
+Breaking changes:
+
+- Remove `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock` in favor of `kotlin.time.Instant` ([#506](https://github.com/Kotlin/kotlinx-datetime/pull/506)). See <https://github.com/Kotlin/kotlinx-datetime?tab=readme-ov-file#deprecation-of-instant> for a description of what to do if this causes problems.
+- Unify the range of admissible `LocalDate` and `LocalDateTime` values on all platforms ([#432](https://github.com/Kotlin/kotlinx-datetime/issues/432)).
+- Rename `dayOfMonth` to `day`, `monthNumber` to `month` ([#84](https://github.com/Kotlin/kotlinx-datetime/issues/84)).
+- Make `DayOfWeek` and `Month` no longer type aliases to `java.time.DayOfWeek` and `java.time.Month` ([#96](https://github.com/Kotlin/kotlinx-datetime/issues/96)).
+- Make `"UTC"` and not `"Z"` be the timezone identifier for `TimeZone.UTC` ([#474](https://github.com/Kotlin/kotlinx-datetime/issues/474)).
+- Accept `"z"` in `TimeZone.of`, with the same meaning as `"Z"` ([#529](https://github.com/Kotlin/kotlinx-datetime/issues/529)).
+- Add `DateTimeFormat`-based `KSerializer` implementations for datetime entities, and change the default serializers to be based on `toString`/`parse` pairs ([#415](https://github.com/Kotlin/kotlinx-datetime/issues/415)).
+
+Additions:
+
+- Add `java.io.Serializable` implementations for most of the entities in the library ([#143](https://github.com/Kotlin/kotlinx-datetime/issues/143)). Thanks for spotting and fixing a potential vulnerability, @lukellmann!
+- Add `LocalDateRange`, a range of `LocalDate` values ([#190](https://github.com/Kotlin/kotlinx-datetime/issues/190)). Thanks, @PeterAttardo!
+- Add `YearMonth` and `YearMonthRange` ([#457](https://github.com/Kotlin/kotlinx-datetime/issues/168)).
+
+Tweaks and fixes:
+
+- Support obtaining the system timezone on old Debian-based distributions ([#430](https://github.com/Kotlin/kotlinx-datetime/issues/430)).
+- Fix not being able to parse some valid timezone identifiers using the `timeZoneId()` directive ([#444](https://github.com/Kotlin/kotlinx-datetime/issues/444)).
+- Use the grammar defined in RFC 9557 for parsing timezone identifiers in the `timeZoneId()` directive, allowing parsing values not present in the timezone database ([#531](https://github.com/Kotlin/kotlinx-datetime/issues/531)).
+- Improved error messages when formatting an invalid `DateTimeComponents` value ([#471](https://github.com/Kotlin/kotlinx-datetime/issues/471)).
+- Set the JPMS dependency on `kotlinx.serialization.core` to be optional ([#496](https://github.com/Kotlin/kotlinx-datetime/issues/496)).
+
 ## 0.6.2
 
 - Add the Wasm/WASI target support ([#366](https://github.com/Kotlin/kotlinx-datetime/pull/366)). Thanks, @igoriakovlev!

@@ -166,5 +166,6 @@ private val allFormatConstants: List<Pair<String, CachedFormatStructure<*>>> by 
         "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO)" to unwrap(UtcOffset.Formats.ISO),
         "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.ISO_BASIC)" to unwrap(UtcOffset.Formats.ISO_BASIC),
         "${DateTimeFormatBuilder.WithUtcOffset::offset.name}(UtcOffset.Formats.FOUR_DIGITS)" to unwrap(UtcOffset.Formats.FOUR_DIGITS),
+        "${DateTimeFormatBuilder.WithYearMonth::yearMonth.name}(YearMonth.Formats.ISO)" to unwrap(YearMonth.Formats.ISO),
     )
 }

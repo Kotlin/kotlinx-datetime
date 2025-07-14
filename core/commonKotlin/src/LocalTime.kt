@@ -10,10 +10,10 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.format.*
-import kotlinx.datetime.serializers.LocalTimeIso8601Serializer
+import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
-@Serializable(LocalTimeIso8601Serializer::class)
+@Serializable(LocalTimeSerializer::class)
 public actual class LocalTime actual constructor(
     public actual val hour: Int,
     public actual val minute: Int,

@@ -8,6 +8,7 @@ package kotlinx.datetime.test.samples.format
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.test.*
+import kotlin.time.Instant
 
 class DateTimeComponentsSamples {
 
@@ -140,6 +141,24 @@ class DateTimeComponentsSamples {
         }
         val parsedWithoutDayOfWeek = formatWithoutDayOfWeek.parse("2021-03-28")
         check(parsedWithoutDayOfWeek.dayOfWeek == null)
+    }
+
+    @Test
+    fun yearMonth() {
+        // Formatting and parsing a year-month in complex scenarios
+        val format = DateTimeComponents.Format {
+            year(); char('-'); monthNumber()
+        }
+        val formattedYearMonth = format.format {
+            setYearMonth(YearMonth(2023, Month.FEBRUARY))
+            check(year == 2023)
+            check(month == Month.FEBRUARY)
+        }
+        check(formattedYearMonth == "2023-02")
+        val parsedYearMonth = format.parse("2023-02")
+        check(parsedYearMonth.toYearMonth() == YearMonth(2023, Month.FEBRUARY))
+        check(parsedYearMonth.year == 2023)
+        check(parsedYearMonth.month == Month.FEBRUARY)
     }
 
     @Test
@@ -288,12 +307,6 @@ class DateTimeComponentsSamples {
         check(formattedWithTimeZone == "2021-03-28T02:16:20[America/New_York]")
         val parsedWithTimeZone = DateTimeComponents.parse(formattedWithTimeZone, formatWithTimeZone)
         check(parsedWithTimeZone.timeZoneId == "America/New_York")
-        try {
-            formatWithTimeZone.parse("2021-03-28T02:16:20[Mars/Phobos]")
-            fail("Expected an exception")
-        } catch (e: DateTimeFormatException) {
-            // expected: the time zone ID is invalid
-        }
     }
 
     @Test
@@ -303,6 +316,15 @@ class DateTimeComponentsSamples {
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val offset = parsed.toUtcOffset()
         check(offset == UtcOffset(3, 0))
+    }
+
+    @Test
+    fun toYearMonth() {
+        // Obtaining a YearMonth from the parsed data
+        val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
+        val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
+        val yearMonth = parsed.toYearMonth()
+        check(yearMonth == YearMonth(1994, Month.NOVEMBER))
     }
 
     @Test

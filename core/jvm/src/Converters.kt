@@ -8,12 +8,17 @@ package kotlinx.datetime
 /**
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
  */
-public fun Instant.toJavaInstant(): java.time.Instant = this.value
+@PublishedApi
+@Suppress("DEPRECATION")
+internal fun Instant.toJavaInstant(): java.time.Instant = this.value
 
 /**
  * Converts this [java.time.Instant][java.time.Instant] value to a [kotlinx.datetime.Instant][Instant] value.
  */
-public fun java.time.Instant.toKotlinInstant(): Instant = Instant(this)
+@PublishedApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal fun java.time.Instant.toKotlinInstant(): Instant = Instant(this)
 
 
 /**
@@ -112,3 +117,13 @@ public fun DayOfWeek.toJavaDayOfWeek(): java.time.DayOfWeek = java.time.DayOfWee
  * Converts this [java.time.DayOfWeek][java.time.DayOfWeek] value to a [kotlinx.datetime.DayOfWeek][DayOfWeek] value.
  */
 public fun java.time.DayOfWeek.toKotlinDayOfWeek(): DayOfWeek = DayOfWeek.entries[this.value - 1]
+
+/*
+ * Converts this [kotlinx.datetime.YearMonth][YearMonth] value to a [java.time.YearMonth][java.time.YearMonth] value.
+ */
+public fun YearMonth.toJavaYearMonth(): java.time.YearMonth = this.value
+
+/**
+ * Converts this [java.time.YearMonth][java.time.YearMonth] value to a [kotlinx.datetime.YearMonth][YearMonth] value.
+ */
+public fun java.time.YearMonth.toKotlinYearMonth(): YearMonth = YearMonth(this)

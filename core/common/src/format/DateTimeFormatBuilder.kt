@@ -9,6 +9,10 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
+@OptIn(ExperimentalMultiplatform::class)
+@OptionalExpectation
+internal expect annotation class MyJvmDefaultWithoutCompatibility()
+
 /**
  * Common functions for all format builders.
  */
@@ -24,9 +28,9 @@ public sealed interface DateTimeFormatBuilder {
     public fun chars(value: String)
 
     /**
-     * Functions specific to the datetime format builders containing the local-date fields.
+     * Functions specific to the datetime format builders containing the year and month fields.
      */
-    public sealed interface WithDate : DateTimeFormatBuilder {
+    public sealed interface WithYearMonth : DateTimeFormatBuilder {
         /**
          * A year number.
          *
@@ -35,7 +39,7 @@ public sealed interface DateTimeFormatBuilder {
          * For years outside this range, it's formatted as a decimal number with a leading sign, so the year 12345
          * is formatted as "+12345".
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.year
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.year
          */
         public fun year(padding: Padding = Padding.ZERO)
 
@@ -54,7 +58,7 @@ public sealed interface DateTimeFormatBuilder {
          * and when given a full year number with a leading sign, it parses the full year number,
          * so "+1850" becomes 1850.
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.yearTwoDigits
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.yearTwoDigits
          */
         public fun yearTwoDigits(baseYear: Int)
 
@@ -63,21 +67,30 @@ public sealed interface DateTimeFormatBuilder {
          *
          * By default, it's padded with zeros to two digits. This can be changed by passing [padding].
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.monthNumber
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.monthNumber
          */
         public fun monthNumber(padding: Padding = Padding.ZERO)
 
         /**
          * A month name (for example, "January").
          *
-         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.monthName
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.monthName
          */
         public fun monthName(names: MonthNames)
 
-        /** @suppress */
-        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
-        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
+        /**
+         * An existing [DateTimeFormat] for the date part.
+         *
+         * @sample kotlinx.datetime.test.samples.format.YearMonthFormatSamples.yearMonth
+         */
+        public fun yearMonth(format: DateTimeFormat<YearMonth>)
+    }
 
+    /**
+     * Functions specific to the datetime format builders containing the local-date fields.
+     */
+    @MyJvmDefaultWithoutCompatibility
+    public sealed interface WithDate : WithYearMonth {
         /**
          * A day-of-month number, from 1 to 31.
          *
@@ -86,6 +99,10 @@ public sealed interface DateTimeFormatBuilder {
          * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOfMonth
          */
         public fun day(padding: Padding = Padding.ZERO)
+
+        /** @suppress */
+        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
+        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
 
         /**
          * A day-of-week name (for example, "Thursday").
@@ -287,10 +304,29 @@ public sealed interface DateTimeFormatBuilder {
      */
     public sealed interface WithDateTimeComponents : WithDateTime, WithUtcOffset {
         /**
-         * The IANA time zone identifier, for example, "Europe/Berlin".
+         * A timezone identifier, either offset-based or a region-based IANA timezone ID.
          *
-         * When formatting, the timezone identifier is supplied as is, without any validation.
-         * On parsing, [TimeZone.availableZoneIds] is used to validate the identifier.
+         * Offset-based timezones:
+         * - `Z` or `z` - UTC
+         * - Optional prefix (`UTC`, `GMT`, `UT`) followed by offset
+         * - Offset in one of the formats: `+H`, `+HH`, `+HHMM`, `+HHMMSS`, `+HH:MM`, `+HH:MM:SS`
+         *
+         * Region-based IANA timezone IDs:
+         * Parsed according to RFC 9557 grammar (section 4.1 of https://datatracker.ietf.org/doc/rfc9557/):
+         * ```
+         * time-zone-initial = ALPHA / "." / "_"
+         * time-zone-char    = time-zone-initial / DIGIT / "-" / "+"
+         * time-zone-part    = time-zone-initial *time-zone-char
+         * time-zone-name    = time-zone-part *("/" time-zone-part)
+         * ```
+         *
+         * Note: This implementation doesn't follow the RFC 9557 grammar fully and allows
+         * "." and ".." as the time-zone-part.
+         *
+         * When formatting, outputs the identifier as-is. When parsing, validates syntax only;
+         * actual timezone validation is deferred until creating a [TimeZone] object.
+         *
+         * If more than one way to read a valid timezone ID matches the string, we always take the longest one.
          *
          * @sample kotlinx.datetime.test.samples.format.DateTimeComponentsFormatSamples.timeZoneId
          */

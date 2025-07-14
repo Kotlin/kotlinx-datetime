@@ -9,6 +9,8 @@ import kotlinx.datetime.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class ClockSamples {
     @Test
