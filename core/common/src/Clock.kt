@@ -93,6 +93,11 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
  *
  * @sample kotlinx.datetime.test.samples.ClockSamples.timeSourceAsClock
  */
+@Deprecated(
+    "Use kotlin.time.asClock instead",
+    ReplaceWith("this.asClock(origin)", "kotlin.time.asClock"),
+    level = DeprecationLevel.WARNING
+)
 public fun TimeSource.asClock(origin: Instant): Clock = object : Clock {
     private val startMark: TimeMark = markNow()
     override fun now() = origin + startMark.elapsedNow()
