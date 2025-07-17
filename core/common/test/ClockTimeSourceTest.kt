@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.asClock
 import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.days
