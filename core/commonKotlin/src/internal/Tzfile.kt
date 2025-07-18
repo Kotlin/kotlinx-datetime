@@ -88,6 +88,9 @@ internal fun readTzFile(data: ByteArray): TzFile {
         override fun toString(): String = "Ttinfo(utoff=$utoff, isdst=$isdst, abbrind=$abbrind)"
     }
 
+    fun abbreviationForIndex(abbreviations: List<Byte>, startIndex: UByte): String = abbreviations.drop(startIndex.toInt())
+        .takeWhile { byte -> byte != 0.toByte() }.toByteArray().decodeToString()
+
     inline fun BinaryDataReader.readData(header: Header, readTime: () -> Long): TzFileData {
         val transitionTimes = List(header.timecnt) { readTime() }
         val transitionTypes = List(header.timecnt) { readByte() }
@@ -99,8 +102,6 @@ internal fun readTzFile(data: ByteArray): TzFile {
             )
         }
         val abbreviations = List(header.charcnt) { readByte() }
-        fun abbreviationForIndex(startIndex: UByte): String = abbreviations.drop(startIndex.toInt())
-            .takeWhile { byte -> byte != 0.toByte() }.toByteArray().decodeToString()
         val leapSecondRules = List(header.leapcnt) {
             TzFileData.LeapSecondRule(
                 readTime(),
@@ -114,7 +115,7 @@ internal fun readTzFile(data: ByteArray): TzFile {
         return TzFileData(
             leapSecondRules,
             transitionTimes.zip(transitionTypes) { time, type -> TzFileData.Transition(time, type.toInt()) },
-            ttinfos.map { TzFileData.ClockState(TzFileOffset(it.utoff), it.isdst, abbreviationForIndex(it.abbrind)) }
+            ttinfos.map { TzFileData.ClockState(TzFileOffset(it.utoff), it.isdst, abbreviationForIndex(abbreviations, it.abbrind)) }
         )
     }
 
