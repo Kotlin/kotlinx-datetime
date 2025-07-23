@@ -13,32 +13,36 @@ repositories {
     gradlePluginPortal()
 
     // !! infrastructure for builds as a Kotlin user project
-    val optionalKotlinArtifactsRepo = providers.gradleProperty("kotlin_repo_url").orNull
-    if (optionalKotlinArtifactsRepo != null) {
-        maven(url = optionalKotlinArtifactsRepo)
-        logger.info(
-            "[ktDT-as-KUP] Registered '$optionalKotlinArtifactsRepo' as a dependency Maven repository for buildSrc"
-        )
+    // this is an inlined version of `KotlinUserProjectUtilities.kupArtifactsRepo`
+    // (because `buildSrc/.../KotlinUserProjectInfra.kt` is not available here)
+    val kupArtifactsRepoURL = providers.gradleProperty("kotlin_repo_url").orNull
+    if (kupArtifactsRepoURL != null) {
+        maven(kupArtifactsRepoURL)
+        logger.lifecycle("[KUP infra] Added '$kupArtifactsRepoURL' as a Maven repo to ':buildSrc'")
     }
 }
 
 // !! infrastructure for builds as a Kotlin user project
+/**
+ * the value provided via the `kotlin_version` Gradle property if any
+ * (otherwise, `defaultKotlinVersion` defined in `gradle.properties` of the root project is used instead);
+ * note that there is no direct `buildSrc/.../KotlinUserProjectInfra.kt` analogue for this utility
+ * because `kotlin_version` is commonly used where `buildSrc/.../KotlinUserProjectInfra.kt` is not available
+ * (`settings.gradle.kts`, `buildSrc`, etc.)
+ */
 val Project.kotlinVersion: String by lazy {
-        val optionalOverridingKotlinVersion = providers.gradleProperty("kotlin_version").orNull
-        if (optionalOverridingKotlinVersion != null) {
-            logger.info(
-                "[ktDT-as-KUP] Overrode the Kotlin distribution version with $optionalOverridingKotlinVersion"
-            )
-            optionalOverridingKotlinVersion
-        } else {
-            // we don't have access to the properties defined in `gradle.properties` of the encompassing project,
+    val kotlinVersion: String = providers.gradleProperty("kotlin_version").orNull
+        ?: run {
+            // we don't have access to the properties defined in `gradle.properties` of the root project,
             // so we have to get them manually
             val properties = Properties().apply {
                 file("../gradle.properties").inputStream().use { load(it) }
             }
             properties.getProperty("defaultKotlinVersion")
         }
-    }
+    logger.lifecycle("[KUP infra] Set Kotlin distribution version to '$kotlinVersion'")
+    kotlinVersion
+}
 
 dependencies {
     fun gradlePlugin(id: String, version: String): String = "$id:$id.gradle.plugin:$version"
