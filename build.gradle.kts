@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-85"
     kotlin("multiplatform") apply false
@@ -22,28 +25,25 @@ val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVe
 
 allprojects {
     repositories {
-        addTrainRepositories(project)
         mavenCentral()
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        // outputs the compiler version to logs so we can check whether the train configuration applied
-        kotlinOptions.freeCompilerArgs += "-version"
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xjvm-default=all-compatibility") }
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
-        compilerOptions { freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR") }
+        kupInfra {
+            kupArtifactsRepo(context = project)
+        }
     }
 }
 
-// Disable NPM to NodeJS nightly compatibility check.
-// Drop this when NodeJs version that supports latest Wasm become stable
-tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
+subprojects {
+    // drop this after migration to 2.2.0
+    tasks.withType<KotlinJvmCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xjvm-default=all-compatibility")
+        }
+    }
+    kupInfra {
+        tasks.withType<KotlinCompilationTask<*>>().configureEach {
+            kupConfiguration()
+        }
+    }
 }
 
 kover {

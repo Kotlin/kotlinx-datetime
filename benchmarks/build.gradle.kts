@@ -3,6 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 plugins {
     id("kotlin")
     id("me.champeau.jmh")
@@ -31,4 +33,11 @@ tasks.named<Jar>("jmhJar") {
 
 repositories {
     mavenCentral()
+}
+
+// !! infrastructure for builds as a Kotlin user project
+tasks.named("assemble") {
+    // compile all Kotlin code from the module during full-repository builds
+    // so that it's covered during builds as a Kotlin user project
+    dependsOn(tasks.withType<KotlinCompilationTask<*>>())
 }

@@ -8,31 +8,40 @@ plugins {
     `kotlin-dsl`
 }
 
-val props = Properties().apply {
-    file("../gradle.properties").inputStream().use { load(it) }
-}
-
-// copy-pasted from `CommunityProjectsBuild`, see the explanation there
-fun RepositoryHandler.addTrainRepositories(project: Project) {
-    if (project.rootProject.properties["build_snapshot_train"]?.toString()?.toBoolean() == true) {
-        mavenLocal()
-    }
-    (project.rootProject.properties["kotlin_repo_url"] as? String)?.let(::maven)
-}
-
-// copy-pasted from `CommunityProjectsBuild`, but uses `props` to obtain the non-snapshot version, because
-// we don't have access to the properties defined in `gradle.properties` of the encompassing project
-val Project.kotlinVersion: String
-    get() = if (rootProject.properties["build_snapshot_train"]?.toString()?.toBoolean() == true) {
-        rootProject.properties["kotlin_snapshot_version"] as? String ?: error("kotlin_snapshot_version must be specified")
-    } else {
-        props.getProperty("defaultKotlinVersion")
-    }
-
 repositories {
     mavenCentral()
     gradlePluginPortal()
-    addTrainRepositories(project)
+
+    // !! infrastructure for builds as a Kotlin user project
+    // this is an inlined version of `KotlinUserProjectUtilities.kupArtifactsRepo`
+    // (because `buildSrc/.../KotlinUserProjectInfra.kt` is not available here)
+    val kupArtifactsRepoURL = providers.gradleProperty("kotlin_repo_url").orNull
+    if (kupArtifactsRepoURL != null) {
+        maven(kupArtifactsRepoURL)
+        logger.lifecycle("[KUP infra] Added '$kupArtifactsRepoURL' as a Maven repo to ':buildSrc'")
+    }
+}
+
+// !! infrastructure for builds as a Kotlin user project
+/**
+ * the value provided via the `kotlin_version` Gradle property if any
+ * (otherwise, `defaultKotlinVersion` defined in `gradle.properties` of the root project is used instead);
+ * note that there is no direct `buildSrc/.../KotlinUserProjectInfra.kt` analogue for this utility
+ * because `kotlin_version` is commonly used where `buildSrc/.../KotlinUserProjectInfra.kt` is not available
+ * (`settings.gradle.kts`, `buildSrc`, etc.)
+ */
+val Project.kotlinVersion: String by lazy {
+    val kotlinVersion: String = providers.gradleProperty("kotlin_version").orNull
+        ?: run {
+            // we don't have access to the properties defined in `gradle.properties` of the root project,
+            // so we have to get them manually
+            val properties = Properties().apply {
+                file("../gradle.properties").inputStream().use { load(it) }
+            }
+            properties.getProperty("defaultKotlinVersion")
+        }
+    logger.lifecycle("[KUP infra] Set Kotlin distribution version to '$kotlinVersion'")
+    kotlinVersion
 }
 
 dependencies {
