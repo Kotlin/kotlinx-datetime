@@ -7,11 +7,9 @@
 
 package kotlinx.datetime.test.format
 
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.*
 import kotlinx.datetime.format.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 class LocalDateFormatTest {
 
@@ -235,13 +233,22 @@ class LocalDateFormatTest {
     @Test
     fun testDoc() {
         val format = LocalDate.Format {
-            year()
-            char(' ')
-            monthName(MonthNames.ENGLISH_ABBREVIATED)
-            char(' ')
-            day()
+          year()
+          char(' ')
+          monthName(MonthNames.ENGLISH_ABBREVIATED)
+          char(' ')
+          day()
         }
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
+    }
+
+    @Test
+    fun testEmptyDayOfWeekNames() {
+        val names = DayOfWeekNames.ENGLISH_FULL.names
+        for (i in 0 until 7) {
+            val newNames = (0 until 7).map { if (it == i) "" else names[it] }
+            assertFailsWith<IllegalArgumentException> { DayOfWeekNames(newNames) }
+        }
     }
 
     @Test

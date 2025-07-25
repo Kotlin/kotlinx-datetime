@@ -5,10 +5,9 @@
 
 package kotlinx.datetime.test.samples.format
 
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.*
 import kotlinx.datetime.format.*
-import kotlin.test.Test
+import kotlin.test.*
 
 class LocalDateFormatSamples {
     @Test
@@ -108,11 +107,9 @@ class LocalDateFormatSamples {
         @Test
         fun names() {
             // Obtaining the list of day of week names
-            check(
-                DayOfWeekNames.ENGLISH_ABBREVIATED.names == listOf(
-                    "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-                )
-            )
+            check(DayOfWeekNames.ENGLISH_ABBREVIATED.names == listOf(
+                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+            ))
         }
 
         @Test
