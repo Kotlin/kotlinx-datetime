@@ -222,9 +222,38 @@ private class OrdinalDayDirective(
     override fun hashCode(): Int = names.names.hashCode()
 }
 
-public class DayOrdinalNames(public val names: List<String>) {
+
+/**
+ * A description of how the names of ordinal days are formatted.
+ *
+ * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.dayOrdinal].
+ *
+ * A predefined instance is available as [ENGLISH].
+ * You can also create custom instances using the constructor.
+ *
+ * An [IllegalArgumentException] will be thrown if the list does not contain exactly 31 elements.
+ *
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.usage
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.customNames
+ */
+public class DayOrdinalNames(
+    /**
+     * A list of the names of ordinal days from 1st to 31st.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.names
+     */
+    public val names: List<String>
+) {
     init {
-        require(names.size == 31) { "Ordinal day suffixes must contain exactly 31 elements" }
+        /**
+         * The list must contain exactly 31 elements, one for each day of the month.
+         * The names are expected to be in the order from 1st to 31st.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.invalidListSize
+         */
+        require(names.size == 31) {
+            "Day ordinal names must contain exactly 31 elements, one for each day of the month"
+        }
     }
 
     public companion object {

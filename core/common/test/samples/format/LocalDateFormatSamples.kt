@@ -138,7 +138,7 @@ class LocalDateFormatSamples {
         }
     }
 
-    class DayOrdinalSamples {
+    class DayOrdinalNamesSamples {
         @Test
         fun usage() {
             // Using ordinal day with the default English‑suffix formatter
@@ -149,7 +149,7 @@ class LocalDateFormatSamples {
         }
 
         @Test
-        fun ordinalDayWithCustomNames() {
+        fun customNames() {
             // Using ordinal day with a custom formatter that always falls back to "th"
             val customOrdinalDays = LocalDate.Format {
                 dayOrdinal(
