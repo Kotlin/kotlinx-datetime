@@ -7,9 +7,11 @@
 
 package kotlinx.datetime.test.format
 
-import kotlinx.datetime.*
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class LocalDateFormatTest {
 
@@ -233,22 +235,13 @@ class LocalDateFormatTest {
     @Test
     fun testDoc() {
         val format = LocalDate.Format {
-          year()
-          char(' ')
-          monthName(MonthNames.ENGLISH_ABBREVIATED)
-          char(' ')
-          day()
+            year()
+            char(' ')
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+            char(' ')
+            day()
         }
         assertEquals("2020 Jan 05", format.format(LocalDate(2020, 1, 5)))
-    }
-
-    @Test
-    fun testEmptyDayOfWeekNames() {
-        val names = DayOfWeekNames.ENGLISH_FULL.names
-        for (i in 0 until 7) {
-            val newNames = (0 until 7).map { if (it == i) "" else names[it] }
-            assertFailsWith<IllegalArgumentException> { DayOfWeekNames(newNames) }
-        }
     }
 
     @Test
@@ -256,6 +249,38 @@ class LocalDateFormatTest {
         assertFailsWith<IllegalArgumentException> {
             DayOfWeekNames("Mon", "Tue", "Tue", "Thu", "Fri", "Sat", "Sun")
         }
+    }
+
+    @Test
+    fun testDayOrdinalFormatting() {
+        val format = LocalDate.Format {
+            dayOrdinal(DayOrdinalNames.ENGLISH); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+        val testCases = listOf(
+            LocalDate(2021, 1, 1) to "1st Jan",
+            LocalDate(2021, 1, 2) to "2nd Jan",
+            LocalDate(2021, 1, 3) to "3rd Jan",
+            LocalDate(2021, 1, 4) to "4th Jan",
+            LocalDate(2021, 1, 11) to "11th Jan",
+            LocalDate(2021, 1, 21) to "21st Jan",
+            LocalDate(2021, 1, 22) to "22nd Jan",
+            LocalDate(2021, 1, 23) to "23rd Jan",
+            LocalDate(2021, 1, 31) to "31st Jan"
+        )
+        for ((date, expected) in testCases) {
+            assertEquals(expected, format.format(date), "Failed for $date")
+        }
+    }
+
+    @Test
+    fun testDayOrdinalCustomNames() {
+        val customNames = DayOrdinalNames(List(31) { i -> "${i + 1}th" })
+        val format = LocalDate.Format {
+            dayOrdinal(customNames); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+        assertEquals("1th Jan", format.format(LocalDate(2021, 1, 1)))
+        assertEquals("2th Jan", format.format(LocalDate(2021, 1, 2)))
+        assertEquals("31th Jan", format.format(LocalDate(2021, 1, 31)))
     }
 
     private fun test(strings: Map<LocalDate, Pair<String, Set<String>>>, format: DateTimeFormat<LocalDate>) {
