@@ -210,6 +210,43 @@ private class DayDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
+private class OrdinalDayDirective(
+    private val names: DayOrdinalNames = DayOrdinalNames.ENGLISH,
+) : NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.day, names.names, "dayOrdinalName") {
+
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDate::day.name}(${names.toKotlinCode()})"
+
+    override fun equals(other: Any?): Boolean = other is OrdinalDayDirective && names.names == other.names.names
+    override fun hashCode(): Int = names.names.hashCode()
+}
+
+public class DayOrdinalNames(public val names: List<String>) {
+    init {
+        require(names.size == 31) { "Ordinal day suffixes must contain exactly 31 elements" }
+    }
+
+    public companion object {
+        /** The English default: "1st", "2nd", "3rd", … */
+        public val ENGLISH: DayOrdinalNames = DayOrdinalNames(List(31) { i ->
+            val d = i + 1
+            when {
+                d % 100 in 11..13 -> "${d}th"
+                d % 10 == 1 -> "${d}st"
+                d % 10 == 2 -> "${d}nd"
+                d % 10 == 3 -> "${d}rd"
+                else -> "${d}th"
+            }
+        })
+    }
+}
+
+private fun DayOrdinalNames.toKotlinCode(): String = when (this.names) {
+    DayOrdinalNames.ENGLISH.names -> "DayOrdinalNames.${DayOrdinalNames.Companion::ENGLISH.name}"
+    else -> names.joinToString(", ", "DayOrdinalNames(", ")", transform = String::toKotlinCode)
+}
+
 private class DayOfYearDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.dayOfYear,
@@ -269,6 +306,10 @@ internal interface AbstractWithDateBuilder : AbstractWithYearMonthBuilder, DateT
 
     override fun addFormatStructureForYearMonth(structure: FormatStructure<YearMonthFieldContainer>) {
         addFormatStructureForDate(structure)
+    }
+
+    override fun dayOrdinal(names: DayOrdinalNames) {
+        addFormatStructureForDate(BasicFormatStructure(OrdinalDayDirective(names)))
     }
 
     override fun day(padding: Padding) =

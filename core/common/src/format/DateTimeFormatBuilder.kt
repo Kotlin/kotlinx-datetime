@@ -100,9 +100,18 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun day(padding: Padding = Padding.ZERO)
 
+        /**
+         * A day-of-month number with an ordinal suffix (for example, "1st", "2nd", "3rd", "4th").
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOrdinal
+         */
+        public fun dayOrdinal(names: DayOrdinalNames)
+
         /** @suppress */
         @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
-        public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
+        public fun dayOfMonth(padding: Padding = Padding.ZERO) {
+            day(padding)
+        }
 
         /**
          * A day-of-week name (for example, "Thursday").

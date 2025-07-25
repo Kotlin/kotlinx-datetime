@@ -26,6 +26,46 @@ class LocalDateFormatSamples {
     }
 
     @Test
+    fun ordinalDay() {
+        // Using ordinal day with the default English‑suffix formatter
+        val defaultOrdinalDays = LocalDate.Format {
+            dayOrdinal(DayOrdinalNames.ENGLISH); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 1)) == "1st Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 2)) == "2nd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 3)) == "3rd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 4)) == "4th Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 11)) == "11th Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 21)) == "21st Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 22)) == "22nd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 31)) == "31st Jan")
+    }
+
+    @Test
+    fun ordinalDayWithCustomNames() {
+        // Using ordinal day with a custom formatter that always falls back to "th"
+        val customOrdinalDays = LocalDate.Format {
+            dayOrdinal(
+                names = DayOrdinalNames(
+                    List(31) {
+                        val d = it + 1
+                        when (d) {
+                            1 -> "1st"
+                            2 -> "2nd"
+                            3 -> "3rd"
+                            else -> "${d}th"
+                        }
+                    }
+                )); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+        check(customOrdinalDays.format(LocalDate(2021, 1, 1)) == "1st Jan")
+        check(customOrdinalDays.format(LocalDate(2021, 1, 2)) == "2nd Jan")
+        check(customOrdinalDays.format(LocalDate(2021, 1, 3)) == "3rd Jan")
+        check(customOrdinalDays.format(LocalDate(2021, 1, 22)) == "22th Jan")
+        check(customOrdinalDays.format(LocalDate(2021, 1, 31)) == "31th Jan")
+    }
+
+    @Test
     fun dayOfWeek() {
         // Using strings for day-of-week names in a custom format
         val format = LocalDate.Format {
