@@ -538,7 +538,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
         truncatedDate.year = requireParsedField(truncatedDate.year, "year") % 10_000
         val totalSeconds = try {
             val secDelta = safeMultiply((year!! / 10_000).toLong(), SECONDS_PER_10000_YEARS)
-            val epochDays = truncatedDate.toLocalDate().toEpochDays().toLong()
+            val epochDays = truncatedDate.toLocalDate().toEpochDays()
             safeAdd(secDelta, epochDays * SECONDS_PER_DAY + time.toSecondOfDay() - offset.totalSeconds)
         } catch (e: ArithmeticException) {
             throw DateTimeFormatException("The parsed date is outside the range representable by Instant", e)
@@ -654,10 +654,8 @@ internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatS
         override fun timeZoneId() =
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective()))
 
-        @Suppress("NO_ELSE_IN_WHEN")
-        override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) = when (format) {
-            is DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat)
-        }
+        override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) =
+            format.withForceCast { format: DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat) }
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }

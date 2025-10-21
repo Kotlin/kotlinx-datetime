@@ -178,7 +178,7 @@ class DateTimeComponentsSamples {
         check(parsedDate.year == 2023)
         check(parsedDate.dayOfYear == 44)
         check(parsedDate.month == null)
-        check(parsedDate.dayOfMonth == null)
+        check(parsedDate.day == null)
         check(parsedDate.dayOfWeek == null)
     }
 
@@ -311,7 +311,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toUtcOffset() {
-        // Obtaining a UTC offset from the parsed data
+        // Getting a UTC offset from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val offset = parsed.toUtcOffset()
@@ -320,7 +320,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toYearMonth() {
-        // Obtaining a YearMonth from the parsed data
+        // Getting a YearMonth from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val yearMonth = parsed.toYearMonth()
@@ -329,7 +329,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalDate() {
-        // Obtaining a LocalDate from the parsed data
+        // Getting a LocalDate from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localDate = parsed.toLocalDate()
@@ -338,7 +338,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalTime() {
-        // Obtaining a LocalTime from the parsed data
+        // Getting a LocalTime from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localTime = parsed.toLocalTime()
@@ -347,7 +347,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toLocalDateTime() {
-        // Obtaining a LocalDateTime from the parsed data
+        // Getting a LocalDateTime from the parsed data
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val localDateTime = parsed.toLocalDateTime()
@@ -356,7 +356,7 @@ class DateTimeComponentsSamples {
 
     @Test
     fun toInstantUsingOffset() {
-        // Obtaining an Instant from the parsed data using the given UTC offset
+        // Getting an Instant from the parsed data using the given UTC offset
         val rfc1123Input = "Sun, 06 Nov 1994 08:49:37 +0300"
         val parsed = DateTimeComponents.Formats.RFC_1123.parse(rfc1123Input)
         val instant = parsed.toInstantUsingOffset()
@@ -383,7 +383,7 @@ class DateTimeComponentsSamples {
             setOffset(UtcOffset(3, 30))
         }
         check(formattedCompoundData == "2023-01-02 03:46:58.531 +03:30:00")
-        // It can also be used to format partial data that is missing some components
+        // It can also be used to format partial data missing some components
         val partialFormat = DateTimeComponents.Format {
             year(); char('-'); monthNumber()
         }
@@ -410,7 +410,7 @@ class DateTimeComponentsSamples {
         check(parsedCompoundData.toLocalDate() == LocalDate(2023, 1, 2))
         check(parsedCompoundData.toUtcOffset() == UtcOffset(3, 30))
         check(parsedCompoundData.toInstantUsingOffset() == Instant.parse("2023-01-02T03:46:58.531+03:30"))
-        // It can also be used to parse partial data that is missing some components
+        // It can also be used to parse partial data missing some components
         val partialFormat = DateTimeComponents.Format {
             year(); char('-'); monthNumber()
         }
@@ -420,7 +420,7 @@ class DateTimeComponentsSamples {
         try {
             parsedPartialData.toLocalDate()
             fail("Expected an exception")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // expected: the day is missing, so LocalDate cannot be constructed
         }
     }

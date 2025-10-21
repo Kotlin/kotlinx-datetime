@@ -23,7 +23,6 @@ class DayOfWeekSamples {
             DayOfWeek.FRIDAY -> check(today.dayOfWeek.isoDayNumber == 5)
             DayOfWeek.SATURDAY -> check(today.dayOfWeek.isoDayNumber == 6)
             DayOfWeek.SUNDAY -> check(today.dayOfWeek.isoDayNumber == 7)
-            else -> TODO("A new day was added to the week?")
         }
     }
 
@@ -46,7 +45,7 @@ class DayOfWeekSamples {
         try {
             DayOfWeek(0)
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Expected
         }
     }

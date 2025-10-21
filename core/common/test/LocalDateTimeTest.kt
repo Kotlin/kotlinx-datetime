@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.LocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.test.*
@@ -20,14 +21,14 @@ class LocalDateTimeTest {
     @Test
     fun localDateTimeParsing() {
         fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
-            checkComponents(value.toLocalDateTime(), year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
+            checkComponents(LocalDateTime.parse(value), year, month, day, hour, minute, second, nanosecond, dayOfWeek, dayOfYear)
         }
         checkParsedComponents("2019-10-01T18:43:15.100500", 2019, 10, 1, 18, 43, 15, 100500000, 2, 274)
         checkParsedComponents("2019-10-01T18:43:15", 2019, 10, 1, 18, 43, 15, 0, 2, 274)
         checkParsedComponents("2019-10-01T18:12", 2019, 10, 1, 18, 12, 0, 0, 2, 274)
 
         assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("x") }
-        assertFailsWith<DateTimeFormatException> { "+1000000000-03-26T04:00:00".toLocalDateTime() }
+        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("+1000000000-03-26T04:00:00") }
 
         for (i in 1..30) {
             checkComponents(LocalDateTime.parse("+${"0".repeat(i)}2024-01-01T23:59"), 2024, 1, 1, 23, 59)
@@ -46,8 +47,8 @@ class LocalDateTimeTest {
 
     @Test
     fun localDtToInstantConversion() {
-        val ldt1 = "2019-10-01T18:43:15.100500".toLocalDateTime()
-        val ldt2 = "2019-10-01T19:50:00.500600".toLocalDateTime()
+        val ldt1 = LocalDateTime.parse("2019-10-01T18:43:15.100500")
+        val ldt2 = LocalDateTime.parse("2019-10-01T19:50:00.500600")
 
         val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
@@ -57,8 +58,8 @@ class LocalDateTimeTest {
 
     @Test
     fun localDtToInstantConversionRespectsTimezones() {
-        val ldt1 = "2011-03-26T04:00:00".toLocalDateTime()
-        val ldt2 = "2011-03-27T04:00:00".toLocalDateTime()
+        val ldt1 = LocalDateTime.parse("2011-03-26T04:00:00")
+        val ldt2 = LocalDateTime.parse("2011-03-27T04:00:00")
         val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(23.hours, diff)
     }

@@ -8,6 +8,7 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
+import kotlinx.datetime.internal.withForceCast
 import kotlin.math.*
 
 internal interface UtcOffsetFieldContainer {
@@ -34,10 +35,8 @@ internal interface AbstractWithOffsetBuilder : DateTimeFormatBuilder.WithUtcOffs
     override fun offsetSecondsOfMinute(padding: Padding) =
         addFormatStructureForOffset(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
-        is UtcOffsetFormat -> addFormatStructureForOffset(format.actualFormat)
-    }
+    override fun offset(format: DateTimeFormat<UtcOffset>) =
+        format.withForceCast { format: UtcOffsetFormat -> addFormatStructureForOffset(format.actualFormat) }
 }
 
 internal class UtcOffsetFormat(override val actualFormat: CachedFormatStructure<UtcOffsetFieldContainer>) :
