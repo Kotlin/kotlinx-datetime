@@ -512,6 +512,8 @@ external object JsJodaTimeZoneModule
 val jsJodaTz = JsJodaTimeZoneModule
 ```
 
+This code can be placed in any file in the Kotlin/JS source set.
+
 #### Note about time zones in Wasm/JS
 
 Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
