@@ -157,7 +157,7 @@ class YearMonthSamples {
         val endMonth = YearMonth(2024, Month.APRIL)
         val differenceInMonths = startMonth.until(endMonth, DateTimeUnit.MONTH)
         check(differenceInMonths == 15L)
-        // one whole year + january, february, and march
+        // one whole year and january, february, and march
     }
 
     @Test

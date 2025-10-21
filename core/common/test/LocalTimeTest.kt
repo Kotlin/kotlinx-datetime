@@ -6,6 +6,8 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.internal.*
 import kotlin.math.*
 import kotlin.random.*
@@ -16,14 +18,14 @@ class LocalTimeTest {
     @Test
     fun localTimeParsing() {
         fun checkParsedComponents(value: String, hour: Int, minute: Int, second: Int, nanosecond: Int) {
-            checkComponents(value.toLocalTime(), hour, minute, second, nanosecond)
+            checkComponents(LocalTime.parse(value), hour, minute, second, nanosecond)
         }
         checkParsedComponents("18:43:15.100500", 18, 43, 15, 100500000)
         checkParsedComponents("18:43:15", 18, 43, 15, 0)
         checkParsedComponents("18:12", 18, 12, 0, 0)
 
         assertFailsWith<DateTimeFormatException> { LocalTime.parse("x") }
-        assertFailsWith<DateTimeFormatException> { "+10000000004:00:00".toLocalDateTime() }
+        assertFailsWith<DateTimeFormatException> { LocalDateTime.parse("+10000000004:00:00") }
 
         /* Based on the ThreeTenBp project.
          * Copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos

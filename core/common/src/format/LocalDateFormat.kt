@@ -280,10 +280,8 @@ internal interface AbstractWithDateBuilder : AbstractWithYearMonthBuilder, DateT
     override fun dayOfYear(padding: Padding) =
         addFormatStructureForDate(BasicFormatStructure(DayOfYearDirective(padding)))
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun date(format: DateTimeFormat<LocalDate>) = when (format) {
-        is LocalDateFormat -> addFormatStructureForDate(format.actualFormat)
-    }
+    override fun date(format: DateTimeFormat<LocalDate>) =
+        format.withForceCast { format: LocalDateFormat -> addFormatStructureForDate(format.actualFormat) }
 }
 
 // these are constants so that the formats are not recreated every time they are used

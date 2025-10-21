@@ -116,7 +116,7 @@ internal sealed class AbstractDateTimeFormat<T, U : Copyable<U>> : DateTimeForma
 
     open fun valueFromIntermediateOrNull(intermediate: U): T? = try {
         valueFromIntermediate(intermediate)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         null
     }
 

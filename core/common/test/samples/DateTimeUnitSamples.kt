@@ -21,7 +21,7 @@ class DateTimeUnitSamples {
 
     @Test
     fun multiplication() {
-        // Obtaining a measurement unit that's several times larger than another one
+        // Getting a measurement unit that's several times larger than another one
         val twoWeeks = DateTimeUnit.WEEK * 2
         check(twoWeeks.days == 14)
     }

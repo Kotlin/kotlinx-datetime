@@ -88,13 +88,13 @@ class UtcOffsetSamples {
         try {
             UtcOffset(hours = 1, minutes = 60)
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Since `hours` is non-zero, `minutes` must be in the range of 0..59
         }
         try {
             UtcOffset(hours = -1, minutes = 30)
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Since `hours` is negative, `minutes` must also be negative
         }
     }

@@ -1,13 +1,13 @@
 import kotlinx.team.infra.mavenPublicationsPom
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
-import javax.xml.parsers.DocumentBuilderFactory
+import org.jetbrains.kotlin.konan.target.Family
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
-import org.jetbrains.kotlin.konan.target.Family
+import java.net.URL
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     kotlin("multiplatform")
@@ -20,10 +20,6 @@ plugins {
 
 mavenPublicationsPom {
     description.set("Kotlin Datetime Library")
-}
-
-base {
-    archivesBaseName = "kotlinx-datetime" // doesn't work
 }
 
 val mainJavaToolchainVersion: String by project
@@ -112,6 +108,7 @@ kotlin {
         }
     }
 
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs {
             testTask {
@@ -122,6 +119,7 @@ kotlin {
         }
     }
 
+    @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
         nodejs()
     }
@@ -295,7 +293,7 @@ tasks {
     // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
     // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
     val clean by existing(Delete::class) {
-        setDelete(fileTree(buildDir) {
+        setDelete(fileTree(layout.buildDirectory) {
             exclude("tmp/.cache/expanded/expanded.lock")
         })
     }
@@ -322,7 +320,7 @@ val downloadWindowsZonesMapping by tasks.registering {
     val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)
     doLast {
-        val initialFileContents = try { File(output).readBytes() } catch(e: Throwable) { ByteArray(0) }
+        val initialFileContents = try { File(output).readBytes() } catch(_: Throwable) { ByteArray(0) }
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
         // otherwise, parsing fails since it can't find the dtd
         documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)

@@ -43,7 +43,7 @@ class DeprecatedClockTimeSourceTest {
         assertEquals(1.days, mark.elapsedNow())
 
         clock.instant -= 2.days
-        assertEquals(-1.days, mark.elapsedNow())
+        assertEquals((-1).days, mark.elapsedNow())
 
         clock.instant = Instant.fromEpochSeconds(Long.MAX_VALUE)
         assertEquals(Duration.INFINITE, mark.elapsedNow())

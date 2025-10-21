@@ -24,7 +24,7 @@ node {
 val tzdbVersion: String by rootProject.properties
 version = "$tzdbVersion-spi.$version"
 
-val convertedKtFilesDir = File(project.buildDir, "convertedTimesZones-full/src/internal/tzData")
+val convertedKtFilesDir = project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzData")
 val tzdbDirectory = File(project.projectDir, "tzdb")
 
 val timeTzdbInstall by tasks.creating(NpmTask::class) {
@@ -51,7 +51,7 @@ val generateZoneInfo by tasks.registering {
     inputs.dir(tzdbDirectory)
     outputs.dir(convertedKtFilesDir)
     doLast {
-        generateZoneInfosResources(tzdbDirectory, convertedKtFilesDir, tzdbVersion)
+        generateZoneInfosResources(tzdbDirectory, convertedKtFilesDir.get(), tzdbVersion)
     }
 }
 
@@ -73,7 +73,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                compileOnly(project(":kotlinx-datetime"))
+                api(project(":kotlinx-datetime"))
                 kotlin.srcDir(generateZoneInfo)
             }
         }

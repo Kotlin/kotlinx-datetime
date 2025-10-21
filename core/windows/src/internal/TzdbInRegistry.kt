@@ -137,7 +137,7 @@ private fun processTimeZonesInRegistry(onTimeZone: (String, PerYearZoneRulesData
                             val tziRecord = zoneInfoBuffer.readZoneRules(tzHKey, "TZI")
                             val historicData = try {
                                 dynamicDstHkeyBuffer.readHistoricDataFromRegistry(tzHKey, dwordBuffer, zoneInfoBuffer)
-                            } catch (e: IllegalStateException) {
+                            } catch (_: IllegalStateException) {
                                 emptyList()
                             }
                             onTimeZone(windowsTzNameBuffer.toKString(), tziRecord, historicData)
@@ -236,7 +236,7 @@ private class RegistryTimeZoneInfoBuffer private constructor(
         fun allocate(scope: MemScope, cbData: DWORDVar): RegistryTimeZoneInfoBuffer =
             RegistryTimeZoneInfoBuffer(scope.allocArray<BYTEVar>(SIZE_BYTES), cbData)
 
-        private val SIZE_BYTES = 44
+        private const val SIZE_BYTES = 44
     }
 
     @OptIn(ExperimentalNativeApi::class)
