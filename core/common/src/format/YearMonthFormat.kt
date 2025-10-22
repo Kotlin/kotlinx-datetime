@@ -252,6 +252,7 @@ internal class YearMonthFormat(override val actualFormat: CachedFormatStructure<
     override val emptyIntermediate get() = emptyIncompleteYearMonth
 
     companion object {
+        // The public version of this is `YearMonth.Format { }`.
         fun build(block: DateTimeFormatBuilder.WithYearMonth.() -> Unit): DateTimeFormat<YearMonth> {
             val builder = Builder(AppendableFormatStructure())
             builder.block()

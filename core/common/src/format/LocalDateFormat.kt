@@ -247,6 +247,7 @@ internal class LocalDateFormat(override val actualFormat: CachedFormatStructure<
     override val emptyIntermediate get() = emptyIncompleteLocalDate
 
     companion object {
+        // The public version of this is `LocalDate.Format { }`.
         fun build(block: DateTimeFormatBuilder.WithDate.() -> Unit): DateTimeFormat<LocalDate> {
             val builder = Builder(AppendableFormatStructure())
             builder.block()

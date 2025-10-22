@@ -258,6 +258,7 @@ internal class LocalTimeFormat(override val actualFormat: CachedFormatStructure<
     override val emptyIntermediate: IncompleteLocalTime get() = emptyIncompleteLocalTime
 
     companion object {
+        // The public version of this is `LocalTime.Format { }`.
         fun build(block: DateTimeFormatBuilder.WithTime.() -> Unit): LocalTimeFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()

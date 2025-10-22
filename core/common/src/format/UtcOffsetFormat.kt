@@ -43,6 +43,7 @@ internal interface AbstractWithOffsetBuilder : DateTimeFormatBuilder.WithUtcOffs
 internal class UtcOffsetFormat(override val actualFormat: CachedFormatStructure<UtcOffsetFieldContainer>) :
     AbstractDateTimeFormat<UtcOffset, IncompleteUtcOffset>() {
     companion object {
+        // The public version of this is `UtcOffset.Format { }`.
         fun build(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): UtcOffsetFormat {
             val builder = Builder(AppendableFormatStructure())
             builder.block()
