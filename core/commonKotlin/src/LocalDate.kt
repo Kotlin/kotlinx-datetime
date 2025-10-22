@@ -181,8 +181,6 @@ public actual class LocalDate private constructor(
     // org.threeten.bp.LocalDate#resolvePreviousValid
     /**
      * May only be called if the year and month are valid.
-     *
-     * @throws IllegalArgumentException if the result exceeds the boundaries
      */
     private fun resolvePreviousValid(year: Int, month: Int, day: Int): LocalDate {
         val newDay = min(day, month.monthLength(isLeapYear(year)))

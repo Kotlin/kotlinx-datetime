@@ -87,6 +87,8 @@ import kotlin.jvm.JvmName
  * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * Some additional constructors that directly accept the values from date and time fields are provided for convenience.
  * See sample 2.
  *
@@ -173,7 +175,6 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
             second: Int = 0,
             nanosecond: Int = 0
         ): LocalDateTime?
-
 
         /**
          * A shortcut for calling [DateTimeFormat.parse].

@@ -38,6 +38,8 @@ import kotlinx.serialization.Serializable
  * [totalSeconds] returns the number of seconds from UTC.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * There is also a [ZERO] constant for the offset of zero.
  *
  * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the

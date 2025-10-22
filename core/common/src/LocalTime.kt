@@ -58,6 +58,8 @@ import kotlin.jvm.JvmName
  *
  * [LocalTime] can be constructed directly from its components using the constructor. See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * [fromSecondOfDay], [fromMillisecondOfDay], and [fromNanosecondOfDay] can be used to obtain a [LocalTime] from the
  * number of seconds, milliseconds, or nanoseconds since the start of the day, assuming that the offset from the UTC
  * does not change during the day.
@@ -83,7 +85,6 @@ import kotlin.jvm.JvmName
 @Serializable(LocalTimeSerializer::class)
 public expect class LocalTime : Comparable<LocalTime> {
     public companion object {
-
         /**
          * Constructs a [LocalTime] instance from the given time components
          * or returns `null` if a value is out of range.

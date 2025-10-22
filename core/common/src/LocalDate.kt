@@ -48,6 +48,8 @@ import kotlin.internal.*
  * [LocalDate] can be constructed directly from its components using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * [fromEpochDays] can be used to obtain a [LocalDate] from the number of days since the epoch day `1970-01-01`;
  * [toEpochDays] is the inverse operation.
  * See sample 2.
@@ -107,6 +109,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.orNull
          */
         public fun orNull(year: Int, month: Month, day: Int): LocalDate?
+
         /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
