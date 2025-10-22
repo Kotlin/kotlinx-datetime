@@ -5,6 +5,7 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.UtcOffset.Formats
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -74,6 +75,15 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
         throw IllegalArgumentException(e)
     }
 
+public actual fun UtcOffset.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<UtcOffset>
+): UtcOffset? = when {
+    format === Formats.ISO -> parseWithFormatOrNull(input, isoFormat)
+    format === Formats.ISO_BASIC -> parseWithFormatOrNull(input, isoBasicFormat)
+    format === Formats.FOUR_DIGITS -> parseWithFormatOrNull(input, fourDigitsFormat)
+    else -> format.parseOrNull(input)
+}
+
 private val isoFormat by lazy {
     DateTimeFormatterBuilder().parseCaseInsensitive().appendOffsetId().toFormatter()
 }
@@ -88,4 +98,10 @@ private fun parseWithFormat(input: CharSequence, format: DateTimeFormatter) = tr
     format.parse(input, ZoneOffset::from).let(::UtcOffset)
 } catch (e: DateTimeException) {
     throw DateTimeFormatException(e)
+}
+
+private fun parseWithFormatOrNull(input: CharSequence, format: DateTimeFormatter) = try {
+    format.parse(input, ZoneOffset::from).let(::UtcOffset)
+} catch (_: DateTimeException) {
+    null
 }

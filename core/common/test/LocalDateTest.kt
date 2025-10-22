@@ -39,17 +39,18 @@ class LocalDateTest {
     @Test
     fun parseIsoString() {
         fun checkParsedComponents(value: String, year: Int, month: Int, day: Int, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
+            val result = LocalDate.parse(value)
             checkComponents(LocalDate.parse(value), year, month, day, dayOfWeek, dayOfYear)
+            assertEquals(result, LocalDate.parseOrNull(value))
             assertEquals(value, LocalDate(year, month, day).toString())
         }
         checkParsedComponents("2019-10-01", 2019, 10, 1, 2, 274)
         checkParsedComponents("2016-02-29", 2016, 2, 29, 1, 60)
         checkParsedComponents("2017-10-01", 2017, 10, 1, 7, 274)
-        assertInvalidFormat { LocalDate.parse("102017-10-01") }
-        assertInvalidFormat { LocalDate.parse("2017--10-01") }
-        assertInvalidFormat { LocalDate.parse("2017-+10-01") }
-        assertInvalidFormat { LocalDate.parse("2017-10-+01") }
-        assertInvalidFormat { LocalDate.parse("2017-10--01") }
+        invalidDateStrings.forEach {
+            assertInvalidFormat { LocalDate.parse(it) }
+            assertNull(LocalDate.parseOrNull(it), it)
+        }
         // this date is currently larger than the largest representable one any of the platforms:
         assertInvalidFormat { LocalDate.parse("+1000000000-10-01") }
         // threetenbp
@@ -315,3 +316,18 @@ private val LocalDate.previous: LocalDate get() =
     } else {
         LocalDate(year - 1, 12, 31)
     }
+
+val invalidDateStrings = listOf(
+    "102017-10-01",
+    "2017--10-01",
+    "2017-+10-01",
+    "2017-10-+01",
+    "2017-10--01",
+    "2017-00-01",
+    "2017-13-01",
+    "2017-9-00",
+    "2017-10-00",
+    "2017-10-32",
+    "2017-10-01T00:00",
+    "2021-02-29",
+)
