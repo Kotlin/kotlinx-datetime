@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    id("kotlinx.team.infra") version "0.4.0-dev-85"
+    id("kotlinx.team.infra") version "0.4.0-dev-86"
     kotlin("multiplatform") apply false
     id("org.jetbrains.kotlinx.kover") version "0.8.0-Beta2"
 }
@@ -14,9 +14,7 @@ infra {
         include(":kotlinx-datetime")
         include(":kotlinx-datetime-zoneinfo")
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-datetime"
-        sonatype {
-            libraryStagingRepoDescription = project.name
-        }
+        central {}
     }
 }
 
