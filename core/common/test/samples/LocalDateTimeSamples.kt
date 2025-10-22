@@ -208,7 +208,6 @@ class LocalDateTimeSamples {
         check(LocalDateTime.orNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
     }
 
-
     @Test
     fun formatting() {
         // Formatting LocalDateTime values using predefined and custom formats
