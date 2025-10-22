@@ -416,3 +416,7 @@ apiValidation {
         enabled = true
     }
 }
+
+dependencies {
+    dokka(project)
+}
