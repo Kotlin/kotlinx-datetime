@@ -87,6 +87,8 @@ import kotlin.jvm.JvmName
  * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * Some additional constructors that directly accept the values from date and time fields are provided for convenience.
  * See sample 2.
  *
@@ -113,6 +115,66 @@ import kotlin.jvm.JvmName
 @Serializable(with = LocalDateTimeSerializer::class)
 public expect class LocalDateTime : Comparable<LocalDateTime> {
     public companion object {
+
+        /**
+         * Constructs a [LocalDateTime] instance from the given date and time components
+         * or returns `null` if a value is out of range.
+         *
+         * The components [month] and [day] are 1-based.
+         *
+         * The supported ranges of components:
+         * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] `1..12`
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * Use `LocalDateTime(year, month, day, hour, minute, second, nanosecond)`
+         * to throw an exception instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.orNull
+         */
+        public fun orNull(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int = 0,
+            nanosecond: Int = 0
+        ): LocalDateTime?
+
+        /**
+         * Constructs a [LocalDateTime] instance from the given date and time components
+         * or returns `null` if a value is out of range.
+         *
+         * The supported ranges of components:
+         * - [year] the range is platform-dependent, but at least is enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] all values of the [Month] enum
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         * - [hour] `0..23`
+         * - [minute] `0..59`
+         * - [second] `0..59`
+         * - [nanosecond] `0..999_999_999`
+         *
+         * Use `LocalDateTime(year, month, day, hour, minute, second, nanosecond)`
+         * to throw an exception instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.orNullWithMonth
+         */
+        public fun orNull(
+            year: Int,
+            month: Month,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int = 0,
+            nanosecond: Int = 0
+        ): LocalDateTime?
 
         /**
          * A shortcut for calling [DateTimeFormat.parse].
@@ -213,6 +275,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      *
      * @throws IllegalArgumentException if any parameter is out of range
      * or if [day] is invalid for the given [monthNumber] and [year].
+     * @see orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunctionWithMonthNumber
      */
@@ -241,6 +304,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      *
      * @throws IllegalArgumentException if any parameter is out of range,
      * or if [day] is invalid for the given [month] and [year].
+     * @see orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
      *
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.constructorFunction
      */
@@ -257,6 +321,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     /**
      * Constructs a [LocalDateTime] instance by combining the given [date] and [time] parts.
      *
+     * @see orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.fromDateAndTime
      */
     public constructor(date: LocalDate, time: LocalTime)

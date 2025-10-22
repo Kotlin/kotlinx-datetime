@@ -184,6 +184,31 @@ class LocalDateTimeSamples {
     }
 
     @Test
+    fun orNull() {
+        // Constructing a LocalDateTime value using `orNull`
+        val dateTime = LocalDateTime.orNull(2024, 2, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `orNull` is equivalent to the constructor
+        check(dateTime == LocalDateTime(2024, 2, 15, 16, 48, 59, 999_999_999))
+        // If a value can not be constructed, null is returned
+        check(LocalDateTime.orNull(2024, 2, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.orNull(2024, 2, 15, 24, 48) == null) // Invalid hour
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 60) == null) // Invalid minute
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 48, 60) == null) // Invalid second
+        check(LocalDateTime.orNull(2024, 2, 15, 16, 48, 59, 1_000_000_000) == null) // Invalid nanosecond
+    }
+
+    @Test
+    fun orNullWithMonth() {
+        // Constructing a LocalDateTime value using `orNull` with Month enum
+        val dateTime = LocalDateTime.orNull(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999)
+        // For valid values, `orNull` is equivalent to the constructor
+        check(dateTime == LocalDateTime(2024, Month.FEBRUARY, 15, 16, 48, 59, 999_999_999))
+        // If a value can not be constructed, null is returned
+        check(LocalDateTime.orNull(2024, Month.FEBRUARY, 31, 16, 48) == null) // Invalid day
+        check(LocalDateTime.orNull(2024, Month.FEBRUARY, 15, 24, 48) == null) // Invalid hour
+    }
+
+    @Test
     fun formatting() {
         // Formatting LocalDateTime values using predefined and custom formats
         check(LocalDate(2024, 2, 15).atTime(16, 48).toString() == "2024-02-15T16:48")
