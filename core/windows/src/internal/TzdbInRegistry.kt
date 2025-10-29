@@ -90,6 +90,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
         val result = GetDynamicTimeZoneInformation(dtzi.ptr)
         check(result != TIME_ZONE_ID_INVALID) { "The current system time zone is invalid: ${getLastWindowsError()}" }
+        return currentSystemDefaultFromDtzi(dtzi)
+    }
+
+    internal fun currentSystemDefaultFromDtzi(dtzi: DYNAMIC_TIME_ZONE_INFORMATION): Pair<String, TimeZone> {
         val windowsName = dtzi.TimeZoneKeyName.toKStringFromUtf16()
         val ianaTzName = if (windowsName == "Coordinated Universal Time") "UTC" else windowsToStandard[windowsName]
                 ?: throw IllegalStateException("Unknown time zone name '$windowsName'")
