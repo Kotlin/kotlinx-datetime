@@ -19,6 +19,27 @@ import kotlin.time.Clock
 
 class TimeZoneRulesCompleteTest {
 
+    @OptIn(ExperimentalStdlibApi::class)
+    @Test
+    fun dynamicDaylightTimeDisabled() {
+        memScoped {
+            val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
+            val result = GetDynamicTimeZoneInformation(dtzi.ptr)
+            check(result != TIME_ZONE_ID_INVALID) { "The current system time zone is invalid: ${getLastWindowsError()}" }
+
+            val tzdb = TzdbInRegistry()
+
+            dtzi.DynamicDaylightTimeDisabled = 0u
+            val (_, tzWithDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)
+            assertTrue(tzWithDst is RegionTimeZone, "Expected RegionTimeZone, got ${tzWithDst::class}")
+
+            dtzi.DynamicDaylightTimeDisabled = 1u
+            val (_, tzWithoutDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)
+            assertTrue(tzWithoutDst is FixedOffsetTimeZone, "Expected FixedOffsetTimeZone, got ${tzWithoutDst::class}")
+            assertTrue(tzWithoutDst.toString().startsWith("GMT"), "Expected GMT timezone, got $tzWithoutDst")
+        }
+    }
+
     /** Tests that all transitions that our system recognizes are actually there. */
     @OptIn(ExperimentalStdlibApi::class)
     @Test
