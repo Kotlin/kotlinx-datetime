@@ -95,13 +95,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                 ?: throw IllegalStateException("Unknown time zone name '$windowsName'")
         val tz = windowsToRules[windowsName]
         check(tz != null) { "The system time zone is set to a value rules for which are not known: '$windowsName'" }
-        val rules = if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>()) {
-            tz
-        } else {
-            // the user explicitly disabled DST transitions, so
-            TimeZoneRulesCommon(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), RecurringZoneRules(emptyList()))
-        }
-        return ianaTzName to RegionTimeZone(rules, ianaTzName)
+        return ianaTzName to if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>())
+            RegionTimeZone(tz, ianaTzName)
+        else  // the user explicitly disabled DST transitions, so
+            UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)).asTimeZone("GMT")
     }
 }
 
