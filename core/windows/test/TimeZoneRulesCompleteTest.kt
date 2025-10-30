@@ -19,7 +19,6 @@ import kotlin.time.Clock
 
 class TimeZoneRulesCompleteTest {
 
-    @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun dynamicDaylightTimeDisabled() {
         memScoped {
