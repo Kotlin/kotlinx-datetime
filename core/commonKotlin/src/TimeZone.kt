@@ -54,17 +54,11 @@ public actual open class TimeZone internal constructor() {
                 ) {
                     val prefix = zoneId.take(3)
                     val offset = lenientOffsetFormat.parse(zoneId.substring(3))
-                    return when (offset.totalSeconds) {
-                        0 -> FixedOffsetTimeZone(offset, prefix)
-                        else -> FixedOffsetTimeZone(offset, "$prefix$offset")
-                    }
+                    return offset.asTimeZone(prefix)
                 }
                 if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
                     val offset = lenientOffsetFormat.parse(zoneId.substring(2))
-                    return when (offset.totalSeconds) {
-                        0 -> FixedOffsetTimeZone(offset, "UT")
-                        else -> FixedOffsetTimeZone(offset, "UT$offset")
-                    }
+                    return offset.asTimeZone("UT")
                 }
             } catch (e: DateTimeFormatException) {
                 throw IllegalTimeZoneException(e)

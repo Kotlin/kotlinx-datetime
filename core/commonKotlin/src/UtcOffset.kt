@@ -108,3 +108,9 @@ public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: I
             UtcOffset.ofSeconds(seconds ?: 0)
         }
     }
+
+internal fun UtcOffset.asTimeZone(prefix: String): FixedOffsetTimeZone =
+    when (totalSeconds) {
+        0 -> FixedOffsetTimeZone(this, prefix)
+        else -> FixedOffsetTimeZone(this, "$prefix$this")
+    }
