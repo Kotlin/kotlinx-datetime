@@ -7,13 +7,13 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.internal.JSJoda.ZoneRulesProvider
 import kotlin.js.unsafeCast
 
-private fun getZones(rulesProvider: JsAny): JsAny = js("rulesProvider.getTzdbData().zones")
-private fun getLinks(rulesProvider: JsAny): JsAny = js("rulesProvider.getTzdbData().links")
+private fun getZones(rulesProvider: ZoneRulesProvider): JsAny = js("rulesProvider.getTzdbData().zones")
+private fun getLinks(rulesProvider: ZoneRulesProvider): JsAny = js("rulesProvider.getTzdbData().links")
 
 internal actual fun readTzdb(): Pair<List<String>, List<String>>? = try {
     jsTry {
-        val zones = getZones(ZoneRulesProvider as JsAny)
-        val links = getLinks(ZoneRulesProvider as JsAny)
+        val zones = getZones(ZoneRulesProvider)
+        val links = getLinks(ZoneRulesProvider)
         zones.unsafeCast<JsArray<JsString>>().toList() to links.unsafeCast<JsArray<JsString>>().toList()
     }
 } catch (_: Throwable) {
@@ -21,7 +21,7 @@ internal actual fun readTzdb(): Pair<List<String>, List<String>>? = try {
 }
 
 private fun JsArray<JsString>.toList(): List<String> = buildList {
-    for (i in 0 until toList@length) {
+    for (i in 0 until this@toList.length) {
         add(this@toList[i].toString())
     }
 }

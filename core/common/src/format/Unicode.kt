@@ -5,8 +5,6 @@
 
 package kotlinx.datetime.format
 
-import kotlin.native.concurrent.*
-
 /**
  * Marks declarations in the datetime library that use format strings to define datetime formats.
  *
@@ -241,8 +239,7 @@ internal sealed interface UnicodeFormat {
     data class StringLiteral(val literal: String) : UnicodeFormat {
         override fun toString(): String = if (literal == "'") "''" else
             if (literal.any { it.isLetter() }) "'$literal'"
-            else if (literal.isEmpty()) ""
-            else literal
+            else literal.ifEmpty { "" }
     }
 
     sealed class Directive : UnicodeFormat {
@@ -257,8 +254,8 @@ internal sealed interface UnicodeFormat {
         sealed class YearMonthBased : DateBased() {
             abstract fun addToFormat(builder: DateTimeFormatBuilder.WithYearMonth)
             override fun addToFormat(builder: DateTimeFormatBuilder.WithDate) {
-                val downcastedBuilder: DateTimeFormatBuilder.WithYearMonth = builder
-                addToFormat(downcastedBuilder)
+                val downcastBuilder: DateTimeFormatBuilder.WithYearMonth = builder
+                addToFormat(downcastBuilder)
             }
 
             class Era(override val formatLength: Int) : YearMonthBased() {

@@ -28,7 +28,6 @@ class MonthSamples {
             Month.OCTOBER -> check(today.month.number == 10)
             Month.NOVEMBER -> check(today.month.number == 11)
             Month.DECEMBER -> check(today.month.number == 12)
-            else -> TODO("A new month was added to the calendar?")
         }
     }
 
@@ -51,7 +50,7 @@ class MonthSamples {
         try {
             Month(0)
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Expected
         }
     }

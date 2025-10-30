@@ -82,7 +82,7 @@ class DateTimeFormatBuilderSamples {
         try {
             LocalDate.Format { optional { year() }}
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // Since `year` has no optional component, it is an error to put it inside `optional`.
             // Use `alternativeParsing` for parsing-only optional components.
         }
