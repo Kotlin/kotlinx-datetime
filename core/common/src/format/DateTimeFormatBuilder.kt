@@ -15,6 +15,9 @@ internal expect annotation class MyJvmDefaultWithoutCompatibility()
 
 /**
  * Common functions for all format builders.
+ *
+ * The methods of this interface are not thread-safe.
+ * They should be called one after another sequentially.
  */
 public sealed interface DateTimeFormatBuilder {
     /**
