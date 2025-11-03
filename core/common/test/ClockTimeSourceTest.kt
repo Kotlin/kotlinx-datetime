@@ -46,7 +46,7 @@ class ClockTimeSourceTest {
         assertEquals(1.days, mark.elapsedNow())
 
         clock.instant -= 2.days
-        assertEquals((-1).days, mark.elapsedNow())
+        assertEquals(-1.days, mark.elapsedNow())
 
         clock.instant = Instant.MAX
         assertEquals(Duration.INFINITE, mark.elapsedNow())
@@ -126,3 +126,4 @@ class ClockTimeSourceTest {
         assertEquals(clock1.now(), clock3.now())
     }
 }
+

@@ -65,7 +65,7 @@ kotlin {
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
         val targetName = name.substring(0, suffixIndex)
-        val suffix = name.substring(suffixIndex).lowercase(Locale.ROOT).takeIf { it != "main" }
+        val suffix = name.substring(suffixIndex).lowercase().takeIf { it != "main" }
         kotlin.srcDir("$targetName/${suffix ?: "src"}")
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
     }
