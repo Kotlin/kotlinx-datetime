@@ -281,7 +281,7 @@ internal interface AbstractWithDateBuilder : AbstractWithYearMonthBuilder, DateT
         addFormatStructureForDate(BasicFormatStructure(DayOfYearDirective(padding)))
 
     override fun date(format: DateTimeFormat<LocalDate>) =
-        format.withForceCast { format: LocalDateFormat -> addFormatStructureForDate(format.actualFormat) }
+        addFormatStructureForDate((format as LocalDateFormat).actualFormat)
 }
 
 // these are constants so that the formats are not recreated every time they are used

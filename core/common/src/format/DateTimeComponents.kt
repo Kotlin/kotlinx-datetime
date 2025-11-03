@@ -655,7 +655,7 @@ internal class DateTimeComponentsFormat(override val actualFormat: CachedFormatS
             actualBuilder.add(BasicFormatStructure(TimeZoneIdDirective()))
 
         override fun dateTimeComponents(format: DateTimeFormat<DateTimeComponents>) =
-            format.withForceCast { format: DateTimeComponentsFormat -> actualBuilder.add(format.actualFormat) }
+            actualBuilder.add((format as DateTimeComponentsFormat).actualFormat)
 
         override fun createEmpty(): Builder = Builder(AppendableFormatStructure())
     }

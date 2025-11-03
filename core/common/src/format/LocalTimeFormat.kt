@@ -10,7 +10,6 @@ import kotlinx.datetime.DateTimeFormatException
 import kotlinx.datetime.internal.DecimalFraction
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlinx.datetime.internal.withForceCast
 
 /**
  * The AM/PM marker that indicates whether the hour in range `1..12` is before or after noon.
@@ -124,7 +123,7 @@ internal interface AbstractWithTimeBuilder : DateTimeFormatBuilder.WithTime {
         addFormatStructureForTime(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
     override fun time(format: DateTimeFormat<LocalTime>) =
-        format.withForceCast { format: LocalTimeFormat -> addFormatStructureForTime(format.actualFormat) }
+        addFormatStructureForTime((format as LocalTimeFormat).actualFormat)
 }
 
 private class HourDirective(private val padding: Padding) :

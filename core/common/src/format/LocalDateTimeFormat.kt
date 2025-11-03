@@ -8,7 +8,6 @@ package kotlinx.datetime.format
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlinx.datetime.internal.withForceCast
 
 internal interface DateTimeFieldContainer : DateFieldContainer, TimeFieldContainer
 
@@ -69,7 +68,7 @@ internal interface AbstractWithDateTimeBuilder:
     }
 
     override fun dateTime(format: DateTimeFormat<LocalDateTime>) =
-        format.withForceCast { format: LocalDateTimeFormat -> addFormatStructureForDateTime(format.actualFormat) }
+        addFormatStructureForDateTime((format as LocalDateTimeFormat).actualFormat)
 }
 
 // these are constants so that the formats are not recreated every time they are used

@@ -362,11 +362,9 @@ internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(
     maxLength: Int,
     grouping: List<Int>
 ) {
-    withForceCast { value: AbstractWithTimeBuilder ->
-        value.addFormatStructureForTime(
-            BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
-        )
-    }
+    (this as AbstractWithTimeBuilder).addFormatStructureForTime(
+        BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
+    )
 }
 
 /**

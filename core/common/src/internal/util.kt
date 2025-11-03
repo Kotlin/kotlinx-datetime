@@ -43,9 +43,3 @@ internal fun removeLeadingZerosFromLongYearFormLocalDateTime(input: String) =
 
 internal fun removeLeadingZerosFromLongYearFormYearMonth(input: String) =
     removeLeadingZerosFromLongYearForm(input, 3) // 3 = "-01".length
-
-internal inline fun <reified T : S, reified S, R> S.withForceCast(block: (T) -> R): R = when {
-    this is T -> block(this)
-    else -> error("Expected ${T::class} but found ${this::class}. " +
-            "Please report this to the kotlinx-datetime issue tracker.")
-}
