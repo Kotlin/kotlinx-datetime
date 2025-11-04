@@ -167,7 +167,7 @@ public expect open class TimeZone {
         @Deprecated(
             "Serializing TimeZone is discouraged, " +
                     "as deserialization can fail depending on the configuration. " +
-                    "Please serialize the id String instead.",
+                    "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
         public fun serializer(): kotlinx.serialization.KSerializer<TimeZone>
@@ -267,7 +267,7 @@ public expect class FixedOffsetTimeZone : TimeZone {
         @Deprecated(
             "Serializing FixedOffsetTimeZone is discouraged, " +
                     "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
-                    "Please serialize the id String instead.",
+                    "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
         public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone>

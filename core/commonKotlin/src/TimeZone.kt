@@ -81,7 +81,7 @@ public actual open class TimeZone internal constructor() {
         @Deprecated(
             "Serializing TimeZone is discouraged, " +
                     "as deserialization can fail depending on the configuration. " +
-                    "Please serialize the id String instead.",
+                    "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
         @Suppress("DEPRECATION")
@@ -158,7 +158,7 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
         @Deprecated(
             "Serializing FixedOffsetTimeZone is discouraged, " +
                     "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
-                    "Please serialize the id String instead.",
+                    "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
         @Suppress("DEPRECATION")
