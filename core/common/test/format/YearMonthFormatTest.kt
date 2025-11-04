@@ -25,6 +25,7 @@ class YearMonthFormatTest {
             put(YearMonth(-123456, 5), ("-123456-05" to setOf()))
         }
         test(yearMonths, YearMonth.Formats.ISO)
+        @OptIn(FormatStringsInDatetimeFormats::class)
         test(yearMonths, YearMonth.Format { byUnicodePattern("yyyy-MM") })
     }
 
@@ -43,6 +44,7 @@ class YearMonthFormatTest {
             put(YearMonth(-123456, 5), ("-12345605" to setOf()))
         }
         test(yearMonths, YearMonth.Format { year(); monthNumber() })
+        @OptIn(FormatStringsInDatetimeFormats::class)
         test(yearMonths, YearMonth.Format { byUnicodePattern("yyyyMM") })
     }
 

@@ -122,10 +122,8 @@ internal interface AbstractWithTimeBuilder : DateTimeFormatBuilder.WithTime {
     override fun secondFraction(minLength: Int, maxLength: Int) =
         addFormatStructureForTime(BasicFormatStructure(FractionalSecondDirective(minLength, maxLength)))
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun time(format: DateTimeFormat<LocalTime>) = when (format) {
-        is LocalTimeFormat -> addFormatStructureForTime(format.actualFormat)
-    }
+    override fun time(format: DateTimeFormat<LocalTime>) =
+        addFormatStructureForTime((format as LocalTimeFormat).actualFormat)
 }
 
 private class HourDirective(private val padding: Padding) :

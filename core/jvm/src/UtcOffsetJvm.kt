@@ -58,7 +58,7 @@ public actual class UtcOffset(
     private fun writeReplace(): Any = Ser(Ser.UTC_OFFSET_TAG, this)
 }
 
-@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
+@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // for IDE quickhelp in platform-specific user sourcesets + Dokka
 public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
     try {
         when {

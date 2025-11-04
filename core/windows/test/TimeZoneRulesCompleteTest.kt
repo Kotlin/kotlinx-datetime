@@ -9,7 +9,9 @@ package kotlinx.datetime.test
 import kotlinx.cinterop.*
 import kotlinx.cinterop.ptr
 import kotlinx.datetime.*
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.internal.*
+import kotlinx.datetime.number
 import platform.windows.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
@@ -206,8 +208,8 @@ private fun LocalDateTime.toSystemTime(outputBuffer: CPointer<SYSTEMTIME>) {
     require(year in 1601..30827)
     outputBuffer.pointed.apply {
         wYear = year.convert()
-        wMonth = monthNumber.convert()
-        wDay = dayOfMonth.convert()
+        wMonth = month.number.convert()
+        wDay = day.convert()
         wDayOfWeek = (dayOfWeek.isoDayNumber % 7).convert()
         wHour = hour.convert()
         wMinute = minute.convert()
@@ -219,8 +221,8 @@ private fun LocalDateTime.toSystemTime(outputBuffer: CPointer<SYSTEMTIME>) {
 private fun SYSTEMTIME.toLocalDateTime(): LocalDateTime =
     LocalDateTime(
         year = wYear.convert(),
-        monthNumber = wMonth.convert(),
-        dayOfMonth = wDay.convert(),
+        month = wMonth.convert<Int>(),
+        day = wDay.convert(),
         hour = wHour.convert(),
         minute = wMinute.convert(),
         second = wSecond.convert(),

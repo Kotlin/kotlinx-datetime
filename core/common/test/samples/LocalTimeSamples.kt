@@ -162,7 +162,7 @@ class LocalTimeSamples {
 
     @Test
     fun toSecondOfDay() {
-        // Obtaining the number of seconds a clock has to advance since 00:00 to reach the given time
+        // Getting the number of seconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toSecondOfDay() == 0)
         check(LocalTime(0, 0, 0, 1).toSecondOfDay() == 0)
         check(LocalTime(0, 0, 1, 0).toSecondOfDay() == 1)
@@ -174,7 +174,7 @@ class LocalTimeSamples {
 
     @Test
     fun toMillisecondOfDay() {
-        // Obtaining the number of milliseconds a clock has to advance since 00:00 to reach the given time
+        // Getting the number of milliseconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toMillisecondOfDay() == 0)
         check(LocalTime(0, 0, 0, 1).toMillisecondOfDay() == 0)
         check(LocalTime(0, 0, 1, 0).toMillisecondOfDay() == 1000)
@@ -186,7 +186,7 @@ class LocalTimeSamples {
 
     @Test
     fun toNanosecondOfDay() {
-        // Obtaining the number of nanoseconds a clock has to advance since 00:00 to reach the given time
+        // Getting the number of nanoseconds a clock has to advance since 00:00 to reach the given time
         check(LocalTime(0, 0, 0, 0).toNanosecondOfDay() == 0L)
         check(LocalTime(0, 0, 0, 1).toNanosecondOfDay() == 1L)
         check(LocalTime(0, 0, 1, 0).toNanosecondOfDay() == 1_000_000_000L)

@@ -362,12 +362,9 @@ internal fun DateTimeFormatBuilder.WithTime.secondFractionInternal(
     maxLength: Int,
     grouping: List<Int>
 ) {
-    @Suppress("NO_ELSE_IN_WHEN")
-    when (this) {
-        is AbstractWithTimeBuilder -> addFormatStructureForTime(
-            BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
-        )
-    }
+    (this as AbstractWithTimeBuilder).addFormatStructureForTime(
+        BasicFormatStructure(FractionalSecondDirective(minLength, maxLength, grouping))
+    )
 }
 
 /**

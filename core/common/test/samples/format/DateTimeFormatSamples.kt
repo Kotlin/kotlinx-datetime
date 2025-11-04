@@ -19,7 +19,7 @@ class DateTimeFormatSamples {
 
     @Test
     fun formatTo() {
-        // Appending a formatted date to an `Appendable` (e.g. a `StringBuilder`)
+        // Appending a formatted date to an `Appendable` (e.g., a `StringBuilder`)
         val sb = StringBuilder()
         sb.append("Today is ")
         LocalDate.Formats.ISO.formatTo(sb, LocalDate(2024, 4, 5))
@@ -28,18 +28,18 @@ class DateTimeFormatSamples {
 
     @Test
     fun parse() {
-        // Parsing a string that is expected to be in the given format
+        // Parsing a string expected to be in the given format
         check(LocalDate.Formats.ISO.parse("2021-02-07") == LocalDate(2021, 2, 7))
         try {
             LocalDate.Formats.ISO.parse("2021-02-07T")
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // the input string is not in the expected format
         }
         try {
             LocalDate.Formats.ISO.parse("2021-02-40")
             fail("Expected IllegalArgumentException")
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             // the input string is in the expected format, but the value is invalid
         }
         // to parse strings that have valid formats but invalid values, use `DateTimeComponents`:
@@ -108,7 +108,7 @@ class DateTimeFormatSamples {
             try {
                 LocalDate.parse("02/7 0457", format)
                 fail("Expected IllegalArgumentException")
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 // parsing without padding is not allowed, and the day-of-month was not padded
             }
         }

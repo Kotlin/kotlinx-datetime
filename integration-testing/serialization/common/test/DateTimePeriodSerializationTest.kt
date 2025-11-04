@@ -13,6 +13,8 @@ import kotlin.test.*
 
 class DateTimePeriodSerializationTest {
 
+    private val jsonIgnoringUnknownKeys = Json { ignoreUnknownKeys = true }
+
     private fun datePeriodIso8601Serialization(
         datePeriodSerializer: KSerializer<DatePeriod>,
         dateTimePeriodSerializer: KSerializer<DateTimePeriod>
@@ -33,7 +35,7 @@ class DateTimePeriodSerializationTest {
         }
         // time-based keys should not be considered unknown here
         assertFailsWith<IllegalArgumentException> {
-            Json { ignoreUnknownKeys = true }.decodeFromString(datePeriodSerializer, "\"P3DT1H\"")
+            jsonIgnoringUnknownKeys.decodeFromString(datePeriodSerializer, "\"P3DT1H\"")
         }
         // presence of time-based keys should not be a problem if the values are 0
         Json.decodeFromString(datePeriodSerializer, "\"P3DT0H\"")
@@ -59,7 +61,7 @@ class DateTimePeriodSerializationTest {
         }
         // time-based keys should not be considered unknown here
         assertFailsWith<SerializationException> {
-            Json { ignoreUnknownKeys = true }.decodeFromString(datePeriodSerializer, "{\"hours\":3}")
+            jsonIgnoringUnknownKeys.decodeFromString(datePeriodSerializer, "{\"hours\":3}")
         }
         // presence of time-based keys should not be a problem if the values are 0
         Json.decodeFromString(datePeriodSerializer, "{\"hours\":0}")

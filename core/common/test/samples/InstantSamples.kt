@@ -19,7 +19,7 @@ class InstantSamples {
 
     @Test
     fun epochSeconds() {
-        // Getting the number of whole seconds that passed since the Unix epoch
+        // Getting the number of whole seconds that'd passed since the Unix epoch
         val instant1 = Instant.fromEpochSeconds(999_999, nanosecondAdjustment = 123_456_789)
         check(instant1.epochSeconds == 999_999L)
         val instant2 = Instant.fromEpochSeconds(1_000_000, nanosecondAdjustment = 100_123_456_789)
@@ -30,7 +30,7 @@ class InstantSamples {
 
     @Test
     fun nanosecondsOfSecond() {
-        // Getting the number of nanoseconds that passed since the start of the second
+        // Getting the number of nanoseconds that'd passed since the start of the second
         val instant1 = Instant.fromEpochSeconds(999_999, nanosecondAdjustment = 123_456_789)
         check(instant1.nanosecondsOfSecond == 123_456_789)
         val instant2 = Instant.fromEpochSeconds(1_000_000, nanosecondAdjustment = 100_123_456_789)
@@ -81,7 +81,7 @@ class InstantSamples {
         repeat(100) {
             val instant1 = randomInstant()
             val instant2 = randomInstant()
-            // in the UTC time zone, earlier instants are represented as earlier datetimes
+            // in the UTC time zone, earlier instants are represented as earlier datetime values
             check((instant1 < instant2) ==
                 (instant1.toLocalDateTime(TimeZone.UTC) < instant2.toLocalDateTime(TimeZone.UTC)))
         }

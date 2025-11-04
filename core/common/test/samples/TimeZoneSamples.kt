@@ -51,7 +51,7 @@ class TimeZoneSamples {
 
     @Test
     fun currentSystemDefault() {
-        // Obtaining the current system default time zone and using it for formatting
+        // Getting the current system default time zone and using it for formatting
         // a fixed-width format for log entries
         val logTimeFormat = DateTimeComponents.Format {
             date(LocalDate.Formats.ISO)
@@ -134,7 +134,7 @@ class TimeZoneSamples {
      */
     @Test
     fun offsetAt() {
-        // Obtaining the offset of a time zone at a specific instant
+        // Getting the offset of a time zone at a specific instant
         val zone = TimeZone.of("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val offset = zone.offsetAt(instant)
@@ -164,7 +164,7 @@ class TimeZoneSamples {
      */
     @Test
     fun offsetIn() {
-        // Obtaining the offset of a time zone at a specific instant
+        // Getting the offset of a time zone at a specific instant
         val zone = TimeZone.of("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val offset = instant.offsetIn(zone)
@@ -244,7 +244,7 @@ class TimeZoneSamples {
 
         @Test
         fun offset() {
-            // Obtaining the offset of a fixed-offset time zone
+            // Getting the offset of a fixed-offset time zone
             val zone = TimeZone.of("UTC+01:30") as FixedOffsetTimeZone
             check(zone.id == "UTC+01:30")
             check(zone.offset == UtcOffset(hours = 1, minutes = 30))

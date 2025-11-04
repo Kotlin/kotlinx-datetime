@@ -34,10 +34,8 @@ internal interface AbstractWithOffsetBuilder : DateTimeFormatBuilder.WithUtcOffs
     override fun offsetSecondsOfMinute(padding: Padding) =
         addFormatStructureForOffset(BasicFormatStructure(UtcOffsetSecondOfMinuteDirective(padding)))
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun offset(format: DateTimeFormat<UtcOffset>) = when (format) {
-        is UtcOffsetFormat -> addFormatStructureForOffset(format.actualFormat)
-    }
+    override fun offset(format: DateTimeFormat<UtcOffset>) =
+        addFormatStructureForOffset((format as UtcOffsetFormat).actualFormat)
 }
 
 internal class UtcOffsetFormat(override val actualFormat: CachedFormatStructure<UtcOffsetFieldContainer>) :

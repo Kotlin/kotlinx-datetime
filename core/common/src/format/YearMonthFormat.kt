@@ -193,12 +193,9 @@ private const val YEAR_OF_ERA_COMMENT =
  * additional comment and explain that the behavior was not preserved exactly.
  */
 internal fun DateTimeFormatBuilder.WithYearMonth.yearOfEra(padding: Padding) {
-    @Suppress("NO_ELSE_IN_WHEN")
-    when (this) {
-        is AbstractWithYearMonthBuilder -> addFormatStructureForYearMonth(
+        (this as AbstractWithYearMonthBuilder).addFormatStructureForYearMonth(
             BasicFormatStructure(YearDirective(padding, isYearOfEra = true))
         )
-    }
 }
 
 /**
@@ -208,12 +205,9 @@ internal fun DateTimeFormatBuilder.WithYearMonth.yearOfEra(padding: Padding) {
  * additional comment and explain that the behavior was not preserved exactly.
  */
 internal fun DateTimeFormatBuilder.WithYearMonth.yearOfEraTwoDigits(baseYear: Int) {
-    @Suppress("NO_ELSE_IN_WHEN")
-    when (this) {
-        is AbstractWithYearMonthBuilder -> addFormatStructureForYearMonth(
-            BasicFormatStructure(ReducedYearDirective(baseYear, isYearOfEra = true))
-        )
-    }
+    (this as AbstractWithYearMonthBuilder).addFormatStructureForYearMonth(
+        BasicFormatStructure(ReducedYearDirective(baseYear, isYearOfEra = true))
+    )
 }
 
 private class MonthDirective(private val padding: Padding) :
@@ -284,10 +278,8 @@ internal interface AbstractWithYearMonthBuilder : DateTimeFormatBuilder.WithYear
     override fun monthName(names: MonthNames) =
         addFormatStructureForYearMonth(BasicFormatStructure(MonthNameDirective(names)))
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun yearMonth(format: DateTimeFormat<YearMonth>) = when (format) {
-        is YearMonthFormat -> addFormatStructureForYearMonth(format.actualFormat)
-    }
+    override fun yearMonth(format: DateTimeFormat<YearMonth>) =
+        addFormatStructureForYearMonth((format as YearMonthFormat).actualFormat)
 }
 
 private val emptyIncompleteYearMonth = IncompleteYearMonth()

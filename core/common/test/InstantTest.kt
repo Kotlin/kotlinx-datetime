@@ -6,20 +6,17 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.format.*
-import kotlinx.datetime.internal.*
-import kotlin.random.*
+import kotlinx.datetime.internal.NANOS_PER_ONE
+import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.*
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Clock
 import kotlin.time.Instant
-import kotlin.time.isDistantFuture
-import kotlin.time.isDistantPast
 
 class InstantTest {
 

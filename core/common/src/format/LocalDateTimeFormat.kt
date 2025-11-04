@@ -67,10 +67,8 @@ internal interface AbstractWithDateTimeBuilder:
         addFormatStructureForDateTime(structure)
     }
 
-    @Suppress("NO_ELSE_IN_WHEN")
-    override fun dateTime(format: DateTimeFormat<LocalDateTime>) = when (format) {
-        is LocalDateTimeFormat -> addFormatStructureForDateTime(format.actualFormat)
-    }
+    override fun dateTime(format: DateTimeFormat<LocalDateTime>) =
+        addFormatStructureForDateTime((format as LocalDateTimeFormat).actualFormat)
 }
 
 // these are constants so that the formats are not recreated every time they are used

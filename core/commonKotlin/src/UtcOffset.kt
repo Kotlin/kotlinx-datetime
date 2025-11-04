@@ -97,7 +97,7 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 @ThreadLocal
 private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf()
 
-@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
+@Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // for IDE quickhelp in platform-specific user sourcesets + Dokka
 public actual fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset =
     when {
         hours != null ->

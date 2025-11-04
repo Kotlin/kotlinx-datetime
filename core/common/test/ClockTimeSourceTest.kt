@@ -126,3 +126,4 @@ class ClockTimeSourceTest {
         assertEquals(clock1.now(), clock3.now())
     }
 }
+

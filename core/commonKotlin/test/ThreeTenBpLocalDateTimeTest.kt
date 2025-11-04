@@ -8,6 +8,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.LocalDateTime
 import kotlin.test.*
 
 class ThreeTenBpLocalDateTimeTest {
@@ -91,8 +92,8 @@ class ThreeTenBpLocalDateTimeTest {
             Pair(Pair("2012-06-15T12:30:40.500", "2012-06-16T12:30:41.501"), Pair(DateTimeUnit.SECOND, 86400L + 1)))
         for ((values, interval) in data) {
             val (v1, v2) = values
-            val dt1 = v1.toLocalDateTime()
-            val dt2 = v2.toLocalDateTime()
+            val dt1 = LocalDateTime.parse(v1)
+            val dt2 = LocalDateTime.parse(v2)
             val (unit, length) = interval
             assertEquals(length, dt1.until(dt2, unit))
             assertEquals(-length, dt2.until(dt1, unit))
