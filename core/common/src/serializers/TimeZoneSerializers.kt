@@ -16,7 +16,7 @@ import kotlinx.serialization.encoding.*
  * JSON example: `"Europe/Berlin"`
  */
 @Deprecated(
-    "Serializing TimeZone is discouraged. Please serialize the id String instead.",
+    "Serializing TimeZone is discouraged. Please serialize the string id instead.",
     level = DeprecationLevel.WARNING,
 )
 public object TimeZoneSerializer: KSerializer<TimeZone> {
@@ -37,7 +37,7 @@ public object TimeZoneSerializer: KSerializer<TimeZone> {
  * JSON example: `"+02:00"`
  */
 @Deprecated(
-    "Serializing FixedOffsetTimeZoneSerializer is discouraged. Please serialize the id String instead.",
+    "Serializing FixedOffsetTimeZoneSerializer is discouraged. Please serialize the string id instead.",
     level = DeprecationLevel.WARNING,
 )
 public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {
