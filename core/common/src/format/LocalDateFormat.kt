@@ -210,6 +210,72 @@ private class DayDirective(private val padding: Padding) :
     override fun hashCode(): Int = padding.hashCode()
 }
 
+private class OrdinalDayDirective(
+    private val names: DayOrdinalNames = DayOrdinalNames.ENGLISH,
+) : NamedUnsignedIntFieldFormatDirective<DateFieldContainer>(DateFields.day, names.names, "dayOrdinalName") {
+
+    override val builderRepresentation: String
+        get() =
+            "${DateTimeFormatBuilder.WithDate::day.name}(${names.toKotlinCode()})"
+
+    override fun equals(other: Any?): Boolean = other is OrdinalDayDirective && names.names == other.names.names
+    override fun hashCode(): Int = names.names.hashCode()
+}
+
+
+/**
+ * A description of how the names of ordinal days are formatted.
+ *
+ * Instances of this class are typically used as arguments to [DateTimeFormatBuilder.WithDate.dayOrdinal].
+ *
+ * A predefined instance is available as [ENGLISH].
+ * You can also create custom instances using the constructor.
+ *
+ * An [IllegalArgumentException] will be thrown if the list does not contain exactly 31 elements.
+ *
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.usage
+ * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.customNames
+ */
+public class DayOrdinalNames(
+    /**
+     * A list of the names of ordinal days from 1st to 31st.
+     *
+     * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.names
+     */
+    public val names: List<String>
+) {
+    init {
+        /**
+         * The list must contain exactly 31 elements, one for each day of the month.
+         * The names are expected to be in the order from 1st to 31st.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.DayOrdinalNamesSamples.invalidListSize
+         */
+        require(names.size == 31) {
+            "Day ordinal names must contain exactly 31 elements, one for each day of the month"
+        }
+    }
+
+    public companion object {
+        /** The English default: "1st", "2nd", "3rd", … */
+        public val ENGLISH: DayOrdinalNames = DayOrdinalNames(List(31) { i ->
+            val d = i + 1
+            when {
+                d % 100 in 11..13 -> "${d}th"
+                d % 10 == 1 -> "${d}st"
+                d % 10 == 2 -> "${d}nd"
+                d % 10 == 3 -> "${d}rd"
+                else -> "${d}th"
+            }
+        })
+    }
+}
+
+private fun DayOrdinalNames.toKotlinCode(): String = when (this.names) {
+    DayOrdinalNames.ENGLISH.names -> "DayOrdinalNames.${DayOrdinalNames.Companion::ENGLISH.name}"
+    else -> names.joinToString(", ", "DayOrdinalNames(", ")", transform = String::toKotlinCode)
+}
+
 private class DayOfYearDirective(private val padding: Padding) :
     UnsignedIntFieldFormatDirective<DateFieldContainer>(
         DateFields.dayOfYear,
@@ -269,6 +335,10 @@ internal interface AbstractWithDateBuilder : AbstractWithYearMonthBuilder, DateT
 
     override fun addFormatStructureForYearMonth(structure: FormatStructure<YearMonthFieldContainer>) {
         addFormatStructureForDate(structure)
+    }
+
+    override fun dayOrdinal(names: DayOrdinalNames) {
+        addFormatStructureForDate(BasicFormatStructure(OrdinalDayDirective(names)))
     }
 
     override fun day(padding: Padding) =

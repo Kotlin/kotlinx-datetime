@@ -100,6 +100,13 @@ public sealed interface DateTimeFormatBuilder {
          */
         public fun day(padding: Padding = Padding.ZERO)
 
+        /**
+         * A day-of-month ordinal.
+         *
+         * @sample kotlinx.datetime.test.samples.format.LocalDateFormatSamples.dayOrdinal
+         */
+        public fun dayOrdinal(names: DayOrdinalNames)
+
         /** @suppress */
         @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
         public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }

@@ -26,6 +26,22 @@ class LocalDateFormatSamples {
     }
 
     @Test
+    fun ordinalDay() {
+        // Using ordinal day with the default English‑suffix formatter
+        val defaultOrdinalDays = LocalDate.Format {
+            dayOrdinal(DayOrdinalNames.ENGLISH); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 1)) == "1st Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 2)) == "2nd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 3)) == "3rd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 4)) == "4th Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 11)) == "11th Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 21)) == "21st Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 22)) == "22nd Jan")
+        check(defaultOrdinalDays.format(LocalDate(2021, 1, 31)) == "31st Jan")
+    }
+
+    @Test
     fun dayOfWeek() {
         // Using strings for day-of-week names in a custom format
         val format = LocalDate.Format {
@@ -116,6 +132,66 @@ class LocalDateFormatSamples {
                 dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
             }
             check(format.format(LocalDate(2021, 1, 13)) == "2021-01-13, Wed")
+        }
+    }
+
+    class DayOrdinalNamesSamples {
+        @Test
+        fun usage() {
+            // Using ordinal day with the default English‑suffix formatter
+            val format = LocalDate.Format {
+                dayOrdinal(DayOrdinalNames.ENGLISH); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+            }
+            check(format.format(LocalDate(2021, 1, 13)) == "2021-01-13, Wed")
+        }
+
+        @Test
+        fun customNames() {
+            // Using ordinal day with a custom formatter that always falls back to "th"
+            val customOrdinalDays = LocalDate.Format {
+                dayOrdinal(
+                    names = DayOrdinalNames(
+                        List(31) {
+                            val d = it + 1
+                            when (d) {
+                                1 -> "1st"
+                                2 -> "2nd"
+                                3 -> "3rd"
+                                else -> "${d}th"
+                            }
+                        }
+                    )); char(' '); monthName(MonthNames.ENGLISH_ABBREVIATED)
+            }
+            check(customOrdinalDays.format(LocalDate(2021, 1, 1)) == "1st Jan")
+            check(customOrdinalDays.format(LocalDate(2021, 1, 2)) == "2nd Jan")
+            check(customOrdinalDays.format(LocalDate(2021, 1, 3)) == "3rd Jan")
+            check(customOrdinalDays.format(LocalDate(2021, 1, 22)) == "22th Jan")
+            check(customOrdinalDays.format(LocalDate(2021, 1, 31)) == "31th Jan")
+        }
+
+        @Test
+        fun names() {
+            // Obtaining the list of day of week names
+            check(
+                DayOrdinalNames.ENGLISH.names == listOf(
+                    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th",
+                    "8th", "9th", "10th", "11th", "12th", "13th",
+                    "14th", "15th", "16th", "17th", "18th", "19th",
+                    "20th", "21st", "22nd", "23rd", "24th", "25th",
+                    "26th", "27th", "28th", "29th", "30th", "31st"
+                )
+            )
+        }
+
+        @Test
+        fun invalidListSize() {
+            // Attempting to create a DayOrdinalNames with an invalid list size
+            try {
+                DayOrdinalNames(listOf("1st", "2nd", "3rd")) // only 3 names, should throw
+                check(false) // should not reach here
+            } catch (e: Throwable) {
+                check(e is IllegalArgumentException)
+            }
         }
     }
 }
