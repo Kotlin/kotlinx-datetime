@@ -5,6 +5,7 @@
 @file:JvmName("LocalDateJvmKt")
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalDate.Formats
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.safeAdd
 import kotlinx.datetime.internal.safeMultiply
@@ -116,6 +117,21 @@ public actual class LocalDate internal constructor(
 
     private fun writeReplace(): Any = Ser(Ser.DATE_TAG, this)
 }
+
+public actual fun LocalDate.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalDate>
+): LocalDate? =
+    if (format === Formats.ISO) {
+        try {
+            val sanitizedInput = removeLeadingZerosFromLongYearFormLocalDate(input.toString())
+            jtLocalDate.parse(sanitizedInput).let(::LocalDate)
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    } else {
+        format.parseOrNull(input)
+    }
+
 
 /**
  * @suppress
