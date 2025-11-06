@@ -47,6 +47,12 @@ public actual class LocalTime internal constructor(
     actual override fun compareTo(other: LocalTime): Int = this.value.compareTo(other.value)
 
     public actual companion object {
+        public actual fun orNull(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime? = try {
+            jtLocalTime.of(hour, minute, second, nanosecond).let(::LocalTime)
+        } catch (_: DateTimeException) {
+            null
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime =
             if (format === Formats.ISO) {
                 try {

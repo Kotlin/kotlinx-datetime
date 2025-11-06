@@ -14,14 +14,17 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 
 @Serializable(LocalTimeSerializer::class)
-public actual class LocalTime actual constructor(
+public actual class LocalTime private constructor(
     public actual val hour: Int,
     public actual val minute: Int,
     public actual val second: Int,
-    public actual val nanosecond: Int
-    ) : Comparable<LocalTime> {
+    public actual val nanosecond: Int,
+    unit: Unit,
+) : Comparable<LocalTime> {
 
-    init {
+    public actual constructor(
+        hour: Int, minute: Int, second: Int, nanosecond: Int
+    ) : this(hour, minute, second, nanosecond, Unit) {
         fun check(value: Int, lower: Int, upper: Int, str: String) =
             require(value in lower..upper) {
                 "Invalid time: $str must be a number between $lower and $upper, got $value"
@@ -33,6 +36,13 @@ public actual class LocalTime actual constructor(
     }
 
     public actual companion object {
+        public actual fun orNull(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime? =
+            if (hour !in 0..23 || minute !in 0..59 || second !in 0..59 || nanosecond !in 0 until NANOS_PER_ONE) {
+                null
+            } else {
+                LocalTime(hour, minute, second, nanosecond, Unit)
+            }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
         @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -49,22 +59,25 @@ public actual class LocalTime actual constructor(
 
         // org.threeten.bp.LocalTime#ofSecondOfDay(long, int)
         internal fun ofSecondOfDay(secondOfDay: Int, nanoOfSecond: Int): LocalTime {
-            require(secondOfDay in 0 until SECONDS_PER_DAY)
-            require(nanoOfSecond in 0 until NANOS_PER_ONE)
+            require(secondOfDay in 0 until SECONDS_PER_DAY) {
+                "Invalid time: secondOfDay must be between 0 and $SECONDS_PER_DAY, got $secondOfDay"
+            }
+            require(nanoOfSecond in 0 until NANOS_PER_ONE) {
+                "Invalid time: nanosecondOfSecond must be between 0 and $NANOS_PER_ONE, got $nanoOfSecond"
+            }
             val hours = (secondOfDay / SECONDS_PER_HOUR)
             val secondWithoutHours = secondOfDay - hours * SECONDS_PER_HOUR
             val minutes = (secondWithoutHours / SECONDS_PER_MINUTE)
             val second = secondWithoutHours - minutes * SECONDS_PER_MINUTE
-            return LocalTime(hours, minutes, second, nanoOfSecond)
-        }
-
-        internal fun of(hour: Int, minute: Int, second: Int, nanosecond: Int): LocalTime {
-            return LocalTime(hour, minute, second, nanosecond)
+            // The range of valid values was checked in the require statements above
+            return LocalTime(hours, minutes, second, nanoOfSecond, Unit)
         }
 
         // org.threeten.bp.LocalTime#ofNanoOfDay
         internal fun ofNanoOfDay(nanoOfDay: Long): LocalTime {
-            require(nanoOfDay >= 0 && nanoOfDay < SECONDS_PER_DAY.toLong() * NANOS_PER_ONE)
+            require(nanoOfDay >= 0 && nanoOfDay < SECONDS_PER_DAY.toLong() * NANOS_PER_ONE) {
+                "Invalid time: nanosecondOfDay must be between 0 and 86_400_000_000_000, got $nanoOfDay"
+            }
             var newNanoOfDay = nanoOfDay
             val hours = (newNanoOfDay / NANOS_PER_HOUR).toInt()
             newNanoOfDay -= hours * NANOS_PER_HOUR
@@ -72,7 +85,8 @@ public actual class LocalTime actual constructor(
             newNanoOfDay -= minutes * NANOS_PER_MINUTE
             val seconds = (newNanoOfDay / NANOS_PER_ONE).toInt()
             newNanoOfDay -= seconds * NANOS_PER_ONE
-            return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt())
+            // The range of valid values was checked in the require statement
+            return LocalTime(hours, minutes, seconds, newNanoOfDay.toInt(), Unit)
         }
 
         internal actual val MIN: LocalTime = LocalTime(0, 0, 0, 0)

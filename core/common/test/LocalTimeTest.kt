@@ -90,6 +90,31 @@ class LocalTimeTest {
     }
 
     @Test
+    fun orNull() {
+        // Valid times should be created correctly
+        LocalTime.orNull(12, 30, 45, 500_000_000)?.let {
+            checkComponents(it, 12, 30, 45, 500_000_000)
+        } ?: fail("LocalTime.orNull should not return null")
+
+        LocalTime.orNull(0, 0)?.let {
+            checkComponents(it, 0, 0)
+        } ?: fail("LocalTime.orNull should not return null")
+
+        LocalTime.orNull(23, 59, 59, 999_999_999)?.let {
+            checkComponents(it, 23, 59, 59, 999_999_999)
+        } ?: fail("LocalTime.orNull should not return null")
+
+        // Invalid times should return null
+        for (input in invalidTimes) {
+            when (input.size) {
+                2 -> assertNull(LocalTime.orNull(input[0], input[1]))
+                3 -> assertNull(LocalTime.orNull(input[0], input[1], input[2]))
+                4 -> assertNull(LocalTime.orNull(input[0], input[1], input[2], input[3]))
+            }
+        }
+    }
+
+    @Test
     fun fromNanosecondOfDay() {
         val data = mapOf(
             0L to LocalTime(0, 0),
@@ -204,6 +229,17 @@ class LocalTimeTest {
         checkComponents(time, datetime.hour, datetime.minute, datetime.second, datetime.nanosecond)
     }
 }
+
+val invalidTimes = listOf(
+    listOf(-1, 0),             // invalid hour
+    listOf(24, 0),             // invalid hour
+    listOf(0, -1),             // invalid minute
+    listOf(0, 60),             // invalid minute
+    listOf(0, 0, -1),          // invalid second
+    listOf(0, 0, 60),          // invalid second
+    listOf(0, 0, 0, -1),       // invalid nanosecond
+    listOf(0, 0, 0, 1_000_000_000)  // invalid nanosecond
+)
 
 fun checkComponents(value: LocalTime, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0) {
     assertEquals(hour, value.hour, "hours")

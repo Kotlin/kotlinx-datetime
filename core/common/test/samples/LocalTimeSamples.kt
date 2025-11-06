@@ -134,6 +134,19 @@ class LocalTimeSamples {
     }
 
     @Test
+    fun orNull() {
+        // Constructing a LocalTime value using `orNull`
+        val time = LocalTime.orNull(8, 30, 15, 123_456_789)
+        // For valid values, `orNull` is equivalent to the constructor
+        check(time == LocalTime(8, 30, 15, 123_456_789))
+        // If a value can not be constructed, null is returned
+        check(LocalTime.orNull(24, 30) == null)
+        check(LocalTime.orNull(8, 60) == null)
+        check(LocalTime.orNull(8, 30, 60) == null)
+        check(LocalTime.orNull(8, 30, 15, 1_000_000_000) == null)
+    }
+
+    @Test
     fun hour() {
         // Getting the number of whole hours shown on the clock
         check(LocalTime(8, 30, 15, 123_456_789).hour == 8)

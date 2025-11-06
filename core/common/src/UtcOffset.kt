@@ -38,6 +38,8 @@ import kotlinx.serialization.Serializable
  * [totalSeconds] returns the number of seconds from UTC.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * There is also a [ZERO] constant for the offset of zero.
  *
  * [parse] and [toString] methods can be used to obtain a [UtcOffset] from and convert it to a string in the
@@ -76,6 +78,27 @@ public expect class UtcOffset {
          * The zero offset from UTC, `Z`.
          */
         public val ZERO: UtcOffset
+
+        /**
+         * Constructs a [UtcOffset] from hours, minutes, and seconds components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * All components must have the same sign.
+         * Otherwise, `null` will be returned.
+         *
+         * The bounds are checked: it is invalid to pass something other than `±[0; 59]` as the number of seconds or minutes;
+         * `null` will be returned if this rule is violated.
+         * For example, `UtcOffset.orNull(hours = 3, minutes = 61)` returns `null`.
+         *
+         * However, the non-null component of the highest order can exceed these bounds,
+         * for example, `UtcOffset.orNull(minutes = 241)` and `UtcOffset.orNull(seconds = -3600)` are both valid.
+         *
+         * Use `UtcOffset(hours, minutes, seconds)` to throw an exception instead of returning `null`
+         * when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.orNull
+         */
+        public fun orNull(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset?
 
         /**
          * A shortcut for calling [DateTimeFormat.parse].
@@ -210,6 +233,7 @@ public fun UtcOffset.format(format: DateTimeFormat<UtcOffset>): String = format.
  * @throws IllegalArgumentException if a component exceeds its bounds when a higher order component is specified.
  * @throws IllegalArgumentException if components have different signs.
  * @throws IllegalArgumentException if the resulting `UtcOffset` value is outside of range `±18:00`.
+ * @see UtcOffset.orNull for a version that returns `null` instead of throwing an exception when the parameters are invalid.
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.constructorFunction
  */
 public expect fun UtcOffset(hours: Int? = null, minutes: Int? = null, seconds: Int? = null): UtcOffset

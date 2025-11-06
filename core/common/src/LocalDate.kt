@@ -48,6 +48,8 @@ import kotlin.internal.*
  * [LocalDate] can be constructed directly from its components using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * [fromEpochDays] can be used to obtain a [LocalDate] from the number of days since the epoch day `1970-01-01`;
  * [toEpochDays] is the inverse operation.
  * See sample 2.
@@ -72,6 +74,42 @@ import kotlin.internal.*
 @Serializable(with = LocalDateSerializer::class)
 public expect class LocalDate : Comparable<LocalDate> {
     public companion object {
+        /**
+         * Constructs a [LocalDate] instance from the given date components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * The components [month] and [day] are 1-based.
+         *
+         * The supported ranges of components:
+         * - [year] the range is at least enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] `1..12`
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         *
+         * Use `LocalDate(year, month, day) to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.orNullMonthNumber
+         */
+        public fun orNull(year: Int, month: Int, day: Int): LocalDate?
+
+        /**
+         * Constructs a [LocalDate] instance from the given date components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * The supported ranges of components:
+         * - [year] the range at least is enough to represent dates of all instants between
+         *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [month] all values of the [Month] enum
+         * - [day] `1..31`, the upper bound can be less, depending on the month
+         *
+         * Use `LocalDate(year, month, day) to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalDateSamples.orNull
+         */
+        public fun orNull(year: Int, month: Month, day: Int): LocalDate?
+
         /**
          * A shortcut for calling [DateTimeFormat.parse].
          *
@@ -180,6 +218,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
+     * @see orNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunctionMonthNumber
      */
     public constructor(year: Int, month: Int, day: Int)
@@ -195,6 +235,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * @throws IllegalArgumentException if any parameter is out of range or if [day] is invalid for the
      * given [month] and [year].
+     * @see orNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalDateSamples.constructorFunction
      */
     public constructor(year: Int, month: Month, day: Int)
