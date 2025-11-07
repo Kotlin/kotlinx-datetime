@@ -117,5 +117,17 @@ class LocalDateFormatSamples {
             }
             check(format.format(LocalDate(2021, 1, 13)) == "2021-01-13, Wed")
         }
+
+        @Test
+        fun englishNarrow() {
+            // Using the built-in English narrow day of week names in formatting
+            // Note: Narrow names contain duplicates (e.g., "T" for Tuesday/Thursday) and cannot be parsed unambiguously
+            check(DayOfWeekNames.ENGLISH_NARROW == listOf(
+                "M", "T", "W", "T", "F", "S", "S"
+            ))
+            // They are useful for compact display where context makes the meaning clear
+            val narrowName = DayOfWeekNames.ENGLISH_NARROW[DayOfWeek.WEDNESDAY.ordinal]
+            check(narrowName == "W")
+        }
     }
 }

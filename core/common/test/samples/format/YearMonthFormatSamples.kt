@@ -6,8 +6,10 @@
 package kotlinx.datetime.test.samples.format
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.format.DayOfWeekNames
+import kotlinx.datetime.format.ENGLISH_NARROW
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.char
@@ -147,6 +149,19 @@ class YearMonthFormatSamples {
                 year()
             }
             check(format.format(LocalDate(2021, 1, 13)) == "Jan 13, 2021")
+        }
+
+        @Test
+        fun englishNarrow() {
+            // Using the built-in English narrow month names in formatting
+            // Note: Narrow names contain duplicates (e.g., "J" for January/June/July) and cannot be parsed unambiguously
+            check(MonthNames.ENGLISH_NARROW == listOf(
+                "J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"
+            ))
+            // They are useful for compact display where context makes the meaning clear
+            check(Month.JANUARY.toString() == "JANUARY")
+            val narrowName = MonthNames.ENGLISH_NARROW[Month.MARCH.ordinal]
+            check(narrowName == "M")
         }
     }
 }

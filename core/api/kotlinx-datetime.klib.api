@@ -71,6 +71,21 @@ final enum class kotlinx.datetime/Month : kotlin/Enum<kotlinx.datetime/Month> { 
     final fun values(): kotlin/Array<kotlinx.datetime/Month> // kotlinx.datetime/Month.values|values#static(){}[0]
 }
 
+final enum class kotlinx.datetime/TextStyle : kotlin/Enum<kotlinx.datetime/TextStyle> { // kotlinx.datetime/TextStyle|null[0]
+    enum entry FULL // kotlinx.datetime/TextStyle.FULL|null[0]
+    enum entry FULL_STANDALONE // kotlinx.datetime/TextStyle.FULL_STANDALONE|null[0]
+    enum entry NARROW // kotlinx.datetime/TextStyle.NARROW|null[0]
+    enum entry NARROW_STANDALONE // kotlinx.datetime/TextStyle.NARROW_STANDALONE|null[0]
+    enum entry SHORT // kotlinx.datetime/TextStyle.SHORT|null[0]
+    enum entry SHORT_STANDALONE // kotlinx.datetime/TextStyle.SHORT_STANDALONE|null[0]
+
+    final val entries // kotlinx.datetime/TextStyle.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.datetime/TextStyle> // kotlinx.datetime/TextStyle.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): kotlinx.datetime/TextStyle // kotlinx.datetime/TextStyle.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<kotlinx.datetime/TextStyle> // kotlinx.datetime/TextStyle.values|values#static(){}[0]
+}
+
 abstract interface kotlinx.datetime/Clock { // kotlinx.datetime/Clock|null[0]
     abstract fun now(): kotlinx.datetime/Instant // kotlinx.datetime/Clock.now|now(){}[0]
 
@@ -549,6 +564,12 @@ final class kotlinx.datetime/LocalTime : kotlin/Comparable<kotlinx.datetime/Loca
     final object Formats { // kotlinx.datetime/LocalTime.Formats|null[0]
         final val ISO // kotlinx.datetime/LocalTime.Formats.ISO|{}ISO[0]
             final fun <get-ISO>(): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> // kotlinx.datetime/LocalTime.Formats.ISO.<get-ISO>|<get-ISO>(){}[0]
+    }
+}
+
+final class kotlinx.datetime/Locale { // kotlinx.datetime/Locale|null[0]
+    final object Companion { // kotlinx.datetime/Locale.Companion|null[0]
+        final fun getDefault(): kotlinx.datetime/Locale // kotlinx.datetime/Locale.Companion.getDefault|getDefault(){}[0]
     }
 }
 
@@ -1077,6 +1098,10 @@ final object kotlinx.datetime.serializers/YearMonthSerializer : kotlinx.serializ
     final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/YearMonth) // kotlinx.datetime.serializers/YearMonthSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.YearMonth){}[0]
 }
 
+final val kotlinx.datetime.format/ENGLISH_NARROW // kotlinx.datetime.format/ENGLISH_NARROW|@kotlinx.datetime.format.DayOfWeekNames.Companion{}ENGLISH_NARROW[0]
+    final fun (kotlinx.datetime.format/DayOfWeekNames.Companion).<get-ENGLISH_NARROW>(): kotlin.collections/List<kotlin/String> // kotlinx.datetime.format/ENGLISH_NARROW.<get-ENGLISH_NARROW>|<get-ENGLISH_NARROW>@kotlinx.datetime.format.DayOfWeekNames.Companion(){}[0]
+final val kotlinx.datetime.format/ENGLISH_NARROW // kotlinx.datetime.format/ENGLISH_NARROW|@kotlinx.datetime.format.MonthNames.Companion{}ENGLISH_NARROW[0]
+    final fun (kotlinx.datetime.format/MonthNames.Companion).<get-ENGLISH_NARROW>(): kotlin.collections/List<kotlin/String> // kotlinx.datetime.format/ENGLISH_NARROW.<get-ENGLISH_NARROW>|<get-ENGLISH_NARROW>@kotlinx.datetime.format.MonthNames.Companion(){}[0]
 final val kotlinx.datetime/isDistantFuture // kotlinx.datetime/isDistantFuture|@kotlinx.datetime.Instant{}isDistantFuture[0]
     final fun (kotlinx.datetime/Instant).<get-isDistantFuture>(): kotlin/Boolean // kotlinx.datetime/isDistantFuture.<get-isDistantFuture>|<get-isDistantFuture>@kotlinx.datetime.Instant(){}[0]
 final val kotlinx.datetime/isDistantPast // kotlinx.datetime/isDistantPast|@kotlinx.datetime.Instant{}isDistantPast[0]
@@ -1139,6 +1164,7 @@ final fun (kotlinx.datetime/Clock).kotlinx.datetime/todayAt(kotlinx.datetime/Tim
 final fun (kotlinx.datetime/Clock).kotlinx.datetime/todayIn(kotlinx.datetime/TimeZone): kotlinx.datetime/LocalDate // kotlinx.datetime/todayIn|todayIn@kotlinx.datetime.Clock(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlinx.datetime/DatePeriod).kotlinx.datetime/plus(kotlinx.datetime/DatePeriod): kotlinx.datetime/DatePeriod // kotlinx.datetime/plus|plus@kotlinx.datetime.DatePeriod(kotlinx.datetime.DatePeriod){}[0]
 final fun (kotlinx.datetime/DateTimePeriod).kotlinx.datetime/plus(kotlinx.datetime/DateTimePeriod): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/plus|plus@kotlinx.datetime.DateTimePeriod(kotlinx.datetime.DateTimePeriod){}[0]
+final fun (kotlinx.datetime/DayOfWeek).kotlinx.datetime/displayName(kotlinx.datetime/TextStyle = ..., kotlinx.datetime/Locale = ...): kotlin/String // kotlinx.datetime/displayName|displayName@kotlinx.datetime.DayOfWeek(kotlinx.datetime.TextStyle;kotlinx.datetime.Locale){}[0]
 final fun (kotlinx.datetime/Instant).kotlinx.datetime/daysUntil(kotlinx.datetime/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/daysUntil|daysUntil@kotlinx.datetime.Instant(kotlinx.datetime.Instant;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlinx.datetime/Instant).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>, kotlinx.datetime/UtcOffset = ...): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.Instant(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>;kotlinx.datetime.UtcOffset){}[0]
 final fun (kotlinx.datetime/Instant).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlinx.datetime/Instant // kotlinx.datetime/minus|minus@kotlinx.datetime.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
@@ -1207,6 +1233,7 @@ final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/atDate(kotlin/Int, kotli
 final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/atDate(kotlin/Int, kotlinx.datetime/Month, kotlin/Int, kotlin/Unit = ...): kotlinx.datetime/LocalDateTime // kotlinx.datetime/atDate|atDate@kotlinx.datetime.LocalTime(kotlin.Int;kotlinx.datetime.Month;kotlin.Int;kotlin.Unit){}[0]
 final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/atDate(kotlinx.datetime/LocalDate): kotlinx.datetime/LocalDateTime // kotlinx.datetime/atDate|atDate@kotlinx.datetime.LocalTime(kotlinx.datetime.LocalDate){}[0]
 final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.LocalTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalTime>){}[0]
+final fun (kotlinx.datetime/Month).kotlinx.datetime/displayName(kotlinx.datetime/TextStyle = ..., kotlinx.datetime/Locale = ...): kotlin/String // kotlinx.datetime/displayName|displayName@kotlinx.datetime.Month(kotlinx.datetime.TextStyle;kotlinx.datetime.Locale){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlin.time.Instant){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlinx.datetime/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlinx.datetime.Instant){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/asTimeZone(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/asTimeZone|asTimeZone@kotlinx.datetime.UtcOffset(){}[0]

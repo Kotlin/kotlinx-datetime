@@ -54,4 +54,22 @@ class MonthSamples {
             // Expected
         }
     }
+
+    @Test
+    fun displayName() {
+        // Getting the localized display name for a month
+        val january = Month.JANUARY
+
+        // Full name (default)
+        val fullName = january.displayName()
+        check(fullName.isNotEmpty())
+
+        // Short name
+        val shortName = january.displayName(textStyle = TextStyle.SHORT)
+        check(shortName.isNotEmpty())
+
+        // Narrow name (typically a few letters)
+        val narrowName = january.displayName(textStyle = TextStyle.NARROW)
+        check(narrowName.isNotEmpty())
+    }
 }

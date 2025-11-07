@@ -49,4 +49,22 @@ class DayOfWeekSamples {
             // Expected
         }
     }
+
+    @Test
+    fun displayName() {
+        // Getting the localized display name for a day of the week
+        val monday = DayOfWeek.MONDAY
+
+        // Full name (default)
+        val fullName = monday.displayName()
+        check(fullName.isNotEmpty())
+
+        // Short name
+        val shortName = monday.displayName(textStyle = TextStyle.SHORT)
+        check(shortName.isNotEmpty())
+
+        // Narrow name (typically one letter)
+        val narrowName = monday.displayName(textStyle = TextStyle.NARROW)
+        check(narrowName.isNotEmpty())
+    }
 }

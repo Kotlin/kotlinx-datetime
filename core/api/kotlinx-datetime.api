@@ -195,6 +195,8 @@ public final class kotlinx/datetime/DayOfWeek : java/lang/Enum {
 public final class kotlinx/datetime/DayOfWeekKt {
 	public static final synthetic fun DayOfWeek (I)Ljava/time/DayOfWeek;
 	public static final fun DayOfWeek (I)Lkotlinx/datetime/DayOfWeek;
+	public static final fun displayName (Lkotlinx/datetime/DayOfWeek;Lkotlinx/datetime/TextStyle;Lkotlinx/datetime/Locale;)Ljava/lang/String;
+	public static synthetic fun displayName$default (Lkotlinx/datetime/DayOfWeek;Lkotlinx/datetime/TextStyle;Lkotlinx/datetime/Locale;ILjava/lang/Object;)Ljava/lang/String;
 	public static final fun getIsoDayNumber (Ljava/time/DayOfWeek;)I
 	public static final fun getIsoDayNumber (Lkotlinx/datetime/DayOfWeek;)I
 }
@@ -548,6 +550,19 @@ public final class kotlinx/datetime/LocalTimeKt {
 	public static final fun toLocalTime (Ljava/lang/String;)Lkotlinx/datetime/LocalTime;
 }
 
+public final class kotlinx/datetime/Locale {
+	public static final field Companion Lkotlinx/datetime/Locale$Companion;
+}
+
+public final class kotlinx/datetime/Locale$Companion {
+	public final fun getDefault ()Lkotlinx/datetime/Locale;
+}
+
+public final class kotlinx/datetime/LocaleKt {
+	public static final fun toJavaLocale (Lkotlinx/datetime/Locale;)Ljava/util/Locale;
+	public static final fun toKotlinLocale (Ljava/util/Locale;)Lkotlinx/datetime/Locale;
+}
+
 public final class kotlinx/datetime/Month : java/lang/Enum {
 	public static final field APRIL Lkotlinx/datetime/Month;
 	public static final field AUGUST Lkotlinx/datetime/Month;
@@ -569,6 +584,8 @@ public final class kotlinx/datetime/Month : java/lang/Enum {
 public final class kotlinx/datetime/MonthKt {
 	public static final synthetic fun Month (I)Ljava/time/Month;
 	public static final fun Month (I)Lkotlinx/datetime/Month;
+	public static final fun displayName (Lkotlinx/datetime/Month;Lkotlinx/datetime/TextStyle;Lkotlinx/datetime/Locale;)Ljava/lang/String;
+	public static synthetic fun displayName$default (Lkotlinx/datetime/Month;Lkotlinx/datetime/TextStyle;Lkotlinx/datetime/Locale;ILjava/lang/Object;)Ljava/lang/String;
 	public static final fun getNumber (Ljava/time/Month;)I
 	public static final fun getNumber (Lkotlinx/datetime/Month;)I
 }
@@ -590,6 +607,18 @@ public final class kotlinx/datetime/Ser : java/io/Externalizable {
 }
 
 public final class kotlinx/datetime/Ser$Companion {
+}
+
+public final class kotlinx/datetime/TextStyle : java/lang/Enum {
+	public static final field FULL Lkotlinx/datetime/TextStyle;
+	public static final field FULL_STANDALONE Lkotlinx/datetime/TextStyle;
+	public static final field NARROW Lkotlinx/datetime/TextStyle;
+	public static final field NARROW_STANDALONE Lkotlinx/datetime/TextStyle;
+	public static final field SHORT Lkotlinx/datetime/TextStyle;
+	public static final field SHORT_STANDALONE Lkotlinx/datetime/TextStyle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/datetime/TextStyle;
+	public static fun values ()[Lkotlinx/datetime/TextStyle;
 }
 
 public class kotlinx/datetime/TimeZone {
@@ -1003,6 +1032,10 @@ public final class kotlinx/datetime/format/DayOfWeekNames$Companion {
 	public final fun getENGLISH_FULL ()Lkotlinx/datetime/format/DayOfWeekNames;
 }
 
+public final class kotlinx/datetime/format/DayOfWeekNamesExtKt {
+	public static final fun getENGLISH_NARROW (Lkotlinx/datetime/format/DayOfWeekNames$Companion;)Ljava/util/List;
+}
+
 public abstract interface annotation class kotlinx/datetime/format/FormatStringsInDatetimeFormats : java/lang/annotation/Annotation {
 }
 
@@ -1019,6 +1052,10 @@ public final class kotlinx/datetime/format/MonthNames {
 public final class kotlinx/datetime/format/MonthNames$Companion {
 	public final fun getENGLISH_ABBREVIATED ()Lkotlinx/datetime/format/MonthNames;
 	public final fun getENGLISH_FULL ()Lkotlinx/datetime/format/MonthNames;
+}
+
+public final class kotlinx/datetime/format/MonthNamesExtKt {
+	public static final fun getENGLISH_NARROW (Lkotlinx/datetime/format/MonthNames$Companion;)Ljava/util/List;
 }
 
 public final class kotlinx/datetime/format/Padding : java/lang/Enum {
