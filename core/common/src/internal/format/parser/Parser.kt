@@ -49,7 +49,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         ParserStructure(operations, followedBy.map { it.append(other) })
     }
 
-    fun <T> ParserStructure<T>.simplify(unconditionalModifications: List<UnconditionalModification<T>>): ParserStructure<T> {
+    fun ParserStructure<T>.simplify(unconditionalModifications: List<UnconditionalModification<T>>): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
         val unconditionalModificationsForTails = unconditionalModifications.toMutableList()
