@@ -33,6 +33,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
 
     public actual object Formats {
         public actual val ISO: DateTimeFormat<LocalDateTime> = ISO_DATETIME
+        public actual val ISO_BASIC: DateTimeFormat<LocalDateTime> = ISO_DATETIME_BASIC
     }
 
     public actual constructor(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :

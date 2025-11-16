@@ -198,6 +198,19 @@ public expect class LocalTime : Comparable<LocalTime> {
      */
     public object Formats {
         /**
+         * ISO 8601 basic format.
+         *
+         * Examples: `T1234`, `T123456`, `T123456.789`, `T123456.1234`.
+         *
+         * When formatting, seconds are always included, even if they are zero.
+         * Fractional parts of the second are included if non-zero.
+         *
+         * @see LocalDateTime.Formats.ISO_BASIC
+         * @sample kotlinx.datetime.test.samples.LocalTimeSamples.Formats.isoBasic
+         */
+        public val ISO_BASIC: DateTimeFormat<LocalTime>
+
+        /**
          * ISO 8601 extended format.
          *
          * Examples: `12:34`, `12:34:56`, `12:34:56.789`, `12:34:56.1234`.
@@ -215,6 +228,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * We *forbid* using the time designator `T` to allow for a predictable composition of formats:
          * see the note at the end of rule 5.3.5.
          *
+         * @see LocalDateTime.Formats.ISO
          * @sample kotlinx.datetime.test.samples.LocalTimeSamples.Formats.iso
          */
         public val ISO: DateTimeFormat<LocalTime>

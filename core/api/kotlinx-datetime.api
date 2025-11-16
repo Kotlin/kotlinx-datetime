@@ -485,6 +485,7 @@ public final class kotlinx/datetime/LocalDateTime$Companion {
 public final class kotlinx/datetime/LocalDateTime$Formats {
 	public static final field INSTANCE Lkotlinx/datetime/LocalDateTime$Formats;
 	public final fun getISO ()Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun getISO_BASIC ()Lkotlinx/datetime/format/DateTimeFormat;
 }
 
 public final class kotlinx/datetime/LocalDateTimeKt {
@@ -530,6 +531,7 @@ public final class kotlinx/datetime/LocalTime$Companion {
 public final class kotlinx/datetime/LocalTime$Formats {
 	public static final field INSTANCE Lkotlinx/datetime/LocalTime$Formats;
 	public final fun getISO ()Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun getISO_BASIC ()Lkotlinx/datetime/format/DateTimeFormat;
 }
 
 public final class kotlinx/datetime/LocalTimeKt {
