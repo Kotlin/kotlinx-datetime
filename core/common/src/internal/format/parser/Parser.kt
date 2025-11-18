@@ -97,22 +97,26 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         } else {
             val newTails = mergedTails.map {
                 when (val firstOperation = it.operations.firstOrNull()) {
-                    is NumberSpanParserOperation -> {
-                        ParserStructure(
-                            listOf(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers)) + unconditionalModifications + it.operations.drop(
-                                1
-                            ),
-                            it.followedBy
-                        )
-                    }
+                    is NumberSpanParserOperation -> ParserStructure(buildList(unconditionalModifications.size + it.operations.size) {
+                        add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
+                        addAll(unconditionalModifications)
+                        addAll(it.operations.drop(1))
+                    }, it.followedBy)
 
                     null -> ParserStructure(
-                        unconditionalModifications + listOf(NumberSpanParserOperation(currentNumberSpan)),
+                        buildList(unconditionalModifications.size + 1) {
+                            addAll(unconditionalModifications)
+                            add(NumberSpanParserOperation(currentNumberSpan))
+                        },
                         it.followedBy
                     )
 
                     else -> ParserStructure(
-                        unconditionalModifications + listOf(NumberSpanParserOperation(currentNumberSpan)) + it.operations,
+                        buildList(unconditionalModifications.size + 1 + it.operations.size) {
+                            addAll(unconditionalModifications)
+                            add(NumberSpanParserOperation(currentNumberSpan))
+                            addAll(it.operations)
+                        },
                         it.followedBy
                     )
                 }
