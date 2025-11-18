@@ -49,7 +49,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         ParserStructure(operations, followedBy.map { it.append(other) })
     }
 
-    fun ParserStructure<T>.simplify(): ParserStructure<T> {
+    fun ParserStructure<T>.simplifyAndAppend(other: ParserStructure<T>): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
         val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
@@ -72,8 +72,37 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 newOperations.add(op)
             }
         }
+
+        if (followedBy.isEmpty()) {
+            if (other.operations.isNotEmpty()) {
+                if (currentNumberSpan == null) {
+                    val firstOperation = other.operations.first()
+                    if (firstOperation is NumberSpanParserOperation) {
+                        newOperations.add(other.operations.first())
+                        newOperations.addAll(unconditionalModifications)
+                        newOperations.addAll(other.operations.drop(1))
+                    } else {
+                        newOperations.addAll(unconditionalModifications)
+                        newOperations.addAll(other.operations)
+                    }
+                } else {
+                    val firstOperation = other.operations.first()
+                    if (firstOperation is NumberSpanParserOperation) {
+                        newOperations.add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
+                        newOperations.addAll(unconditionalModifications)
+                        newOperations.addAll(other.operations.drop(1))
+                    } else {
+                        newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+                        newOperations.addAll(unconditionalModifications)
+                        newOperations.addAll(other.operations)
+                    }
+                }
+                return ParserStructure(newOperations, other.followedBy)
+            }
+        }
+
         val mergedTails = followedBy.flatMap {
-            val simplified = it.simplify()
+            val simplified = it.simplifyAndAppend(other)
             // parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
             // unless `p` is empty. For example, ((a|b)|(c|d)) is equivalent to (a|b|c|d).
             // As a special case, `ParserStructure(emptyList(), emptyList())` represents a parser that recognizes an empty
@@ -82,7 +111,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 simplified.followedBy.ifEmpty { listOf(simplified) }
             else
                 listOf(simplified)
-        }
+        }.ifEmpty { other.followedBy }
         return if (currentNumberSpan == null) {
             // the last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
@@ -127,8 +156,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             ParserStructure(newOperations, newTails)
         }
     }
-    val naiveParser = foldRight(ParserStructure<T>(emptyList(), emptyList())) { parser, acc -> parser.append(acc) }
-    return naiveParser.simplify()
+    return foldRight(ParserStructure(emptyList(), emptyList())) { parser, acc -> parser.simplifyAndAppend(acc) }
 }
 
 internal interface Copyable<Self> {
