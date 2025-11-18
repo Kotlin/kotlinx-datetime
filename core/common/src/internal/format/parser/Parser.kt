@@ -97,11 +97,14 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         } else {
             val newTails = mergedTails.map {
                 when (val firstOperation = it.operations.firstOrNull()) {
-                    is NumberSpanParserOperation -> ParserStructure(buildList(unconditionalModifications.size + it.operations.size) {
-                        add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
-                        addAll(unconditionalModifications)
-                        addAll(it.operations.drop(1))
-                    }, it.followedBy)
+                    is NumberSpanParserOperation -> ParserStructure(
+                        buildList(unconditionalModifications.size + it.operations.size) {
+                            add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
+                            addAll(unconditionalModifications)
+                            addAll(it.operations.drop(1))
+                        },
+                        it.followedBy
+                    )
 
                     null -> ParserStructure(
                         buildList(unconditionalModifications.size + 1) {
