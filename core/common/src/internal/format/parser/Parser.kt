@@ -52,7 +52,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     fun ParserStructure<T>.simplify(): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
-        val unconditionalModificationsForTails = mutableListOf<UnconditionalModification<T>>()
+        val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
         // joining together the number consumers in this parser before the first alternative;
         // collecting the unconditional modifications to push them to the end of all the parser's branches.
         for (op in operations) {
@@ -63,7 +63,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                     currentNumberSpan = op.consumers.toMutableList()
                 }
             } else if (op is UnconditionalModification) {
-                unconditionalModificationsForTails.add(op)
+                unconditionalModifications.add(op)
             } else {
                 if (currentNumberSpan != null) {
                     newOperations.add(NumberSpanParserOperation(currentNumberSpan))
@@ -85,21 +85,21 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         }
         return if (currentNumberSpan == null) {
             // the last operation was not a number span, or it was a number span that we are allowed to interrupt
-            newOperations.addAll(unconditionalModificationsForTails)
+            newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else if (mergedTails.none {
                 it.operations.firstOrNull()?.let { it is NumberSpanParserOperation } == true
             }) {
             // the last operation was a number span, but there are no alternatives that start with a number span.
             newOperations.add(NumberSpanParserOperation(currentNumberSpan))
-            newOperations.addAll(unconditionalModificationsForTails)
+            newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else {
             val newTails = mergedTails.map {
                 when (val firstOperation = it.operations.firstOrNull()) {
                     is NumberSpanParserOperation -> {
                         ParserStructure(
-                            listOf(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers)) + unconditionalModificationsForTails + it.operations.drop(
+                            listOf(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers)) + unconditionalModifications + it.operations.drop(
                                 1
                             ),
                             it.followedBy
@@ -107,12 +107,12 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                     }
 
                     null -> ParserStructure(
-                        unconditionalModificationsForTails + listOf(NumberSpanParserOperation(currentNumberSpan)),
+                        unconditionalModifications + listOf(NumberSpanParserOperation(currentNumberSpan)),
                         it.followedBy
                     )
 
                     else -> ParserStructure(
-                        unconditionalModificationsForTails + listOf(NumberSpanParserOperation(currentNumberSpan)) + it.operations,
+                        unconditionalModifications + listOf(NumberSpanParserOperation(currentNumberSpan)) + it.operations,
                         it.followedBy
                     )
                 }
