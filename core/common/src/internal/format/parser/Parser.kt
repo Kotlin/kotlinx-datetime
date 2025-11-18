@@ -48,7 +48,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         unconditionalModifications: List<UnconditionalModification<T>>,
         simplifiedParserStructure: ParserStructure<T>,
     ): ParserStructure<T> {
-        val operations = buildList {
+        val mergedOperations = buildList {
             addAll(baseOperations)
             when (val firstOperation = simplifiedParserStructure.operations.firstOrNull()) {
                 is NumberSpanParserOperation -> {
@@ -75,7 +75,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 }
             }
         }
-        return ParserStructure(operations, simplifiedParserStructure.followedBy)
+        return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
     }
 
     fun ParserStructure<T>.simplifyAndAppend(other: ParserStructure<T>): ParserStructure<T> {
