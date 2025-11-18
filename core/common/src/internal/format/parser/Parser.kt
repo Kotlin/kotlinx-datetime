@@ -49,6 +49,43 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         ParserStructure(operations, followedBy.map { it.append(other) })
     }
 
+    fun mergeOperations(
+        baseOperations: List<ParserOperation<T>>,
+        numberSpan: List<NumberConsumer<T>>?,
+        unconditionalModifications: List<UnconditionalModification<T>>,
+        operationsToMerge: List<ParserOperation<T>>,
+        followedBy: List<ParserStructure<T>>
+    ): ParserStructure<T> {
+        val operations = buildList {
+            addAll(baseOperations)
+            when (val firstOperation = operationsToMerge.firstOrNull()) {
+                is NumberSpanParserOperation -> {
+                    if (numberSpan != null) {
+                        add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
+                    } else {
+                        add(firstOperation)
+                    }
+                    addAll(unconditionalModifications)
+                    addAll(operationsToMerge.drop(1))
+                }
+                null -> {
+                    if (numberSpan != null) {
+                        add(NumberSpanParserOperation(numberSpan))
+                    }
+                    addAll(unconditionalModifications)
+                }
+                else -> {
+                    if (numberSpan != null) {
+                        add(NumberSpanParserOperation(numberSpan))
+                    }
+                    addAll(unconditionalModifications)
+                    addAll(operationsToMerge)
+                }
+            }
+        }
+        return ParserStructure(operations, followedBy)
+    }
+
     fun ParserStructure<T>.simplifyAndAppend(other: ParserStructure<T>): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
@@ -73,34 +110,6 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             }
         }
 
-        if (followedBy.isEmpty()) {
-            if (other.operations.isNotEmpty()) {
-                if (currentNumberSpan == null) {
-                    val firstOperation = other.operations.first()
-                    if (firstOperation is NumberSpanParserOperation) {
-                        newOperations.add(other.operations.first())
-                        newOperations.addAll(unconditionalModifications)
-                        newOperations.addAll(other.operations.drop(1))
-                    } else {
-                        newOperations.addAll(unconditionalModifications)
-                        newOperations.addAll(other.operations)
-                    }
-                } else {
-                    val firstOperation = other.operations.first()
-                    if (firstOperation is NumberSpanParserOperation) {
-                        newOperations.add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
-                        newOperations.addAll(unconditionalModifications)
-                        newOperations.addAll(other.operations.drop(1))
-                    } else {
-                        newOperations.add(NumberSpanParserOperation(currentNumberSpan))
-                        newOperations.addAll(unconditionalModifications)
-                        newOperations.addAll(other.operations)
-                    }
-                }
-                return ParserStructure(newOperations, other.followedBy)
-            }
-        }
-
         val mergedTails = followedBy.flatMap {
             val simplified = it.simplifyAndAppend(other)
             // parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
@@ -111,7 +120,12 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 simplified.followedBy.ifEmpty { listOf(simplified) }
             else
                 listOf(simplified)
-        }.ifEmpty { other.followedBy }
+        }.ifEmpty {
+            if (other.operations.isNotEmpty()) {
+                return mergeOperations(newOperations, currentNumberSpan, unconditionalModifications, other.operations, other.followedBy)
+            }
+            other.followedBy
+        }
         return if (currentNumberSpan == null) {
             // the last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
@@ -125,33 +139,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             ParserStructure(newOperations, mergedTails)
         } else {
             val newTails = mergedTails.map {
-                when (val firstOperation = it.operations.firstOrNull()) {
-                    is NumberSpanParserOperation -> ParserStructure(
-                        buildList(unconditionalModifications.size + it.operations.size) {
-                            add(NumberSpanParserOperation(currentNumberSpan + firstOperation.consumers))
-                            addAll(unconditionalModifications)
-                            addAll(it.operations.drop(1))
-                        },
-                        it.followedBy
-                    )
-
-                    null -> ParserStructure(
-                        buildList(unconditionalModifications.size + 1) {
-                            add(NumberSpanParserOperation(currentNumberSpan))
-                            addAll(unconditionalModifications)
-                        },
-                        it.followedBy
-                    )
-
-                    else -> ParserStructure(
-                        buildList(unconditionalModifications.size + 1 + it.operations.size) {
-                            add(NumberSpanParserOperation(currentNumberSpan))
-                            addAll(unconditionalModifications)
-                            addAll(it.operations)
-                        },
-                        it.followedBy
-                    )
-                }
+                mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, it.operations, it.followedBy)
             }
             ParserStructure(newOperations, newTails)
         }
