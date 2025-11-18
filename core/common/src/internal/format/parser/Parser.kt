@@ -108,16 +108,16 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
 
                     null -> ParserStructure(
                         buildList(unconditionalModifications.size + 1) {
-                            addAll(unconditionalModifications)
                             add(NumberSpanParserOperation(currentNumberSpan))
+                            addAll(unconditionalModifications)
                         },
                         it.followedBy
                     )
 
                     else -> ParserStructure(
                         buildList(unconditionalModifications.size + 1 + it.operations.size) {
-                            addAll(unconditionalModifications)
                             add(NumberSpanParserOperation(currentNumberSpan))
+                            addAll(unconditionalModifications)
                             addAll(it.operations)
                         },
                         it.followedBy
