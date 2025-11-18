@@ -118,6 +118,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             }
             other.followedBy
         }
+
         return if (currentNumberSpan == null) {
             // the last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
@@ -136,6 +137,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             ParserStructure(newOperations, newTails)
         }
     }
+
     return foldRight(ParserStructure(emptyList(), emptyList())) { parser, acc -> parser.simplifyAndAppend(acc) }
 }
 
