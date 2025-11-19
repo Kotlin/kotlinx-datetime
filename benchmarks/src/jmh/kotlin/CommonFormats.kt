@@ -73,4 +73,13 @@ open class CommonFormats {
         }
         blackhole.consume(format)
     }
+
+    @Benchmark
+    fun buildFourDigitsUtcOffsetFormat(blackhole: Blackhole) {
+        val format = UtcOffset.Format {
+            offsetHours()
+            offsetMinutesOfHour()
+        }
+        blackhole.consume(format)
+    }
 }
