@@ -7,14 +7,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.format.DateTimeComponents
-import kotlinx.datetime.format.DayOfWeekNames
-import kotlinx.datetime.format.ISO_DATE
-import kotlinx.datetime.format.MonthNames
-import kotlinx.datetime.format.Padding
-import kotlinx.datetime.format.alternativeParsing
-import kotlinx.datetime.format.char
-import kotlinx.datetime.format.optional
+import kotlinx.datetime.format.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.*
@@ -90,7 +83,40 @@ open class CommonFormats {
 
     @Benchmark
     fun buildRfc1123DateTimeFormat(blackhole: Blackhole) {
-        val format = DateTimeComponents.Formats.RFC_1123
+        val format = DateTimeComponents.Format {
+            alternativeParsing({
+                // the day of week may be missing
+            }) {
+                dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+                chars(", ")
+            }
+            day(Padding.NONE)
+            char(' ')
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+            char(' ')
+            year()
+            char(' ')
+            hour()
+            char(':')
+            minute()
+            optional {
+                char(':')
+                second()
+            }
+            chars(" ")
+            alternativeParsing({
+                chars("UT")
+            }, {
+                chars("Z")
+            }) {
+                optional("GMT") {
+                    offset(UtcOffset.Format {
+                        offsetHours()
+                        offsetMinutesOfHour()
+                    })
+                }
+            }
+        }
         blackhole.consume(format)
     }
 
@@ -121,7 +147,19 @@ open class CommonFormats {
             alternativeParsing({
                 offsetHours()
             }) {
-                offset(UtcOffset.Formats.ISO)
+                offset(UtcOffset.Format {
+                    alternativeParsing({ chars("z") }) {
+                        optional("Z") {
+                            offsetHours()
+                            char(':')
+                            offsetMinutesOfHour()
+                            optional {
+                                char(':')
+                                offsetSecondsOfMinute()
+                            }
+                        }
+                    }
+                })
             }
         }
         blackhole.consume(format)
