@@ -54,26 +54,24 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 is NumberSpanParserOperation -> {
                     if (numberSpan != null) {
                         add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
+                        addAll(simplifiedParserStructure.operations.drop(1))
                     } else {
-                        add(firstOperation)
+                        addAll(simplifiedParserStructure.operations)
                     }
-                    addAll(unconditionalModifications)
-                    addAll(simplifiedParserStructure.operations.drop(1))
                 }
                 null -> {
                     if (numberSpan != null) {
                         add(NumberSpanParserOperation(numberSpan))
                     }
-                    addAll(unconditionalModifications)
                 }
                 else -> {
                     if (numberSpan != null) {
                         add(NumberSpanParserOperation(numberSpan))
                     }
-                    addAll(unconditionalModifications)
                     addAll(simplifiedParserStructure.operations)
                 }
             }
+            addAll(unconditionalModifications)
         }
         return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
     }
