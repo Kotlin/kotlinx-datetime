@@ -50,24 +50,17 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     ): ParserStructure<T> {
         val mergedOperations = buildList {
             addAll(baseOperations)
-            when (val firstOperation = simplifiedParserStructure.operations.firstOrNull()) {
-                is NumberSpanParserOperation -> {
-                    if (numberSpan != null) {
-                        add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
-                        addAll(simplifiedParserStructure.operations.drop(1))
-                    } else {
-                        addAll(simplifiedParserStructure.operations)
-                    }
+            val firstOperation = simplifiedParserStructure.operations.firstOrNull()
+            when {
+                numberSpan == null -> {
+                    addAll(simplifiedParserStructure.operations)
                 }
-                null -> {
-                    if (numberSpan != null) {
-                        add(NumberSpanParserOperation(numberSpan))
-                    }
+                firstOperation is NumberSpanParserOperation -> {
+                    add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
+                    addAll(simplifiedParserStructure.operations.drop(1))
                 }
                 else -> {
-                    if (numberSpan != null) {
-                        add(NumberSpanParserOperation(numberSpan))
-                    }
+                    add(NumberSpanParserOperation(numberSpan))
                     addAll(simplifiedParserStructure.operations)
                 }
             }
