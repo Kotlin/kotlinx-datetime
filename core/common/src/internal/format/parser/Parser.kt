@@ -123,9 +123,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             // the last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
-        } else if (mergedTails.none {
-                it.operations.firstOrNull()?.let { it is NumberSpanParserOperation } == true
-            }) {
+        } else if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
             // the last operation was a number span, but there are no alternatives that start with a number span.
             newOperations.add(NumberSpanParserOperation(currentNumberSpan))
             newOperations.addAll(unconditionalModifications)
