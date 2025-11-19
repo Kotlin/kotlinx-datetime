@@ -9,6 +9,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.DayOfWeekNames
+import kotlinx.datetime.format.ISO_DATE
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.alternativeParsing
@@ -90,6 +91,39 @@ open class CommonFormats {
     @Benchmark
     fun buildRfc1123DateTimeFormat(blackhole: Blackhole) {
         val format = DateTimeComponents.Formats.RFC_1123
+        blackhole.consume(format)
+    }
+
+    @Benchmark
+    fun buildIsoDateTimeOffsetFormat(blackhole: Blackhole) {
+        val format = DateTimeComponents.Format {
+            date(LocalDate.Format {
+                year()
+                char('-')
+                monthNumber()
+                char('-')
+                day()
+            })
+            alternativeParsing({
+                char('t')
+            }) {
+                char('T')
+            }
+            hour()
+            char(':')
+            minute()
+            char(':')
+            second()
+            optional {
+                char('.')
+                secondFraction(1, 9)
+            }
+            alternativeParsing({
+                offsetHours()
+            }) {
+                offset(UtcOffset.Formats.ISO)
+            }
+        }
         blackhole.consume(format)
     }
 }
