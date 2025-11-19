@@ -7,6 +7,10 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.DayOfWeekNames
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.alternativeParsing
 import kotlinx.datetime.format.char
 import kotlinx.datetime.format.optional
@@ -80,6 +84,12 @@ open class CommonFormats {
             offsetHours()
             offsetMinutesOfHour()
         }
+        blackhole.consume(format)
+    }
+
+    @Benchmark
+    fun buildRfc1123DateTimeFormat(blackhole: Blackhole) {
+        val format = DateTimeComponents.Formats.RFC_1123
         blackhole.consume(format)
     }
 }
