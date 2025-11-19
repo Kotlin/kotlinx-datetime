@@ -48,20 +48,21 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         unconditionalModifications: List<UnconditionalModification<T>>,
         simplifiedParserStructure: ParserStructure<T>,
     ): ParserStructure<T> {
+        val operationsToMerge = simplifiedParserStructure.operations
+        val firstOperation = operationsToMerge.firstOrNull()
         val mergedOperations = buildList {
             addAll(baseOperations)
-            val firstOperation = simplifiedParserStructure.operations.firstOrNull()
             when {
                 numberSpan == null -> {
-                    addAll(simplifiedParserStructure.operations)
+                    addAll(operationsToMerge)
                 }
                 firstOperation is NumberSpanParserOperation -> {
                     add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
-                    addAll(simplifiedParserStructure.operations.drop(1))
+                    addAll(operationsToMerge.drop(1))
                 }
                 else -> {
                     add(NumberSpanParserOperation(numberSpan))
-                    addAll(simplifiedParserStructure.operations)
+                    addAll(operationsToMerge)
                 }
             }
             addAll(unconditionalModifications)
