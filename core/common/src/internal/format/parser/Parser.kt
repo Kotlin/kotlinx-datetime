@@ -128,7 +128,36 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         }
     }
 
-    return foldRight(ParserStructure(emptyList(), emptyList())) { parser, acc -> parser.simplifyAndAppend(acc) }
+    var result = ParserStructure<T>(emptyList(), emptyList())
+    val flatParsers = mutableListOf<List<ParserOperation<T>>>()
+
+    for (parser in this.asReversed()) {
+        if (parser.followedBy.isEmpty()) {
+            flatParsers.add(parser.operations)
+        } else {
+            if (flatParsers.isNotEmpty()) {
+                val operations = buildList() {
+                    for (i in flatParsers.lastIndex downTo 0) {
+                        addAll(flatParsers[i])
+                    }
+                }
+                result = ParserStructure(operations, emptyList()).simplifyAndAppend(result)
+                flatParsers.clear()
+            }
+            result = parser.simplifyAndAppend(result)
+        }
+    }
+
+    if (flatParsers.isNotEmpty()) {
+        val operations = buildList {
+            for (i in flatParsers.lastIndex downTo 0) {
+                addAll(flatParsers[i])
+            }
+        }
+        result = ParserStructure(operations, emptyList()).simplifyAndAppend(result)
+    }
+
+    return result
 }
 
 internal interface Copyable<Self> {
