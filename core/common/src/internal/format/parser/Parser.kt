@@ -129,34 +129,30 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     }
 
     var result = ParserStructure<T>(emptyList(), emptyList())
-    val flatParsers = mutableListOf<List<ParserOperation<T>>>()
+    val accumulatedOperations = mutableListOf<List<ParserOperation<T>>>()
+
+    fun flushAccumulatedOperations() {
+        if (accumulatedOperations.isNotEmpty()) {
+            val operations = buildList {
+                for (parserOperations in accumulatedOperations.asReversed()) {
+                    addAll(parserOperations)
+                }
+            }
+            result = ParserStructure(operations, emptyList()).simplifyAndAppend(result)
+            accumulatedOperations.clear()
+        }
+    }
 
     for (parser in this.asReversed()) {
         if (parser.followedBy.isEmpty()) {
-            flatParsers.add(parser.operations)
+            accumulatedOperations.add(parser.operations)
         } else {
-            if (flatParsers.isNotEmpty()) {
-                val operations = buildList() {
-                    for (i in flatParsers.lastIndex downTo 0) {
-                        addAll(flatParsers[i])
-                    }
-                }
-                result = ParserStructure(operations, emptyList()).simplifyAndAppend(result)
-                flatParsers.clear()
-            }
+            flushAccumulatedOperations()
             result = parser.simplifyAndAppend(result)
         }
     }
 
-    if (flatParsers.isNotEmpty()) {
-        val operations = buildList {
-            for (i in flatParsers.lastIndex downTo 0) {
-                addAll(flatParsers[i])
-            }
-        }
-        result = ParserStructure(operations, emptyList()).simplifyAndAppend(result)
-    }
-
+    flushAccumulatedOperations()
     return result
 }
 
