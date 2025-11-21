@@ -58,7 +58,9 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 }
                 firstOperation is NumberSpanParserOperation -> {
                     add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
-                    addAll(operationsToMerge.drop(1))
+                    for (i in 1..operationsToMerge.lastIndex) {
+                        add(operationsToMerge[i])
+                    }
                 }
                 else -> {
                     add(NumberSpanParserOperation(numberSpan))
