@@ -91,6 +91,8 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 if (currentNumberSpan != null) {
                     newOperations.add(NumberSpanParserOperation(currentNumberSpan))
                     currentNumberSpan = null
+                    newOperations.addAll(unconditionalModifications)
+                    unconditionalModifications.clear()
                 }
                 newOperations.add(op)
             }
