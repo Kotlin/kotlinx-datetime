@@ -71,6 +71,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         unconditionalModifications: List<UnconditionalModification<T>>,
         simplifiedParserStructure: ParserStructure<T>,
     ): ParserStructure<T> {
+        require(simplifiedParserStructure.operations.isNotEmpty()) { "Cannot merge operations from empty structure" }
         val operationsToMerge = simplifiedParserStructure.operations
         val firstOperation = operationsToMerge.firstOrNull()
         val mergedOperations = buildList {
