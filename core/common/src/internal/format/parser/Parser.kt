@@ -178,11 +178,13 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         }
     }
 
+    // Combine parsers in reverse order, batching operations from parsers without followedBy.
     var result = ParserStructure<T>(emptyList(), emptyList())
     val accumulatedOperations = mutableListOf<List<ParserOperation<T>>>()
 
     fun flushAccumulatedOperations() {
         if (accumulatedOperations.isNotEmpty()) {
+            // Reverse to restore the original order (since parsers are processed in reverse).
             val operations = buildList {
                 for (parserOperations in accumulatedOperations.asReversed()) {
                     addAll(parserOperations)
@@ -195,13 +197,16 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
 
     for (parser in this.asReversed()) {
         if (parser.followedBy.isEmpty()) {
+            // No followedBy: accumulate for batch processing.
             accumulatedOperations.add(parser.operations)
         } else {
+            // Has followedBy: flush accumulated operations, then process individually.
             flushAccumulatedOperations()
             result = parser.simplifyAndAppend(result)
         }
     }
 
+    // Flush remaining accumulated operations.
     flushAccumulatedOperations()
     return result
 }
