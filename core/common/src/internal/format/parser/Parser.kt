@@ -54,8 +54,8 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
      * Merges pending operations (base operations, number span, and unconditional modifications)
      * with a simplified parser structure.
      *
-     * Invariant: this function should only be called when `simplifiedParserStructure.operations`
-     * is non-empty. If the structure consists solely of alternatives (empty operations with
+     * Invariant: this function should only be called when [simplifiedParserStructure.operations]
+     * is non-empty. If the structure consists only of alternatives (empty operations with
      * non-empty followedBy), this function should NOT be called.
      *
      * @param baseOperations Operations to prepend (already processed operations from this parser)
@@ -149,7 +149,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         // Recursively process alternatives, appending [other] and flattening nested structures
         val mergedTails = followedBy.flatMap {
             val simplified = it.simplifyAndAppend(other)
-            // parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
+            // Parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
             // unless `p` is empty. For example, ((a|b)|(c|d)) is equivalent to (a|b|c|d).
             // As a special case, `ParserStructure(emptyList(), emptyList())` represents a parser that recognizes an empty
             // string. For example, (|a|b) is not equivalent to (a|b).
