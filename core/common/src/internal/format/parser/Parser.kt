@@ -42,6 +42,21 @@ internal class ParserStructure<in Output>(
 }
 
 internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
+    /**
+     * Merges pending operations (base operations, number span, and unconditional modifications)
+     * with a simplified parser structure.
+     *
+     * Invariant: this function should only be called when `simplifiedParserStructure.operations`
+     * is non-empty. If the structure consists solely of alternatives (empty operations with
+     * non-empty followedBy), this function should NOT be called.
+     *
+     * @param baseOperations Operations to prepend (already processed operations from this parser)
+     * @param numberSpan Pending number consumers that need to be merged or added (`null` if none pending)
+     * @param unconditionalModifications Operations that must execute after all others
+     * @param simplifiedParserStructure The simplified parser structure to merge with (must have operations)
+     *
+     * @return A new parser structure with all operations merged and the alternatives from [simplifiedParserStructure]
+     */
     fun mergeOperations(
         baseOperations: List<ParserOperation<T>>,
         numberSpan: List<NumberConsumer<T>>?,
@@ -53,20 +68,24 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         val mergedOperations = buildList {
             addAll(baseOperations)
             when {
+                // No pending number span: just append all operations
                 numberSpan == null -> {
                     addAll(operationsToMerge)
                 }
+                // Merge the pending number span with the first operation if it's also a number span
                 firstOperation is NumberSpanParserOperation -> {
                     add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
                     for (i in 1..operationsToMerge.lastIndex) {
                         add(operationsToMerge[i])
                     }
                 }
+                // Add the pending number span as a separate operation before the others
                 else -> {
                     add(NumberSpanParserOperation(numberSpan))
                     addAll(operationsToMerge)
                 }
             }
+            // Unconditional modifications always go at the end of the branch
             addAll(unconditionalModifications)
         }
         return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
