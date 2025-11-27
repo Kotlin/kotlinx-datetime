@@ -41,6 +41,14 @@ internal class ParserStructure<in Output>(
         "${operations.joinToString(", ")}(${followedBy.joinToString(";")})"
 }
 
+/**
+ * Concatenates a list of parser structures into a single structure.
+ *
+ * Processes parsers in reverse order, batching operations from parsers without alternatives
+ * and simplifying the resulting structure (merging number spans, handling unconditional modifications).
+ *
+ * @return A single parser structure representing the composition of all parsers in the list
+ */
 internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     /**
      * Merges pending operations (base operations, number span, and unconditional modifications)
