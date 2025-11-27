@@ -96,7 +96,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
         val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
         // joining together the number consumers in this parser before the first alternative;
-        // collecting the unconditional modifications to push them to the end of all the parser's branches.
+        // collecting the unconditional modifications.
         for (op in operations) {
             if (op is NumberSpanParserOperation) {
                 if (currentNumberSpan != null) {
