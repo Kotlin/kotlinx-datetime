@@ -91,12 +91,32 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
     }
 
+    /**
+     * Simplifies this parser structure and appends [other] to all execution paths.
+     *
+     * Simplification includes:
+     * - Merging consecutive number spans into single operations
+     * - Collecting unconditional modifications and applying them before regular operations or at branch ends
+     * - Flattening nested alternatives
+     *
+     * Number span handling at branch ends:
+     * - If no alternative starts with a number span, the pending number span is added as a separate operation
+     * - If any alternative starts with a number span, the pending number span is distributed to all alternatives
+     *   via [mergeOperations] for proper merging
+     *
+     * Invariant: [mergeOperations] is only called when the target structure has non-empty
+     * operations, ensuring correct merging and unconditional modification placement.
+     *
+     * @param other The simplified parser structure to append
+     * @return A new parser structure representing the simplified concatenation
+     */
     fun ParserStructure<T>.simplifyAndAppend(other: ParserStructure<T>): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
         val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
-        // joining together the number consumers in this parser before the first alternative;
-        // collecting the unconditional modifications.
+
+        // Joining together the number consumers in this parser before the first alternative.
+        // Collecting the unconditional modifications.
         for (op in operations) {
             if (op is NumberSpanParserOperation) {
                 if (currentNumberSpan != null) {
@@ -107,6 +127,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             } else if (op is UnconditionalModification) {
                 unconditionalModifications.add(op)
             } else {
+                // Flush pending number span and unconditional modifications before regular operations
                 if (currentNumberSpan != null) {
                     newOperations.add(NumberSpanParserOperation(currentNumberSpan))
                     currentNumberSpan = null
@@ -117,6 +138,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             }
         }
 
+        // Recursively process alternatives, appending [other] and flattening nested structures
         val mergedTails = followedBy.flatMap {
             val simplified = it.simplifyAndAppend(other)
             // parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
@@ -129,21 +151,26 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 listOf(simplified)
         }.ifEmpty {
             if (other.operations.isNotEmpty()) {
+                // Safe to call mergeOperations: target has operations
                 return mergeOperations(newOperations, currentNumberSpan, unconditionalModifications, other)
             }
+            // [other] has no operations, just alternatives; use them as our tails
             other.followedBy
         }
 
         return if (currentNumberSpan == null) {
-            // the last operation was not a number span, or it was a number span that we are allowed to interrupt
+            // The last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
-            // the last operation was a number span, but there are no alternatives that start with a number span.
+            // The last operation was a number span, but there are no alternatives that start with a number span.
             newOperations.add(NumberSpanParserOperation(currentNumberSpan))
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else {
+            // The last operation was a number span, and some alternatives start with one: distribute for merging.
+            // [mergeOperations] is safe here because each alternative in [mergedTails] has operations
+            // (verified by the structure coming from the recursive [simplifyAndAppend] calls).
             val newTails = mergedTails.map {
                 mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, it)
             }
