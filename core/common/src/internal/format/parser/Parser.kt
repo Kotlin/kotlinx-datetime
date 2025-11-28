@@ -42,29 +42,11 @@ internal class ParserStructure<in Output>(
 }
 
 /**
- * Concatenates a list of parser structures into a single structure.
- *
- * Processes parsers in reverse order, batching operations from parsers without alternatives
- * and simplifying the resulting structure (merging number spans, handling unconditional modifications).
- *
- * @return A single parser structure representing the composition of all parsers in the list
+ * Concatenates a list of parser structures into a single structure, processing them in reverse order.
+ * Simplifies the result by merging number spans and handling unconditional modifications.
  */
 internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
-    /**
-     * Merges pending operations (base operations, number span, and unconditional modifications)
-     * with a simplified parser structure.
-     *
-     * Invariant: this function should only be called when [simplifiedParserStructure.operations]
-     * is non-empty. If the structure consists only of alternatives (empty operations with
-     * non-empty followedBy), this function should NOT be called.
-     *
-     * @param baseOperations Operations to prepend (already processed operations from this parser)
-     * @param numberSpan Pending number consumers that need to be merged or added (`null` if none pending)
-     * @param unconditionalModifications Operations that must execute after all others
-     * @param simplifiedParserStructure The simplified parser structure to merge with (must have operations)
-     *
-     * @return A new parser structure with all operations merged and the alternatives from [simplifiedParserStructure]
-     */
+    // Invariant: only called when simplifiedParserStructure.operations is non-empty
     fun mergeOperations(
         baseOperations: List<ParserOperation<T>>,
         numberSpan: List<NumberConsumer<T>>?,
@@ -77,55 +59,32 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         val mergedOperations = buildList {
             addAll(baseOperations)
             when {
-                // No pending number span: just append all operations
                 numberSpan == null -> {
                     addAll(operationsToMerge)
                 }
-                // Merge the pending number span with the first operation if it's also a number span
                 firstOperation is NumberSpanParserOperation -> {
                     add(NumberSpanParserOperation(numberSpan + firstOperation.consumers))
                     for (i in 1..operationsToMerge.lastIndex) {
                         add(operationsToMerge[i])
                     }
                 }
-                // Add the pending number span as a separate operation before the others
                 else -> {
                     add(NumberSpanParserOperation(numberSpan))
                     addAll(operationsToMerge)
                 }
             }
-            // Unconditional modifications always go at the end of the branch
             addAll(unconditionalModifications)
         }
         return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
     }
 
-    /**
-     * Simplifies this parser structure and appends [other] to all execution paths.
-     *
-     * Simplification includes:
-     * - Merging consecutive number spans into single operations
-     * - Collecting unconditional modifications and applying them before regular operations or at branch ends
-     * - Flattening nested alternatives
-     *
-     * Number span handling at branch ends:
-     * - If no alternative starts with a number span, the pending number span is added as a separate operation
-     * - If any alternative starts with a number span, the pending number span is distributed to all alternatives
-     *   via [mergeOperations] for proper merging
-     *
-     * Invariant: [mergeOperations] is only called when the target structure has non-empty
-     * operations, ensuring correct merging and unconditional modification placement.
-     *
-     * @param other The simplified parser structure to append
-     * @return A new parser structure representing the simplified concatenation
-     */
+    // Simplifies this parser and appends [other] to all execution paths.
+    // Merges number spans, collects unconditional modifications, and flattens alternatives.
     fun ParserStructure<T>.simplifyAndAppend(other: ParserStructure<T>): ParserStructure<T> {
         val newOperations = mutableListOf<ParserOperation<T>>()
         var currentNumberSpan: MutableList<NumberConsumer<T>>? = null
         val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
 
-        // Joining together the number consumers in this parser before the first alternative.
-        // Collecting the unconditional modifications.
         for (op in operations) {
             if (op is NumberSpanParserOperation) {
                 if (currentNumberSpan != null) {
@@ -136,7 +95,6 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             } else if (op is UnconditionalModification) {
                 unconditionalModifications.add(op)
             } else {
-                // Flush pending number span and unconditional modifications before regular operations
                 if (currentNumberSpan != null) {
                     newOperations.add(NumberSpanParserOperation(currentNumberSpan))
                     currentNumberSpan = null
@@ -147,7 +105,6 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             }
         }
 
-        // Recursively process alternatives, appending [other] and flattening nested structures
         val mergedTails = followedBy.flatMap {
             val simplified = it.simplifyAndAppend(other)
             // Parser `ParserStructure(emptyList(), p)` is equivalent to `p`,
@@ -160,7 +117,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 listOf(simplified)
         }.ifEmpty {
             if (other.operations.isNotEmpty()) {
-                // Safe to call mergeOperations: target has operations
+                // The invariant is preserved: other.operations is non-empty
                 return mergeOperations(newOperations, currentNumberSpan, unconditionalModifications, other)
             }
             // [other] has no operations, just alternatives; use them as our tails
@@ -168,32 +125,27 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         }
 
         return if (currentNumberSpan == null) {
-            // The last operation was not a number span, or it was a number span that we are allowed to interrupt
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
-            // The last operation was a number span, but there are no alternatives that start with a number span.
             newOperations.add(NumberSpanParserOperation(currentNumberSpan))
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else {
-            // The last operation was a number span, and some alternatives start with one: distribute for merging.
-            // [mergeOperations] is safe here because each alternative in [mergedTails] has operations
-            // (verified by the structure coming from the recursive [simplifyAndAppend] calls).
-            val newTails = mergedTails.map {
-                mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, it)
+            // Distribute number span across alternatives that start with number spans
+            // The invariant is preserved: the structure coming from the recursive [simplifyAndAppend] calls
+            val newTails = mergedTails.map { structure ->
+                mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, structure)
             }
             ParserStructure(newOperations, newTails)
         }
     }
 
-    // Combine parsers in reverse order, batching operations from parsers without followedBy.
     var result = ParserStructure<T>(emptyList(), emptyList())
     val accumulatedOperations = mutableListOf<List<ParserOperation<T>>>()
 
     fun flushAccumulatedOperations() {
         if (accumulatedOperations.isNotEmpty()) {
-            // Reverse to restore the original order (since parsers are processed in reverse).
             val operations = buildList {
                 for (parserOperations in accumulatedOperations.asReversed()) {
                     addAll(parserOperations)
@@ -206,16 +158,13 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
 
     for (parser in this.asReversed()) {
         if (parser.followedBy.isEmpty()) {
-            // No followedBy: accumulate for batch processing.
             accumulatedOperations.add(parser.operations)
         } else {
-            // Has followedBy: flush accumulated operations, then process individually.
             flushAccumulatedOperations()
             result = parser.simplifyAndAppend(result)
         }
     }
 
-    // Flush remaining accumulated operations.
     flushAccumulatedOperations()
     return result
 }
