@@ -486,14 +486,15 @@ dependencies {
 
 By default, there's only one time zone available in Kotlin/JS: the `SYSTEM` time zone with a fixed offset.
 
-If you want to use all time zones in Kotlin/JS platform, you need to add the following npm dependency:
+If you want to use all time zones in Kotlin/JS platform, you need to add the following npm dependency
+([check here](https://www.npmjs.com/package/@js-joda/timezone?activeTab=versions) for the latest version):
 
 ```kotlin
 kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", "X.X.X"))
             }
         }
     }
@@ -516,14 +517,15 @@ val jsJodaTz = JsJodaTimeZoneModule
 
 Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
 
-In your Gradle build script, add the following dependency:
+In your Gradle build script, add the following dependency
+([check here](https://www.npmjs.com/package/@js-joda/timezone?activeTab=versions) for the latest version):
 
 ```kotlin
 kotlin {
     sourceSets {
         val wasmJsMain by getting {
             dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
+                implementation(npm("@js-joda/timezone", "X.X.X"))
             }
         }
     }
