@@ -121,11 +121,10 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             other.followedBy
         }
 
-        return if (currentNumberSpan == null) {
-            newOperations.addAll(unconditionalModifications)
-            ParserStructure(newOperations, mergedTails)
-        } else if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
-            newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+        return if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
+            if (currentNumberSpan != null) {
+                newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+            }
             newOperations.addAll(unconditionalModifications)
             ParserStructure(newOperations, mergedTails)
         } else {
