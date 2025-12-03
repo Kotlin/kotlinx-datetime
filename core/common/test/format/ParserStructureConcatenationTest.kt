@@ -16,6 +16,51 @@ import kotlin.test.assertTrue
 
 class ParserStructureConcatenationTest {
 
+    /*
+     *                                --<N1>--            --<N1-N2>--<U>--
+     *                              /                   /
+     * --<N1>-- concat_with --<U>--             ==>  --
+     *
+     * <N1>, <N2> - NumberSpanParserOperations
+     * <U> - UnconditionalModification
+     */
+    // Reproducer from https://github.com/Kotlin/kotlinx-datetime/pull/585
+    @Test
+    fun concatDistributesNumberSpanParserOperation() {
+        val actual = listOf(
+            ParserStructure<Int>(
+                operations = listOf(
+                    NumberSpanParserOperation(listOf(ConstantNumberConsumer("12")))
+                ),
+                followedBy = listOf()
+            ),
+            ParserStructure(
+                operations = listOf(UnconditionalModification { }),
+                followedBy = listOf(
+                    ParserStructure(
+                        operations = listOf(
+                            NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
+                        ),
+                        followedBy = listOf()
+                    )
+                )
+            )
+        ).concat()
+
+        with(actual) {
+            assertTrue(operations.isEmpty())
+            with(followedBy) {
+                assertEquals(1, size)
+                with(this[0]) {
+                    assertEquals(2, operations.size)
+                    assertTrue(operations[0] is NumberSpanParserOperation)
+                    assertEquals(2, (operations[0] as NumberSpanParserOperation).consumers.size)
+                    assertTrue(operations[1] is UnconditionalModification)
+                }
+            }
+        }
+    }
+
     @Test
     fun concatDistributesUnconditionalModificationAfterNumberSpanParserOperation() {
         val actual = listOf(
