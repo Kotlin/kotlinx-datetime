@@ -46,7 +46,6 @@ internal class ParserStructure<in Output>(
  * Simplifies the result by merging number spans and handling unconditional modifications.
  */
 internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
-    // Invariant: only called when simplifiedParserStructure.operations is non-empty
     fun mergeOperations(
         baseOperations: List<ParserOperation<T>>,
         numberSpan: List<NumberConsumer<T>>?,
@@ -116,7 +115,6 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 listOf(simplified)
         }.ifEmpty {
             if (other.operations.isNotEmpty()) {
-                // The invariant is preserved: other.operations is non-empty
                 return mergeOperations(newOperations, currentNumberSpan, unconditionalModifications, other)
             }
             // [other] has no operations, just alternatives; use them as our tails
@@ -132,7 +130,6 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             ParserStructure(newOperations, mergedTails)
         } else {
             // Distribute number span across alternatives that start with number spans
-            // The invariant is preserved: the structure coming from the recursive [simplifyAndAppend] calls
             val newTails = mergedTails.map { structure ->
                 mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, structure)
             }
