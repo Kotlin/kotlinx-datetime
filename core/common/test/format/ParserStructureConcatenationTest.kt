@@ -16,6 +16,53 @@ import kotlin.test.assertTrue
 class ParserStructureConcatenationTest {
 
     @Test
+    fun concatFlattensOperations() {
+        val parser = ParserStructure<Int>(
+            operations = listOf(),
+            followedBy = listOf(
+                ParserStructure(
+                    operations = listOf(),
+                    followedBy = listOf(
+                        ParserStructure(
+                            operations = listOf(),
+                            followedBy = listOf(
+                                ParserStructure(
+                                    operations = listOf(),
+                                    followedBy = listOf(
+                                        ParserStructure(
+                                            operations = listOf(),
+                                            followedBy = listOf(
+                                                ParserStructure(
+                                                    operations = listOf(
+                                                        NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
+                                                    ),
+                                                    followedBy = listOf()
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        val actual = listOf(parser).concat()
+
+        with(actual) {
+            assertTrue(operations.isEmpty())
+            assertEquals(1, followedBy.size)
+            with(followedBy[0]) {
+                assertEquals(1, operations.size)
+                assertTrue(operations[0] is NumberSpanParserOperation)
+                assertTrue(followedBy.isEmpty())
+            }
+        }
+    }
+
+    @Test
     fun concatDistributesTopLevelNumberSpanParserOperationIntoBranches() {
         val parser = ParserStructure<Int>(
             operations = listOf(
