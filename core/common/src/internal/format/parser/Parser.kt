@@ -84,22 +84,24 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         val unconditionalModifications = mutableListOf<UnconditionalModification<T>>()
 
         for (op in operations) {
-            if (op is NumberSpanParserOperation) {
-                if (currentNumberSpan != null) {
-                    currentNumberSpan.addAll(op.consumers)
-                } else {
-                    currentNumberSpan = op.consumers.toMutableList()
+            when (op) {
+                is NumberSpanParserOperation -> {
+                    if (currentNumberSpan != null) {
+                        currentNumberSpan.addAll(op.consumers)
+                    } else {
+                        currentNumberSpan = op.consumers.toMutableList()
+                    }
                 }
-            } else if (op is UnconditionalModification) {
-                unconditionalModifications.add(op)
-            } else {
-                if (currentNumberSpan != null) {
-                    newOperations.add(NumberSpanParserOperation(currentNumberSpan))
-                    currentNumberSpan = null
-                    newOperations.addAll(unconditionalModifications)
-                    unconditionalModifications.clear()
+                is UnconditionalModification -> unconditionalModifications.add(op)
+                else -> {
+                    if (currentNumberSpan != null) {
+                        newOperations.add(NumberSpanParserOperation(currentNumberSpan))
+                        currentNumberSpan = null
+                        newOperations.addAll(unconditionalModifications)
+                        unconditionalModifications.clear()
+                    }
+                    newOperations.add(op)
                 }
-                newOperations.add(op)
             }
         }
 
