@@ -85,10 +85,10 @@ class ParserStructureConcatenationTest {
         val actual = listOf(parser).concat()
 
         with(actual) {
-            assertEquals(0, operations.size)
+            assertTrue(operations.isEmpty())
             assertEquals(2, followedBy.size)
             with(followedBy[0]) {
-                assertEquals(0, followedBy.size)
+                assertTrue(followedBy.isEmpty())
                 with(operations) {
                     assertEquals(1, size)
                     assertTrue(operations[0] is NumberSpanParserOperation)
@@ -96,7 +96,7 @@ class ParserStructureConcatenationTest {
                 }
             }
             with(followedBy[1]) {
-                assertEquals(0, followedBy.size)
+                assertTrue(followedBy.isEmpty())
                 with(operations) {
                     assertEquals(1, size)
                     with(operations) {
