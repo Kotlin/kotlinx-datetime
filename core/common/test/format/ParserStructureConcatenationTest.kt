@@ -18,21 +18,21 @@ class ParserStructureConcatenationTest {
 
     @Test
     fun concatDistributesUnconditionalModificationAfterNumberSpanParserOperation() {
-        val parser = ParserStructure<Int>(
-            operations = listOf(
-                UnconditionalModification { }
-            ),
-            followedBy = listOf(
-                ParserStructure(
-                    operations = listOf(
-                        NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
-                    ),
-                    followedBy = listOf()
+        val actual = listOf(
+            ParserStructure<Int>(
+                operations = listOf(
+                    UnconditionalModification { }
+                ),
+                followedBy = listOf(
+                    ParserStructure(
+                        operations = listOf(
+                            NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
+                        ),
+                        followedBy = listOf()
+                    )
                 )
             )
-        )
-
-        val actual = listOf(parser).concat()
+        ).concat()
 
         with(actual) {
             assertTrue(operations.isEmpty())
@@ -50,26 +50,28 @@ class ParserStructureConcatenationTest {
 
     @Test
     fun concatFlattensOperations() {
-        val parser = ParserStructure<Int>(
-            operations = listOf(),
-            followedBy = listOf(
-                ParserStructure(
-                    operations = listOf(),
-                    followedBy = listOf(
-                        ParserStructure(
-                            operations = listOf(),
-                            followedBy = listOf(
-                                ParserStructure(
-                                    operations = listOf(),
-                                    followedBy = listOf(
-                                        ParserStructure(
-                                            operations = listOf(),
-                                            followedBy = listOf(
-                                                ParserStructure(
-                                                    operations = listOf(
-                                                        NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
-                                                    ),
-                                                    followedBy = listOf()
+        val actual = listOf(
+            ParserStructure<Int>(
+                operations = listOf(),
+                followedBy = listOf(
+                    ParserStructure(
+                        operations = listOf(),
+                        followedBy = listOf(
+                            ParserStructure(
+                                operations = listOf(),
+                                followedBy = listOf(
+                                    ParserStructure(
+                                        operations = listOf(),
+                                        followedBy = listOf(
+                                            ParserStructure(
+                                                operations = listOf(),
+                                                followedBy = listOf(
+                                                    ParserStructure(
+                                                        operations = listOf(
+                                                            NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
+                                                        ),
+                                                        followedBy = listOf()
+                                                    )
                                                 )
                                             )
                                         )
@@ -80,9 +82,7 @@ class ParserStructureConcatenationTest {
                     )
                 )
             )
-        )
-
-        val actual = listOf(parser).concat()
+        ).concat()
 
         with(actual) {
             assertTrue(operations.isEmpty())
@@ -97,25 +97,25 @@ class ParserStructureConcatenationTest {
 
     @Test
     fun concatDistributesTopLevelNumberSpanParserOperationIntoBranches() {
-        val parser = ParserStructure<Int>(
-            operations = listOf(
-                NumberSpanParserOperation(listOf(ConstantNumberConsumer("12")))
-            ),
-            followedBy = listOf(
-                ParserStructure(
-                    operations = listOf(
-                        NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
-                    ),
-                    followedBy = listOf()
+        val actual = listOf(
+            ParserStructure<Int>(
+                operations = listOf(
+                    NumberSpanParserOperation(listOf(ConstantNumberConsumer("12")))
                 ),
-                ParserStructure(
-                    operations = listOf(),
-                    followedBy = listOf()
+                followedBy = listOf(
+                    ParserStructure(
+                        operations = listOf(
+                            NumberSpanParserOperation(listOf(ConstantNumberConsumer("34")))
+                        ),
+                        followedBy = listOf()
+                    ),
+                    ParserStructure(
+                        operations = listOf(),
+                        followedBy = listOf()
+                    )
                 )
             )
-        )
-
-        val actual = listOf(parser).concat()
+        ).concat()
 
         with(actual) {
             assertTrue(operations.isEmpty())
