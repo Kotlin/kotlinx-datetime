@@ -17,6 +17,8 @@ import kotlin.test.assertTrue
 class ParserStructureConcatenationTest {
 
     /*
+     * Reproducer from https://github.com/Kotlin/kotlinx-datetime/pull/585
+     *
      *                                --<N1>--            --<N1-N2>--<U>--
      *                              /                   /
      * --<N1>-- concat_with --<U>--             ==>  --
@@ -24,7 +26,7 @@ class ParserStructureConcatenationTest {
      * <N1>, <N2> - NumberSpanParserOperations
      * <U> - UnconditionalModification
      */
-    // Reproducer from https://github.com/Kotlin/kotlinx-datetime/pull/585
+    //
     @Test
     fun concatDistributesNumberSpanParserOperation() {
         val actual = listOf(
