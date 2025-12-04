@@ -123,7 +123,10 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
             other.followedBy
         }
 
-        return if (mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }) {
+        return if (
+            currentNumberSpan == null && newOperations.isNotEmpty() ||
+            mergedTails.none { it.operations.firstOrNull() is NumberSpanParserOperation }
+        ) {
             if (currentNumberSpan != null) {
                 newOperations.add(NumberSpanParserOperation(currentNumberSpan))
             }
