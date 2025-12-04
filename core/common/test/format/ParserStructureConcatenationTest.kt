@@ -19,7 +19,7 @@ class ParserStructureConcatenationTest {
     /*
      * Reproducer from https://github.com/Kotlin/kotlinx-datetime/pull/585
      *
-     *                                --<N1>--            --<N1-N2>--<U>--
+     *                                --<N2>--            --<N1-N2>--<U>--
      *                              /                   /
      * --<N1>-- concat_with --<U>--             ==>  --
      *
