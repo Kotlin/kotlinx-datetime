@@ -42,21 +42,30 @@ internal class ParserStructure<in Output>(
 }
 
 /**
- * Concatenates a list of parser structures into a single *valid* structure.
+ * Concatenates a list of (potentially non-*valid*) parser structures into a single *valid* structure.
  *
- * A *valid* parser is one where, if numeric values are parsed consecutively without a separator
- * (or with zero-width [UnconditionalModification] separators) between them,
- * they are represented as a single [NumberSpanParserOperation].
+ * A *valid* parser is one where:
+ *
+ * - Consecutive number parsers one any parsing path are represented as a single
+ *   [NumberSpanParserOperation].
+ * - A span of [UnconditionalModification] can not precede a [NumberSpanParserOperation],
+ *   unless the span itself is preceded by a non-numeric non-zero-width parser.
+ *
+ * Together, these two rules ensure that whenever numeric values are parsed consecutively,
+ * even with zero-width parser operations between them (at the moment, these are only
+ * [UnconditionalModification]), they will be treated as a single number that's then
+ * split into components.
  */
 internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
     /**
      * Returns a *valid* parser obtained by prepending [baseOperations] followed by [numberSpan]
      * to [simplifiedParserStructure],
-     * while ensuring that [unconditionalModifications] are preserved in the result.
+     * while ensuring that [unconditionalModifications] are present in the result.
      *
      * Requirements:
      * - [simplifiedParserStructure] must have non-empty [ParserStructure.operations].
      * - [simplifiedParserStructure] is a *valid* parser.
+     * - [baseOperations] can not end with either an [UnconditionalModification] or a [NumberSpanParserOperation].
      */
     fun mergeOperations(
         baseOperations: List<ParserOperation<T>>,
@@ -68,6 +77,7 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
         val firstOperation = operationsToMerge.firstOrNull()
         val mergedOperations = buildList {
             addAll(baseOperations)
+            // Currently, `this` is either empty or ends with a non-numeric non-zero-width parser.
             when {
                 numberSpan == null -> {
                     addAll(operationsToMerge)
@@ -83,6 +93,19 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                     addAll(operationsToMerge)
                 }
             }
+            // Currently, `this` ends with the operations from `operationsToMerge`.
+            // `operationsToMerge` was not empty, by the input requirements, so its `lastOrNull()` is non-empty.
+            // - If it's a `NumberSpanParserOperation`,
+            //   this means its `followedBy` do not start with a `NumberSpanParserOperation`,
+            //   since `simplifiedParserStructure` is *valid*.
+            //   This means it's valid to append `unconditionalModifications`.
+            // - If it's an `UnconditionalModification`,
+            //   this means either that its `followedBy` do not start with a `NumberSpanParserOperation`,
+            //   or that some non-zero-width non-numeric parsers precede it in `operationsToMerge`.
+            //   Adding new `unconditionalModifications` to the existing span does not break correctness.
+            // - If it's some other parser,
+            //   then `unconditionalModifications` is preceded by a non-zero-width non-numeric parser,
+            //   which is valid.
             addAll(unconditionalModifications)
         }
         return ParserStructure(mergedOperations, simplifiedParserStructure.followedBy)
@@ -163,9 +186,20 @@ internal fun <T> List<ParserStructure<T>>.concat(): ParserStructure<T> {
                 newOperations.add(NumberSpanParserOperation(currentNumberSpan))
             }
             newOperations.addAll(unconditionalModifications)
+            // Either the merged tails do not start with a `NumberSpanParserOperation`,
+            // or the last non-zero-width parser `newOperations` exists and is not a number parser.
+            //
+            // In the first case, the resulting parser is *valid*:
+            // `unconditionalModifications` does not precede a number parser, and in `newOperations`,
+            // consecutive number parsers are merged into one.
+            //
+            // In the second case, the resulting parser is also *valid*:
+            // `unconditionalModifications` may precede a number parser, but it also has
+            // a non-zero-width non-number parser before it.
             ParserStructure(newOperations, mergedTails)
         } else {
-            // Distribute number span across alternatives that start with number spans
+            // Some `mergedTails` begin with a number parser, and also, either
+            // the current number span isn't empty, or there are no non-zero-width non-number parsers preceding it.
             val newTails = mergedTails.map { structure ->
                 mergeOperations(emptyList(), currentNumberSpan, unconditionalModifications, structure)
             }
