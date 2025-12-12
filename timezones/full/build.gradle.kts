@@ -97,3 +97,19 @@ apiValidation {
         enabled = true
     }
 }
+
+if (project.hasProperty("teamcity")) {
+    tasks.register("setZoneInfoVersionToTeamcity") {
+        doLast {
+            var tcParameter = (project.findProperty("zoneinfo.version.tc.parameter") as String?).let {
+                if (it == null) {
+                    logger.warn("Teamcity parameter name was not specified, using 'ZoneInfoVersion' instead")
+                    "ZoneInfoVersion"
+                } else {
+                    it
+                }
+            }
+            println("##teamcity[setParameter name='$tcParameter' value='$version']")
+        }
+    }
+}
