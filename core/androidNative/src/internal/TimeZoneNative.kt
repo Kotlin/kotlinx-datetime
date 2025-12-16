@@ -7,26 +7,26 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.TimeZoneDatabase
 import platform.posix.*
-
-internal actual fun timeZoneById(zoneId: String): TimeZone =
-    RegionTimeZone(tzdb.getOrThrow().rulesForId(zoneId), zoneId)
-
-internal actual fun getAvailableZoneIds(): Set<String> =
-    tzdb.getOrThrow().availableTimeZoneIds()
-
-private val tzdb = runCatching { TzdbBionic() }
-
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> = memScoped {
-    val name = readSystemProperty("persist.sys.timezone")
-        ?: throw IllegalStateException("The system property 'persist.sys.timezone' should contain the system timezone")
-    return name to null
-}
 
 private fun readSystemProperty(name: String): String? = memScoped {
     // see https://android.googlesource.com/platform/bionic/+/froyo/libc/include/sys/system_properties.h
     val result = allocArray<ByteVar>(92)
     val error = __system_property_get(name, result)
     if (error == 0) null else result.toKString()
+}
+
+internal actual fun currentSystemDefaultTimeZone(): TimeZone =
+    systemTimezoneDatabase.get(systemTimeZoneIdProvider.currentTimeZoneId())
+
+internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = tryInitializeTimezoneDatabase { TzdbBionic() }
+
+internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {
+    override fun currentTimeZoneId(): String = memScoped {
+        readSystemProperty("persist.sys.timezone")
+            ?: throw IllegalStateException("The system property 'persist.sys.timezone' should contain the system timezone")
+    }
 }

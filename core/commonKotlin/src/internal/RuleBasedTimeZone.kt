@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlin.time.Instant
 
-internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
+internal class RuleBasedTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
 
     override fun atStartOfDay(date: LocalDate): Instant {
         val ldt = LocalDateTime(date, LocalTime.MIN)

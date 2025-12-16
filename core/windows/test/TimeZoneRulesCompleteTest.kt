@@ -32,7 +32,7 @@ class TimeZoneRulesCompleteTest {
 
             dtzi.DynamicDaylightTimeDisabled = 0u
             val (_, tzWithDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)
-            assertTrue(tzWithDst is RegionTimeZone, "Expected RegionTimeZone, got ${tzWithDst::class}")
+            assertTrue(tzWithDst is RuleBasedTimeZone, "Expected RegionTimeZone, got ${tzWithDst::class}")
 
             dtzi.DynamicDaylightTimeDisabled = 1u
             val (_, tzWithoutDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)

@@ -613,6 +613,42 @@ public final class kotlinx/datetime/TimeZone$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public abstract interface class kotlinx/datetime/TimeZoneContext : kotlinx/datetime/TimeZoneDatabase, kotlinx/datetime/TimeZoneIdProvider {
+	public static final field Companion Lkotlinx/datetime/TimeZoneContext$Companion;
+	public fun currentTimeZone ()Lkotlinx/datetime/TimeZone;
+}
+
+public final class kotlinx/datetime/TimeZoneContext$Companion {
+}
+
+public final class kotlinx/datetime/TimeZoneContext$DefaultImpls {
+	public static fun currentTimeZone (Lkotlinx/datetime/TimeZoneContext;)Lkotlinx/datetime/TimeZone;
+	public static fun get (Lkotlinx/datetime/TimeZoneContext;Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+}
+
+public final class kotlinx/datetime/TimeZoneContext$System : kotlinx/datetime/TimeZoneContext {
+	public static final field INSTANCE Lkotlinx/datetime/TimeZoneContext$System;
+	public fun availableZoneIds ()Ljava/util/Set;
+	public fun currentTimeZone ()Lkotlinx/datetime/TimeZone;
+	public fun currentTimeZoneId ()Ljava/lang/String;
+	public fun get (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+	public fun getOrNull (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+}
+
+public abstract interface class kotlinx/datetime/TimeZoneDatabase {
+	public abstract fun availableZoneIds ()Ljava/util/Set;
+	public fun get (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+	public abstract fun getOrNull (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+}
+
+public final class kotlinx/datetime/TimeZoneDatabase$DefaultImpls {
+	public static fun get (Lkotlinx/datetime/TimeZoneDatabase;Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+}
+
+public abstract interface class kotlinx/datetime/TimeZoneIdProvider {
+	public abstract fun currentTimeZoneId ()Ljava/lang/String;
+}
+
 public final class kotlinx/datetime/TimeZoneKt {
 	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;

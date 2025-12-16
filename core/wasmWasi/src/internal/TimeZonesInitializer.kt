@@ -5,8 +5,10 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.TimeZoneDatabase
 
 @RequiresOptIn
 internal annotation class InternalDateTimeApi
@@ -16,7 +18,7 @@ This is internal API which is not intended to use on user-side.
  */
 @InternalDateTimeApi
 public interface TimeZonesProvider {
-    public fun  zoneDataByName(name: String): ByteArray
+    public fun zoneDataByName(name: String): ByteArray
     public fun getTimeZones(): Set<String>
 }
 
@@ -32,16 +34,29 @@ public fun initializeTimeZonesProvider(provider: TimeZonesProvider) {
 @InternalDateTimeApi
 private var timeZonesProvider: TimeZonesProvider? = null
 
+internal actual fun currentSystemDefaultTimeZone(): TimeZone = TimeZone.UTC
+
 @OptIn(InternalDateTimeApi::class)
-internal actual fun timeZoneById(zoneId: String): TimeZone {
-    val data = timeZonesProvider?.zoneDataByName(zoneId)
-        ?: throw IllegalTimeZoneException("TimeZones are not supported")
-    val rules = readTzFile(data).toTimeZoneRules()
-    return RegionTimeZone(rules, zoneId)
+internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: RuleBasedTimeZoneDatabase {
+    override fun rulesForId(id: String): TimeZoneRulesCommon {
+        val data = timeZonesProvider?.zoneDataByName(id)
+            ?: throw IllegalTimeZoneException("The `kotlinx-datetime-zoneinfo` artifact is required but missing")
+        return readTzFile(data).toTimeZoneRules()
+    }
+
+    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? {
+        val provider = timeZonesProvider ?: return null
+        val data = try {
+            provider.zoneDataByName(id)
+        } catch (_: Throwable) {
+            return null
+        }
+        return readTzFile(data).toTimeZoneRules()
+    }
+
+    override fun availableZoneIds(): Set<String> = timeZonesProvider?.getTimeZones() ?: setOf("UTC")
 }
 
-@OptIn(InternalDateTimeApi::class)
-internal actual fun getAvailableZoneIds(): Set<String> =
-    timeZonesProvider?.getTimeZones() ?: setOf("UTC")
-
-internal actual fun currentSystemDefaultZone(): Pair<String, TimeZone?> = "UTC" to null
+internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {
+    override fun currentTimeZoneId(): String = "UTC"
+}

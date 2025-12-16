@@ -5,24 +5,16 @@
 
 package kotlinx.datetime.test
 
-import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.*
 import kotlinx.datetime.internal.OffsetInfo
 import kotlinx.datetime.internal.TimeZoneRulesFoundation
 import kotlinx.datetime.internal.TzdbOnFilesystem
-import kotlinx.datetime.internal.getAvailableZoneIds
 import kotlinx.datetime.internal.getAvailableZoneIdsFoundation
-import kotlinx.datetime.internal.timeZoneById
-import kotlinx.datetime.internal.timeZoneByIdFoundation
-import kotlinx.datetime.offsetAt
-import kotlinx.datetime.plus
-import kotlinx.datetime.plusSeconds
-import kotlinx.datetime.toInstant
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
+import kotlinx.datetime.internal.timeZoneByIdFoundationOrNull
+import kotlin.test.*
 import kotlinx.datetime.test.TimeZoneNativeTest.OffsetInfoType.*
+import platform.Foundation.NSTimeZone
+import platform.Foundation.timeZoneWithName
 
 class TimeZoneNativeTest {
 
@@ -30,7 +22,7 @@ class TimeZoneNativeTest {
 
     @Test
     fun getAvailableZoneIdsReturnsValidTimezoneSet() {
-        assertReturnsNonEmptySetOfTimezoneStrings(getAvailableZoneIds())
+        assertReturnsNonEmptySetOfTimezoneStrings(TimeZoneContext.System.availableZoneIds())
     }
 
     @Test
@@ -40,7 +32,7 @@ class TimeZoneNativeTest {
 
     @Test
     fun getAvailableZoneIdsContainsExpectedTimezoneIDs() {
-        assertAvailableZoneIdsContainsExpectedTimezoneIDs(getAvailableZoneIds())
+        assertAvailableZoneIdsContainsExpectedTimezoneIDs(TimeZoneContext.System.availableZoneIds())
     }
 
     @Test
@@ -83,8 +75,8 @@ class TimeZoneNativeTest {
     }
 
     private fun verifyDstTransitionConsistency(zoneId: String, timeJustBeforeTransition: LocalDateTime, transitionName: String) {
-        val regularTz = timeZoneById(zoneId)
-        val foundationTz = timeZoneByIdFoundation(zoneId)
+        val regularTz = TimeZoneContext.System.get(zoneId)
+        val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
         val instantBefore = timeJustBeforeTransition.toInstant(regularTz)
         val instantAfter = timeJustBeforeTransition.plusSeconds(1).toInstant(regularTz)
@@ -115,8 +107,8 @@ class TimeZoneNativeTest {
     fun shouldHandleNoTransitionPeriodConsistentlyBetweenImplementations() {
         val summerTime = LocalDateTime(2025, 7, 15, 12, 30, 45)
         val zoneId = "America/New_York"
-        val regularTz = timeZoneById(zoneId)
-        val foundationTz = timeZoneByIdFoundation(zoneId)
+        val regularTz = TimeZoneContext.System.get(zoneId)
+        val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
         val summerTimeInstant = summerTime.toInstant(regularTz)
         val firstOffset = regularTz.offsetAt(summerTimeInstant)
         for (period in listOf(
@@ -146,8 +138,8 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentUtcOffsetBetweenRegularAndFoundationTimeZones() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularTz = timeZoneById(zoneId)
-            val foundationTz = timeZoneByIdFoundation(zoneId)
+            val regularTz = TimeZoneContext.System.get(zoneId)
+            val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
             for ((localDateTime, _) in localDateTimes) {
                 val regularOffset = regularTz.offsetAt(localDateTime.toInstant(regularTz))
@@ -362,7 +354,7 @@ class TimeZoneNativeTest {
     fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.rulesForId(zoneId)
-            val foundationRules = TimeZoneRulesFoundation(zoneId)
+            val foundationRules = TimeZoneRulesFoundation(NSTimeZone.timeZoneWithName(zoneId)!!)
 
             for ((localDateTime, expectedType) in localDateTimes) {
                 val regularInfo = regularRules.infoAtDatetime(localDateTime)
@@ -389,8 +381,8 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentZonedDateTimeBetweenRegularAndFoundationTimeZones() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularTz = timeZoneById(zoneId)
-            val foundationTz = timeZoneByIdFoundation(zoneId)
+            val regularTz = TimeZoneContext.System.get(zoneId)
+            val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
             for ((localDateTime, _) in localDateTimes) {
                 val regularZoned = regularTz.atZone(localDateTime)
@@ -406,8 +398,8 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentInstanceBetweenRegularAndFoundationTimeZones() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularTz = timeZoneById(zoneId)
-            val foundationTz = timeZoneByIdFoundation(zoneId)
+            val regularTz = TimeZoneContext.System.get(zoneId)
+            val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
             for ((localDateTime, _) in localDateTimes) {
                 val date = localDateTime.date

@@ -8,7 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -19,59 +18,16 @@ public actual open class TimeZone internal constructor() {
 
     public actual companion object {
 
-        public actual fun currentSystemDefault(): TimeZone {
-            // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            val (name, zone) = currentSystemDefaultZone()
-            return zone ?: of(name)
-        }
+        public actual fun currentSystemDefault(): TimeZone =
+            TimeZoneContext.System.currentTimeZone()
 
         public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
 
         // org.threeten.bp.ZoneId#of(java.lang.String)
-        public actual fun of(zoneId: String): TimeZone {
-            // TODO: normalize aliases?
-            if (zoneId == "UTC") {
-                return UTC
-            }
-            if (zoneId == "Z" || zoneId == "z") {
-                return UtcOffset.ZERO.asTimeZone()
-            }
-            if (zoneId == "SYSTEM") {
-                return currentSystemDefault()
-            }
-            if (zoneId.length == 1) {
-                throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
-            }
-            try {
-                if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
-                    return lenientOffsetFormat.parse(zoneId).asTimeZone()
-                }
-                if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                    return FixedOffsetTimeZone(UtcOffset.ZERO, zoneId)
-                }
-                if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
-                    zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")
-                ) {
-                    val prefix = zoneId.take(3)
-                    val offset = lenientOffsetFormat.parse(zoneId.substring(3))
-                    return offset.asTimeZone(prefix)
-                }
-                if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
-                    val offset = lenientOffsetFormat.parse(zoneId.substring(2))
-                    return offset.asTimeZone("UT")
-                }
-            } catch (e: DateTimeFormatException) {
-                throw IllegalTimeZoneException(e)
-            }
-            return try {
-                timeZoneById(zoneId)
-            } catch (e: Exception) {
-                throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
-            }
-        }
+        public actual fun of(zoneId: String): TimeZone = TimeZoneContext.System.get(zoneId)
 
         public actual val availableZoneIds: Set<String>
-            get() = getAvailableZoneIds()
+            get() = TimeZoneContext.System.availableZoneIds()
     }
 
     public actual open val id: String
@@ -173,26 +129,3 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     timeZone.atStartOfDay(this)
-
-private val lenientOffsetFormat = UtcOffsetFormat.build {
-    alternativeParsing(
-        {
-            offsetHours(Padding.NONE)
-        },
-        {
-            isoOffset(
-                zOnZero = false,
-                useSeparator = false,
-                outputMinute = WhenToOutput.IF_NONZERO,
-                outputSecond = WhenToOutput.IF_NONZERO
-            )
-        }
-    ) {
-        isoOffset(
-            zOnZero = true,
-            useSeparator = true,
-            outputMinute = WhenToOutput.ALWAYS,
-            outputSecond = WhenToOutput.IF_NONZERO
-        )
-    }
-}

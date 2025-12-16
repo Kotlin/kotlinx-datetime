@@ -18,7 +18,7 @@ class TimeZoneRulesCompleteTest {
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbOnFilesystem()
-        for (id in tzdb.availableTimeZoneIds()) {
+        for (id in tzdb.availableZoneIds()) {
             val rules = tzdb.rulesForId(id)
             runUnixCommand("env LOCALE=C zdump -V ${tzdb.tzdbPath}/$id").windowed(size = 2, step = 2).forEach { (line1, line2) ->
                 val beforeTransition = parseZdumpLine(line1)

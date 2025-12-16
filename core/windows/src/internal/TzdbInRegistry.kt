@@ -10,7 +10,7 @@ import kotlinx.cinterop.*
 import platform.windows.*
 import kotlin.experimental.*
 
-internal class TzdbInRegistry: TimeZoneDatabase {
+internal class TzdbInRegistry: RuleBasedTimeZoneDatabase {
 
     // TODO: starting version 1703 of Windows 10, the ICU library is also bundled, with more accurate/ timezone information.
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
@@ -82,7 +82,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                 ?: throw IllegalTimeZoneException("The rules for time zone $id are absent in the Windows registry")
     }
 
-    override fun availableTimeZoneIds(): Set<String> = standardToWindows.filter {
+    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? =
+        standardToWindows[id]?.let { windowsToRules[it] }
+
+    override fun availableZoneIds(): Set<String> = standardToWindows.filter {
         windowsToRules.containsKey(it.value)
     }.keys
 
@@ -100,10 +103,27 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         val tz = windowsToRules[windowsName]
         check(tz != null) { "The system time zone is set to a value rules for which are not known: '$windowsName'" }
         return ianaTzName to if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>())
-            RegionTimeZone(tz, ianaTzName)
+            RuleBasedTimeZone(tz, ianaTzName)
         else  // the user explicitly disabled DST transitions, so
             UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)).asTimeZone("GMT")
     }
+}
+
+internal class WindowsCurrentSystemDefault(
+    val windowsName: String,
+    val isConstantOffset: Boolean,
+    val offset: UtcOffset,
+)
+
+internal fun currentSystemDefaultFromRegistry(): WindowsCurrentSystemDefault = memScoped {
+    val dtzi = alloc<DYNAMIC_TIME_ZONE_INFORMATION>()
+    val result = GetDynamicTimeZoneInformation(dtzi.ptr)
+    check(result != TIME_ZONE_ID_INVALID) { "The current system time zone is invalid: ${getLastWindowsError()}" }
+    return WindowsCurrentSystemDefault(
+        windowsName = dtzi.TimeZoneKeyName.toKStringFromUtf16(),
+        isConstantOffset = dtzi.DynamicDaylightTimeDisabled != 0.convert<BOOLEAN>(),
+        offset = UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias))
+    )
 }
 
 /* The maximum length of the registry key name for timezones. Taken from
