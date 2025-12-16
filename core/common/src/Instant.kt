@@ -412,5 +412,37 @@ public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: Ut
     return format.format { setDateTimeOffset(instant, offset) }
 }
 
+/**
+ * A shortcut for calling [DateTimeFormat.parseOrNull], followed by [DateTimeComponents.toInstantUsingOffset],
+ * returning `null` if any of the two operations fail.
+ *
+ * Parses a string that represents an instant, including date and time components and a mandatory
+ * time zone offset and returns the parsed [Instant] value.
+ *
+ * The string is considered to represent time on the UTC-SLS time scale instead of UTC.
+ * In practice, this means that, even if there is a leap second on the given day, it will not affect how the
+ * time is parsed, even if it's in the last 1000 seconds of the day.
+ * Instead, even if there is a negative leap second on the given day, 23:59:59 is still considered a valid time.
+ * 23:59:60 is invalid on UTC-SLS, so parsing it will fail.
+ *
+ * If the format is not specified, [DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET] is used.
+ * `2023-01-02T23:40:57.120Z` is an example of a string in this format.
+ *
+ * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [Instant] are exceeded.
+ *
+ * @see Instant.toString for formatting using the default format.
+ * @see Instant.format for formatting using a custom format.
+ * @see Instant.parse for a variant that throws an exception on failure.
+ * @sample kotlinx.datetime.test.samples.InstantSamples.parseOrNull
+ */
+public fun Instant.Companion.parseOrNull(
+    input: CharSequence,
+    format: DateTimeFormat<DateTimeComponents> = DateTimeComponents.Formats.ISO_DATE_TIME_OFFSET
+): Instant? = try {
+    format.parseOrNull(input)?.toInstantUsingOffset()
+} catch (e: IllegalArgumentException) {
+    null
+}
+
 internal const val DISTANT_PAST_SECONDS = -3217862419201
 internal const val DISTANT_FUTURE_SECONDS = 3093527980800

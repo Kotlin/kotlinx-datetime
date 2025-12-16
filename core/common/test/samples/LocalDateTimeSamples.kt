@@ -49,6 +49,24 @@ class LocalDateTimeSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing LocalDateTime values using predefined and custom formats or failing
+        check(LocalDateTime.parseOrNull("2024-02-15T08:30:15.123456789") ==
+                LocalDate(2024, 2, 15).atTime(8, 30, 15, 123_456_789))
+        val customFormat = LocalDateTime.Format {
+            date(LocalDate.Formats.ISO)
+            char(' ')
+            hour(); char(':'); minute(); char(':'); second()
+            char(','); secondFraction(fixedLength = 3)
+        }
+        check(LocalDateTime.parseOrNull("2024-02-15 08:30:15,123", customFormat) ==
+                LocalDate(2024, 2, 15).atTime(8, 30, 15, 123_000_000))
+        check(LocalDateTime.parseOrNull("2024-02-15 08:30:15", customFormat) == null)
+        check(LocalDateTime.parseOrNull("2024-02-15 99:99:99,999", customFormat) == null)
+
+    }
+
+    @Test
     fun customFormat() {
         // Parsing and formatting LocalDateTime values using a custom format
         val customFormat = LocalDateTime.Format {

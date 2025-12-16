@@ -6,6 +6,7 @@
 @file:JvmMultifileClass
 package kotlinx.datetime
 
+import kotlinx.datetime.LocalDateTime.Formats
 import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.removeLeadingZerosFromLongYearFormLocalDateTime
 import kotlinx.datetime.serializers.*
@@ -122,6 +123,20 @@ public actual class LocalDateTime internal constructor(
 
     private fun writeReplace(): Any = Ser(Ser.DATE_TIME_TAG, this)
 }
+
+public actual fun LocalDateTime.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalDateTime>
+): LocalDateTime? =
+    if (format === Formats.ISO) {
+        try {
+            val sanitizedInput = removeLeadingZerosFromLongYearFormLocalDateTime(input.toString())
+            jtLocalDateTime.parse(sanitizedInput).let(::LocalDateTime)
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    } else {
+        format.parseOrNull(input)
+    }
 
 /**
  * @suppress

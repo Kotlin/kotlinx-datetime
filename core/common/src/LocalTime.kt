@@ -64,10 +64,12 @@ import kotlin.jvm.JvmName
  * [toSecondOfDay], [toMillisecondOfDay], and [toNanosecondOfDay] are the inverse operations.
  * See sample 2.
  *
- * [parse] and [toString] methods can be used to obtain a [LocalTime] from and convert it to a string in the
- * ISO 8601 extended format. See sample 3.
+ * [parse], [parseOrNull][LocalTime.Companion.parseOrNull], and [toString] methods
+ * can be used to obtain a [LocalTime] from and convert it to a string in the ISO 8601 extended format.
+ * See sample 3.
  *
- * [parse] and [LocalTime.format] both support custom formats created with [Format] or defined in [Formats].
+ * [parse], [parseOrNull][LocalTime.Companion.parseOrNull], and [LocalTime.format]
+ * all support custom formats created with [Format] or defined in [Formats].
  * See sample 4.
  *
  * Additionally, there are several `kotlinx-serialization` serializers for [LocalTime]:
@@ -92,11 +94,14 @@ public expect class LocalTime : Comparable<LocalTime> {
          * If [format] is not specified, [Formats.ISO] is used.
          * `23:40:57.120` is an example of a string in this format.
          *
+         * See [Formats] and [Format] for predefined and custom formats.
+         *
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalTime] are
          * exceeded.
          *
          * @see LocalTime.toString for formatting using the default format.
          * @see LocalTime.format for formatting using a custom format.
+         * @see LocalTime.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalTimeSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()): LocalTime
@@ -345,6 +350,26 @@ public expect class LocalTime : Comparable<LocalTime> {
      */
     public override fun toString(): String
 }
+
+/**
+ * A shortcut for calling [DateTimeFormat.parseOrNull].
+ *
+ * Parses a string that represents a date and returns the parsed [LocalTime] value,
+ * or `null` if the string does not match the format or does not represent a valid [LocalTime].
+ *
+ * If [format] is not specified, [LocalTime.Formats.ISO] is used.
+ * `23:40:57.120` is an example of a string in this format.
+ *
+ * See [LocalTime.Formats] and [LocalTime.Format] for predefined and custom formats.
+ *
+ * @see LocalTime.toString for formatting using the default format.
+ * @see LocalTime.format for formatting using a custom format.
+ * @see LocalTime.parse for a version of this function that throws an exception on faulty input.
+ * @sample kotlinx.datetime.test.samples.LocalTimeSamples.parseOrNull
+ */
+public expect fun LocalTime.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()
+): LocalTime?
 
 /**
  * Formats this value using the given [format].

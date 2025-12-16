@@ -89,9 +89,11 @@ class UtcOffsetTest {
     fun invalidUtcOffsetStrings() {
         for (v in invalidUtcOffsetStrings) {
             assertFailsWith<DateTimeFormatException>("Should fail: $v") { UtcOffset.parse(v) }
+            assertNull(UtcOffset.parseOrNull(v), "Should fail: $v")
         }
         for (v in fixedOffsetTimeZoneIds) {
             assertFailsWith<DateTimeFormatException>("Time zone name should not be parsed as UtcOffset: $v") { UtcOffset.parse(v) }
+            assertNull(UtcOffset.parseOrNull(v), "Time zone name should not be parsed as UtcOffset: $v")
         }
     }
 
