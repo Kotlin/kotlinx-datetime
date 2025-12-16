@@ -8,7 +8,8 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlin.time.Instant
 
-internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
+internal class RuleBasedTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
     override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = tzid.infoAtDatetime(dateTime)
+
     override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 }

@@ -23,10 +23,7 @@ import platform.Foundation.NSTimeZone
 import platform.Foundation.timeZoneWithName
 import kotlin.time.Instant
 
-internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRules {
-    private val nsTimeZone: NSTimeZone = NSTimeZone.timeZoneWithName(zoneId)
-        ?: throw IllegalArgumentException("Unknown timezone: $zoneId")
-
+internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : TimeZoneRules {
     override fun infoAtInstant(instant: Instant): UtcOffset =
         infoAtNsDate(instant.toNSDate())
 
@@ -43,7 +40,7 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
 
         val year = localDateTime.year
         val startOfTheYear = calendar?.dateFromComponents(LocalDateTime(year, 1, 1, 0, 0).toNSDateComponents())
-        check(startOfTheYear != null) { "Failed to get the start of the year for $localDateTime, timezone: $zoneId" }
+        check(startOfTheYear != null) { "Failed to get the start of the year for $localDateTime, timezone: $nsTimeZone" }
 
         var currentDate: NSDate = startOfTheYear
         var offset = infoAtNsDate(startOfTheYear)

@@ -5,22 +5,36 @@
 
 package kotlinx.datetime.internal
 
-internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase {
+import kotlinx.datetime.IllegalTimeZoneException
+
+internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): RuleBasedTimeZoneDatabase {
 
     internal val tzdbPath = tzdbPaths(defaultTzdbPath).find { path ->
         tabPaths.any { path.containsFile(it) }
     } ?: throw IllegalStateException("Could not find the path to the timezone database")
 
     override fun rulesForId(id: String): TimeZoneRulesCommon {
+        if (id.length <= 1) { throw IllegalTimeZoneException("Timezone ID '$id' is not valid") }
         val idAsPath = Path.fromString(id)
-        require(!idAsPath.isAbsolute) { "Timezone ID '$idAsPath' must not begin with a '/'" }
-        require(idAsPath.components.none { it == ".." }) { "'$idAsPath' must not contain '..' as a component" }
+        if (idAsPath.isAbsolute) { throw IllegalTimeZoneException("Timezone ID '$idAsPath' must not begin with a '/'") }
+        if (idAsPath.components.any { it == ".." }) {
+            throw IllegalTimeZoneException("'$idAsPath' must not contain '..' as a component")
+        }
         val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
-        val contents = file.readBytes() ?: throw RuntimeException("File '$file' not found")
+        val contents = file.readBytes() ?: throw IllegalTimeZoneException("File '$file' not found")
         return readTzFile(contents).toTimeZoneRules()
     }
 
-    override fun availableTimeZoneIds(): Set<String> = buildSet {
+    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? {
+        val idAsPath = Path.fromString(id)
+        if (idAsPath.isAbsolute) { return null }
+        if (idAsPath.components.any { it == ".." }) { return null }
+        val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
+        val contents = file.readBytes() ?: return null
+        return readTzFile(contents).toTimeZoneRules()
+    }
+
+    override fun availableZoneIds(): Set<String> = buildSet {
         tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 

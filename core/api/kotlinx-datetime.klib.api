@@ -81,6 +81,30 @@ abstract interface kotlinx.datetime/Clock { // kotlinx.datetime/Clock|null[0]
     }
 }
 
+abstract interface kotlinx.datetime/TimeZoneContext : kotlinx.datetime/TimeZoneDatabase, kotlinx.datetime/TimeZoneIdProvider { // kotlinx.datetime/TimeZoneContext|null[0]
+    open fun currentTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.currentTimeZone|currentTimeZone(){}[0]
+
+    final object Companion // kotlinx.datetime/TimeZoneContext.Companion|null[0]
+
+    final object System : kotlinx.datetime/TimeZoneContext { // kotlinx.datetime/TimeZoneContext.System|null[0]
+        final fun availableZoneIds(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZoneContext.System.availableZoneIds|availableZoneIds(){}[0]
+        final fun currentTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.System.currentTimeZone|currentTimeZone(){}[0]
+        final fun currentTimeZoneId(): kotlin/String // kotlinx.datetime/TimeZoneContext.System.currentTimeZoneId|currentTimeZoneId(){}[0]
+        final fun get(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.System.get|get(kotlin.String){}[0]
+        final fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime/TimeZoneContext.System.getOrNull|getOrNull(kotlin.String){}[0]
+    }
+}
+
+abstract interface kotlinx.datetime/TimeZoneDatabase { // kotlinx.datetime/TimeZoneDatabase|null[0]
+    abstract fun availableZoneIds(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZoneDatabase.availableZoneIds|availableZoneIds(){}[0]
+    abstract fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime/TimeZoneDatabase.getOrNull|getOrNull(kotlin.String){}[0]
+    open fun get(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneDatabase.get|get(kotlin.String){}[0]
+}
+
+abstract interface kotlinx.datetime/TimeZoneIdProvider { // kotlinx.datetime/TimeZoneIdProvider|null[0]
+    abstract fun currentTimeZoneId(): kotlin/String // kotlinx.datetime/TimeZoneIdProvider.currentTimeZoneId|currentTimeZoneId(){}[0]
+}
+
 abstract interface kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler|null[0]
     abstract fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
 
