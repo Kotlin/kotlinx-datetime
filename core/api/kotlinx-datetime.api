@@ -28,6 +28,7 @@ public final class kotlinx/datetime/ConvertersKt {
 	public static final fun toJavaDayOfWeek (Lkotlinx/datetime/DayOfWeek;)Ljava/time/DayOfWeek;
 	public static final fun toJavaInstant (Lkotlinx/datetime/Instant;)Ljava/time/Instant;
 	public static final fun toJavaLocalDate (Lkotlinx/datetime/LocalDate;)Ljava/time/LocalDate;
+	public static final fun toJavaLocalDate (Lkotlinx/datetime/LocalIsoWeekDate;)Ljava/time/LocalDate;
 	public static final fun toJavaLocalDateTime (Lkotlinx/datetime/LocalDateTime;)Ljava/time/LocalDateTime;
 	public static final fun toJavaLocalTime (Lkotlinx/datetime/LocalTime;)Ljava/time/LocalTime;
 	public static final fun toJavaMonth (Lkotlinx/datetime/Month;)Ljava/time/Month;
@@ -42,6 +43,7 @@ public final class kotlinx/datetime/ConvertersKt {
 	public static final fun toKotlinInstant (Ljava/time/Instant;)Lkotlinx/datetime/Instant;
 	public static final fun toKotlinLocalDate (Ljava/time/LocalDate;)Lkotlinx/datetime/LocalDate;
 	public static final fun toKotlinLocalDateTime (Ljava/time/LocalDateTime;)Lkotlinx/datetime/LocalDateTime;
+	public static final fun toKotlinLocalIsoWeekDate (Ljava/time/LocalDate;)Lkotlinx/datetime/LocalIsoWeekDate;
 	public static final fun toKotlinLocalTime (Ljava/time/LocalTime;)Lkotlinx/datetime/LocalTime;
 	public static final fun toKotlinMonth (Ljava/time/Month;)Lkotlinx/datetime/Month;
 	public static final fun toKotlinTimeZone (Ljava/time/ZoneId;)Lkotlinx/datetime/TimeZone;
@@ -504,6 +506,29 @@ public final class kotlinx/datetime/LocalDateTimeKt {
 	public static synthetic fun LocalDateTime$default (ILkotlinx/datetime/Month;IIIIIILjava/lang/Object;)Lkotlinx/datetime/LocalDateTime;
 	public static final fun format (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/format/DateTimeFormat;)Ljava/lang/String;
 	public static final fun toLocalDateTime (Ljava/lang/String;)Lkotlinx/datetime/LocalDateTime;
+}
+
+public final class kotlinx/datetime/LocalIsoWeekDate : java/lang/Comparable {
+	public static final field Companion Lkotlinx/datetime/LocalIsoWeekDate$Companion;
+	public fun <init> (III)V
+	public fun <init> (IILkotlinx/datetime/DayOfWeek;)V
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun compareTo (Lkotlinx/datetime/LocalIsoWeekDate;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDayOfWeek ()Lkotlinx/datetime/DayOfWeek;
+	public final fun getIsoWeekNumber ()I
+	public final fun getIsoWeekYear ()I
+	public fun hashCode ()I
+	public final fun toLocalDate ()Lkotlinx/datetime/LocalDate;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/datetime/LocalIsoWeekDate$Companion {
+	public final fun parse (Ljava/lang/String;)Lkotlinx/datetime/LocalIsoWeekDate;
+}
+
+public final class kotlinx/datetime/LocalIsoWeekDateKt {
+	public static final fun toLocalIsoWeekDate (Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/LocalIsoWeekDate;
 }
 
 public final class kotlinx/datetime/LocalTime : java/io/Serializable, java/lang/Comparable {

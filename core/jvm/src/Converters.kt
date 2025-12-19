@@ -127,3 +127,9 @@ public fun YearMonth.toJavaYearMonth(): java.time.YearMonth = this.value
  * Converts this [java.time.YearMonth][java.time.YearMonth] value to a [kotlinx.datetime.YearMonth][YearMonth] value.
  */
 public fun java.time.YearMonth.toKotlinYearMonth(): YearMonth = YearMonth(this)
+
+public fun LocalIsoWeekDate.toJavaLocalDate(): java.time.LocalDate =
+    toLocalDate().toJavaLocalDate()
+
+public fun java.time.LocalDate.toKotlinLocalIsoWeekDate(): LocalIsoWeekDate =
+    toKotlinLocalDate().toLocalIsoWeekDate()

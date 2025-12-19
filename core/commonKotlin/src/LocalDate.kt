@@ -16,12 +16,6 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.math.*
 
-internal const val YEAR_MIN = -999_999_999
-internal const val YEAR_MAX = 999_999_999
-
-private fun isValidYear(year: Int): Boolean =
-    year >= YEAR_MIN && year <= YEAR_MAX
-
 @Serializable(with = LocalDateSerializer::class)
 public actual class LocalDate actual constructor(public actual val year: Int, month: Int, public actual val day: Int) : Comparable<LocalDate> {
 
@@ -33,7 +27,7 @@ public actual class LocalDate actual constructor(public actual val year: Int, mo
 
     init {
         // org.threeten.bp.LocalDate#create
-        require(isValidYear(year)) { "Invalid date: the year is out of range" }
+        require(year in YEAR_MIN..YEAR_MAX) { "Invalid date: the year is out of range" }
         require(_month in 1..12) { "Invalid date: month must be a number between 1 and 12, got $_month" }
         require(day in 1..31) { "Invalid date: day of month must be a number between 1 and 31, got $day" }
         if (day > 28 && day > _month.monthLength(isLeapYear(year))) {
@@ -269,9 +263,3 @@ public actual fun LocalDate.periodUntil(other: LocalDate): DatePeriod {
     val days = plusMonths(months).daysUntil(other)
     return DatePeriod(totalMonths = months, days)
 }
-
-internal fun LocalDate.previousOrSame(dayOfWeek: DayOfWeek) =
-    minus((this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
-
-internal fun LocalDate.nextOrSame(dayOfWeek: DayOfWeek) =
-    plus((dayOfWeek.isoDayNumber - this.dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)

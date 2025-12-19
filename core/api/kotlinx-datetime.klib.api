@@ -516,6 +516,28 @@ final class kotlinx.datetime/LocalDateTime : kotlin/Comparable<kotlinx.datetime/
     }
 }
 
+final class kotlinx.datetime/LocalIsoWeekDate : kotlin/Comparable<kotlinx.datetime/LocalIsoWeekDate> { // kotlinx.datetime/LocalIsoWeekDate|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int) // kotlinx.datetime/LocalIsoWeekDate.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlinx.datetime/DayOfWeek) // kotlinx.datetime/LocalIsoWeekDate.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.datetime.DayOfWeek){}[0]
+
+    final val dayOfWeek // kotlinx.datetime/LocalIsoWeekDate.dayOfWeek|{}dayOfWeek[0]
+        final fun <get-dayOfWeek>(): kotlinx.datetime/DayOfWeek // kotlinx.datetime/LocalIsoWeekDate.dayOfWeek.<get-dayOfWeek>|<get-dayOfWeek>(){}[0]
+    final val isoWeekNumber // kotlinx.datetime/LocalIsoWeekDate.isoWeekNumber|{}isoWeekNumber[0]
+        final fun <get-isoWeekNumber>(): kotlin/Int // kotlinx.datetime/LocalIsoWeekDate.isoWeekNumber.<get-isoWeekNumber>|<get-isoWeekNumber>(){}[0]
+    final val isoWeekYear // kotlinx.datetime/LocalIsoWeekDate.isoWeekYear|{}isoWeekYear[0]
+        final fun <get-isoWeekYear>(): kotlin/Int // kotlinx.datetime/LocalIsoWeekDate.isoWeekYear.<get-isoWeekYear>|<get-isoWeekYear>(){}[0]
+
+    final fun compareTo(kotlinx.datetime/LocalIsoWeekDate): kotlin/Int // kotlinx.datetime/LocalIsoWeekDate.compareTo|compareTo(kotlinx.datetime.LocalIsoWeekDate){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalIsoWeekDate.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.datetime/LocalIsoWeekDate.hashCode|hashCode(){}[0]
+    final fun toLocalDate(): kotlinx.datetime/LocalDate // kotlinx.datetime/LocalIsoWeekDate.toLocalDate|toLocalDate(){}[0]
+    final fun toString(): kotlin/String // kotlinx.datetime/LocalIsoWeekDate.toString|toString(){}[0]
+
+    final object Companion { // kotlinx.datetime/LocalIsoWeekDate.Companion|null[0]
+        final fun parse(kotlin/String): kotlinx.datetime/LocalIsoWeekDate // kotlinx.datetime/LocalIsoWeekDate.Companion.parse|parse(kotlin.String){}[0]
+    }
+}
+
 final class kotlinx.datetime/LocalTime : kotlin/Comparable<kotlinx.datetime/LocalTime> { // kotlinx.datetime/LocalTime|null[0]
     constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Int = ...) // kotlinx.datetime/LocalTime.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
 
@@ -1185,6 +1207,7 @@ final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlin/Int, kotlinx
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlin/Long, kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/LocalDate // kotlinx.datetime/plus|plus@kotlinx.datetime.LocalDate(kotlin.Long;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlinx.datetime/DatePeriod): kotlinx.datetime/LocalDate // kotlinx.datetime/plus|plus@kotlinx.datetime.LocalDate(kotlinx.datetime.DatePeriod){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/plus(kotlinx.datetime/DateTimeUnit.DateBased): kotlinx.datetime/LocalDate // kotlinx.datetime/plus|plus@kotlinx.datetime.LocalDate(kotlinx.datetime.DateTimeUnit.DateBased){}[0]
+final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/toLocalIsoWeekDate(): kotlinx.datetime/LocalIsoWeekDate // kotlinx.datetime/toLocalIsoWeekDate|toLocalIsoWeekDate@kotlinx.datetime.LocalDate(){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/until(kotlinx.datetime/LocalDate, kotlinx.datetime/DateTimeUnit.DateBased): kotlin/Long // kotlinx.datetime/until|until@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate;kotlinx.datetime.DateTimeUnit.DateBased){}[0]
 final fun (kotlinx.datetime/LocalDate).kotlinx.datetime/yearsUntil(kotlinx.datetime/LocalDate): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlinx.datetime.LocalDate(kotlinx.datetime.LocalDate){}[0]
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/first(): kotlinx.datetime/LocalDate // kotlinx.datetime/first|first@kotlinx.datetime.LocalDateProgression(){}[0]

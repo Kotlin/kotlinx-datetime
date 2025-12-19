@@ -43,3 +43,6 @@ internal fun removeLeadingZerosFromLongYearFormLocalDateTime(input: String) =
 
 internal fun removeLeadingZerosFromLongYearFormYearMonth(input: String) =
     removeLeadingZerosFromLongYearForm(input, 3) // 3 = "-01".length
+
+internal fun removeLeadingZerosFromLongYearFormIsoWeekDate(input: String) =
+    removeLeadingZerosFromLongYearForm(input, 6) // 6 = "-W01-1".length

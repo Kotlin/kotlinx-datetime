@@ -549,3 +549,15 @@ public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 
 // A workaround for https://youtrack.jetbrains.com/issue/KT-65484
 internal fun getIsoDateFormat() = LocalDate.Formats.ISO
+
+internal fun LocalDate.previousOrSame(dayOfWeek: DayOfWeek) =
+    minus((this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
+
+internal fun LocalDate.nextOrSame(dayOfWeek: DayOfWeek) =
+    plus((dayOfWeek.isoDayNumber - this.dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
+
+/** The max year in [LocalDate] */
+internal const val YEAR_MAX = 999_999_999
+
+/** The min year in [LocalDate] */
+internal const val YEAR_MIN = -999_999_999
