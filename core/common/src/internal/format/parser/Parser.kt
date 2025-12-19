@@ -253,7 +253,13 @@ internal value class Parser<Output : Copyable<Output>>(
     )
 }
 
-internal class ParseException(errors: List<ParseError>) : Exception(formatError(errors))
+// note that the message of this exception could be anything (even null) after deserialization of a manually constructed
+// or corrupted stream (via Java Object Serialization)
+internal class ParseException(errors: List<ParseError>) : Exception(formatError(errors)) {
+    private companion object {
+        private const val serialVersionUID: Long = 5691186997393344103L
+    }
+}
 
 private fun formatError(errors: List<ParseError>): String {
     if (errors.size == 1) {
