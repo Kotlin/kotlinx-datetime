@@ -283,7 +283,12 @@ tasks {
     // Configure the JAR task so that it will include the compiled module-info class file.
     val jvmJar by existing(Jar::class) {
         manifest {
-            attributes("Multi-Release" to true)
+            attributes(
+                "Multi-Release" to true,
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
         }
         from(compileJavaModuleInfo.map { it.destinationDirectory }) {
             into("META-INF/versions/9/")
