@@ -6,8 +6,6 @@
 import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.npm.task.NpxTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.npm.NpmResolverPlugin
-import java.util.*
 
 plugins {
     kotlin("multiplatform")
@@ -56,11 +54,63 @@ val generateZoneInfo by tasks.registering {
 }
 
 kotlin {
+    jvm {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
+        }
+        compilations.all {
+            // Set compilation options for JVM target here
+        }
+
+    }
+
+    js {
+        nodejs {
+        }
+    }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "30s"
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
         nodejs()
-        NpmResolverPlugin.apply(project) //Workaround KT-66373
     }
+
+    // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    iosArm64()
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
+    // Tier 3
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX86()
+    androidNativeX64()
+    mingwX64()
+    watchosDeviceArm64()
+    // Deprecated
+    @Suppress("DEPRECATION") linuxArm32Hfp()
 
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
