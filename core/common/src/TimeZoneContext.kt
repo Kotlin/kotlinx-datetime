@@ -118,7 +118,7 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
         /**
          * Returns the time zone identified by the provided [id], or `null` if it's not found.
          *
-         * This is an optimized shorthand for `try { get(id) } catch (_: IllegalTimeZoneException) { null }`.
+         * This is optimized shorthand for `try { get(id) } catch (_: IllegalTimeZoneException) { null }`.
          * Please see the documentation for [get].
          *
          * Note that non-[IllegalTimeZoneException] exceptions will still be thrown by this function,
@@ -129,6 +129,10 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
         /**
          * Returns the set of timezone identifiers the system timezone
          * database recognizes in addition to the fixed-offset ones.
+         *
+         * Note that collecting the set of available time zones may be computationally expensive
+         * or involve traversing the filesystem on some platforms.
+         * As such, it is recommended to cache the result of this function.
          */
         override fun availableZoneIds(): Set<String> =
             systemTimezoneDatabase.availableZoneIds()

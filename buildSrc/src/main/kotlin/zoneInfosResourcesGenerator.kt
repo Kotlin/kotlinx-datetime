@@ -82,10 +82,10 @@ fun generateZoneInfosResources(zoneInfoDir: File, outputDir: Directory, version:
         append(header)
         appendLine()
         appendLine()
-        appendLine("internal fun zoneDataByName(name: String): ByteArray = when(name) {")
+        appendLine("internal fun zoneDataByNameOrNull(name: String): ByteArray? = when(name) {")
         append(zoneDataByNameBody)
         appendLine()
-        append("    else -> throw kotlinx.datetime.IllegalTimeZoneException(\"Invalid timezone name\")")
+        append("    else -> null")
         appendLine()
         append("}")
         appendLine()
@@ -96,6 +96,8 @@ fun generateZoneInfosResources(zoneInfoDir: File, outputDir: Directory, version:
         appendLine()
         append(")")
         append("}")
+        appendLine()
+        append("internal val timeZoneDatabaseVersion: String = \"$version\"")
     }
 
     outputDir.file("tzData.kt").asFile.writeText(content)
