@@ -185,10 +185,10 @@ internal class RecurringZoneRules(
     }
 
     /**
-     * IMPORTANT: keep this implementation in sync with [TimeZoneRulesFoundation.infoAtDatetime].
+     * IMPORTANT: keep this implementation in sync with [TimeZoneRulesCommon.infoAtDatetime].
      * The algorithms and corner-case handling should stay identical so that Darwin (Foundation-based)
      * and tzdb-based platforms compute the same results.  When you change logic here, reflect the
-     * same change in [TimeZoneRulesFoundation.infoAtDatetime].
+     * same change in [TimeZoneRulesCommon.infoAtDatetime].
      */
     fun infoAtLocalDateTime(localDateTime: LocalDateTime, offsetAtYearStart: UtcOffset): OffsetInfo {
         val year = localDateTime.year

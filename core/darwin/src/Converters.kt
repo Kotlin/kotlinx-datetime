@@ -56,7 +56,7 @@ internal fun NSDate.toKotlinInstant(): kotlinx.datetime.Instant =
  * Converts the [TimeZone] to [NSTimeZone].
  *
  * If the time zone is represented as a fixed number of seconds from UTC+0 (for example, if it is the result of a call
- * to [TimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
+ * to [FixedOffsetTimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
  * [IllegalArgumentException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets
  * to the nearest minute.
  *

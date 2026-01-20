@@ -416,5 +416,8 @@ apiValidation {
 }
 
 dependencies {
+    // make samples runnable via Kotlin playground
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-playground-samples-plugin")
+
     dokka(project)
 }

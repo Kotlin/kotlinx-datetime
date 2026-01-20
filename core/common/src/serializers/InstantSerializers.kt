@@ -29,7 +29,7 @@ import kotlin.time.Instant
  * to avoid conflicts with serializers defined by other libraries and client code.
  *
  * When serializing, the [Instant] value is formatted as a string using the specified [format]
- * in the [ZERO][UtcOffset.ZERO] UTC offset.
+ * in the [ZERO][kotlinx.datetime.UtcOffset.ZERO] UTC offset.
  *
  * This serializer is abstract and must be subclassed to provide a concrete serializer.
  * Example:
