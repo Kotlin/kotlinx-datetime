@@ -406,6 +406,10 @@ dokka {
             remoteLineSuffix.set("#L")
         }
     }
+
+    dokkaGeneratorIsolation.set(ProcessIsolation {
+        systemProperties.put("org.jetbrains.dokka.analysis.enableExperimentalKDocResolution", true)
+    })
 }
 
 apiValidation {
