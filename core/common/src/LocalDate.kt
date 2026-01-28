@@ -22,7 +22,8 @@ import kotlin.internal.*
  * as [LocalDate.periodUntil] and various other [*until][LocalDate.daysUntil] functions.
  *
  * The range of supported years is at least enough to represent dates of all instants between
- * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
+ * [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+ * and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE].
  *
  * ### Arithmetic operations
  *
@@ -36,7 +37,8 @@ import kotlin.internal.*
  * ### Platform specifics
  *
  * The range of supported years is unspecified, but at least is enough to represent dates of all instants between
- * [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE].
+ * [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+ * and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE].
  *
  * On the JVM,
  * there are `LocalDate.toJavaLocalDate()` and `java.time.LocalDate.toKotlinLocalDate()`
@@ -174,7 +176,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * The supported ranges of components:
      * - [year] the range is at least enough to represent dates of all instants between
-     *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+     *          [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+     *          and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE]
      * - [month] `1..12`
      * - [day] `1..31`, the upper bound can be less, depending on the month
      *
@@ -189,7 +192,8 @@ public expect class LocalDate : Comparable<LocalDate> {
      *
      * The supported ranges of components:
      * - [year] the range at least is enough to represent dates of all instants between
-     *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+     *          [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+     *          and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE]
      * - [month] all values of the [Month] enum
      * - [day] `1..31`, the upper bound can be less, depending on the month
      *

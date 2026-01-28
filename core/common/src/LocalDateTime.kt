@@ -17,15 +17,16 @@ import kotlin.jvm.JvmName
 /**
  * The representation of a specific civil date and time without a reference to a particular time zone.
  *
- * This class does not describe specific *moments in time*. For that, use [Instant] values instead.
+ * This class does not describe specific *moments in time*. For that, use [Instant][kotlin.time.Instant] values instead.
  * Instead, you can think of its instances as clock readings, which can be observed in a particular time zone.
  * For example, `2020-08-30T18:43` is not a *moment in time* since someone in Berlin and Tokyo would witness
  * this on their clocks at different times, but it is a [LocalDateTime].
  *
- * The main purpose of this class is to provide human-readable representations of [Instant] values, to transfer them
- * as data, or to define future planned events that will have the same local datetime even if the time zone rules
- * change.
- * In all other cases, when a specific time zone is known, it is recommended to use [Instant] instead.
+ * The main purpose of this class is to provide human-readable representations of [Instant][kotlin.time.Instant] values,
+ * to transfer them as data, or to define future planned events that will have the same local datetime
+ * even if the time zone rules change.
+ * In all other cases, when a specific time zone is known,
+ * it is recommended to use [Instant][kotlin.time.Instant] instead.
  *
  * ### Arithmetic operations
  *
@@ -48,7 +49,8 @@ import kotlin.jvm.JvmName
  * It provides well-defined date arithmetic.
  *
  * If the time component must be taken into account, [LocalDateTime]
- * should be converted to [Instant] using a specific time zone, and the arithmetic on [Instant] should be used.
+ * should be converted to [Instant][kotlin.time.Instant] using a specific time zone,
+ * and the arithmetic on [Instant][kotlin.time.Instant] should be used.
  *
  * ```
  * val timeZone = TimeZone.of("Europe/Berlin")
@@ -81,8 +83,8 @@ import kotlin.jvm.JvmName
  * from constructing such a [LocalDateTime].
  * Before using a [LocalDateTime] constructed using any API,
  * please ensure that the result is valid in the implied time zone.
- * The recommended pattern is to convert a [LocalDateTime] to [Instant] as soon as possible (see
- * [LocalDateTime.toInstant]) and work with [Instant] values instead.
+ * The recommended pattern is to convert a [LocalDateTime] to [Instant][kotlin.time.Instant] as soon as possible (see
+ * [LocalDateTime.toInstant]) and work with [Instant][kotlin.time.Instant] values instead.
  *
  * [LocalDateTime] can be constructed directly from its components, [LocalDate] and [LocalTime], using the constructor.
  * See sample 1.
@@ -104,7 +106,7 @@ import kotlin.jvm.JvmName
  *
  * @see LocalDate for only the date part of the datetime value.
  * @see LocalTime for only the time part of the datetime value.
- * @see Instant for the representation of a specific moment in time independent of a time zone.
+ * @see kotlin.time.Instant for the representation of a specific moment in time independent of a time zone.
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.fromDateAndTime
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.alternativeConstruction
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.simpleParsingAndFormatting
@@ -352,7 +354,8 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * a negative number if this value represents earlier civil time than the other,
      * and a positive number if this value represents later civil time than the other.
      *
-     * **Pitfall**: comparing [LocalDateTime] values is less robust than comparing [Instant] values.
+     * **Pitfall**: comparing [LocalDateTime] values is less robust than comparing
+     * [Instant][kotlin.time.Instant] values.
      * Consider the following situation, where a later moment in time corresponds to an earlier [LocalDateTime] value:
      * ```
      * val zone = TimeZone.of("Europe/Berlin")

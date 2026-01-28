@@ -30,7 +30,8 @@ import kotlinx.serialization.Serializable
  * ### Platform specifics
  *
  * The range of supported years is unspecified, but at least is enough to represent year-months of all instants
- * between [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
+ * between [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+ * and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
  *
  * On the JVM,
  * there are `YearMonth.toJavaYearMonth()` and `java.time.YearMonth.toKotlinYearMonth()`
@@ -67,7 +68,8 @@ public expect class YearMonth
  *
  * The supported ranges of components:
  * - [year] the range is unspecified, but at least is enough to represent year-months of all instants between
- *          [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
+ *          [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+ *          and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
  * - [month] `1..12`
  *
  * @throws IllegalArgumentException if any parameter is out of range.
@@ -122,7 +124,8 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      * Constructs a [YearMonth] instance from the given year-month components.
      *
      * The range for [year] is unspecified, but at least is enough to represent year-months of all instants
-     * between [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE] in any time zone.
+     * between [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+     * and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
      *
      * @throws IllegalArgumentException if [year] is out of range.
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.constructorFunction

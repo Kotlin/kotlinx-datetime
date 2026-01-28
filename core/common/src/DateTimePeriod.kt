@@ -17,7 +17,7 @@ import kotlin.time.Duration
 import kotlinx.serialization.Serializable
 
 /**
- * A difference between two [instants][Instant], decomposed into date and time components.
+ * A difference between two [instants][kotlin.time.Instant], decomposed into date and time components.
  *
  * The date components are: [years] ([DateTimeUnit.YEAR]), [months] ([DateTimeUnit.MONTH]), and [days] ([DateTimeUnit.DAY]).
  *

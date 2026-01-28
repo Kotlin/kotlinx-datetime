@@ -35,7 +35,7 @@ import kotlin.jvm.JvmName
  * Arithmetic operations on [LocalTime] are not provided because they are not well-defined without a date and
  * a time zone.
  * See [LocalDateTime] for an explanation of why not accounting for time zone transitions may lead to incorrect results.
- * To perform arithmetic operations on time values, first, obtain an [Instant].
+ * To perform arithmetic operations on time values, first, obtain an [Instant][kotlin.time.Instant].
  *
  * ```
  * val time = LocalTime(13, 30)
@@ -46,7 +46,7 @@ import kotlin.jvm.JvmName
  * ```
  *
  * Since this pattern is extremely verbose and difficult to get right, it is recommended to work exclusively
- * with [Instant] and only obtain a [LocalTime] when displaying the time to the user.
+ * with [Instant][kotlin.time.Instant] and only obtain a [LocalTime] when displaying the time to the user.
  *
  * ### Platform specifics
  *
@@ -112,7 +112,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * the number of seconds that have physically elapsed since the start of the day.
          * The reason is that, due to daylight-saving-time transitions, the number of seconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
-         * Use [Instant] to perform reliable time arithmetic.
+         * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
          *
          * @see LocalTime.toSecondOfDay
          * @see LocalTime.fromMillisecondOfDay
@@ -133,7 +133,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * the number of milliseconds that have physically elapsed since the start of the day.
          * The reason is that, due to daylight-saving-time transitions, the number of milliseconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
-         * Use [Instant] to perform reliable time arithmetic.
+         * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
          *
          * @see LocalTime.fromSecondOfDay
          * @see LocalTime.toMillisecondOfDay
@@ -153,7 +153,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * the number of nanoseconds that have physically elapsed since the start of the day.
          * The reason is that, due to daylight-saving-time transitions, the number of nanoseconds since the start
          * of the day is not a constant value: clocks could be shifted by an hour or more on some dates.
-         * Use [Instant] to perform reliable time arithmetic.
+         * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
          *
          * @see LocalTime.fromSecondOfDay
          * @see LocalTime.fromMillisecondOfDay
@@ -269,7 +269,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60`, the four hours
      * worth of seconds, but because of DST transitions, when clocks show 4:00, in fact, three, four, five, or
      * some other number of hours could have passed since the day started.
-     * Use [Instant] to perform reliable time arithmetic.
+     * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
      *
      * @see toMillisecondOfDay
      * @see toNanosecondOfDay
@@ -285,7 +285,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000`, the four hours
      * worth of milliseconds, but because of DST transitions, when clocks show 4:00, in fact, three, four, five, or
      * some other number of hours could have passed since the day started.
-     * Use [Instant] to perform reliable time arithmetic.
+     * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
      *
      * @see toSecondOfDay
      * @see toNanosecondOfDay
@@ -301,7 +301,7 @@ public expect class LocalTime : Comparable<LocalTime> {
      * For example, `LocalTime(4, 0).toMillisecondOfDay()` will return `4 * 60 * 60 * 1_000_000_000`, the four hours
      * worth of nanoseconds, but because of DST transitions, when clocks show 4:00, in fact, three, four, five, or
      * some other number of hours could have passed since the day started.
-     * Use [Instant] to perform reliable time arithmetic.
+     * Use [Instant][kotlin.time.Instant] to perform reliable time arithmetic.
      *
      * @see toMillisecondOfDay
      * @see toNanosecondOfDay
