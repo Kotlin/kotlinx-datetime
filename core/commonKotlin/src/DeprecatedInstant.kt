@@ -9,7 +9,6 @@
 package kotlinx.datetime
 
 import kotlinx.datetime.format.*
-import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.MILLIS_PER_ONE
 import kotlinx.datetime.internal.NANOS_PER_MILLI
 import kotlinx.datetime.internal.NANOS_PER_ONE
@@ -206,44 +205,12 @@ public actual class Instant internal constructor(
 
 }
 
-private fun Instant.toZonedDateTimeFailing(zone: TimeZone): ZonedDateTime = try {
-    toZonedDateTime(zone)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Can not convert instant $this to LocalDateTime to perform computations", e)
-}
-
-/**
- * @throws IllegalArgumentException if the [Instant] exceeds the boundaries of [LocalDateTime]
- */
-private fun Instant.toZonedDateTime(zone: TimeZone): ZonedDateTime {
-    val currentOffset = zone.offsetAtImpl(this.toStdlibInstant())
-    return ZonedDateTime(toStdlibInstant().toLocalDateTimeImpl(currentOffset), zone, currentOffset)
-}
-
-/** Check that [Instant] fits in [ZonedDateTime].
- * This is done on the results of computations for consistency with other platforms.
- */
-private fun Instant.check(zone: TimeZone): Instant = this@check.also {
-    toZonedDateTimeFailing(zone)
-}
-
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()")
 )
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
-    with(period) {
-        val withDate = toZonedDateTimeFailing(timeZone)
-            .run { if (totalMonths != 0L) plus(totalMonths, DateTimeUnit.MONTH) else this }
-            .run { if (days != 0) plus(days.toLong(), DateTimeUnit.DAY) else this }
-        withDate.toDeprecatedInstant()
-            .run { if (totalNanoseconds != 0L) plus(0, totalNanoseconds).check(timeZone) else this }
-    }.check(timeZone)
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
-}
+public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()
 
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
@@ -267,67 +234,30 @@ public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZo
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
 )
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
-    when (unit) {
-        is DateTimeUnit.DateBased ->
-            toZonedDateTimeFailing(timeZone).plus(value, unit).toDeprecatedInstant()
-        is DateTimeUnit.TimeBased ->
-            check(timeZone).plus(value, unit).check(timeZone)
-    }
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
-}
+public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()
 
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit).toDeprecatedInstant()")
 )
 public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
-    try {
-        multiplyAndDivide(value, unit.nanoseconds, NANOS_PER_ONE.toLong()).let { (seconds, nanoseconds) ->
-            plus(seconds, nanoseconds)
-        }
-    } catch (_: ArithmeticException) {
-        if (value > 0) Instant.MAX else Instant.MIN
-    } catch (_: IllegalArgumentException) {
-        if (value > 0) Instant.MAX else Instant.MIN
-    }
+    toStdlibInstant().plus(value, unit).toDeprecatedInstant()
 
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)")
 )
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
-    var thisLdt = toZonedDateTimeFailing(timeZone)
-    val otherLdt = other.toZonedDateTimeFailing(timeZone)
-
-    val months = thisLdt.until(otherLdt, DateTimeUnit.MONTH) // `until` on dates never fails
-    thisLdt = thisLdt.plus(months, DateTimeUnit.MONTH) // won't throw: thisLdt + months <= otherLdt, which is known to be valid
-    val days = thisLdt.until(otherLdt, DateTimeUnit.DAY) // `until` on dates never fails
-    thisLdt = thisLdt.plus(days, DateTimeUnit.DAY) // won't throw: thisLdt + days <= otherLdt
-    val nanoseconds = thisLdt.until(otherLdt, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
-
-    return buildDateTimePeriod(months, days.toInt(), nanoseconds)
-}
+public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod =
+    toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)
 
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)")
 )
 public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
-    when (unit) {
-        is DateTimeUnit.DateBased ->
-            toZonedDateTimeFailing(timeZone).dateTime.until(other.toZonedDateTimeFailing(timeZone).dateTime, unit)
-        is DateTimeUnit.TimeBased -> {
-            check(timeZone); other.check(timeZone)
-            until(other, unit)
-        }
-    }
+    toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)
 
-private fun ZonedDateTime.toDeprecatedInstant(): Instant =
-    Instant.fromEpochSeconds(dateTime.toEpochSecond(offset), dateTime.nanosecond)
 
 private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {
     date(ISO_DATE)

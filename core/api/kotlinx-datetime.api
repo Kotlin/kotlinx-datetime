@@ -275,6 +275,7 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun isDistantFuture (Lkotlinx/datetime/Instant;)Z
 	public static final fun isDistantPast (Lkotlinx/datetime/Instant;)Z
 	public static final fun minus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun minus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
@@ -284,7 +285,6 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun minus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
-	public static final fun minus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
@@ -295,36 +295,24 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun minus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
 	public static final fun monthsUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)I
 	public static final fun monthsUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
-<<<<<<< HEAD
 	public static final fun parse (Lkotlin/time/Instant$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlin/time/Instant;
+	public static final fun periodUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
 	public static final fun plus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
+	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlin/time/Instant;
-||||||| parent of 25a3465 (Update the API dump and restore binary compatibility)
-=======
-	public static final fun periodUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
->>>>>>> 25a3465 (Update the API dump and restore binary compatibility)
+	public static final fun plus (Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlin/time/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
-	public static final fun plus (Lkotlinx/datetime/Instant;ILkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
-	public static final fun plus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
-	public static final fun plus (Lkotlinx/datetime/Instant;JLkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
-	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimePeriod;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)Lkotlinx/datetime/Instant;
-<<<<<<< HEAD
 	public static final fun toDeprecatedInstant (Lkotlin/time/Instant;)Lkotlinx/datetime/Instant;
-||||||| parent of 25a3465 (Update the API dump and restore binary compatibility)
-=======
-	public static final fun plus (Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
->>>>>>> 25a3465 (Update the API dump and restore binary compatibility)
 	public static final fun toInstant (Ljava/lang/String;)Lkotlinx/datetime/Instant;
 	public static final fun toStdlibInstant (Lkotlinx/datetime/Instant;)Lkotlin/time/Instant;
 	public static final fun until (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
+	public static final fun until (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
 	public static final fun until (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit$TimeBased;)J
-<<<<<<< HEAD
 	public static final fun yearsUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)I
-||||||| parent of 25a3465 (Update the API dump and restore binary compatibility)
-=======
-	public static final fun until (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/DateTimeUnit;Lkotlinx/datetime/TimeZone;)J
->>>>>>> 25a3465 (Update the API dump and restore binary compatibility)
 	public static final fun yearsUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)I
 }
 

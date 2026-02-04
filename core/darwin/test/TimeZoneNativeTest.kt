@@ -384,23 +384,6 @@ class TimeZoneNativeTest {
         assertEquals(expectedType, actualType)
     }
 
-    // timeZone.atZone(LocalDateTime) tests
-
-    @Test
-    fun shouldProduceConsistentZonedDateTimeBetweenRegularAndFoundationTimeZones() {
-        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularTz = timeZoneById(zoneId)
-            val foundationTz = timeZoneByIdFoundation(zoneId)
-
-            for ((localDateTime, _) in localDateTimes) {
-                val regularZoned = regularTz.atZone(localDateTime)
-                val foundationZoned = foundationTz.atZone(localDateTime)
-
-                assertEquals(regularZoned, foundationZoned)
-            }
-        }
-    }
-
     // timeZone.atStartOfDay(LocalDate) tests
 
     @Test
