@@ -33,7 +33,6 @@ import kotlin.time.Instant
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
-@Serializable(with = TimeZoneSerializer::class)
 public expect open class TimeZone {
     /**
      * Returns the identifier string of the time zone.
@@ -163,6 +162,15 @@ public expect open class TimeZone {
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.availableZoneIds
          */
         public val availableZoneIds: Set<String>
+
+        /** @suppress */
+        @Deprecated(
+            "Serializing TimeZone is discouraged, " +
+                    "as deserialization can fail depending on the configuration. " +
+                    "Please serialize the string id instead.",
+            level = DeprecationLevel.WARNING,
+        )
+        public fun serializer(): kotlinx.serialization.KSerializer<TimeZone>
     }
 
     /**
@@ -235,7 +243,6 @@ public expect open class TimeZone {
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.casting
  */
-@Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public expect class FixedOffsetTimeZone : TimeZone {
     /**
      * Constructs a time zone with the fixed [offset] from UTC.
@@ -253,6 +260,18 @@ public expect class FixedOffsetTimeZone : TimeZone {
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public val totalSeconds: Int
+
+    /** @suppress */
+    public companion object {
+        /** @suppress */
+        @Deprecated(
+            "Serializing FixedOffsetTimeZone is discouraged, " +
+                    "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
+                    "Please serialize the string id instead.",
+            level = DeprecationLevel.WARNING,
+        )
+        public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone>
+    }
 }
 
 @Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
