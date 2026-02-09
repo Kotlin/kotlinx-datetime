@@ -94,6 +94,10 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
     }
 }
 
+public actual fun UtcOffset.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<UtcOffset>
+): UtcOffset? = format.parseOrNull(input)
+
 @ThreadLocal
 private var utcOffsetCache: MutableMap<Int, UtcOffset> = mutableMapOf()
 

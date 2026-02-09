@@ -88,6 +88,21 @@ class DateTimePeriodSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing a string representation of a DateTimePeriod or failing
+        val parsedPeriod = DateTimePeriod.parseOrNull("P14M-16DT5H")
+        check(parsedPeriod != null)
+        with (parsedPeriod) {
+            check(years == 1)
+            check(months == 2)
+            check(days == -16)
+            check(hours == 5)
+        }
+        check(DateTimePeriod.parseOrNull("this is not a period") == null)
+        check(DateTimePeriod.parseOrNull("P9999999999999999999999999999M") == null)
+    }
+
+    @Test
     fun constructorFunction() {
         // Constructing a DateTimePeriod using its constructor function
         val dateTimePeriod = DateTimePeriod(months = 16, days = -60, hours = 16, minutes = -61)
@@ -144,5 +159,20 @@ class DatePeriodSamples {
         // it's okay to have time components as long as they amount to zero in total:
         val datePeriodWithTimeComponents = DatePeriod.parse("P1Y2M3DT1H-60M")
         check(datePeriodWithTimeComponents == DatePeriod(years = 1, months = 2, days = 3))
+    }
+
+    @Test
+    fun parseOrNull() {
+        // Parsing a string representation of a DatePeriod or failing
+        with(DatePeriod.parseOrNull("P1Y16M60D")) {
+            check(this != null)
+            check(this == DatePeriod(years = 2, months = 4, days = 60))
+        }
+        with(DatePeriod.parseOrNull("P1Y2M3DT1H-60M")) {
+            check(this != null)
+            check(this == DatePeriod(years = 1, months = 2, days = 3))
+        }
+        check(DatePeriod.parseOrNull("this is not a period") == null)
+        check(DatePeriod.parseOrNull("P9999999999999999999999999999M") == null)
     }
 }

@@ -73,6 +73,20 @@ class LocalTimeSamples {
     }
 
     @Test
+    fun parseOrNull() {
+        // Parsing a LocalTime from a string using predefined and custom formats
+        check(LocalTime.parseOrNull("08:30:15.123456789") == LocalTime(8, 30, 15, 123_456_789))
+        val customFormat = LocalTime.Format {
+            hour(); char(':'); minute(); char(':'); second()
+            alternativeParsing({ char(',') }) { char('.') } // parse either a dot or a comma
+            secondFraction(fixedLength = 3)
+        }
+        check(LocalTime.parseOrNull("08:30:15,123", customFormat) == LocalTime(8, 30, 15, 123_000_000))
+        check(LocalTime.parseOrNull("ten past twelve", customFormat) == null)
+        check(LocalTime.parseOrNull("99:99:99,123", customFormat) == null)
+    }
+
+    @Test
     fun fromAndToSecondOfDay() {
         // Converting a LocalTime to the number of seconds since the start of the day and back
         val secondsInDay = 24 * 60 * 60
