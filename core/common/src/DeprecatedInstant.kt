@@ -349,7 +349,8 @@ public fun String.toInstant(): Instant = Instant.parse(this)
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()")
 )
-public expect fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant
+public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
@@ -399,7 +400,8 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)")
 )
-public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod
+public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod =
+    toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)
 
 /**
  * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
@@ -419,7 +421,8 @@ public expect fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateT
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)")
 )
-public expect fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long
+public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+    toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)
 
 /**
  * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
@@ -529,7 +532,8 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(1, unit, timeZone).toDeprecatedInstant()")
 )
-public expect fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(1, unit, timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of subtracting one [unit] from this instant
@@ -591,7 +595,8 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
 )
-public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
@@ -613,7 +618,8 @@ public expect fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZon
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit, timeZone).toDeprecatedInstant()")
 )
-public expect fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    toStdlibInstant().minus(value, unit, timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
@@ -666,7 +672,8 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
 )
-public expect fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant
+public fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
@@ -706,7 +713,8 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit).toDeprecatedInstant()")
 )
-public expect fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant
+public fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
+    toStdlibInstant().plus(value, unit).toDeprecatedInstant()
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant.
