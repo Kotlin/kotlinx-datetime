@@ -27,6 +27,12 @@ public actual class UtcOffset(
     public actual companion object {
         public actual val ZERO: UtcOffset = UtcOffset(ZoneOffset.UTC)
 
+        public actual fun orNull(hours: Int?, minutes: Int?, seconds: Int?): UtcOffset? = try {
+            UtcOffset(hours, minutes, seconds)
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = when {
             format === Formats.ISO -> parseWithFormat(input, isoFormat)
             format === Formats.ISO_BASIC -> parseWithFormat(input, isoBasicFormat)

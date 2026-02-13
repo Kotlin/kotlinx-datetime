@@ -17,6 +17,35 @@ import kotlinx.serialization.*
 public actual class LocalDateTime
 public actual constructor(public actual val date: LocalDate, public actual val time: LocalTime) : Comparable<LocalDateTime> {
     public actual companion object {
+        public actual fun orNull(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? {
+            val date = LocalDate.orNull(year, month, day) ?: return null
+            val time = LocalTime.orNull(hour, minute, second, nanosecond) ?: return null
+            return LocalDateTime(date, time)
+        }
+
+        public actual fun orNull(
+            year: Int,
+            month: Month,
+            day: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            nanosecond: Int
+        ): LocalDateTime? {
+            val date = LocalDate.orNull(year, month, day) ?: return null
+            val time = LocalTime.orNull(hour, minute, second, nanosecond) ?: return null
+            return LocalDateTime(date, time)
+        }
+
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime>): LocalDateTime =
             format.parse(input)
 
@@ -36,10 +65,10 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 
     public actual constructor(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-        this(LocalDate(year, month, day), LocalTime.of(hour, minute, second, nanosecond))
+        this(LocalDate(year, month, day), LocalTime(hour, minute, second, nanosecond))
 
     public actual constructor(year: Int, month: Month, day: Int, hour: Int, minute: Int, second: Int, nanosecond: Int) :
-        this(LocalDate(year, month, day), LocalTime.of(hour, minute, second, nanosecond))
+        this(LocalDate(year, month, day), LocalTime(hour, minute, second, nanosecond))
 
     public actual val year: Int get() = date.year
     @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
@@ -77,7 +106,7 @@ public actual constructor(public actual val date: LocalDate, public actual val t
 
     // org.threeten.bp.chrono.ChronoLocalDateTime#toEpochSecond
     internal fun toEpochSecond(offset: UtcOffset): Long {
-        val epochDay = date.toEpochDays().toLong()
+        val epochDay = date.toEpochDays()
         var secs: Long = epochDay * 86400 + time.toSecondOfDay()
         secs -= offset.totalSeconds
         return secs

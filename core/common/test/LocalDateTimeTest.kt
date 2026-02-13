@@ -132,6 +132,40 @@ class LocalDateTimeTest {
         assertFailsWith<IllegalArgumentException> { localTime(0, 0, 0, 1_000_000_000) }
     }
 
+    @Test
+    fun orNull() {// Test orNull with month number
+        LocalDateTime.orNull(2020, 1, 1, 12, 30, 45, 500_000_000)?.let {
+            checkComponents(it, 2020, 1, 1, 12, 30, 45, 500_000_000)
+        } ?: fail("LocalDateTime.orNull should not return null")
+
+        // Test orNull with Month enum
+        LocalDateTime.orNull(2020, Month.FEBRUARY, 29, 23, 59, 59, 999_999_999)?.let {
+            checkComponents(it, 2020, 2, 29, 23, 59, 59, 999_999_999)
+        } ?: fail("LocalDateTime.orNull should not return null")
+
+        // Test invalid date components
+        for ((year, month, day) in invalidDates) {
+            assertNull(LocalDateTime.orNull(year, month, day, 12, 30))
+            runCatching { Month(month) }.onSuccess { monthEnum ->
+                assertNull(LocalDateTime.orNull(year, monthEnum, day, 12, 30))
+            }
+        }
+
+        // Test invalid time components
+        for (input in invalidTimes) {
+            when (input.size) {
+                2 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1]))
+                3 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1], input[2]))
+                4 -> assertNull(LocalDateTime.orNull(2024, 1, 1, input[0], input[1], input[2], input[3]))
+            }
+        }
+
+        // Test with Month enum
+        assertNull(LocalDateTime.orNull(2021, Month.FEBRUARY, 29, 12, 30)) // Invalid day (not a leap year)
+        assertNull(LocalDateTime.orNull(2020, Month.FEBRUARY, 30, 12, 30)) // Invalid day for February
+
+    }
+
 }
 
 fun checkComponents(value: LocalDateTime, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, nanosecond: Int = 0, dayOfWeek: Int? = null, dayOfYear: Int? = null) {
