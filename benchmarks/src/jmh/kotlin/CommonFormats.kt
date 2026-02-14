@@ -103,11 +103,11 @@ open class CommonFormats {
                 char(':')
                 second()
             }
-            chars(" ")
+            char(' ')
             alternativeParsing({
                 chars("UT")
             }, {
-                chars("Z")
+                char('Z')
             }) {
                 optional("GMT") {
                     offset(UtcOffset.Format {
@@ -148,7 +148,7 @@ open class CommonFormats {
                 offsetHours()
             }) {
                 offset(UtcOffset.Format {
-                    alternativeParsing({ chars("z") }) {
+                    alternativeParsing({ char('z') }) {
                         optional("Z") {
                             offsetHours()
                             char(':')

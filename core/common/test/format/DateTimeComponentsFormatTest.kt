@@ -103,7 +103,7 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testTimeZoneGreedyParsing() {
-        val format = DateTimeComponents.Format { timeZoneId(); chars("]") }
+        val format = DateTimeComponents.Format { timeZoneId(); char(']') }
         for (zone in TimeZone.availableZoneIds) {
             assertEquals(zone, format.parse("${zone}]").timeZoneId)
         }

@@ -238,7 +238,7 @@ private class UtcOffsetSecondOfMinuteDirective(private val padding: Padding) :
 // these are constants so that the formats are not recreated every time they are used
 internal val ISO_OFFSET by lazy {
     UtcOffsetFormat.build {
-        alternativeParsing({ chars("z") }) {
+        alternativeParsing({ char('z') }) {
             optional("Z") {
                 offsetHours()
                 char(':')
@@ -253,7 +253,7 @@ internal val ISO_OFFSET by lazy {
 }
 internal val ISO_OFFSET_BASIC by lazy {
     UtcOffsetFormat.build {
-        alternativeParsing({ chars("z") }) {
+        alternativeParsing({ char('z') }) {
             optional("Z") {
                 offsetHours()
                 optional {

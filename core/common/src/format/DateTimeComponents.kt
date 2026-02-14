@@ -161,11 +161,11 @@ public class DateTimeComponents internal constructor(internal val contents: Date
                 char(':')
                 second()
             }
-            chars(" ")
+            char(' ')
             alternativeParsing({
                 chars("UT")
             }, {
-                chars("Z")
+                char('Z')
             }) {
                 optional("GMT") {
                     offset(UtcOffset.Formats.FOUR_DIGITS)
