@@ -6,6 +6,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 /**
@@ -37,7 +38,7 @@ internal class JulianDayOfYear(val zeroBasedDayOfYear: Int) : DateOfYear {
         }
     }
     override fun toLocalDate(year: Int): LocalDate =
-        LocalDate(year, 1, 1).plusDays(zeroBasedDayOfYear.toLong())
+        LocalDate(year, 1, 1).plus(zeroBasedDayOfYear.toLong(), DateTimeUnit.DAY)
 
     override fun toString(): String = "JulianDayOfYear($zeroBasedDayOfYear)"
 }
@@ -52,7 +53,7 @@ internal fun JulianDayOfYearSkippingLeapDate(dayOfYear: Int) : DateOfYear {
     // In this form, the `dayOfYear` corresponds exactly to a specific month and day.
     // For example, `dayOfYear = 60` is always 1st March, even in leap years.
     // We take a non-leap year, as in that case, this is the same as JulianDayOfYear, so regular addition works.
-    val date = LocalDate(2011, 1, 1).plusDays(dayOfYear.toLong() - 1)
+    val date = LocalDate(2011, 1, 1).plus(dayOfYear.toLong() - 1, DateTimeUnit.DAY)
     return MonthDayOfYear(date.month, MonthDayOfYear.TransitionDay.ExactlyDayOfMonth(date.day))
 }
 
@@ -166,10 +167,11 @@ internal class MonthDayTime(
 
         constructor(hour: Int, minute: Int, second: Int) : this(hour * 3600 + minute * 60 + second)
 
-        fun resolve(date: LocalDate): LocalDateTime = date.atTime(LocalTime(0, 0)).plusSeconds(seconds)
+        fun resolve(date: LocalDate): LocalDateTime = date.atTime(LocalTime(0, 0))
+            .toInstant(TimeZone.UTC).plus(seconds.seconds).toLocalDateTime(TimeZone.UTC)
 
         override fun toString(): String = if (seconds < 86400)
-            LocalTime.ofSecondOfDay(seconds, 0).toString() else "$seconds seconds since the day start"
+            LocalTime.fromSecondOfDay(seconds).toString() else "$seconds seconds since the day start"
     }
 
     override fun toString(): String = "$date, $time, $offset"

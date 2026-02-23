@@ -576,7 +576,14 @@ internal fun LocalDate.atStartOfDayIn(timeZone: TimeZone): kotlinx.datetime.Inst
 // Convert dateTime to Instant in the given timeZone, use `preferred` on overlaps only, but it's okay for it to be invalid
 internal fun localDateTimeToInstantLenient(
     dateTime: LocalDateTime, timeZone: TimeZone, handler: TransitionHandler, preferred: UtcOffset? = null
-): Instant = when (val offsetInfo = timeZone.offsetInfoFor(dateTime)) {
+): Instant = localDateTimeToInstantLenient(dateTime, timeZone.offsetInfoFor(dateTime), handler, preferred)
+
+internal fun localDateTimeToInstantLenient(
+    dateTime: LocalDateTime,
+    offsetInfo: LocalDateTimeOffsetInfo,
+    handler: TransitionHandler,
+    preferred: UtcOffset? = null
+): Instant = when (offsetInfo) {
     is LocalDateTimeOffsetInfo.Regular -> dateTime.toInstant(offsetInfo.offset)
     is LocalDateTimeOffsetInfo.Transition -> {
         val actualPreferred = if (preferred == offsetInfo.offsetBefore || preferred == offsetInfo.offsetAfter) {

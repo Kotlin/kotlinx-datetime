@@ -5,16 +5,16 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.TimeZoneDatabase
-import kotlinx.datetime.asTimeZone
 
 private val tzdbInRegistry = runCatching { TzdbInRegistry() }
 
 internal actual fun currentSystemDefaultTimeZone(): TimeZone = with(currentSystemDefaultFromRegistry()) {
     when {
-        isConstantOffset -> offset.asTimeZone("GMT")
+        isConstantOffset -> FixedOffsetTimeZone.withSpecificPrefix(offset, "GMT")
         windowsName == WindowsUtcString -> TimeZone.UTC
         else -> {
             val ianaTzName = windowsToStandard[windowsName]
