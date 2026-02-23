@@ -91,7 +91,7 @@ internal fun readTzFile(data: ByteArray): TzFile {
     fun abbreviationForIndex(abbreviations: List<Byte>, startIndex: UByte): String = abbreviations.drop(startIndex.toInt())
         .takeWhile { byte -> byte != 0.toByte() }.toByteArray().decodeToString()
 
-    inline fun BinaryDataReader.readData(header: Header, readTime: () -> Long): TzFileData {
+    fun BinaryDataReader.readData(header: Header, readTime: () -> Long): TzFileData {
         val transitionTimes = List(header.timecnt) { readTime() }
         val transitionTypes = List(header.timecnt) { readByte() }
         val ttinfos = List(header.typecnt) {
@@ -123,7 +123,7 @@ internal fun readTzFile(data: ByteArray): TzFile {
 
     fun BinaryDataReader.read64BitData(header: Header): TzFileData = readData(header) { readLong() }
 
-    inline fun BinaryDataReader.readFooter() = check(readByte() == '\n'.code.toByte()).let {
+    fun BinaryDataReader.readFooter() = check(readByte() == '\n'.code.toByte()).let {
         PosixTzString.readIfPresent(this)
     }
 

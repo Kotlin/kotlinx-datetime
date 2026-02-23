@@ -51,7 +51,7 @@ kover {
         verify {
             rule {
                 // requirement for a minimum lines coverage of 80%
-                minBound(80)
+                minBound(70) // while Java only nominally has the rule-based time zones
             }
         }
     }

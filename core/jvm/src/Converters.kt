@@ -5,6 +5,8 @@
 
 package kotlinx.datetime
 
+import java.time.ZoneId
+
 /**
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
  */
@@ -66,8 +68,16 @@ public fun java.time.Period.toKotlinDatePeriod(): DatePeriod = DatePeriod(this.y
 
 /**
  * Converts this [kotlinx.datetime.TimeZone][TimeZone] value to a [java.time.ZoneId][java.time.ZoneId] value.
+ *
+ * If the [TimeZone] value was obtained from a timezone database other than the system one,
+ * a direct conversion is not possible.
+ * In that case, the [ZoneId.of] will be queried with the timezone identifier of the [TimeZone]
+ * and may throw an [IllegalArgumentException] if the timezone identifier is invalid or not supported.
  */
-public fun TimeZone.toJavaZoneId(): java.time.ZoneId = this.zoneId
+public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this.zoneId) {
+    is ZoneIdLike.ActualZoneId -> this.zoneId.actualZoneId
+    is ZoneIdLike.RuleBasedZoneId -> java.time.ZoneId.of(this.id)
+}
 
 /**
  * Converts this [java.time.ZoneId][java.time.ZoneId] value to a [kotlinx.datetime.TimeZone][TimeZone] value.
