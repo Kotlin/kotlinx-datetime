@@ -26,6 +26,8 @@ version = "$tzdbVersion-spi.$version"
 val convertedKtFilesDir = project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzData")
 val tzdbDirectory = File(project.projectDir, "tzdb")
 
+val copiedTzdbDirectory = project.layout.buildDirectory.dir("jvmResources")
+
 val timeTzdbInstall by tasks.creating(NpmTask::class) {
     args.addAll(
         "install",
@@ -44,6 +46,14 @@ val tzdbDownloadAndCompile by tasks.creating(NpxTask::class) {
         args.addAll("-u", tzdbVersion)
     }
     args.add(tzdbDirectory.toString())
+}
+
+val tzdbCopyToJvmResources by tasks.creating(Copy::class) {
+    val outputDir = copiedTzdbDirectory.map { it.dir("tzdb") }
+    inputs.dir(tzdbDirectory)
+    outputs.dir(outputDir)
+    from(tzdbDirectory)
+    into(outputDir)
 }
 
 val generateZoneInfo by tasks.registering {
@@ -168,10 +178,18 @@ kotlin {
             }
         }
 
+        jvmMain {
+            resources.srcDir(copiedTzdbDirectory)
+        }
+
         val wasmWasiMain by getting {
             languageSettings.optIn("kotlinx.datetime.internal.InternalDateTimeApi")
         }
     }
+}
+
+tasks.named("jvmProcessResources") {
+    dependsOn(tzdbCopyToJvmResources)
 }
 
 apiValidation {
