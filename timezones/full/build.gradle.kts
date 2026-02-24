@@ -5,6 +5,7 @@
 
 import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.npm.task.NpxTask
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -54,6 +55,35 @@ val generateZoneInfo by tasks.registering {
 }
 
 kotlin {
+    explicitApi()
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            // The targets with no native notion of resources. Currently, that's everything except the JVM.
+            group("commonWithoutResources") {
+                withJs()
+                withWasmJs()
+                withWasmWasi()
+                withLinux()
+                withMacosX64()
+                withMacosArm64()
+                withWatchosX64()
+                withWatchosArm32()
+                withWatchosArm64()
+                withTvosX64()
+                withTvosArm64()
+                withIosArm64()
+                withWatchosDeviceArm64()
+                withIosSimulatorArm64()
+                withIosX64()
+                withWatchosSimulatorArm64()
+                withTvosSimulatorArm64()
+                withAndroidNative()
+                withMingw()
+            }
+        }
+    }
+
     jvm {
         attributes {
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
@@ -124,8 +154,11 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":kotlinx-datetime"))
-                kotlin.srcDir(generateZoneInfo)
             }
+        }
+
+        val commonWithoutResourcesMain by getting {
+            kotlin.srcDir(generateZoneInfo)
         }
 
         val commonTest by getting {

@@ -6,7 +6,7 @@
 package kotlinx.datetime.zoneinfo
 
 import kotlinx.datetime.*
-import kotlinx.datetime.timezones.tzData.*
+import kotlinx.datetime.internal.*
 
 /**
  * A synonym for [BundledTimeZoneContext].
@@ -42,10 +42,7 @@ public object BundledTimeZoneContext : TimeZoneContext {
      * with the identifier [id] is not found.
      * @see getOrNull for a function that returns `null` if a time zone is not available.
      */
-    override fun get(id: String): TimeZone =
-        getOrNull(id) ?: throw IllegalTimeZoneException(
-            "Zone ID '$id' was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
-        )
+    override fun get(id: String): TimeZone = impl.get(id)
 
     /**
      * Returns the time zone identified by the provided [id], or `null` if it's not found.
@@ -55,16 +52,13 @@ public object BundledTimeZoneContext : TimeZoneContext {
      *
      * It is guaranteed that this function never throws an exception for [BundledTimeZoneContext].
      */
-    override fun getOrNull(id: String): TimeZone? {
-        val data = zoneDataByNameOrNull(id)
-        return timeZoneFromData(data)
-    }
+    override fun getOrNull(id: String): TimeZone? = impl.getOrNull(id)
 
     /**
      * Returns the set of identifiers of the time zones whose data is bundled in this timezone database
      * in addition to the fixed-offset time zones.
      */
-    override fun availableZoneIds(): Set<String> = timeZones
+    override fun availableZoneIds(): Set<String> = impl.availableZoneIds()
 
     /**
      * Equivalent to [TimeZoneContext.System.currentTimeZoneId].
@@ -85,3 +79,24 @@ public object BundledTimeZoneContext : TimeZoneContext {
                     "was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
         )
 }
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+private val impl: TimeZoneDatabase = FixedOffsetTimeZoneDatabase(object: TimeZoneDatabase {
+    override fun get(id: String): TimeZone = getOrNull(id)
+        ?: throw IllegalTimeZoneException(
+            "Zone ID '$id' was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
+        )
+
+    override fun getOrNull(id: String): TimeZone? {
+        val data = zoneDataByNameOrNull(id) ?: return null
+        return RuleBasedTimeZoneCalculations(readTzFile(data).toTimeZoneRules(), id).asTimeZone()
+    }
+
+    override fun availableZoneIds(): Set<String> = timeZones
+})
+
+internal expect fun zoneDataByNameOrNull(name: String): ByteArray?
+
+internal expect val timeZones: Set<String>
+
+internal expect val timeZoneDatabaseVersion: String
