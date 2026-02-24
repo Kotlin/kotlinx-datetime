@@ -14,5 +14,5 @@ final object kotlinx.datetime.zoneinfo/BundledTimeZoneContext : kotlinx.datetime
     final fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.getOrNull|getOrNull(kotlin.String){}[0]
 }
 
-final val kotlinx.datetime.zoneinfo/Bundled // kotlinx.datetime.zoneinfo/Bundled|@kotlinx.datetime.TimeZoneContext{}Bundled[0]
-    final fun (kotlinx.datetime/TimeZoneContext).<get-Bundled>(): kotlinx.datetime.zoneinfo/BundledTimeZoneContext // kotlinx.datetime.zoneinfo/Bundled.<get-Bundled>|<get-Bundled>@kotlinx.datetime.TimeZoneContext(){}[0]
+final val kotlinx.datetime.zoneinfo/Bundled // kotlinx.datetime.zoneinfo/Bundled|@kotlinx.datetime.TimeZoneContext.Companion{}Bundled[0]
+    final fun (kotlinx.datetime/TimeZoneContext.Companion).<get-Bundled>(): kotlinx.datetime.zoneinfo/BundledTimeZoneContext // kotlinx.datetime.zoneinfo/Bundled.<get-Bundled>|<get-Bundled>@kotlinx.datetime.TimeZoneContext.Companion(){}[0]

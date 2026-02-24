@@ -23,7 +23,10 @@ node {
 val tzdbVersion: String by rootProject.properties
 version = "$tzdbVersion-spi.$version"
 
-val convertedKtFilesDir = project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzData")
+val tzdbMetainformationDir =
+    project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzdbMetainformation")
+val tzdataAsKotlinFilesDir =
+    project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzdataAsKotlinFiles")
 val tzdbDirectory = File(project.projectDir, "tzdb")
 
 val copiedTzdbDirectory = project.layout.buildDirectory.dir("jvmResources")
@@ -56,11 +59,19 @@ val tzdbCopyToJvmResources by tasks.creating(Copy::class) {
     into(outputDir)
 }
 
-val generateZoneInfo by tasks.registering {
+val generateTzdataAsKotlinFiles by tasks.registering {
     inputs.dir(tzdbDirectory)
-    outputs.dir(convertedKtFilesDir)
+    outputs.dir(tzdataAsKotlinFilesDir)
     doLast {
-        generateZoneInfosResources(tzdbDirectory, convertedKtFilesDir.get(), tzdbVersion)
+        generateZoneInfosResources(tzdbDirectory, tzdataAsKotlinFilesDir.get(), tzdbVersion)
+    }
+}
+
+val generateTzdbMetainformation by tasks.registering {
+    inputs.dir(tzdbDirectory)
+    outputs.dir(tzdbMetainformationDir)
+    doLast {
+        generateTzdbMetainformation(tzdbDirectory, tzdbMetainformationDir.get(), tzdbVersion)
     }
 }
 
@@ -165,10 +176,11 @@ kotlin {
             dependencies {
                 api(project(":kotlinx-datetime"))
             }
+            kotlin.srcDir(generateTzdbMetainformation)
         }
 
         val commonWithoutResourcesMain by getting {
-            kotlin.srcDir(generateZoneInfo)
+            kotlin.srcDir(generateTzdataAsKotlinFiles)
         }
 
         val commonTest by getting {

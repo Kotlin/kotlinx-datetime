@@ -8,6 +8,6 @@ public final class kotlinx/datetime/zoneinfo/BundledTimeZoneContext : kotlinx/da
 }
 
 public final class kotlinx/datetime/zoneinfo/BundledTimeZoneDatabaseKt {
-	public static final fun getBundled (Lkotlinx/datetime/TimeZoneContext;)Lkotlinx/datetime/zoneinfo/BundledTimeZoneContext;
+	public static final fun getBundled (Lkotlinx/datetime/TimeZoneContext$Companion;)Lkotlinx/datetime/zoneinfo/BundledTimeZoneContext;
 }
 
