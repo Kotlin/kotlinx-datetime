@@ -17,6 +17,8 @@ private class TzdbBionic(private val rules: Map<String, Entry>) : RuleBasedTimeZ
     class Entry(val file: ByteArray, val offset: Int, val length: Int) {
         fun readRules(): TimeZoneRulesCommon = readTzFile(file.copyOfRange(offset, offset + length)).toTimeZoneRules()
     }
+
+    override fun toString() = "TzdbBionic"
 }
 
 // see https://android.googlesource.com/platform/bionic/+/master/libc/tzcode/bionic.cpp for the format

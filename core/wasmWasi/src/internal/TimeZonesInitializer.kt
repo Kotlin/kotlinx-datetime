@@ -55,6 +55,8 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: RuleBasedTi
     }
 
     override fun availableZoneIds(): Set<String> = timeZonesProvider?.getTimeZones() ?: setOf("UTC")
+
+    override fun toString() = "TzdbWasi"
 }
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {

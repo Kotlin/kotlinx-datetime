@@ -8,6 +8,7 @@
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.TimeZoneContext
@@ -17,6 +18,11 @@ import platform.Foundation.*
 internal fun timeZoneByIdFoundationOrNull(zoneId: String): TimeZone? = NSTimeZone.timeZoneWithName(zoneId)?.let {
     RuleBasedTimeZoneCalculations(TimeZoneRulesFoundation(it), zoneId).asTimeZone()
 }
+
+internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
+    timeZoneByIdFoundationOrNull(zoneId) ?: throw IllegalTimeZoneException(
+        "Time zone '$zoneId' not recognized by NSTimeZone.timeZoneWithName."
+    )
 
 internal fun getAvailableZoneIdsFoundation(): Set<String> =
     NSTimeZone.knownTimeZoneNames.mapTo(mutableSetOf("UTC")) { it.toString() }
@@ -28,6 +34,12 @@ private val tzdb = tryInitializeTimezoneDatabase {
 internal expect fun defaultTzdbPath(): String
 
 internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDatabase {
+    override fun get(id: String): TimeZone =
+        if (tzdb !is UninitializedTimeZoneDatabase)
+            tzdb.get(id)
+        else
+            timeZoneByIdFoundation(id)
+
     override fun getOrNull(id: String): TimeZone? =
         if (tzdb !is UninitializedTimeZoneDatabase)
             tzdb.getOrNull(id)
@@ -38,6 +50,12 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
         tzdb.availableZoneIds()
     else
         getAvailableZoneIdsFoundation()
+
+    override fun toString(): String = if (tzdb !is UninitializedTimeZoneDatabase) {
+        tzdb.toString()
+    } else {
+        "NsFoundationTzdb"
+    }
 }
 
 internal actual fun currentSystemDefaultTimeZone(): TimeZone =

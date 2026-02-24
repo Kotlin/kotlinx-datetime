@@ -38,6 +38,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): RuleBasedTimeZon
         tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 
+    override fun toString(): String = "TzdbOnFilesystem(tzdbPath=$tzdbPath)"
 }
 
 // taken from https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L354
