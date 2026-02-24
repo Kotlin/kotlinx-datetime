@@ -5,8 +5,31 @@
 
 package kotlinx.datetime.zoneinfo
 
-internal actual fun zoneDataByNameOrNull(name: String): ByteArray? = TODO()
+import java.io.InputStream
 
-internal actual val timeZones: Set<String> get() = TODO()
+internal actual fun zoneDataByNameOrNull(name: String): ByteArray? {
+    (tzResourceByName(name) ?: return null).use { resource ->
+        return resource.readBytes()
+    }
+}
 
-internal actual val timeZoneDatabaseVersion: String get() = TODO()
+internal actual val timeZones: Set<String> by lazy {
+    kotlinx.datetime.timezones.tzData.timeZones.takeIf {
+        it.all { name -> tzResourceExists(name) }
+    } ?: kotlinx.datetime.timezones.tzData.timeZones.filter {
+        tzResourceExists(it)
+    }.toSet()
+}
+
+private fun tzResourceByName(zoneId: String): InputStream? =
+    BundledTimeZoneContext.javaClass.classLoader.getResourceAsStream("tzdb/$zoneId")
+
+private fun tzResourceExists(zoneId: String): Boolean {
+    val resource = tzResourceByName(zoneId)
+    return if (resource != null) {
+        resource.close()
+        true
+    } else {
+        false
+    }
+}

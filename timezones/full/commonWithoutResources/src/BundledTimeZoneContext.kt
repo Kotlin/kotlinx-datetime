@@ -10,6 +10,3 @@ internal actual fun zoneDataByNameOrNull(name: String): ByteArray? =
 
 internal actual val timeZones: Set<String> get() =
     kotlinx.datetime.timezones.tzData.timeZones
-
-internal actual val timeZoneDatabaseVersion: String get() =
-    kotlinx.datetime.timezones.tzData.timeZoneDatabaseVersion

@@ -11,7 +11,7 @@ import kotlinx.datetime.internal.*
 /**
  * A synonym for [BundledTimeZoneContext].
  */
-public val TimeZoneContext.Bundled: BundledTimeZoneContext
+public val TimeZoneContext.Companion.Bundled: BundledTimeZoneContext
     get() = BundledTimeZoneContext
 
 /**
@@ -99,4 +99,4 @@ internal expect fun zoneDataByNameOrNull(name: String): ByteArray?
 
 internal expect val timeZones: Set<String>
 
-internal expect val timeZoneDatabaseVersion: String
+internal val timeZoneDatabaseVersion: String = kotlinx.datetime.timezones.tzData.timeZoneDatabaseVersion
