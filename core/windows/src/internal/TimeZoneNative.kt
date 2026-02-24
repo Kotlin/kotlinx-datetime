@@ -28,6 +28,8 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
     override fun get(id: String): TimeZone = tzdbInRegistry.getOrThrow().get(id)
     override fun getOrNull(id: String): TimeZone? = tzdbInRegistry.getOrThrow().getOrNull(id)
     override fun availableZoneIds(): Set<String> = tzdbInRegistry.getOrThrow().availableZoneIds()
+
+    override fun toString(): String = "TzdbInWindowsRegistry"
 }
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {

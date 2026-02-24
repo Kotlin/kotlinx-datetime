@@ -11,7 +11,9 @@ import kotlinx.datetime.internal.systemTimezoneDatabase
 
 public interface TimeZoneDatabase {
     public fun get(id: String): TimeZone =
-        getOrNull(id) ?: error("Time zone ID '$id' not recognized by the timezone database $this")
+        getOrNull(id) ?: throw IllegalTimeZoneException(
+            "Time zone ID '$id' not recognized by the timezone database $this"
+        )
     public fun getOrNull(id: String): TimeZone?
     public fun availableZoneIds(): Set<String>
 }

@@ -157,6 +157,8 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
     }
 
     override fun availableZoneIds(): Set<String> = jodaTzdb.getOrThrow()?.availableZoneIds() ?: setOf("UTC")
+
+    override fun toString() = "TzdbJsJodaBased"
 }
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {
