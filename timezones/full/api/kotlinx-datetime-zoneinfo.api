@@ -7,7 +7,7 @@ public final class kotlinx/datetime/zoneinfo/BundledTimeZoneContext : kotlinx/da
 	public fun getOrNull (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
 }
 
-public final class kotlinx/datetime/zoneinfo/BundledTimeZoneDatabaseKt {
+public final class kotlinx/datetime/zoneinfo/BundledTimeZoneContextKt {
 	public static final fun getBundled (Lkotlinx/datetime/TimeZoneContext$Companion;)Lkotlinx/datetime/zoneinfo/BundledTimeZoneContext;
 }
 

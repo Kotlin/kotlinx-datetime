@@ -42,4 +42,9 @@ internal class RuleBasedTimeZoneCalculations(
         }
 
     fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+
+    override fun equals(other: Any?): Boolean =
+        other is RuleBasedTimeZoneCalculations && id == other.id && original == other.original
+
+    override fun hashCode(): Int = id.hashCode()
 }

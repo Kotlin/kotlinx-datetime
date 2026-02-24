@@ -42,3 +42,10 @@ kotlin {
 tasks.named("check") {
     dependsOn(tasks.named("jsNodeProductionRun"), tasks.named("wasmJsNodeProductionRun"))
 }
+
+// after 2.2.20 and renaming `commonJs` to `web`, this can be removed. Needed right now for the `js` function.
+tasks.configureEach {
+    if (name == "compileCommonMainKotlinMetadata") {
+        enabled = false
+    }
+}
