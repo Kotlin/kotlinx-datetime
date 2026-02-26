@@ -133,27 +133,21 @@ internal actual fun currentSystemDefaultTimeZone(): TimeZone =
     }
 
 internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDatabase {
-    override fun get(id: String): TimeZone {
-        val id = if (id == "SYSTEM") {
-            val name = ZoneId.systemDefault().id()
-            if (name == "SYSTEM") return SystemTimeZone
-            name
-        } else {
-            id
-        }
+    override fun get(id: String): TimeZone = if (id == "SYSTEM") {
+        val name = ZoneId.systemDefault().id()
+        if (name == "SYSTEM") SystemTimeZone
+        else TimeZoneContext.System.get(name)
+    } else {
         val tzdb = jodaTzdb.getOrThrow() ?: throw IllegalTimeZoneException("js-joda timezone database is not available")
-        return tzdb.get(id)
+        tzdb.get(id)
     }
 
-    override fun getOrNull(id: String): TimeZone? {
-        val id = if (id == "SYSTEM") {
-            val name = ZoneId.systemDefault().id()
-            if (name == "SYSTEM") return SystemTimeZone
-            name
-        } else {
-            id
-        }
-        return jodaTzdb.getOrThrow()?.getOrNull(id)
+    override fun getOrNull(id: String): TimeZone? = if (id == "SYSTEM") {
+        val name = ZoneId.systemDefault().id()
+        if (name == "SYSTEM") SystemTimeZone
+        else TimeZoneContext.System.getOrNull(name)
+    } else {
+        jodaTzdb.getOrThrow()?.getOrNull(id)
     }
 
     override fun availableZoneIds(): Set<String> = jodaTzdb.getOrThrow()?.availableZoneIds() ?: setOf("UTC")
