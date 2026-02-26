@@ -16,6 +16,11 @@ internal class RuleBasedTimeZone(val calculations: RuleBasedTimeZoneCalculations
 
     override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         calculations.offsetInfoForImpl(dateTime)
+
+    override fun equals(other: Any?): Boolean =
+        other is RuleBasedTimeZone && calculations == other.calculations
+
+    override fun hashCode(): Int = calculations.hashCode()
 }
 
 

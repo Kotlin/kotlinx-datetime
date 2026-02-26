@@ -89,7 +89,7 @@ private val impl: TimeZoneDatabase = FixedOffsetTimeZoneDatabase(object: TimeZon
 
     override fun getOrNull(id: String): TimeZone? {
         val data = zoneDataByNameOrNull(id) ?: return null
-        return RuleBasedTimeZoneCalculations(readTzFile(data).toTimeZoneRules(), id).asTimeZone()
+        return RuleBasedTimeZoneCalculations(readTzFile(data).toTimeZoneRules(), id, this).asTimeZone()
     }
 
     override fun availableZoneIds(): Set<String> = timeZones

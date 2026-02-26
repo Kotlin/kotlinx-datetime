@@ -10,14 +10,14 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 internal class RuleBasedTimeZoneCalculations(
-    private val tzid: TimeZoneRules, val id: String, val original: Any? = null
+    private val tzid: TimeZoneRules, val id: String, val origin: Any?
 ) {
     fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = tzid.infoAtDatetime(dateTime)
 
     fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 
     override fun equals(other: Any?): Boolean =
-        other is RuleBasedTimeZoneCalculations && id == other.id && original == other.original
+        other is RuleBasedTimeZoneCalculations && id == other.id && origin == other.origin
 
-    override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int = id.hashCode() * 31 + origin.hashCode()
 }
