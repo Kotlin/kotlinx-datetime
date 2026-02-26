@@ -1300,6 +1300,9 @@ final fun (platform.Foundation/NSDate).kotlinx.datetime/toKotlinInstant(kotlinx.
 // Targets: [apple]
 final fun (platform.Foundation/NSTimeZone).kotlinx.datetime/toKotlinTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/toKotlinTimeZone|toKotlinTimeZone@platform.Foundation.NSTimeZone(){}[0]
 
+// Targets: [apple]
+final fun (platform.Foundation/NSTimeZone).kotlinx.datetime/toKotlinTimeZone(kotlinx.datetime/TimeZoneDatabase): kotlinx.datetime/TimeZone // kotlinx.datetime/toKotlinTimeZone|toKotlinTimeZone@platform.Foundation.NSTimeZone(kotlinx.datetime.TimeZoneDatabase){}[0]
+
 // Targets: [js]
 abstract interface kotlinx.datetime.internal/InteropInterface // kotlinx.datetime.internal/InteropInterface|null[0]
 
