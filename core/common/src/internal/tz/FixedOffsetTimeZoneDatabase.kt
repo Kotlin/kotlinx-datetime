@@ -25,18 +25,23 @@ internal class FixedOffsetTimeZoneDatabase(val inner: TimeZoneDatabase): TimeZon
     override fun availableZoneIds(): Set<String> = inner.availableZoneIds()
 }
 
+// org.threeten.bp.ZoneId#of(java.lang.String)
 private fun <T> parseFixedOffsetTimeZone(
     id: String, onParsed: (TimeZone) -> T, onFailure: (String) -> T
 ): T? {
-    fun parse(offset: String, prefix: String): T = when (val parsedOffset = lenientOffsetFormat.parseOrNull(offset)) {
-        null -> onFailure(prefix)
-        else -> onParsed(FixedOffsetTimeZone.withSpecificPrefix(parsedOffset, prefix))
+    fun parse(offset: String, prefix: String?): T = when (val parsedOffset = lenientOffsetFormat.parseOrNull(offset)) {
+        null -> onFailure(offset)
+        else -> if (prefix != null) {
+            onParsed(FixedOffsetTimeZone.withSpecificPrefix(parsedOffset, prefix))
+        } else {
+            onParsed(parsedOffset.asTimeZone())
+        }
     }
     return when {
         id == "UTC" -> onParsed(TimeZone.UTC)
         id == "Z" || id == "z" -> onParsed(UtcOffset.ZERO.asTimeZone())
         id.length == 1 -> null
-        id.startsWith("+") || id.startsWith("-") -> parse(id, "")
+        id.startsWith("+") || id.startsWith("-") -> parse(id, null)
         id == "UTC" || id == "GMT" || id == "UT" -> onParsed(FixedOffsetTimeZone.withSpecificName(UtcOffset.ZERO, id))
         id.startsWith("UTC+") || id.startsWith("GMT+") || id.startsWith("UTC-") || id.startsWith("GMT-") ->
             parse(id.substring(3), id.take(3))
