@@ -18,6 +18,11 @@ internal class RuleBasedTimeZone(val calculations: RuleBasedTimeZoneCalculations
         calculations.localDateTimeToInstant(dateTime, preferred)
 
     override fun offsetAtImpl(instant: Instant): UtcOffset = calculations.offsetAtImpl(instant)
+
+    override fun equals(other: Any?): Boolean =
+        other is RuleBasedTimeZone && calculations == other.calculations
+
+    override fun hashCode(): Int = calculations.hashCode()
 }
 
 

@@ -66,9 +66,10 @@ public actual open class TimeZone internal constructor() {
         error("Should be overridden")
 
     actual override fun equals(other: Any?): Boolean =
-        this === other || other is TimeZone && this.id == other.id
+        error("Should be overridden")
 
-    override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int =
+        error("Should be overridden")
 
     actual override fun toString(): String = id
 }
@@ -90,6 +91,11 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
         dateTime.toInstant(offset)
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
+
+    override fun equals(other: Any?): Boolean =
+        this === other || other is FixedOffsetTimeZone && this.id == other.id
+
+    override fun hashCode(): Int = id.hashCode()
 }
 
 

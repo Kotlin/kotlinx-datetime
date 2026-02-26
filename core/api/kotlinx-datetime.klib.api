@@ -383,6 +383,9 @@ final class kotlinx.datetime/FixedOffsetTimeZone : kotlinx.datetime/TimeZone { /
     final val totalSeconds // kotlinx.datetime/FixedOffsetTimeZone.totalSeconds|{}totalSeconds[0]
         final fun <get-totalSeconds>(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.totalSeconds.<get-totalSeconds>|<get-totalSeconds>(){}[0]
 
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/FixedOffsetTimeZone.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.hashCode|hashCode(){}[0]
+
     final object Companion { // kotlinx.datetime/FixedOffsetTimeZone.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/FixedOffsetTimeZone> // kotlinx.datetime/FixedOffsetTimeZone.Companion.serializer|serializer(){}[0]
     }

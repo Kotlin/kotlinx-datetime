@@ -52,7 +52,10 @@ public expect open class TimeZone {
     public override fun toString(): String
 
     /**
-     * Compares this time zone to the other one. Time zones are equal if their identifier is the same.
+     * Compares this time zone to the other one.
+     *
+     * Time zones are equal if their identifier is the same, and they were obtained from the same
+     * [timezone database][TimeZoneDatabase].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
