@@ -15,7 +15,7 @@ public val TimeZoneContext.Companion.Bundled: BundledTimeZoneContext
     get() = BundledTimeZoneContext
 
 /**
- * A [TimeZoneContext] that uses the time zone database from the `kotlinx-datetime-zoneinfo` artifact.
+ * A [TimeZoneContext] that uses the timezone database from the `kotlinx-datetime-zoneinfo` artifact.
  *
  * This [TimeZoneContext] is drop-in replacement for [TimeZoneContext.System] for cases where
  * the system timezone database is likely outdated.
@@ -66,7 +66,7 @@ public object BundledTimeZoneContext : TimeZoneContext {
     override fun currentTimeZoneId(): String = TimeZoneContext.System.currentTimeZoneId()
 
     /**
-     * Get the current system timezone.
+     * Get the current system time zone.
      *
      * Equivalent to `get(currentTimeZoneId())`.
      *

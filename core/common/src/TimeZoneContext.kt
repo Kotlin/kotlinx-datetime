@@ -9,39 +9,86 @@ import kotlinx.datetime.internal.currentSystemDefaultTimeZone
 import kotlinx.datetime.internal.systemTimeZoneIdProvider
 import kotlinx.datetime.internal.systemTimezoneDatabase
 
+/**
+ * A mapping from time zone identifiers to [TimeZone] objects.
+ *
+ * The interface does not impose any restrictions on the identifiers.
+ * Typically, the identifiers follow the IANA time zone conventions (https://www.iana.org/time-zones):
+ * for example, `Europe/Berlin` or `America/Los_Angeles`.
+ */
 public interface TimeZoneDatabase {
+    /**
+     * Returns the time zone identified by the provided [id].
+     *
+     * @throws IllegalTimeZoneException if [id] has an unsupported format
+     * or the time zone with the given [id] is not found.
+     * @throws IllegalStateException if the [id] corresponds to a time zone, but its internal state
+     * could not be obtained, e.g., because the timezone database is corrupted.
+     */
     public fun get(id: String): TimeZone =
         getOrNull(id) ?: throw IllegalTimeZoneException(
             "Time zone ID '$id' not recognized by the timezone database $this"
         )
+
+    /**
+     * Returns the time zone identified by the provided [id],
+     * or `null` if it's not found or the [id] has an unsupported format.
+     *
+     * @throws IllegalStateException if the [id] corresponds to a time zone, but its internal state
+     * could not be obtained, e.g., because the timezone database is corrupted.
+     */
     public fun getOrNull(id: String): TimeZone?
+
+    /**
+     * Returns the set of timezone identifiers the database is guaranteed to recognize.
+     *
+     * The set of strings returned by this function is not guaranteed to be complete.
+     * For example, it may be unviable to enumerate all time zones supported by the database
+     * if it dynamically creates the timezone rules based on the time zone's identifier.
+     *
+     * Every identifier returned by this function is guaranteed to be recognized by the database.
+     * That is, [getOrNull] is guaranteed not to return `null`, and [get] is guaranteed not to throw
+     * an [IllegalTimeZoneException] for any identifier returned by this function.
+     */
     public fun availableZoneIds(): Set<String>
 }
 
+/**
+ * Provides the identifier of the current time zone.
+ *
+ * This interface only provides a single method called [currentTimeZoneId].
+ * It does not have an inherent meaning and is application-specific.
+ *
+ * @see TimeZoneContext.System for the implementation where the system timezone configured on the host machine
+ * is taken as the current one.
+ */
 public interface TimeZoneIdProvider {
+    /**
+     * The current time zone.
+     */
     public fun currentTimeZoneId(): String
 }
 
 /**
  * Facilities for accessing the current timezone information.
  *
- * This interface combines two aspects of working with timezones:
- * - Querying which timezone the system is configured to use by default
+ * This interface combines two aspects of working with time zones:
+ * - Querying which time zone the system is configured to use by default
  *   (fulfilled by the [TimeZoneIdProvider] interface).
- * - Obtaining the transitions corresponding to a specific timezone from
+ * - Obtaining the transitions corresponding to a specific time zone from
  *   the timezone database (the [TimeZoneDatabase] interface).
  *
  * In addition to combining these two interfaces,
  * the new [currentTimeZone] function is provided that
- * is in most cases equivalent to `get(currentSystemDefaultId())`,
- * but can additionally return a useful timezone
+ * is in most cases equivalent to `get(currentTimeZoneId())`,
+ * but can additionally return a useful time zone
  * even when the [TimeZoneDatabase] does not recognize the timezone identifier.
  */
 public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
     /**
-     * Get the current system timezone.
+     * Get the current time zone.
      *
-     * In most cases, this is equivalent to `get(currentSystemDefaultId())`.
+     * In most cases, this is equivalent to `get(currentTimeZoneId())`.
      * However, it is designed to also work in scenarios
      * when the timezone database does not recognize
      * the timezone identifier returned by [currentTimeZoneId] if possible.
@@ -124,7 +171,7 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * Please see the documentation for [get].
          *
          * Note that non-[IllegalTimeZoneException] exceptions will still be thrown by this function,
-         * as they don't indicate that a timezone is missing but imply a runtime error.
+         * as they don't indicate that a time zone is missing but imply a runtime error.
          */
         override fun getOrNull(id: String): TimeZone? = systemTimezoneDatabase.getOrNull(id)
 
@@ -140,7 +187,7 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
             systemTimezoneDatabase.availableZoneIds()
 
         /**
-         * Get the current name of the system timezone.
+         * Get the current name of the system time zone.
          *
          * In most cases, this is equivalent to taking the [TimeZone.id]
          * of [currentTimeZone], but not always.
@@ -157,21 +204,21 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
             systemTimeZoneIdProvider.currentTimeZoneId()
 
         /**
-         * Get the current system timezone.
+         * Get the current system time zone.
          *
          * - On the JVM and Kotlin/Native Linux, this is equivalent to
-         *   `get(currentSystemDefaultId())`.
+         *   `get(currentTimeZoneId())`.
          * - On Kotlin/Native:
-         *   - On Darwin targets, this is the timezone returned by `NSTimeZone.system`.
-         *   - On Windows, `get(currentSystemDefaultId())` is returned, unless
+         *   - On Darwin targets, this is the time zone returned by `NSTimeZone.system`.
+         *   - On Windows, `get(currentTimeZoneId())` is returned, unless
          *     the "Automatically adjust clock for Daylight Saving Time" checkbox
          *     in the system settings is disabled.
-         *     In that case, a fixed-offset timezone
+         *     In that case, a fixed-offset time zone
          *     corresponding to the user preferences
          *     will be returned instead.
          * - On Kotlin/JS and Wasm/JS, this function checks if the `@js-joda/timezone`
          *   library is loaded.
-         *   If it is, it will be used to obtain the timezone corresponding
+         *   If it is, it will be used to obtain the time zone corresponding
          *   to [currentTimeZoneId].
          *   If not, a synthetic [TimeZone] instance
          *   using the `Date()` objects for timezone arithmetics will be returned.
@@ -179,9 +226,9 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          *   the system timezone database.
          * - On Wasm/WASI, this is always `UTC`.
          *   This behavior may change in the future once Wasm/WASI provides access to
-         *   the system timezone.
+         *   the system time zone.
          *
-         * If the system is reconfigured to use another default timezone,
+         * If the system is reconfigured to use another default time zone,
          * the [TimeZone] object returned from this
          * function will not react to the change
          * (except for Kotlin/JS and Wasm/JS when `@js-joda/timezone` is not loaded).
@@ -189,7 +236,7 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * to obtain the up-to-date information.
          *
          * @throws RuntimeException if a system misconfiguration prevents obtaining
-         * the default system timezone.
+         * the default system time zone.
          */
         override fun currentTimeZone(): TimeZone = currentSystemDefaultTimeZone()
     }
