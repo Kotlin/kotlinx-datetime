@@ -90,7 +90,7 @@ The `TimeZone` type provides the rules to convert instants from and to datetime 
 ```kotlin
 val currentMoment: Instant = Clock.System.now()
 val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
-val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZoneContext.System.currentTimeZone())
 ```
 
 A `LocalDateTime` instance exposes familiar components of the Gregorian calendar:
@@ -99,9 +99,9 @@ The property `dayOfWeek` shows what weekday that date is,
 and `dayOfYear` shows the day number since the beginning of a year.
 
 
-Additional time zones can be acquired by their string identifier with the `TimeZone.of(id: String)` function.
+Additional time zones can be acquired by their string identifier with the `TimeZoneContext.get(id: String)` function.
 ```kotlin
-val tzBerlin = TimeZone.of("Europe/Berlin")
+val tzBerlin = TimeZoneContext.System.get("Europe/Berlin")
 val datetimeInBerlin = currentMoment.toLocalDateTime(tzBerlin)
 ```
 
@@ -118,7 +118,7 @@ in a particular `TimeZone`:
 
 ```kotlin
 val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(
-    TimeZone.of("Europe/Moscow"),
+    TimeZoneContext.System.get("Europe/Moscow"),
     TransitionHandler.REJECT_TRANSITIONS
 )
 ```
@@ -139,9 +139,9 @@ by converting it to `LocalDateTime` and taking its `date` property.
 
 ```kotlin
 val now: Instant = Clock.System.now()
-val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
+val today: LocalDate = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).date
 // or shorter
-val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+val today: LocalDate = Clock.System.todayIn(TimeZoneContext.System.currentTimeZone())
 ```
 Note, that today's date really depends on the time zone in which you're observing the current moment.
 
@@ -167,7 +167,7 @@ by converting it to `LocalDateTime` and taking its `time` property.
 
 ```kotlin
 val now: Instant = Clock.System.now()
-val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
+val thisTime: LocalTime = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).time
 ```
 
 A `LocalTime` can be constructed from four components, hour, minute, second, and nanosecond:
@@ -347,7 +347,7 @@ A particular amount of datetime units or a datetime period can be added to an `I
 
 ```kotlin
 val now = Clock.System.now()
-val systemTZ = TimeZone.currentSystemDefault()
+val systemTZ = TimeZoneContext.System.currentTimeZone()
 val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
 val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
 ```
@@ -382,7 +382,7 @@ perform all the required arithmetic on `Instant` values, and only convert to `Lo
 representation is needed.
 
 ```kotlin
-val timeZone = TimeZone.of("Europe/Berlin")
+val timeZone = TimeZoneContext.System.get("Europe/Berlin")
 val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
 val instant = localDateTime.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 

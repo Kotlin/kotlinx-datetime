@@ -39,10 +39,10 @@ import kotlin.jvm.JvmName
  *
  * ```
  * val time = LocalTime(13, 30)
- * val date = Clock.System.todayAt(TimeZone.currentSystemDefault())
- * val instant = time.atDate(date).toInstant(TimeZone.currentSystemDefault())
+ * val date = Clock.System.todayAt(TimeZoneContext.System.currentTimeZone())
+ * val instant = time.atDate(date).toInstant(TimeZoneContext.System.currentTimeZone())
  * val instantThreeHoursLater = instant.plus(3.hours)
- * val timeThreeHoursLater = instantThreeHoursLater.toLocalDateTime(TimeZone.currentSystemDefault()).time
+ * val timeThreeHoursLater = instantThreeHoursLater.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).time
  * ```
  *
  * Since this pattern is extremely verbose and difficult to get right, it is recommended to work exclusively

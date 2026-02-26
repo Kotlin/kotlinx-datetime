@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.test.*
 import kotlin.time.Clock
@@ -63,6 +64,6 @@ class DateTimeComponentsTest {
         DateTimeComponents::offsetSecondsOfMinute,
     )
     val instant = Clock.System.now()
-    val timeZone = TimeZone.currentSystemDefault()
+    val timeZone = TimeZoneContext.System.currentTimeZone()
     val currentTimeDateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
 }

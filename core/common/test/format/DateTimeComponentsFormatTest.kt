@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.format
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.reflect.KMutableProperty1
 import kotlin.test.*
@@ -68,7 +69,7 @@ class DateTimeComponentsFormatTest {
 
     @Test
     fun testRfc1123() {
-        val bags = buildMap<DateTimeComponents, Pair<String, Set<String>>> {
+        val bags = buildMap {
             put(dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Tue, 3 Jun 2008 11:05:30 GMT" to setOf("3 Jun 2008 11:05:30 UT", "3 Jun 2008 11:05:30 Z")))
             put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Mon, 30 Jun 2008 11:05:30 GMT" to setOf()))
             put(dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
@@ -96,7 +97,7 @@ class DateTimeComponentsFormatTest {
         assertEquals(dateTime, bag.toLocalDateTime())
         assertEquals(offset, bag.toUtcOffset())
         assertEquals(berlin, bag.timeZoneId)
-        for (zone in TimeZone.availableZoneIds) {
+        for (zone in TimeZoneContext.System.availableZoneIds()) {
             assertEquals(zone, format.parse("2008-06-03T11:05:30.123456789+01:00[$zone]").timeZoneId)
         }
     }
@@ -104,7 +105,7 @@ class DateTimeComponentsFormatTest {
     @Test
     fun testTimeZoneGreedyParsing() {
         val format = DateTimeComponents.Format { timeZoneId(); chars("]") }
-        for (zone in TimeZone.availableZoneIds) {
+        for (zone in TimeZoneContext.System.availableZoneIds()) {
             assertEquals(zone, format.parse("${zone}]").timeZoneId)
         }
     }
@@ -454,13 +455,13 @@ class DateTimeComponentsFormatTest {
     }
 
     private fun assertParseableAsTimeZone(zoneId: String) {
-        TimeZone.of(zoneId)
+        TimeZoneContext.System.get(zoneId)
         assertParseableAsNamedTimeZone(zoneId)
         assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }
 
     private fun assertIncorrectlyParseableAsTimeZone(zoneId: String) {
-        assertFailsWith<IllegalTimeZoneException> { TimeZone.of(zoneId) }
+        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get(zoneId) }
         assertParseableAsNamedTimeZone(zoneId)
         assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }

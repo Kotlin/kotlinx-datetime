@@ -21,7 +21,7 @@ class TimeZoneTest {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
         println(utc)
         assertEquals("UTC", utc.id)
-        assertEquals(utc, TimeZone.of("UTC"))
+        assertEquals(utc, TimeZoneContext.System.get("UTC"))
         assertEquals(UtcOffset.ZERO, utc.offset)
         assertEquals(0, utc.offset.totalSeconds)
         assertEquals(utc.offset, utc.offsetAt(Clock.System.now()))
@@ -29,7 +29,7 @@ class TimeZoneTest {
 
     @Test
     fun system() {
-        val tz = TimeZone.currentSystemDefault()
+        val tz = TimeZoneContext.System.currentTimeZone()
         println(tz)
         val offset = Clock.System.now().offsetIn(tz)
         assertTrue(offset.totalSeconds in -18 * 60 * 60 .. 18 * 60 * 60)
@@ -39,13 +39,14 @@ class TimeZoneTest {
 
     @Test
     fun available() {
-        val allTzIds = TimeZone.availableZoneIds
+        val allTzIds = TimeZoneContext.System.availableZoneIds()
         assertContains(allTzIds, "Europe/Berlin", "Europe/Berlin not in $allTzIds")
         assertContains(allTzIds, "Europe/Moscow", "Europe/Moscow not in $allTzIds")
         assertContains(allTzIds, "America/New_York", "America/New_York not in $allTzIds")
 
-        assertTrue(TimeZone.currentSystemDefault().id in allTzIds,
-            "The current system timezone ${TimeZone.currentSystemDefault().id} is not in $allTzIds")
+        assertTrue(
+            TimeZoneContext.System.currentTimeZone().id in allTzIds,
+            "The current system timezone ${TimeZoneContext.System.currentTimeZone().id} is not in $allTzIds")
         assertTrue("UTC" in allTzIds, "The UTC timezone not in $allTzIds")
     }
 
@@ -53,9 +54,9 @@ class TimeZoneTest {
     fun availableZonesAreAvailable() {
         val availableZones = mutableListOf<String>()
         val nonAvailableZones = mutableListOf<Exception>()
-        for (zoneName in TimeZone.availableZoneIds) {
+        for (zoneName in TimeZoneContext.System.availableZoneIds()) {
             val timezone = try {
-                TimeZone.of(zoneName)
+                TimeZoneContext.System.get(zoneName)
             } catch (e: Exception) {
                 nonAvailableZones.add(e)
                 continue
@@ -73,28 +74,28 @@ class TimeZoneTest {
 
     @Test
     fun of() {
-        val tzm = TimeZone.of("Europe/Moscow")
+        val tzm = TimeZoneContext.System.get("Europe/Moscow")
         assertNotNull(tzm)
         assertEquals("Europe/Moscow", tzm.id)
         // TODO: Check known offsets from UTC for particular moments
 
-        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("Mars/Standard") }
-        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("UTC+X") }
+        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("Mars/Standard") }
+        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("UTC+X") }
     }
 
     @Test
     fun ofFailsOnInvalidOffset() {
         for (v in UtcOffsetTest.invalidUtcOffsetStrings) {
-            assertFailsWith<IllegalTimeZoneException> { TimeZone.of(v) }
+            assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get(v) }
         }
     }
 
     // from 310bp
     @Test
     fun timeZoneEquals() {
-        val test1 = TimeZone.of("Europe/London")
-        val test2 = TimeZone.of("Europe/Paris")
-        val test2b = TimeZone.of("Europe/Paris")
+        val test1 = TimeZoneContext.System.get("Europe/London")
+        val test2 = TimeZoneContext.System.get("Europe/Paris")
+        val test2b = TimeZoneContext.System.get("Europe/Paris")
         assertEquals(false, test1 == test2)
         assertEquals(false, test2 == test1)
 
@@ -121,13 +122,17 @@ class TimeZoneTest {
             Pair("GMT+01:00", "GMT+01:00"),
             Pair("UT+01:00", "UT+01:00"))
         for ((id, str) in idToString) {
-            assertEquals(str, TimeZone.of(id).toString())
+            assertEquals(str, TimeZoneContext.System.get(id).toString())
         }
     }
 
     @Test
     fun utcOffsetNormalization() {
-        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZone.of(it) }
+        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map {
+            TimeZoneContext.System.get(
+                it
+            )
+        }
         for (tz in sameOffsetTZs) {
             assertIs<FixedOffsetTimeZone>(tz)
         }
@@ -143,7 +148,7 @@ class TimeZoneTest {
     // from 310bp
     @Test
     fun newYorkOffset() {
-        val test = TimeZone.of("America/New_York")
+        val test = TimeZoneContext.System.get("America/New_York")
         val offset = UtcOffset(hours = -5)
 
         fun check(expectedHours: Int, dateTime: LocalDateTime) {
@@ -179,7 +184,7 @@ class TimeZoneTest {
     // from 310bp
     @Test
     fun newYorkOffsetToDST() {
-        val test = TimeZone.of("America/New_York")
+        val test = TimeZoneContext.System.get("America/New_York")
         val offset = UtcOffset(hours = -5)
 
         fun check(expectedHours: Int, dateTime: LocalDateTime) {
@@ -201,7 +206,7 @@ class TimeZoneTest {
     // from 310bp
     @Test
     fun newYorkOffsetFromDST() {
-        val test = TimeZone.of("America/New_York")
+        val test = TimeZoneContext.System.get("America/New_York")
         val offset = UtcOffset(hours = -4)
 
         fun check(expectedHours: Int, dateTime: LocalDateTime) {
@@ -222,27 +227,27 @@ class TimeZoneTest {
 
     @Test
     fun checkKnownTimezoneDatabaseRecords() {
-        with(TimeZone.of("America/New_York")) {
+        with(TimeZoneContext.System.get("America/New_York")) {
             checkRegular(this, LocalDateTime(2019, 3, 8, 23, 0), UtcOffset(hours = -5))
             checkGap(this, LocalDateTime(2019, 3, 10, 2, 0))
             checkRegular(this, LocalDateTime(2019, 6, 2, 23, 0), UtcOffset(hours = -4))
             checkOverlap(this, LocalDateTime(2019, 11, 3, 2, 0))
             checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = -5))
         }
-        with(TimeZone.of("Europe/Berlin")) {
+        with(TimeZoneContext.System.get("Europe/Berlin")) {
             checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
             checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
             checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
             checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
             checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
         }
-        with(TimeZone.of("Europe/Moscow")) {
+        with(TimeZoneContext.System.get("Europe/Moscow")) {
             checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 3))
             checkRegular(this, LocalDateTime(2011, 1, 31, 1, 0), UtcOffset(hours = 3))
             checkGap(this, LocalDateTime(2011, 3, 27, 2, 0))
             checkRegular(this, LocalDateTime(2011, 5, 3, 1, 0), UtcOffset(hours = 4))
         }
-        with(TimeZone.of("Australia/Sydney")) {
+        with(TimeZoneContext.System.get("Australia/Sydney")) {
             checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 11))
             checkOverlap(this, LocalDateTime(2019, 4, 7, 3, 0))
             checkRegular(this, LocalDateTime(2019, 10, 6, 1, 0), UtcOffset(hours = 10))

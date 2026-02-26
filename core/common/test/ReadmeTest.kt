@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.test.*
 import kotlin.time.*
@@ -26,15 +27,15 @@ class ReadmeTest {
     fun testConvertingAnInstantToLocalDateAndTimeComponents() {
         val currentMoment: Instant = Clock.System.now()
         val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
-        val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+        val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZoneContext.System.currentTimeZone())
 
-        val tzBerlin = TimeZone.of("Europe/Berlin")
+        val tzBerlin = TimeZoneContext.System.get("Europe/Berlin")
         val datetimeInBerlin = currentMoment.toLocalDateTime(tzBerlin)
 
         val kotlinReleaseDateTime = LocalDateTime(2016, 2, 15, 16, 57, 0, 0)
 
         val kotlinReleaseInstant1 = kotlinReleaseDateTime.toInstant(
-            TimeZone.of("Europe/Moscow"),
+            TimeZoneContext.System.get("Europe/Moscow"),
             TransitionHandler.REJECT_TRANSITIONS
         )
         val kotlinReleaseInstant2 = kotlinReleaseDateTime.toInstant(UtcOffset(hours = 3).asTimeZone())
@@ -44,9 +45,9 @@ class ReadmeTest {
     @Test
     fun testGettingLocalDateComponents() {
         val now: Instant = Clock.System.now()
-        val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val today: LocalDate = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).date
         // or shorter
-        val today2: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val today2: LocalDate = Clock.System.todayIn(TimeZoneContext.System.currentTimeZone())
 
         val knownDate = LocalDate(2020, 2, 21)
     }
@@ -63,7 +64,7 @@ class ReadmeTest {
     @Test
     fun testGettingLocalTimeComponents() {
         val now: Instant = Clock.System.now()
-        val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
+        val thisTime: LocalTime = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).time
 
         val knownTime = LocalTime(hour = 23, minute = 59, second = 12)
         val timeWithNanos = LocalTime(hour = 23, minute = 59, second = 12, nanosecond = 999)
@@ -178,7 +179,7 @@ class ReadmeTest {
 
         run {
             val now = Clock.System.now()
-            val systemTZ = TimeZone.currentSystemDefault()
+            val systemTZ = TimeZoneContext.System.currentTimeZone()
             val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
             val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
         }
@@ -199,7 +200,7 @@ class ReadmeTest {
 
     @Test
     fun testDateTimeArithmetic() {
-        val timeZone = TimeZone.of("Europe/Berlin")
+        val timeZone = TimeZoneContext.System.get("Europe/Berlin")
         val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
         val instant = localDateTime.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 

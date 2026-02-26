@@ -6,6 +6,7 @@
 package kotlinx.datetime.format.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import java.text.ParsePosition
 import java.time.ZoneId
@@ -111,7 +112,7 @@ class UnicodeFormatTest {
             else -> listOf(UtcOffset.ZERO)
         }
         val zones = when {
-            directives.any { it is UnicodeFormat.Directive.ZoneBased } -> TimeZone.availableZoneIds
+            directives.any { it is UnicodeFormat.Directive.ZoneBased } -> TimeZoneContext.System.availableZoneIds()
             else -> setOf("Europe/Berlin")
         }
         val format = DateTimeComponents.Format { byUnicodePattern(pattern) }

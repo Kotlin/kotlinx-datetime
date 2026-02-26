@@ -6,7 +6,9 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.NANOS_PER_ONE
+import kotlinx.datetime.toKotlinTimeZone
 import platform.Foundation.*
 import kotlin.math.*
 import kotlin.random.*
@@ -51,20 +53,20 @@ class ConvertersTest {
 
     @Test
     fun availableZoneIdsToNSTimeZone() {
-        for (id in TimeZone.availableZoneIds) {
+        for (id in TimeZoneContext.System.availableZoneIds()) {
             val normalizedId = (NSTimeZone.abbreviationDictionary[id] ?: id) as String
-            val timeZone = TimeZone.of(normalizedId)
+            val timeZone = TimeZoneContext.System.get(normalizedId)
             if (timeZone is FixedOffsetTimeZone) {
                 continue
             }
             val nsTimeZone = try {
                 timeZone.toNSTimeZone()
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 assertEquals("America/Ciudad_Juarez", id)
                 continue
             }
             assertEquals(normalizedId, nsTimeZone.name)
-            assertEquals(timeZone, nsTimeZone.toKotlinTimeZone())
+            assertEquals(timeZone, nsTimeZone.toKotlinTimeZone(TimeZoneContext.System))
         }
     }
 
@@ -78,7 +80,7 @@ class ConvertersTest {
                 (abs(hours) + 100).toString().substring(1) + ":" +
                 (abs(minutes) + 100).toString().substring(1) + ":" +
                 "00"
-            val test = TimeZone.of(str) as FixedOffsetTimeZone
+            val test = TimeZoneContext.System.get(str) as FixedOffsetTimeZone
             zoneOffsetCheck(test, hours, minutes)
         }
     }
@@ -120,7 +122,7 @@ class ConvertersTest {
     @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
     private fun zoneOffsetCheck(timeZone: FixedOffsetTimeZone, hours: Int, minutes: Int) {
         val nsTimeZone = timeZone.toNSTimeZone()
-        val kotlinTimeZone = nsTimeZone.toKotlinTimeZone()
+        val kotlinTimeZone = nsTimeZone.toKotlinTimeZone(TimeZoneContext.System)
         assertEquals(hours * 3600 + minutes * 60, nsTimeZone.secondsFromGMT.convert())
         assertIs<FixedOffsetTimeZone>(kotlinTimeZone)
         assertEquals(timeZone.offset, kotlinTimeZone.offset)

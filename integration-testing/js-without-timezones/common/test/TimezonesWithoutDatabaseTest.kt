@@ -18,7 +18,7 @@ import kotlin.time.ExperimentalTime
 class TimezonesWithoutDatabaseTest {
     @Test
     fun system() {
-        val tz = TimeZone.currentSystemDefault()
+        val tz = TimeZoneContext.System.currentTimeZone()
         assertEquals("SYSTEM", tz.id)
         assertEquals("SYSTEM", tz.toString())
         val now = Clock.System.now()
@@ -37,7 +37,7 @@ class TimezonesWithoutDatabaseTest {
     @Ignore
     @Test
     fun systemCheckKnownTimezoneDatabaseRecords() {
-        with(TimeZone.currentSystemDefault()) {
+        with(TimeZoneContext.System.currentTimeZone()) {
             checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
             checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
             checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
@@ -59,21 +59,21 @@ class TimezonesWithoutDatabaseTest {
 
     @Test
     fun available() {
-        assertEquals(setOf("UTC"), TimeZone.availableZoneIds)
+        assertEquals(setOf("UTC"), TimeZoneContext.System.availableZoneIds())
     }
 
     @Test
     fun of() {
-        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("Europe/Moscow") }
-        assertSame(TimeZone.currentSystemDefault(), TimeZone.of("SYSTEM"))
+        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("Europe/Moscow") }
+        assertSame(TimeZoneContext.System.currentTimeZone(), TimeZoneContext.System.get("SYSTEM"))
     }
 
     // from 310bp
     @Test
     fun timeZoneEquals() {
-        val test1 = TimeZone.of("SYSTEM")
-        val test2 = TimeZone.of("UTC")
-        val test2b = TimeZone.of("UTC+00:00")
+        val test1 = TimeZoneContext.System.get("SYSTEM")
+        val test2 = TimeZoneContext.System.get("UTC")
+        val test2b = TimeZoneContext.System.get("UTC+00:00")
         assertEquals(false, test1 == test2)
         assertEquals(false, test2 == test1)
 
@@ -96,13 +96,13 @@ class TimezonesWithoutDatabaseTest {
             Pair("GMT+01:00", "GMT+01:00"),
             Pair("UT+01:00", "UT+01:00"))
         for ((id, str) in idToString) {
-            assertEquals(str, TimeZone.of(id).toString())
+            assertEquals(str, TimeZoneContext.System.get(id).toString())
         }
     }
 
     @Test
     fun utcOffsetNormalization() {
-        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZone.of(it) }
+        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZoneContext.System.get(it) }
         for (tz in sameOffsetTZs) {
             assertIs<FixedOffsetTimeZone>(tz)
         }
