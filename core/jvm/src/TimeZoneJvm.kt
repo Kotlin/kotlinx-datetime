@@ -51,16 +51,29 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     actual override fun toString(): String = zoneId.toString()
 
     public actual companion object {
-        public actual fun currentSystemDefault(): TimeZone = ofZone(ZoneId.systemDefault())
         public actual val UTC: FixedOffsetTimeZone =
             FixedOffsetTimeZone(UtcOffset.ZERO, ZoneId.of("UTC"))
 
-        public actual fun of(zoneId: String): TimeZone = try {
-            ofZone(ZoneId.of(if (zoneId == "z") "Z" else zoneId))
-        } catch (e: Exception) {
-            if (e is DateTimeException) throw IllegalTimeZoneException(e)
-            throw e
-        }
+        @Deprecated(
+            "Use TimeZoneContext.System.currentTimeZone() instead",
+            ReplaceWith("TimeZoneContext.System.currentTimeZone()")
+        )
+        public actual fun currentSystemDefault(): TimeZone =
+            TimeZoneContext.System.currentTimeZone()
+
+        @Deprecated(
+            "Use TimeZoneContext.System.get() instead",
+            ReplaceWith("TimeZoneContext.System.get(zoneId)")
+        )
+        public actual fun of(zoneId: String): TimeZone =
+            TimeZoneContext.System.get(zoneId)
+
+        @Deprecated(
+            "Use TimeZoneContext.System.availableZoneIds() instead",
+            ReplaceWith("TimeZoneContext.System.availableZoneIds()")
+        )
+        public actual val availableZoneIds: Set<String> get() =
+            TimeZoneContext.System.availableZoneIds()
 
         internal fun ofZone(zoneId: ZoneId): TimeZone = when {
             zoneId is jtZoneOffset ->
@@ -71,7 +84,6 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
                 TimeZone(ZoneIdLike.ActualZoneId(zoneId))
         }
 
-        public actual val availableZoneIds: Set<String> get() = ZoneId.getAvailableZoneIds()
     }
 }
 

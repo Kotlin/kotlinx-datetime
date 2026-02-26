@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.*
 import kotlin.time.Clock
 import kotlin.random.*
@@ -88,18 +89,18 @@ class LocalDateTest {
 
     @Test
     fun atStartOfDay() {
-        val paris = TimeZone.of("Europe/Paris")
+        val paris = TimeZoneContext.System.get("Europe/Paris")
         val parisDate = LocalDate(2008, 6, 30)
         assertEquals(parisDate.atTime(0, 0).toInstant(paris),
                 parisDate.atStartOfDayIn(paris), "paris")
 
         // TODO: Find another TZ transition that works in Windows
-//        val gaza = TimeZone.of("Asia/Gaza")
+//        val gaza = TimeZoneContext.System.get("Asia/Gaza")
 //        val gazaDate = LocalDate(2007, 4, 1)
 //        assertEquals(gazaDate.atTime(1, 0).toInstant(gaza),
 //                gazaDate.atStartOfDayIn(gaza), "gaza")
 
-        val fixed = TimeZone.of("UTC+14")
+        val fixed = TimeZoneContext.System.get("UTC+14")
         val fixedDate = LocalDate(2007, 4, 1)
         assertEquals(fixedDate.atTime(0, 0).toInstant(fixed),
                 fixedDate.atStartOfDayIn(fixed), "fixed")
@@ -124,7 +125,7 @@ class LocalDateTest {
     @Test
     @Suppress("UNUSED_VARIABLE")
     fun tomorrow() {
-        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val today = Clock.System.todayIn(TimeZoneContext.System.currentTimeZone())
 
         val nextMonthPlusDay1 = today.plus(1, DateTimeUnit.MONTH).plus(1, DateTimeUnit.DAY)
         val nextMonthPlusDay2 = today + DatePeriod(months = 1, days = 1)

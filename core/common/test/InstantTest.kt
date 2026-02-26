@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.NANOS_PER_ONE
 import kotlin.random.Random
 import kotlin.test.*
@@ -57,12 +58,12 @@ class InstantTest {
     fun instantToLocalDTConversion() {
         val now = Clock.System.now()
         println(now.toLocalDateTime(TimeZone.UTC))
-        println(now.toLocalDateTime(TimeZone.currentSystemDefault()))
+        println(now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()))
     }
 
     @Test
     fun instantCalendarArithmetic() {
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
 
         fun expectBetween(instant1: Instant, instant2: Instant, expected: Long, unit: DateTimeUnit) {
             assertEquals(expected, instant1.until(instant2, unit, zone), "i1.until(i2)")
@@ -158,7 +159,7 @@ class InstantTest {
 
     @Test
     fun instantOffset() {
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
         val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
         val ldt1 = instant1.toLocalDateTime(zone)
         val offset1 = instant1.offsetIn(zone)
@@ -185,8 +186,8 @@ class InstantTest {
     fun changingTimeZoneRules() {
         val start = Instant.parse("1991-01-25T23:15:15.855Z")
         val end = Instant.parse("2006-04-24T22:07:32.561Z")
-        val diff = start.periodUntil(end, TimeZone.of("Europe/Moscow"))
-        val end2 = start.plus(diff, TimeZone.of("Europe/Moscow"))
+        val diff = start.periodUntil(end, TimeZoneContext.System.get("Europe/Moscow"))
+        val end2 = start.plus(diff, TimeZoneContext.System.get("Europe/Moscow"))
         assertEquals(end, end2)
     }
 
@@ -198,8 +199,8 @@ class InstantTest {
             val instant1 = Instant.fromEpochMilliseconds(millis1)
             val instant2 = Instant.fromEpochMilliseconds(millis2)
 
-            val diff = instant1.periodUntil(instant2, TimeZone.currentSystemDefault())
-            val instant3 = instant1.plus(diff, TimeZone.currentSystemDefault())
+            val diff = instant1.periodUntil(instant2, TimeZoneContext.System.currentTimeZone())
+            val instant3 = instant1.plus(diff, TimeZoneContext.System.currentTimeZone())
 
             if (instant2 != instant3)
                 println("start: $instant1, end: $instant2, start + diff: $instant3, diff: $diff")
@@ -232,7 +233,7 @@ class InstantTest {
         val instant1 = Instant.parse("2019-04-01T00:00:00Z")
         val instant2 = Instant.parse("2019-05-01T04:00:00Z")
 
-        for (zone in (-12..12 step 3).map { h -> TimeZone.of("${if (h >= 0) "+" else ""}$h") }) {
+        for (zone in (-12..12 step 3).map { h -> TimeZoneContext.System.get("${if (h >= 0) "+" else ""}$h") }) {
             val dt1 = instant1.toLocalDateTime(zone)
             val dt2 = instant2.toLocalDateTime(zone)
             val diff = instant1.periodUntil(instant2, zone)

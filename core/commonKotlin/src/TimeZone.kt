@@ -17,15 +17,25 @@ import kotlin.time.Instant
 public actual open class TimeZone internal constructor() {
 
     public actual companion object {
+        public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
 
+        @Deprecated(
+            "Use TimeZoneContext.System.currentTimeZone() instead",
+            ReplaceWith("TimeZoneContext.System.currentTimeZone()")
+        )
         public actual fun currentSystemDefault(): TimeZone =
             TimeZoneContext.System.currentTimeZone()
 
-        public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
-
-        // org.threeten.bp.ZoneId#of(java.lang.String)
+        @Deprecated(
+            "Use TimeZoneContext.System.get() instead",
+            ReplaceWith("TimeZoneContext.System.get(zoneId)")
+        )
         public actual fun of(zoneId: String): TimeZone = TimeZoneContext.System.get(zoneId)
 
+        @Deprecated(
+            "Use TimeZoneContext.System.availableZoneIds() instead",
+            ReplaceWith("TimeZoneContext.System.availableZoneIds()")
+        )
         public actual val availableZoneIds: Set<String>
             get() = TimeZoneContext.System.availableZoneIds()
     }

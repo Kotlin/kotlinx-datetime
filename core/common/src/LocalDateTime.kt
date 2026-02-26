@@ -53,7 +53,7 @@ import kotlin.jvm.JvmName
  * and the arithmetic on [Instant][kotlin.time.Instant] should be used.
  *
  * ```
- * val timeZone = TimeZone.of("Europe/Berlin")
+ * val timeZone = TimeZoneContext.System.get("Europe/Berlin")
  * val localDateTime = LocalDateTime(2021, 3, 27, 2, 16, 20)
  * val instant = localDateTime.toInstant(timeZone)
  *
@@ -358,7 +358,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * [Instant][kotlin.time.Instant] values.
      * Consider the following situation, where a later moment in time corresponds to an earlier [LocalDateTime] value:
      * ```
-     * val zone = TimeZone.of("Europe/Berlin")
+     * val zone = TimeZoneContext.System.get("Europe/Berlin")
      * val ldt1 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:16:20
      * // 45 minutes pass; clocks move back from 03:00 to 02:00 in the meantime
      * val ldt2 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:01:20

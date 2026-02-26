@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlin.test.*
 import kotlin.time.Clock
 
@@ -14,7 +15,7 @@ class MonthSamples {
     @Test
     fun usage() {
         // Providing different behavior based on what month it is today
-        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val today = Clock.System.todayIn(TimeZoneContext.System.currentTimeZone())
         when (today.month) {
             Month.JANUARY -> check(today.month.number == 1)
             Month.FEBRUARY -> check(today.month.number == 2)

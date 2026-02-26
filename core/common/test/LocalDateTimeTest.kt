@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZoneContext
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.test.*
@@ -60,7 +61,7 @@ class LocalDateTimeTest {
     fun localDtToInstantConversionRespectsTimezones() {
         val ldt1 = LocalDateTime.parse("2011-03-26T04:00:00")
         val ldt2 = LocalDateTime.parse("2011-03-27T04:00:00")
-        val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
+        val diff = with(TimeZoneContext.System.get("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
         assertEquals(23.hours, diff)
     }
 
@@ -74,7 +75,7 @@ class LocalDateTimeTest {
 
     @Test
     fun getCurrentHMS() {
-        with(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())) {
+        with(Clock.System.now().toLocalDateTime(TimeZoneContext.System.currentTimeZone())) {
             println("${hour}h ${minute}m")
         }
     }

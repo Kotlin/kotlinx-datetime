@@ -161,6 +161,7 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * with the identifier [id] is not found.
          * @throws RuntimeException if the timezone database is corrupted or not recognized by `kotlinx-datetime`.
          * @see getOrNull for a function that returns `null` if a time zone is not available.
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
          */
         override fun get(id: String): TimeZone = systemTimezoneDatabase.get(id)
 
@@ -182,6 +183,8 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * Note that collecting the set of available time zones may be computationally expensive
          * or involve traversing the filesystem on some platforms.
          * As such, it is recommended to cache the result of this function.
+         *
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.availableZoneIds
          */
         override fun availableZoneIds(): Set<String> =
             systemTimezoneDatabase.availableZoneIds()
@@ -237,6 +240,8 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          *
          * @throws RuntimeException if a system misconfiguration prevents obtaining
          * the default system time zone.
+         *
+         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         override fun currentTimeZone(): TimeZone = currentSystemDefaultTimeZone()
     }
