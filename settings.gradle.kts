@@ -1,8 +1,11 @@
+import kotlinx.validation.ArtifactsValidatorPluginSettingsExtension
+
 pluginManagement {
     repositories {
         maven(url = "https://packages.jetbrains.team/maven/p/kotlinx-team-infra/maven")
         mavenCentral()
         gradlePluginPortal()
+        mavenLocal()
     }
     val dokkaVersion: String by settings
     val benchmarksVersion: String by settings
@@ -12,6 +15,10 @@ pluginManagement {
         id("me.champeau.jmh") version benchmarksVersion
         id("org.jetbrains.kotlinx.binary-compatibility-validator") version bcvVersion
     }
+}
+
+plugins {
+    id("org.jetbrains.kotlinx.artifacts-validator-plugin") version "0.0.1-SNAPSHOT"
 }
 
 rootProject.name = "Kotlin-DateTime-library"
@@ -29,3 +36,7 @@ project(":integration-testing/js-with-timezones").name = "kotlinx-datetime-js-te
 include(":integration-testing/jpms-test")
 project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
 include(":benchmarks")
+
+extensions.getByType<ArtifactsValidatorPluginSettingsExtension>().apply {
+    dumpFileForProjects(rootDir.resolve("gradle/artifacts.zoneinfo.txt"), project(":kotlinx-datetime-zoneinfo"))
+}

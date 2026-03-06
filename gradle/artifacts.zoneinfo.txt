@@ -1,0 +1,2 @@
+org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-wasm-wasi/.klib,javadoc.jar,sources.jar
+org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo/.jar,javadoc.jar,kotlin-tooling-metadata.json,sources.jar
