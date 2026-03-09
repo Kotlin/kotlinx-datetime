@@ -278,6 +278,7 @@ tasks {
         // Also ensure that the module path is used instead of classpath.
         classpath = compileKotlinJvm.libraries
         modularity.inferModulePath.set(true)
+        options.javaModuleVersion.set(project.version.toString().takeUnless { it == Project.DEFAULT_VERSION })
     }
 
     // Configure the JAR task so that it will include the compiled module-info class file.
