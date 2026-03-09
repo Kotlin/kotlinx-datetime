@@ -29,30 +29,33 @@ we need to release a new version of the artifact.
      replace `<old_tzdb_tag>` in the Gradle configuration snippet
      with `<tzdb_tag>`.
 
-5. Call the `:kotlinx-datetime-zoneinfo:tzdbDownloadAndCompile` Gradle task:
+5. Remove the existing timezone database:
+   > `rm -r timezones/*/tzdb`
+
+6. Call the `:kotlinx-datetime-zoneinfo:tzdbDownloadAndCompile` Gradle task:
    > `./gradlew tzdbDownloadAndCompile`
 
-6. Create a new branch:
+7. Create a new branch:
    > `git checkout -b tzdb-<tzdb_tag>`
 
-7. Commit and push the changes:
-   > `git commit timezones/*/tzdb gradle.properties README.md -m 'Use IANA tzdb <tzdb_tag>'`
+8. Commit and push the changes:
+   > `git commit timezones/*/tzdb gradle.properties README.md -m 'Use IANA tzdb <tzdb_tag>';`
    > `git push -u origin tzdb-<tzdb_tag>`
 
-8. Create a GitHub pull request and review the changes.
+9. Create a GitHub pull request and review the changes.
 
-9. Start the "Check for timezone database updates" CI build
-   with the `tzdb-<tzdb_tag>` branch.
+10. Start the "Check for timezone database updates" CI build
+    with the `tzdb-<tzdb_tag>` branch.
 
-10. Wait for both the usual CI build and the
+11. Wait for both the usual CI build and the
     "Check for timezone database updates" one to pass.
 
-11. Follow the procedure for publishing a timezone database-only release
+12. Follow the procedure for publishing a timezone database-only release
    (see [RELEASE.md](RELEASE.md)).
 
-12. Squash-and-merge the branch.
+13. Squash-and-merge the branch.
 
-13. Start the "Check for timezone database updates" TeamCity build
+14. Start the "Check for timezone database updates" TeamCity build
     and make sure it passes.
 
 ## Updating Windows/IANA timezone name mappings
