@@ -36,17 +36,24 @@ we need to release a new version of the artifact.
    > `git checkout -b tzdb-<tzdb_tag>`
 
 7. Commit and push the changes:
-   > `git commit timezones/full/tzdb -m 'Use IANA tzdb <tzdb_tag>'`
+   > `git commit timezones/*/tzdb gradle.properties README.md -m 'Use IANA tzdb <tzdb_tag>'`
    > `git push -u origin tzdb-<tzdb_tag>`
 
 8. Create a GitHub pull request and review the changes.
 
-9. Wait for the CI build to pass.
+9. Start the "Check for timezone database updates" CI build
+   with the `tzdb-<tzdb_tag>` branch.
 
-10. Follow the procedure for publishing a timezone database-only release
+10. Wait for both the usual CI build and the
+    "Check for timezone database updates" one to pass.
+
+11. Follow the procedure for publishing a timezone database-only release
    (see [RELEASE.md](RELEASE.md)).
 
-11. Squash-and-merge the branch.
+12. Squash-and-merge the branch.
+
+13. Start the "Check for timezone database updates" TeamCity build
+    and make sure it passes.
 
 ## Updating Windows/IANA timezone name mappings
 
@@ -85,11 +92,19 @@ Windows-specific names encountered in the Windows registry.
    or some deprecated timezone names are removed.
    Verify that this is the case.
 
-9. Wait for the CI build to pass.
+9. Start the "Check for timezone database updates" CI build
+   with the `tzdb-<tzdb_tag>` branch.
 
-10. Squash-and-merge the changes and remove the branch on GitHub.
+10. Wait for both the usual CI build and the
+    "Check for timezone database updates" one to pass.
+
+11. Squash-and-merge the changes and remove the branch on GitHub.
    Then, also remove the branch locally:
    > `git checkout master; git branch -D update-windows-tz-names`
 
-11. Follow the procedure for publishing a new release
+12. Follow the procedure for publishing a new release
    (see [RELEASE.md](RELEASE.md)) if new timezone names were added.
+
+13. Start the "Check for timezone database updates" TeamCity build
+    and make sure it passes.
+
