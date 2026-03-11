@@ -211,7 +211,7 @@ public class LocalIsoWeekDate(
                 parseFailure("The input string is too short")
             }
             expect("'-'", i) { it == '-' }
-            expect("'W'", i + 1) { it == 'W' }
+            expect("'W'", i + 1) { it == 'W' || it == 'w' }
             expect("'-'", i + 4) { it == '-' }
             for (j in listOf(2, 3, 5)) {
                 expect("an ASCII digit", i + j) { it in '0'..'9' }
