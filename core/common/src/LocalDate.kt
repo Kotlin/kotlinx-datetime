@@ -550,11 +550,53 @@ public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate
 // A workaround for https://youtrack.jetbrains.com/issue/KT-65484
 internal fun getIsoDateFormat() = LocalDate.Formats.ISO
 
-internal fun LocalDate.previousOrSame(dayOfWeek: DayOfWeek) =
+/**
+ * Returns a [LocalDate] that has the given [dayOfWeek] not later than this date.
+ *
+ * If the [dayOfWeek] is already the one this date has, the date will be returned unchanged.
+ * See [previous] for a version that always returns a different date earlier than the provided one.
+ *
+ * @see nextOrSame for a symmetrical operation that searches the given [dayOfWeek] in the future.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.previousOrSame
+ */
+public fun LocalDate.previousOrSame(dayOfWeek: DayOfWeek): LocalDate =
     minus((this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
 
-internal fun LocalDate.nextOrSame(dayOfWeek: DayOfWeek) =
+/**
+ * Returns a [LocalDate] that has the given [dayOfWeek] not earlier than this date.
+ *
+ * If the [dayOfWeek] is already the one this date has, the date will be returned unchanged.
+ * See [next] for a version that always returns a different date later than the provided one.
+ *
+ * @see previousOrSame for a symmetrical operation that searches the given [dayOfWeek] in the past.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.nextOrSame
+ */
+public fun LocalDate.nextOrSame(dayOfWeek: DayOfWeek): LocalDate =
     plus((dayOfWeek.isoDayNumber - this.dayOfWeek.isoDayNumber).mod(7), DateTimeUnit.DAY)
+
+/**
+ * Returns a [LocalDate] that has the given [dayOfWeek] earlier than this date.
+ *
+ * If the [dayOfWeek] is already the one this date has, a date one week earlier will be returned.
+ * See [previousOrSame] for a version that returns the date unchanged if it's already on the given [dayOfWeek].
+ *
+ * @see next for a symmetrical operation that searches the given [dayOfWeek] in the future.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.previous
+ */
+public fun LocalDate.previous(dayOfWeek: DayOfWeek): LocalDate =
+    minus(1 + (this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber - 1).mod(7), DateTimeUnit.DAY)
+
+/**
+ * Returns a [LocalDate] that has the given [dayOfWeek] later than this date.
+ *
+ * If the [dayOfWeek] is already the one this date has, a date one week later will be returned.
+ * See [nextOrSame] for a version that returns the date unchanged if it's already on the given [dayOfWeek].
+ *
+ * @see previous for a symmetrical operation that searches the given [dayOfWeek] in the past.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.next
+ */
+public fun LocalDate.next(dayOfWeek: DayOfWeek): LocalDate =
+    plus(1 + (dayOfWeek.isoDayNumber - this.dayOfWeek.isoDayNumber - 1).mod(7), DateTimeUnit.DAY)
 
 /** The max year in [LocalDate] */
 internal const val YEAR_MAX = 999_999_999

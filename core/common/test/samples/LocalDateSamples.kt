@@ -263,6 +263,54 @@ class LocalDateSamples {
         check(twoMonthsAgo == LocalDate(2024, Month.FEBRUARY, 16))
     }
 
+    @Test
+    fun previousOrSame() {
+        val today = LocalDate(2026, 2, 9)
+        check(today.dayOfWeek == DayOfWeek.MONDAY)
+        // Find the beginning of the Monday-based week that contains the given date.
+        val startOfCurrentMondayBasedWeek = today.previousOrSame(DayOfWeek.MONDAY)
+        check(startOfCurrentMondayBasedWeek == LocalDate(2026, 2, 9))
+        // Find the beginning of the Sunday-based week that contains the given date.
+        val startOfCurrentSundayBasedWeek = today.previousOrSame(DayOfWeek.SUNDAY)
+        check(startOfCurrentSundayBasedWeek == LocalDate(2026, 2, 8))
+    }
+
+    @Test
+    fun next() {
+        val today = LocalDate(2026, 2, 9)
+        check(today.dayOfWeek == DayOfWeek.MONDAY)
+        // Find the beginning of the next Monday-based week that doesn't contain the given date.
+        val startOfNextMondayBasedWeek = today.next(DayOfWeek.MONDAY)
+        check(startOfNextMondayBasedWeek == LocalDate(2026, 2, 16))
+        // Find the beginning of the next Sunday-based week that doesn't contain the given date.
+        val startOfNextSundayBasedWeek = today.next(DayOfWeek.SUNDAY)
+        check(startOfNextSundayBasedWeek == LocalDate(2026, 2, 15))
+    }
+
+    @Test
+    fun nextOrSame() {
+        val today = LocalDate(2026, 2, 14)
+        check(today.dayOfWeek == DayOfWeek.SATURDAY)
+        // Find the end of the Monday-based week that contains the given date.
+        val endOfCurrentMondayBasedWeek = today.nextOrSame(DayOfWeek.SUNDAY)
+        check(endOfCurrentMondayBasedWeek == LocalDate(2026, 2, 15))
+        // Find the end of the Sunday-based week that contains the given date.
+        val endOfCurrentSundayBasedWeek = today.nextOrSame(DayOfWeek.SATURDAY)
+        check(endOfCurrentSundayBasedWeek == LocalDate(2026, 2, 14))
+    }
+
+    @Test
+    fun previous() {
+        val today = LocalDate(2026, 2, 14)
+        check(today.dayOfWeek == DayOfWeek.SATURDAY)
+        // Find the end of the Monday-based week that doesn't contain the given date.
+        val endOfPreviousMondayBasedWeek = today.previous(DayOfWeek.SUNDAY)
+        check(endOfPreviousMondayBasedWeek == LocalDate(2026, 2, 8))
+        // Find the end of the Sunday-based week that doesn't contain the given date.
+        val endOfPreviousSundayBasedWeek = today.previous(DayOfWeek.SATURDAY)
+        check(endOfPreviousSundayBasedWeek == LocalDate(2026, 2, 7))
+    }
+
     class Formats {
         @Test
         fun iso() {

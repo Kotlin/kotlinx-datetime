@@ -283,6 +283,43 @@ class LocalDateTest {
         assertEquals(0, LocalDate(1970, 1, 1).toEpochDays())
         assertEquals(-678942 - 40587, LocalDate(-1, 12, 31).toEpochDays())
     }
+
+    @Test
+    fun nextAndPreviousDayOfWeek() {
+        val date = LocalDate(2026, 2, 11) // Wednesday
+        // Next:
+        assertEquals(LocalDate(2026, 2, 16), date.next(DayOfWeek.MONDAY))
+        assertEquals(LocalDate(2026, 2, 17), date.next(DayOfWeek.TUESDAY))
+        assertEquals(LocalDate(2026, 2, 18), date.next(DayOfWeek.WEDNESDAY))
+        assertEquals(LocalDate(2026, 2, 12), date.next(DayOfWeek.THURSDAY))
+        assertEquals(LocalDate(2026, 2, 13), date.next(DayOfWeek.FRIDAY))
+        assertEquals(LocalDate(2026, 2, 14), date.next(DayOfWeek.SATURDAY))
+        assertEquals(LocalDate(2026, 2, 15), date.next(DayOfWeek.SUNDAY))
+        // Previous:
+        assertEquals(LocalDate(2026, 2, 9), date.previous(DayOfWeek.MONDAY))
+        assertEquals(LocalDate(2026, 2, 10), date.previous(DayOfWeek.TUESDAY))
+        assertEquals(LocalDate(2026, 2, 4), date.previous(DayOfWeek.WEDNESDAY))
+        assertEquals(LocalDate(2026, 2, 5), date.previous(DayOfWeek.THURSDAY))
+        assertEquals(LocalDate(2026, 2, 6), date.previous(DayOfWeek.FRIDAY))
+        assertEquals(LocalDate(2026, 2, 7), date.previous(DayOfWeek.SATURDAY))
+        assertEquals(LocalDate(2026, 2, 8), date.previous(DayOfWeek.SUNDAY))
+        // Next or same:
+        assertEquals(LocalDate(2026, 2, 16), date.nextOrSame(DayOfWeek.MONDAY))
+        assertEquals(LocalDate(2026, 2, 17), date.nextOrSame(DayOfWeek.TUESDAY))
+        assertEquals(LocalDate(2026, 2, 11), date.nextOrSame(DayOfWeek.WEDNESDAY))
+        assertEquals(LocalDate(2026, 2, 12), date.nextOrSame(DayOfWeek.THURSDAY))
+        assertEquals(LocalDate(2026, 2, 13), date.nextOrSame(DayOfWeek.FRIDAY))
+        assertEquals(LocalDate(2026, 2, 14), date.nextOrSame(DayOfWeek.SATURDAY))
+        assertEquals(LocalDate(2026, 2, 15), date.nextOrSame(DayOfWeek.SUNDAY))
+        // Previous or same:
+        assertEquals(LocalDate(2026, 2, 9), date.previousOrSame(DayOfWeek.MONDAY))
+        assertEquals(LocalDate(2026, 2, 10), date.previousOrSame(DayOfWeek.TUESDAY))
+        assertEquals(LocalDate(2026, 2, 11), date.previousOrSame(DayOfWeek.WEDNESDAY))
+        assertEquals(LocalDate(2026, 2, 5), date.previousOrSame(DayOfWeek.THURSDAY))
+        assertEquals(LocalDate(2026, 2, 6), date.previousOrSame(DayOfWeek.FRIDAY))
+        assertEquals(LocalDate(2026, 2, 7), date.previousOrSame(DayOfWeek.SATURDAY))
+        assertEquals(LocalDate(2026, 2, 8), date.previousOrSame(DayOfWeek.SUNDAY))
+    }
 }
 
 fun checkInvalidDate(constructor: (year: Int, month: Int, day: Int) -> LocalDate) {
