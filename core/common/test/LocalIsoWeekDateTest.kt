@@ -95,6 +95,7 @@ class LocalIsoWeekDateTest {
         assertInvalidFormat { LocalIsoWeekDate.parse("2017-W10-+1") }
         assertInvalidFormat { LocalIsoWeekDate.parse("2017-W10--1") }
         assertInvalidFormat { LocalIsoWeekDate.parse("+1000000000-W10-1") }
+        assertInvalidFormat { LocalIsoWeekDate.parse("2017-W10-1x") }
         checkParsedComponents("0999-W12-2", 999, 12, DayOfWeek.TUESDAY)
         checkParsedComponents("-0001-W01-2", -1, 1, DayOfWeek.TUESDAY)
         checkParsedComponents("9999-W12-5", 9999, 12, DayOfWeek.FRIDAY)

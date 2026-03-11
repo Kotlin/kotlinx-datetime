@@ -56,7 +56,7 @@ public class LocalIsoWeekDate(
     public val isoWeekYear: Int,
 
     /**
-     * The ISO week number withing the week year.
+     * The ISO week number within the week year.
      *
      * Note that this value is unsuitable for finding the week number within the calendar year,
      * as the normal and the ISO week years can be different for the same date.
@@ -133,7 +133,7 @@ public class LocalIsoWeekDate(
         /**
          * Parses an ISO 8601 week date string as a [LocalIsoWeekDate].
          *
-         * Examples of weed dates in the ISO 8601 format:
+         * Examples of week dates in the ISO 8601 format:
          *
          * - `2004-W53-6`, the date `2005-01-01`, Saturday
          * - `2004-W53-7`, the date `2005-01-02`, Sunday
@@ -155,7 +155,7 @@ public class LocalIsoWeekDate(
         public fun parse(isoString: String): LocalIsoWeekDate {
             val sanitizedIsoString = removeLeadingZerosFromLongYearFormIsoWeekDate(isoString)
             fun parseFailure(error: String): Nothing {
-                throw DateTimeFormatException("$error when parsing an LocalIsoWeekDate from \"$sanitizedIsoString\"")
+                throw DateTimeFormatException("$error when parsing a LocalIsoWeekDate from \"$sanitizedIsoString\"")
             }
 
             val s = sanitizedIsoString
@@ -219,6 +219,9 @@ public class LocalIsoWeekDate(
             val weekNumber = (s[i + 2] - '0') * 10 + (s[i + 3] - '0')
             val isoDayOfWeekNumber = (s[i + 5] - '0')
             val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
+            if (s.length > i + 6) {
+                parseFailure("Trailing characters")
+            }
             try {
                 return LocalIsoWeekDate(year, weekNumber, dayOfWeek)
             } catch (e: IllegalArgumentException) {
