@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.random.*
 import kotlin.test.*
@@ -146,9 +147,9 @@ class InstantSamples {
         // Finding a moment that's later than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-03-09T07:16:39.688Z")
         val period = DateTimePeriod(months = 1, days = -1) // one day short from a month later
-        val afterPeriodInBerlin = startInstant.plus(period, TimeZone.of("Europe/Berlin"))
+        val afterPeriodInBerlin = startInstant.plus(period, TimeZoneContext.System.get("Europe/Berlin"))
         check(afterPeriodInBerlin == Instant.parse("2024-04-08T06:16:39.688Z"))
-        val afterPeriodInSydney = startInstant.plus(period, TimeZone.of("Australia/Sydney"))
+        val afterPeriodInSydney = startInstant.plus(period, TimeZoneContext.System.get("Australia/Sydney"))
         check(afterPeriodInSydney == Instant.parse("2024-04-08T08:16:39.688Z"))
     }
 
@@ -157,9 +158,9 @@ class InstantSamples {
         // Finding a moment that's earlier than the starting point by the given length of calendar time
         val period = DateTimePeriod(months = 1, days = -1) // one day short from a month earlier
         val startInstant = Instant.parse("2024-03-23T16:50:41.926Z")
-        val afterPeriodInBerlin = startInstant.minus(period, TimeZone.of("Europe/Berlin"))
+        val afterPeriodInBerlin = startInstant.minus(period, TimeZoneContext.System.get("Europe/Berlin"))
         check(afterPeriodInBerlin == Instant.parse("2024-02-24T16:50:41.926Z"))
-        val afterPeriodInNewYork = startInstant.minus(period, TimeZone.of("America/New_York"))
+        val afterPeriodInNewYork = startInstant.minus(period, TimeZoneContext.System.get("America/New_York"))
         check(afterPeriodInNewYork == Instant.parse("2024-02-24T17:50:41.926Z"))
     }
 
@@ -170,10 +171,10 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T03:15:03Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val periodInNewYork = startInstant.periodUntil(endInstant, TimeZone.of("America/New_York"))
+        val periodInNewYork = startInstant.periodUntil(endInstant, TimeZoneContext.System.get("America/New_York"))
         check(periodInNewYork == DateTimePeriod(months = 1, days = 29, hours = 1, minutes = 15, seconds = 3))
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val periodInBerlin = startInstant.periodUntil(endInstant, TimeZone.of("Europe/Berlin"))
+        val periodInBerlin = startInstant.periodUntil(endInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
     }
 
@@ -184,10 +185,14 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val monthsBetweenInNewYork = startInstant.until(endInstant, DateTimeUnit.MONTH, TimeZone.of("America/New_York"))
+        val monthsBetweenInNewYork = startInstant.until(endInstant, DateTimeUnit.MONTH,
+            TimeZoneContext.System.get("America/New_York")
+        )
         check(monthsBetweenInNewYork == 1L)
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val monthsBetweenInBerlin = startInstant.until(endInstant, DateTimeUnit.MONTH, TimeZone.of("Europe/Berlin"))
+        val monthsBetweenInBerlin = startInstant.until(endInstant, DateTimeUnit.MONTH,
+            TimeZoneContext.System.get("Europe/Berlin")
+        )
         check(monthsBetweenInBerlin == 2L)
     }
 
@@ -207,10 +212,10 @@ class InstantSamples {
         val startInstant = Instant.parse("2023-03-26T00:30:00Z")
         val endInstant = Instant.parse("2023-03-28T00:15:00Z")
         // In New York, these days are both 24 hour long, so the difference is 15 minutes short of 2 days
-        val daysBetweenInNewYork = startInstant.daysUntil(endInstant, TimeZone.of("America/New_York"))
+        val daysBetweenInNewYork = startInstant.daysUntil(endInstant, TimeZoneContext.System.get("America/New_York"))
         check(daysBetweenInNewYork == 1)
         // In Berlin, 2023-03-26 is 23 hours long, so the difference more than 2 days
-        val daysBetweenInBerlin = startInstant.daysUntil(endInstant, TimeZone.of("Europe/Berlin"))
+        val daysBetweenInBerlin = startInstant.daysUntil(endInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(daysBetweenInBerlin == 2)
     }
 
@@ -220,10 +225,12 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val monthsBetweenInNewYork = startInstant.monthsUntil(endInstant, TimeZone.of("America/New_York"))
+        val monthsBetweenInNewYork = startInstant.monthsUntil(endInstant,
+            TimeZoneContext.System.get("America/New_York")
+        )
         check(monthsBetweenInNewYork == 1)
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val monthsBetweenInBerlin = startInstant.monthsUntil(endInstant, TimeZone.of("Europe/Berlin"))
+        val monthsBetweenInBerlin = startInstant.monthsUntil(endInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(monthsBetweenInBerlin == 2)
     }
 
@@ -233,10 +240,10 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-03-01T02:01:00Z")
         val endInstant = Instant.parse("2025-03-01T02:01:00Z")
         // In New York, we find the difference between 2024-02-29 and 2025-02-28, which is just short of a year
-        val yearsBetweenInNewYork = startInstant.yearsUntil(endInstant, TimeZone.of("America/New_York"))
+        val yearsBetweenInNewYork = startInstant.yearsUntil(endInstant, TimeZoneContext.System.get("America/New_York"))
         check(yearsBetweenInNewYork == 0)
         // In Berlin, we find the difference between 2024-03-01 and 2025-03-01, which is exactly a year
-        val yearsBetweenInBerlin = startInstant.yearsUntil(endInstant, TimeZone.of("Europe/Berlin"))
+        val yearsBetweenInBerlin = startInstant.yearsUntil(endInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(yearsBetweenInBerlin == 1)
     }
 
@@ -247,10 +254,10 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T03:15:03Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val periodInNewYork = endInstant.minus(startInstant, TimeZone.of("America/New_York"))
+        val periodInNewYork = endInstant.minus(startInstant, TimeZoneContext.System.get("America/New_York"))
         check(periodInNewYork == DateTimePeriod(months = 1, days = 29, hours = 1, minutes = 15, seconds = 3))
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val periodInBerlin = endInstant.minus(startInstant, TimeZone.of("Europe/Berlin"))
+        val periodInBerlin = endInstant.minus(startInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
     }
 
@@ -258,9 +265,11 @@ class InstantSamples {
     fun plusDateTimeUnit() {
         // Finding a moment that's later than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-04-05T22:51:45.586Z")
-        val twoYearsLaterInBerlin = startInstant.plus(2, DateTimeUnit.YEAR, TimeZone.of("Europe/Berlin"))
+        val twoYearsLaterInBerlin = startInstant.plus(2, DateTimeUnit.YEAR, TimeZoneContext.System.get("Europe/Berlin"))
         check(twoYearsLaterInBerlin == Instant.parse("2026-04-05T22:51:45.586Z"))
-        val twoYearsLaterInSydney = startInstant.plus(2, DateTimeUnit.YEAR, TimeZone.of("Australia/Sydney"))
+        val twoYearsLaterInSydney = startInstant.plus(2, DateTimeUnit.YEAR,
+            TimeZoneContext.System.get("Australia/Sydney")
+        )
         check(twoYearsLaterInSydney == Instant.parse("2026-04-05T23:51:45.586Z"))
     }
 
@@ -268,9 +277,13 @@ class InstantSamples {
     fun minusDateTimeUnit() {
         // Finding a moment that's earlier than the starting point by the given length of calendar time
         val startInstant = Instant.parse("2024-03-28T02:04:56.256Z")
-        val twoYearsEarlierInBerlin = startInstant.minus(2, DateTimeUnit.YEAR, TimeZone.of("Europe/Berlin"))
+        val twoYearsEarlierInBerlin = startInstant.minus(2, DateTimeUnit.YEAR,
+            TimeZoneContext.System.get("Europe/Berlin")
+        )
         check(twoYearsEarlierInBerlin == Instant.parse("2022-03-28T01:04:56.256Z"))
-        val twoYearsEarlierInCairo = startInstant.minus(2, DateTimeUnit.YEAR, TimeZone.of("Africa/Cairo"))
+        val twoYearsEarlierInCairo = startInstant.minus(2, DateTimeUnit.YEAR,
+            TimeZoneContext.System.get("Africa/Cairo")
+        )
         check(twoYearsEarlierInCairo == Instant.parse("2022-03-28T02:04:56.256Z"))
     }
 
@@ -299,10 +312,14 @@ class InstantSamples {
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T02:00:00Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val monthsBetweenInNewYork = endInstant.minus(startInstant, DateTimeUnit.MONTH, TimeZone.of("America/New_York"))
+        val monthsBetweenInNewYork = endInstant.minus(startInstant, DateTimeUnit.MONTH,
+            TimeZoneContext.System.get("America/New_York")
+        )
         check(monthsBetweenInNewYork == 1L)
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val monthsBetweenInBerlin = endInstant.minus(startInstant, DateTimeUnit.MONTH, TimeZone.of("Europe/Berlin"))
+        val monthsBetweenInBerlin = endInstant.minus(startInstant, DateTimeUnit.MONTH,
+            TimeZoneContext.System.get("Europe/Berlin")
+        )
         check(monthsBetweenInBerlin == 2L)
     }
 

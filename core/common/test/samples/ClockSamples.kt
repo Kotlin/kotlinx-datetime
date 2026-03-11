@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
@@ -16,7 +17,7 @@ class ClockSamples {
     @Test
     fun system() {
         // Getting the current date and time
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
         val currentInstant = Clock.System.now()
         val currentLocalDateTime = currentInstant.toLocalDateTime(zone)
         currentLocalDateTime.toString() // show the current date and time, according to the OS
@@ -28,7 +29,7 @@ class ClockSamples {
             clock.now().toLocalDateTime(timeZone).toString()
 
         // In the production code:
-        val currentTimeInProduction = formatCurrentTime(Clock.System, TimeZone.currentSystemDefault())
+        val currentTimeInProduction = formatCurrentTime(Clock.System, TimeZoneContext.System.currentTimeZone())
         // Testing this value is tricky because it changes all the time.
 
         // In the test code:
@@ -36,7 +37,7 @@ class ClockSamples {
             override fun now(): Instant = Instant.parse("2023-01-02T22:35:01Z")
         }
         // Then, one can write a completely deterministic test:
-        val currentTimeForTests = formatCurrentTime(testClock, TimeZone.of("Europe/Paris"))
+        val currentTimeForTests = formatCurrentTime(testClock, TimeZoneContext.System.get("Europe/Paris"))
         check(currentTimeForTests == "2023-01-02T23:35:01")
     }
 
@@ -47,7 +48,7 @@ class ClockSamples {
             override fun now(): Instant = Instant.parse("2020-01-01T02:00:00Z")
         }
         check(clock.todayIn(TimeZone.UTC) == LocalDate(2020, 1, 1))
-        check(clock.todayIn(TimeZone.of("America/New_York")) == LocalDate(2019, 12, 31))
+        check(clock.todayIn(TimeZoneContext.System.get("America/New_York")) == LocalDate(2019, 12, 31))
     }
 
     @Test

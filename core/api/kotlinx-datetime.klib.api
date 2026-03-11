@@ -81,6 +81,30 @@ abstract interface kotlinx.datetime/Clock { // kotlinx.datetime/Clock|null[0]
     }
 }
 
+abstract interface kotlinx.datetime/TimeZoneContext : kotlinx.datetime/TimeZoneDatabase, kotlinx.datetime/TimeZoneIdProvider { // kotlinx.datetime/TimeZoneContext|null[0]
+    open fun currentTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.currentTimeZone|currentTimeZone(){}[0]
+
+    final object Companion // kotlinx.datetime/TimeZoneContext.Companion|null[0]
+
+    final object System : kotlinx.datetime/TimeZoneContext { // kotlinx.datetime/TimeZoneContext.System|null[0]
+        final fun availableZoneIds(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZoneContext.System.availableZoneIds|availableZoneIds(){}[0]
+        final fun currentTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.System.currentTimeZone|currentTimeZone(){}[0]
+        final fun currentTimeZoneId(): kotlin/String // kotlinx.datetime/TimeZoneContext.System.currentTimeZoneId|currentTimeZoneId(){}[0]
+        final fun get(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneContext.System.get|get(kotlin.String){}[0]
+        final fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime/TimeZoneContext.System.getOrNull|getOrNull(kotlin.String){}[0]
+    }
+}
+
+abstract interface kotlinx.datetime/TimeZoneDatabase { // kotlinx.datetime/TimeZoneDatabase|null[0]
+    abstract fun availableZoneIds(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZoneDatabase.availableZoneIds|availableZoneIds(){}[0]
+    abstract fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime/TimeZoneDatabase.getOrNull|getOrNull(kotlin.String){}[0]
+    open fun get(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZoneDatabase.get|get(kotlin.String){}[0]
+}
+
+abstract interface kotlinx.datetime/TimeZoneIdProvider { // kotlinx.datetime/TimeZoneIdProvider|null[0]
+    abstract fun currentTimeZoneId(): kotlin/String // kotlinx.datetime/TimeZoneIdProvider.currentTimeZoneId|currentTimeZoneId(){}[0]
+}
+
 sealed interface <#A: kotlin/Any?> kotlinx.datetime.format/DateTimeFormat { // kotlinx.datetime.format/DateTimeFormat|null[0]
     abstract fun <#A1: kotlin.text/Appendable> formatTo(#A1, #A): #A1 // kotlinx.datetime.format/DateTimeFormat.formatTo|formatTo(0:0;1:0){0§<kotlin.text.Appendable>}[0]
     abstract fun format(#A): kotlin/String // kotlinx.datetime.format/DateTimeFormat.format|format(1:0){}[0]
@@ -358,6 +382,9 @@ final class kotlinx.datetime/FixedOffsetTimeZone : kotlinx.datetime/TimeZone { /
         final fun <get-offset>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/FixedOffsetTimeZone.offset.<get-offset>|<get-offset>(){}[0]
     final val totalSeconds // kotlinx.datetime/FixedOffsetTimeZone.totalSeconds|{}totalSeconds[0]
         final fun <get-totalSeconds>(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.totalSeconds.<get-totalSeconds>|<get-totalSeconds>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/FixedOffsetTimeZone.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.hashCode|hashCode(){}[0]
 
     final object Companion { // kotlinx.datetime/FixedOffsetTimeZone.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/FixedOffsetTimeZone> // kotlinx.datetime/FixedOffsetTimeZone.Companion.serializer|serializer(){}[0]
@@ -1272,6 +1299,9 @@ final fun (platform.Foundation/NSDate).kotlinx.datetime/toKotlinInstant(kotlinx.
 
 // Targets: [apple]
 final fun (platform.Foundation/NSTimeZone).kotlinx.datetime/toKotlinTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime/toKotlinTimeZone|toKotlinTimeZone@platform.Foundation.NSTimeZone(){}[0]
+
+// Targets: [apple]
+final fun (platform.Foundation/NSTimeZone).kotlinx.datetime/toKotlinTimeZone(kotlinx.datetime/TimeZoneDatabase): kotlinx.datetime/TimeZone // kotlinx.datetime/toKotlinTimeZone|toKotlinTimeZone@platform.Foundation.NSTimeZone(kotlinx.datetime.TimeZoneDatabase){}[0]
 
 // Targets: [js]
 abstract interface kotlinx.datetime.internal/InteropInterface // kotlinx.datetime.internal/InteropInterface|null[0]

@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.samples.format
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.test.*
 import kotlin.time.Instant
@@ -440,7 +441,7 @@ class DateTimeComponentsSamples {
         fun rfc1123formatting() {
             // Formatting a date-time using the given UTC offset in the RFC 1123 format
             val today = Instant.fromEpochSeconds(1713182461)
-            val offset = today.offsetIn(TimeZone.of("Europe/Berlin"))
+            val offset = today.offsetIn(TimeZoneContext.System.get("Europe/Berlin"))
             val formatted = DateTimeComponents.Formats.RFC_1123.format {
                 setDateTimeOffset(today, offset)
             }

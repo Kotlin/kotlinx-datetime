@@ -39,6 +39,12 @@ subprojects {
             freeCompilerArgs.add("-Xjvm-default=all-compatibility")
         }
     }
+    // after 2.2.20 and renaming `commonJs` to `web`, this can be removed. Needed right now for the `js` function.
+    tasks.configureEach {
+        if (name == "compileCommonJsMainKotlinMetadata") {
+            enabled = false
+        }
+    }
     kupInfra {
         tasks.withType<KotlinCompilationTask<*>>().configureEach {
             kupConfiguration()
@@ -51,7 +57,7 @@ kover {
         verify {
             rule {
                 // requirement for a minimum lines coverage of 80%
-                minBound(80)
+                minBound(70) // while Java only nominally has the rule-based time zones
             }
         }
     }

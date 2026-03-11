@@ -222,7 +222,7 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
  *
  * **Pitfall**: UTC offsets are static values and do not change with time.
  * If the logic requires that the offset changes with time, for example, to account for daylight-saving-time
- * transitions, use [TimeZone.of] with an IANA time zone name to obtain a time zone that can handle
+ * transitions, use [TimeZoneContext.System.get] with an IANA time zone name to obtain a time zone that can handle
  * changes in the offset.
  *
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.asFixedOffsetTimeZone

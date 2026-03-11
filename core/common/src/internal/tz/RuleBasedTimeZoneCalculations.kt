@@ -6,11 +6,14 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
-internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: String) : TimeZone() {
+internal class RuleBasedTimeZoneCalculations(
+    private val tzid: TimeZoneRules, val id: String, val origin: Any?
+) {
 
-    override fun atStartOfDay(date: LocalDate): Instant {
+    fun atStartOfDay(date: LocalDate): Instant {
         val ldt = LocalDateTime(date, LocalTime.MIN)
         return when (val info = tzid.infoAtDatetime(ldt)) {
             is OffsetInfo.Regular -> ldt.toInstant(info.offset)
@@ -19,12 +22,12 @@ internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: 
         }
     }
 
-    override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
+    fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
         when (val info = tzid.infoAtDatetime(dateTime)) {
             is OffsetInfo.Regular -> dateTime.toInstant(info.offset)
             is OffsetInfo.Gap -> {
                 try {
-                    dateTime.plusSeconds(info.transitionDurationSeconds).toInstant(info.offsetAfter)
+                    dateTime.toInstant(info.offsetAfter).plus(info.transitionDurationSeconds.seconds)
                 } catch (e: IllegalArgumentException) {
                     throw DateTimeArithmeticException(
                         "Overflow whet correcting the date-time to not be in the transition gap",
@@ -38,5 +41,10 @@ internal class RegionTimeZone(private val tzid: TimeZoneRules, override val id: 
             )
         }
 
-    override fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+    fun offsetAtImpl(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+
+    override fun equals(other: Any?): Boolean =
+        other is RuleBasedTimeZoneCalculations && id == other.id && origin == other.origin
+
+    override fun hashCode(): Int = id.hashCode() * 31 + origin.hashCode()
 }

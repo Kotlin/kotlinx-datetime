@@ -6,6 +6,7 @@
 package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.format.*
 import kotlin.test.*
 import kotlin.time.Instant
@@ -16,7 +17,7 @@ class TimeZoneSamples {
     @Test
     fun usage() {
         // Using a time zone to convert a local date-time to an instant and back
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
         val localDateTime = LocalDate(2021, 3, 28).atTime(2, 16, 20)
         val instant = localDateTime.toInstant(zone)
         check(instant == Instant.parse("2021-03-28T01:16:20Z"))
@@ -27,13 +28,13 @@ class TimeZoneSamples {
     @Test
     fun id() {
         // Getting the ID of a time zone
-        check(TimeZone.of("America/New_York").id == "America/New_York")
+        check(TimeZoneContext.System.get("America/New_York").id == "America/New_York")
     }
 
     @Test
     fun toStringSample() {
         // Converting a time zone to a string
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         check(zone.toString() == "America/New_York")
         check(zone.toString() == zone.id)
     }
@@ -41,11 +42,11 @@ class TimeZoneSamples {
     @Test
     fun equalsSample() {
         // Comparing time zones for equality is based on their IDs
-        val zone1 = TimeZone.of("America/New_York")
-        val zone2 = TimeZone.of("America/New_York")
+        val zone1 = TimeZoneContext.System.get("America/New_York")
+        val zone2 = TimeZoneContext.System.get("America/New_York")
         check(zone1 == zone2) // different instances, but the same ID
-        val zone3 = TimeZone.of("UTC+01:00")
-        val zone4 = TimeZone.of("GMT+01:00")
+        val zone3 = TimeZoneContext.System.get("UTC+01:00")
+        val zone4 = TimeZoneContext.System.get("GMT+01:00")
         check(zone3 != zone4) // the same time zone rules, but different IDs
     }
 
@@ -61,7 +62,7 @@ class TimeZoneSamples {
         }
         fun logEntry(message: String, now: Instant = Clock.System.now()): String {
             val formattedTime = logTimeFormat.format {
-                with(TimeZone.currentSystemDefault()) {
+                with(TimeZoneContext.System.currentTimeZone()) {
                     setDateTime(now.toLocalDateTime())
                     setOffset(offsetAt(now))
                 }
@@ -87,15 +88,15 @@ class TimeZoneSamples {
     @Test
     fun constructorFunction() {
         // Constructing a time zone using the factory function
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         check(zone.id == "America/New_York")
     }
 
     @Test
     fun availableZoneIds() {
         // Constructing every available time zone
-        for (zoneId in TimeZone.availableZoneIds) {
-            val zone = TimeZone.of(zoneId)
+        for (zoneId in TimeZoneContext.System.availableZoneIds()) {
+            val zone = TimeZoneContext.System.get(zoneId)
             // for fixed-offset time zones, normalization can happen, e.g. "UTC+01" -> "UTC+01:00"
             check(zone.id == zoneId || zone is FixedOffsetTimeZone)
         }
@@ -107,7 +108,7 @@ class TimeZoneSamples {
     @Test
     fun toLocalDateTimeWithTwoReceivers() {
         // Converting an instant to a local date-time in a specific time zone
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val localDateTime = with(zone) {
             instant.toLocalDateTime()
@@ -121,7 +122,7 @@ class TimeZoneSamples {
     @Test
     fun toInstantWithTwoReceivers() {
         // Converting a local date-time to an instant in a specific time zone
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val localDateTime = LocalDate(2023, 6, 2).atTime(12, 30)
         val instant = with(zone) {
             localDateTime.toInstant()
@@ -135,7 +136,7 @@ class TimeZoneSamples {
     @Test
     fun offsetAt() {
         // Getting the offset of a time zone at a specific instant
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val offset = zone.offsetAt(instant)
         check(offset == UtcOffset(hours = -4))
@@ -144,7 +145,7 @@ class TimeZoneSamples {
     @Test
     fun instantToLocalDateTime() {
         // Converting an instant to a local date-time in a specific time zone
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val localDateTime = instant.toLocalDateTime(zone)
         check(localDateTime == LocalDate(2023, 6, 2).atTime(8, 30))
@@ -165,7 +166,7 @@ class TimeZoneSamples {
     @Test
     fun offsetIn() {
         // Getting the offset of a time zone at a specific instant
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val offset = instant.offsetIn(zone)
         check(offset == UtcOffset(hours = -4))
@@ -177,7 +178,7 @@ class TimeZoneSamples {
     @Test
     fun localDateTimeToInstantInZone() {
         // Converting a local date-time to an instant in a specific time zone
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         val localDateTime = LocalDate(2023, 6, 2).atTime(12, 30)
         val instant = localDateTime.toInstant(zone)
         check(instant == Instant.parse("2023-06-02T16:30:00Z"))
@@ -196,7 +197,7 @@ class TimeZoneSamples {
     @Test
     fun atStartOfDayIn() {
         // Finding the start of a given day in specific time zones
-        val zone = TimeZone.of("America/Cuiaba")
+        val zone = TimeZoneContext.System.get("America/Cuiaba")
         // The normal case where `atStartOfDayIn` returns the instant of 00:00:00 in the given time zone.
         val normalDate = LocalDate(2023, 6, 2)
         val startOfDay = normalDate.atStartOfDayIn(zone)
@@ -216,7 +217,7 @@ class TimeZoneSamples {
                 "UTC+01:30" to "2023-06-02T12:30+01:30",
                 "Europe/Berlin" to "2023-06-02T12:30+02:00[Europe/Berlin]",
             )) {
-                val zone = TimeZone.of(zoneId)
+                val zone = TimeZoneContext.System.get(zoneId)
                 // format the local date-time with either just the offset or the offset and the full time zone
                 val formatted = buildString {
                     append(localDateTime)
@@ -245,7 +246,7 @@ class TimeZoneSamples {
         @Test
         fun offset() {
             // Getting the offset of a fixed-offset time zone
-            val zone = TimeZone.of("UTC+01:30") as FixedOffsetTimeZone
+            val zone = TimeZoneContext.System.get("UTC+01:30") as FixedOffsetTimeZone
             check(zone.id == "UTC+01:30")
             check(zone.offset == UtcOffset(hours = 1, minutes = 30))
         }

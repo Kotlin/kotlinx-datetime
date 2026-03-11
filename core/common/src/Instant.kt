@@ -57,7 +57,7 @@ public fun Instant.Companion.parse(
  *   Then, it will not be necessary to pass the [timeZone].
  * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], like in
- *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
+ *   `Clock.System.now().plus(5, DateTimeUnit.DAY, TimeZoneContext.System.currentTimeZone())`.
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].
@@ -104,7 +104,7 @@ public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = t
  *   Then, it is not necessary to pass the [timeZone].
  * - If the [DateTimePeriod] only has a single non-zero component (only the months or only the days),
  *   please consider using a multiple of [DateTimeUnit.DAY] or [DateTimeUnit.MONTH], as in
- *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZone.currentSystemDefault())`.
+ *   `Clock.System.now().minus(5, DateTimeUnit.DAY, TimeZoneContext.System.currentTimeZone())`.
  *
  * @throws DateTimeArithmeticException if this value or the results of intermediate computations are too large to fit in
  * [LocalDateTime].

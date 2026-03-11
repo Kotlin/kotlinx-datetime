@@ -9,19 +9,20 @@
 
 package kotlinx.datetime.internal
 
-private class TzdbBionic(private val rules: Map<String, Entry>) : TimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRulesCommon =
-        rules[id]?.readRules() ?: throw IllegalStateException("Unknown time zone $id")
+private class TzdbBionic(private val rules: Map<String, Entry>) : RuleBasedTimeZoneDatabase {
+    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? = rules[id]?.readRules()
 
-    override fun availableTimeZoneIds(): Set<String> = rules.keys
+    override fun availableZoneIds(): Set<String> = rules.keys
 
     class Entry(val file: ByteArray, val offset: Int, val length: Int) {
         fun readRules(): TimeZoneRulesCommon = readTzFile(file.copyOfRange(offset, offset + length)).toTimeZoneRules()
     }
+
+    override fun toString() = "TzdbBionic"
 }
 
 // see https://android.googlesource.com/platform/bionic/+/master/libc/tzcode/bionic.cpp for the format
-internal fun TzdbBionic(): TimeZoneDatabase = TzdbBionic(buildMap<String, TzdbBionic.Entry> {
+internal fun TzdbBionic(): RuleBasedTimeZoneDatabase = TzdbBionic(buildMap<String, TzdbBionic.Entry> {
     for (path in listOf(
         Path.fromString("/system/usr/share/zoneinfo/tzdata"), // immutable fallback tzdb
         Path.fromString("/apex/com.android.tzdata/etc/tz/tzdata"), // an up-to-date tzdb, may not exist

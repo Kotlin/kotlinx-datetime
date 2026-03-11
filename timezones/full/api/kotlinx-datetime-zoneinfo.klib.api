@@ -1,8 +1,18 @@
 // Klib ABI Dump
-// Targets: [wasmWasi]
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm32Hfp, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, wasmWasi, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
 // - Show declarations: true
 
 // Library unique name: <org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo>
+final object kotlinx.datetime.zoneinfo/BundledTimeZoneContext : kotlinx.datetime/TimeZoneContext { // kotlinx.datetime.zoneinfo/BundledTimeZoneContext|null[0]
+    final fun availableZoneIds(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.availableZoneIds|availableZoneIds(){}[0]
+    final fun currentTimeZone(): kotlinx.datetime/TimeZone // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.currentTimeZone|currentTimeZone(){}[0]
+    final fun currentTimeZoneId(): kotlin/String // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.currentTimeZoneId|currentTimeZoneId(){}[0]
+    final fun get(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.get|get(kotlin.String){}[0]
+    final fun getOrNull(kotlin/String): kotlinx.datetime/TimeZone? // kotlinx.datetime.zoneinfo/BundledTimeZoneContext.getOrNull|getOrNull(kotlin.String){}[0]
+}
+
+final val kotlinx.datetime.zoneinfo/Bundled // kotlinx.datetime.zoneinfo/Bundled|@kotlinx.datetime.TimeZoneContext.Companion{}Bundled[0]
+    final fun (kotlinx.datetime/TimeZoneContext.Companion).<get-Bundled>(): kotlinx.datetime.zoneinfo/BundledTimeZoneContext // kotlinx.datetime.zoneinfo/Bundled.<get-Bundled>|<get-Bundled>@kotlinx.datetime.TimeZoneContext.Companion(){}[0]

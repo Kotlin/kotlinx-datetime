@@ -6,7 +6,10 @@
 package kotlinx.datetime
 
 import java.io.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.fail
 
 class JvmSerializationTest {
 
@@ -55,7 +58,7 @@ class JvmSerializationTest {
     @Test
     fun serializeTimeZone() {
         assertFailsWith<NotSerializableException> {
-            roundTripSerialization(TimeZone.of("Europe/Moscow"))
+            roundTripSerialization(TimeZoneContext.System.get("Europe/Moscow"))
         }
     }
 

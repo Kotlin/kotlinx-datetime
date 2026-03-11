@@ -1,5 +1,5 @@
-import kotlinx.datetime.TimeZone
+import kotlinx.datetime.TimeZoneContext
 
 fun main() {
-    println(TimeZone.of("Europe/Berlin"))
+    println(TimeZoneContext.System.get("Europe/Berlin"))
 }

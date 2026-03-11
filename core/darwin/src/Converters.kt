@@ -8,6 +8,7 @@
 package kotlinx.datetime
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.NANOS_PER_ONE
 import platform.Foundation.*
 import kotlin.time.Instant
@@ -76,7 +77,17 @@ public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone
 /**
  * Converts the [NSTimeZone] to the corresponding [TimeZone].
  */
-public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
+@Deprecated(
+    "Use the overload that specifies the timezone database to use.",
+    ReplaceWith("toKotlinTimeZone(TimeZoneContext.System)"),
+)
+public fun NSTimeZone.toKotlinTimeZone(): TimeZone = toKotlinTimeZone(TimeZoneContext.System)
+
+/**
+ * Converts the [NSTimeZone] to the corresponding [TimeZone].
+ */
+public fun NSTimeZone.toKotlinTimeZone(timeZoneDatabase: TimeZoneDatabase): TimeZone =
+    timeZoneDatabase.get(name)
 
 /**
  * Converts the given [LocalDate] to [NSDateComponents].
