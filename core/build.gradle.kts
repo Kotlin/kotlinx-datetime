@@ -278,12 +278,18 @@ tasks {
         // Also ensure that the module path is used instead of classpath.
         classpath = compileKotlinJvm.libraries
         modularity.inferModulePath.set(true)
+        options.javaModuleVersion.set(project.version.toString().takeUnless { it == Project.DEFAULT_VERSION })
     }
 
     // Configure the JAR task so that it will include the compiled module-info class file.
     val jvmJar by existing(Jar::class) {
         manifest {
-            attributes("Multi-Release" to true)
+            attributes(
+                "Multi-Release" to true,
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
         }
         from(compileJavaModuleInfo.map { it.destinationDirectory }) {
             into("META-INF/versions/9/")
