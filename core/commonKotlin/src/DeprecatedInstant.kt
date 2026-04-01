@@ -205,59 +205,6 @@ public actual class Instant internal constructor(
 
 }
 
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()")
-)
-public actual fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
-    toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()
-
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().plus(1, unit, timeZone).toDeprecatedInstant()")
-)
-public actual fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(1L, unit, timeZone)
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
-)
-public actual fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(value.toLong(), unit, timeZone)
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit, timeZone).toDeprecatedInstant()")
-)
-public actual fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(-value.toLong(), unit, timeZone)
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
-)
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()
-
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit).toDeprecatedInstant()")
-)
-public actual fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
-    toStdlibInstant().plus(value, unit).toDeprecatedInstant()
-
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)")
-)
-public actual fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod =
-    toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)
-
-@Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)")
-)
-public actual fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
-    toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)
-
 
 private val ISO_DATE_TIME_OFFSET_WITH_TRAILING_ZEROS = DateTimeComponents.Format {
     date(ISO_DATE)
