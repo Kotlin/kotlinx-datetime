@@ -73,7 +73,7 @@ class DateTimeComponentsFormatTest {
             put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset.ZERO), ("Mon, 30 Jun 2008 11:05:30 GMT" to setOf()))
             put(dateTimeComponents(LocalDate(2008, 6, 3), LocalTime(11, 5, 30), UtcOffset(hours = 2)), ("Tue, 3 Jun 2008 11:05:30 +0200" to setOf()))
             put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 30), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:30 -0300" to setOf()))
-            put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 0), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05 -0300" to setOf("Mon, 30 Jun 2008 11:05:00 -0300")))
+            put(dateTimeComponents(LocalDate(2008, 6, 30), LocalTime(11, 5, 0), UtcOffset(hours = -3)), ("Mon, 30 Jun 2008 11:05:00 -0300" to setOf("Mon, 30 Jun 2008 11:05 -0300")))
         }
         test(bags, DateTimeComponents.Formats.RFC_1123)
     }
