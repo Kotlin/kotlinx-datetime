@@ -3,14 +3,11 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-import jetbrains.buildServer.configs.kotlin.BuildType
-import jetbrains.buildServer.configs.kotlin.DslContext
-import jetbrains.buildServer.configs.kotlin.Project
+import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.notifications
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.toId
 import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
 
@@ -88,4 +85,23 @@ fun Project.additionalConfiguration() {
             doesNotContain("teamcity.agent.jvm.os.name", "Windows")
         }
     }.also { buildType(it) }
+
+    val deployment = knownBuilds.deploymentSubproject
+    val deployStart = deployment.knownBuilds.deployStart
+    deployStart.params {
+        param("reverse.dep.*.DeploymentName", "kotlinx.collections.immutable %releaseVersion%")
+
+        select(
+            "reverse.dep.*.publicationCommand",
+            "",
+            options = listOf(
+                "all" to "publishAllPublicationsToBuildLocalRepository",
+                "zoneinfo only" to ":kotlinx-datetime-zoneinfo:publishAllPublicationsToBuildLocalRepository",
+                "core only" to ":kotlinx-datetime:publishAllPublicationsToBuildLocalRepository"
+            ),
+            label = "Artifacts to publish",
+            display = ParameterDisplay.PROMPT
+        )
+    }
+
 }
