@@ -12,8 +12,7 @@ body:
 
         Please focus on **what problem you're trying to solve** and **why existing APIs don't work well enough**.
 
-        If you're unsure whether this belongs here, that's okay —
-        just describe your use case and we'll figure it out together.
+        If you're unsure whether this is kotlinx-datetime-related, consider asking on [Stack Overflow](https://stackoverflow.com/questions/tagged/kotlinx-datetime) or the [Kotlinlang Slack](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) first — the functionality may already exist elsewhere, or someone may recommend an alternative.
 
   - type: textarea
     id: use_case
@@ -73,7 +72,7 @@ body:
         Links and comparisons are helpful, but not required.
       placeholder: |
         Java's java.time has a similar feature that works like this...
-        Moment.js uses an approach where...
+        Temporal.js uses an approach where...
     validations:
       required: false
 

@@ -50,9 +50,11 @@ body:
       placeholder: |
         ```kotlin
         import kotlinx.datetime.*
+        import kotlin.time.Clock
 
         fun main() {
-            val instant = Clock.System.now()
+            val currentMoment = Clock.System.now()
+            val datetimeInUtc = currentMoment.toLocalDateTime(TimeZone.UTC)
             // unexpected behavior here
         }
         ```
