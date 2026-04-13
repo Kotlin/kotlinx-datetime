@@ -14,7 +14,6 @@ import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
-@Serializable(with = TimeZoneSerializer::class)
 public actual open class TimeZone internal constructor() {
 
     public actual companion object {
@@ -72,6 +71,15 @@ public actual open class TimeZone internal constructor() {
 
         public actual val availableZoneIds: Set<String>
             get() = getAvailableZoneIds()
+
+        @Deprecated(
+            "Serializing TimeZone is discouraged, " +
+                    "as deserialization can fail depending on the configuration. " +
+                    "Please serialize the string id instead.",
+            level = DeprecationLevel.WARNING,
+        )
+        @Suppress("DEPRECATION")
+        public actual fun serializer(): kotlinx.serialization.KSerializer<TimeZone> = TimeZoneSerializer
     }
 
     public actual open val id: String
@@ -117,7 +125,6 @@ public actual open class TimeZone internal constructor() {
     actual override fun toString(): String = id
 }
 
-@Serializable(with = FixedOffsetTimeZoneSerializer::class)
 public actual class FixedOffsetTimeZone internal constructor(public actual val offset: UtcOffset, override val id: String) : TimeZone() {
 
     public actual constructor(offset: UtcOffset) : this(offset, offset.toString())
@@ -134,6 +141,20 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
         dateTime.toInstant(offset)
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
+
+    /** @suppress */
+    public actual companion object {
+        /** @suppress */
+        @Deprecated(
+            "Serializing FixedOffsetTimeZone is discouraged, " +
+                    "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
+                    "Please serialize the string id instead.",
+            level = DeprecationLevel.WARNING,
+        )
+        @Suppress("DEPRECATION")
+        public actual fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
+            FixedOffsetTimeZoneSerializer
+    }
 }
 
 
