@@ -514,18 +514,3 @@ private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =
 
 private fun LocalDateTime.plus(value: Int, unit: DateTimeUnit.DateBased) =
     date.plus(value, unit).atTime(time)
-
-// org.threeten.bp.LocalDateTime#until
-internal fun LocalDateTime.until(other: LocalDateTime, unit: DateTimeUnit.DateBased): Long {
-    val otherDate = other.date
-    val delta = when {
-        otherDate > date && other.time < time -> -1 // addition won't throw: endDate - date >= 1
-        otherDate < date && other.time > time -> 1 // addition won't throw: date - endDate >= 1
-        else -> 0
-    }
-    val endDate = otherDate.plus(delta, DateTimeUnit.DAY)
-    return when (unit) {
-        is DateTimeUnit.MonthBased -> date.until(endDate, DateTimeUnit.MONTH) / unit.months
-        is DateTimeUnit.DayBased -> date.until(endDate, DateTimeUnit.DAY) / unit.days
-    }
-}
