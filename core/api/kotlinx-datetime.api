@@ -530,6 +530,7 @@ public final class kotlinx/datetime/LocalIsoWeekDate : java/lang/Comparable {
 	public static final field Companion Lkotlinx/datetime/LocalIsoWeekDate$Companion;
 	public fun <init> (III)V
 	public fun <init> (IILkotlinx/datetime/DayOfWeek;)V
+	public synthetic fun <init> (IILkotlinx/datetime/DayOfWeek;Lkotlin/Unit;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun compareTo (Lkotlinx/datetime/LocalIsoWeekDate;)I
 	public fun equals (Ljava/lang/Object;)Z
@@ -542,6 +543,8 @@ public final class kotlinx/datetime/LocalIsoWeekDate : java/lang/Comparable {
 }
 
 public final class kotlinx/datetime/LocalIsoWeekDate$Companion {
+	public final fun orNull (III)Lkotlinx/datetime/LocalIsoWeekDate;
+	public final fun orNull (IILkotlinx/datetime/DayOfWeek;)Lkotlinx/datetime/LocalIsoWeekDate;
 	public final fun parse (Ljava/lang/String;)Lkotlinx/datetime/LocalIsoWeekDate;
 }
 
@@ -744,6 +747,8 @@ public final class kotlinx/datetime/YearMonth : java/io/Serializable, java/lang/
 
 public final class kotlinx/datetime/YearMonth$Companion {
 	public final fun Format (Lkotlin/jvm/functions/Function1;)Lkotlinx/datetime/format/DateTimeFormat;
+	public final fun orNull (II)Lkotlinx/datetime/YearMonth;
+	public final fun orNull (ILkotlinx/datetime/Month;)Lkotlinx/datetime/YearMonth;
 	public final fun parse (Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/YearMonth;
 	public static synthetic fun parse$default (Lkotlinx/datetime/YearMonth$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/YearMonth;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;

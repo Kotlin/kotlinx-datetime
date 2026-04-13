@@ -538,6 +538,8 @@ final class kotlinx.datetime/LocalIsoWeekDate : kotlin/Comparable<kotlinx.dateti
     final fun toString(): kotlin/String // kotlinx.datetime/LocalIsoWeekDate.toString|toString(){}[0]
 
     final object Companion { // kotlinx.datetime/LocalIsoWeekDate.Companion|null[0]
+        final fun orNull(kotlin/Int, kotlin/Int, kotlin/Int): kotlinx.datetime/LocalIsoWeekDate? // kotlinx.datetime/LocalIsoWeekDate.Companion.orNull|orNull(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun orNull(kotlin/Int, kotlin/Int, kotlinx.datetime/DayOfWeek): kotlinx.datetime/LocalIsoWeekDate? // kotlinx.datetime/LocalIsoWeekDate.Companion.orNull|orNull(kotlin.Int;kotlin.Int;kotlinx.datetime.DayOfWeek){}[0]
         final fun parse(kotlin/String): kotlinx.datetime/LocalIsoWeekDate // kotlinx.datetime/LocalIsoWeekDate.Companion.parse|parse(kotlin.String){}[0]
     }
 }
@@ -636,6 +638,8 @@ final class kotlinx.datetime/YearMonth : kotlin/Comparable<kotlinx.datetime/Year
 
     final object Companion { // kotlinx.datetime/YearMonth.Companion|null[0]
         final fun Format(kotlin/Function1<kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth, kotlin/Unit>): kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth> // kotlinx.datetime/YearMonth.Companion.Format|Format(kotlin.Function1<kotlinx.datetime.format.DateTimeFormatBuilder.WithYearMonth,kotlin.Unit>){}[0]
+        final fun orNull(kotlin/Int, kotlin/Int): kotlinx.datetime/YearMonth? // kotlinx.datetime/YearMonth.Companion.orNull|orNull(kotlin.Int;kotlin.Int){}[0]
+        final fun orNull(kotlin/Int, kotlinx.datetime/Month): kotlinx.datetime/YearMonth? // kotlinx.datetime/YearMonth.Companion.orNull|orNull(kotlin.Int;kotlinx.datetime.Month){}[0]
         final fun parse(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth> = ...): kotlinx.datetime/YearMonth // kotlinx.datetime/YearMonth.Companion.parse|parse(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/YearMonth> // kotlinx.datetime/YearMonth.Companion.serializer|serializer(){}[0]
     }

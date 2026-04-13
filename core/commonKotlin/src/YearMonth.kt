@@ -12,13 +12,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable(with = YearMonthSerializer::class)
 public actual class YearMonth
-public actual constructor(public actual val year: Int, month: Int) : Comparable<YearMonth> {
+private constructor(public actual val year: Int, month: Int, unit: Unit) : Comparable<YearMonth> {
     internal actual val monthNumber: Int = month
 
-    init {
-        require(month in 1..12) { "Month must be in 1..12, but was $month" }
-        require(year in LocalDate.MIN.year..LocalDate.MAX.year) {
-            "Year $year is out of range: ${LocalDate.MIN.year}..${LocalDate.MAX.year}"
+    private fun validateYear() {
+        require(year in YEAR_MIN..YEAR_MAX) {
+            "Year $year is out of range: $YEAR_MIN..$YEAR_MAX"
         }
     }
 
@@ -32,20 +31,21 @@ public actual constructor(public actual val year: Int, month: Int) : Comparable<
 
     public actual val days: LocalDateRange get() = firstDay..lastDay // no ranges yet
 
-    public actual constructor(year: Int, month: Month): this(year, month.number)
+    public actual constructor(year: Int, month: Int): this(year, month, Unit) {
+        require(monthNumber in 1..12) { "Month must be in 1..12, but was $month" }
+        validateYear()
+    }
+
+    public actual constructor(year: Int, month: Month): this(year, month.number, Unit) {
+        validateYear()
+    }
 
     public actual companion object {
-        public actual fun orNull(year: Int, month: Int): YearMonth? = try {
-            YearMonth(year, month)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        public actual fun orNull(year: Int, month: Int): YearMonth? =
+            if (year !in YEAR_MIN..YEAR_MAX || month !in 1..12) null else YearMonth(year, month, Unit)
 
-        public actual fun orNull(year: Int, month: Month): YearMonth? = try {
-            YearMonth(year, month)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        public actual fun orNull(year: Int, month: Month): YearMonth? =
+            if (year !in YEAR_MIN..YEAR_MAX) null else YearMonth(year, month.number, Unit)
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<YearMonth>): YearMonth =
             format.parse(input)

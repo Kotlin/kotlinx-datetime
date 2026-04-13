@@ -45,7 +45,7 @@ import kotlin.math.absoluteValue
  * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.localDateConversion
  * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.parsingAndFormatting
  */
-public class LocalIsoWeekDate(
+public class LocalIsoWeekDate private constructor(
     /**
      * The week-year part of the week-date. Not to be confused with the [LocalDate.year]!
      *
@@ -79,33 +79,62 @@ public class LocalIsoWeekDate(
      * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.dayOfWeekProperty
      */
     public val dayOfWeek: DayOfWeek,
+    unit: Unit,
 ) : Comparable<LocalIsoWeekDate> {
 
-    init {
+    private inline fun checkValidity(fail: (String) -> Nothing) {
         when (isoWeekYear) {
             // The happy case: a year with the full range of dates.
             in YEAR_MIN..<YEAR_MAX -> {
                 // No extra checks needed
-                require(isoWeekNumber in 1..53) { "isoWeekNumber must be in the range 1..53, got: $isoWeekNumber" }
-                if (isoWeekNumber == 53) {
-                    require(isIsoWeekLeapYear(isoWeekYear)) {
-                        "There are only 52 weeks in ISO week year $isoWeekYear, but `isoWeekNumber` is 53"
-                    }
+                if (isoWeekNumber !in 1..53) {
+                    fail("isoWeekNumber must be in the range 1..53, got: $isoWeekNumber")
+                }
+                if (isoWeekNumber == 53 && !isIsoWeekLeapYear(isoWeekYear)) {
+                    fail("There are only 52 weeks in ISO week year $isoWeekYear, but `isoWeekNumber` is 53")
                 }
             }
             // Max date is +999999999-W52-5
             YEAR_MAX -> {
-                require(isoWeekNumber in 1..52) {
-                    "isoWeekNumber for year $YEAR_MAX must be in the range 1..52, got: $isoWeekNumber"
+                if (isoWeekNumber !in 1..52) {
+                    fail("isoWeekNumber for year $YEAR_MAX must be in the range 1..52, got: $isoWeekNumber")
                 }
-                require(isoWeekNumber != 52 || dayOfWeek <= DayOfWeek.FRIDAY) {
-                    "In the year $YEAR_MAX, the 52nd week of the year is only representable up to Friday " +
-                            "for compatibility with the LocalDate range, but got $dayOfWeek"
+                if (isoWeekNumber == 52 && dayOfWeek > DayOfWeek.FRIDAY) {
+                    fail("In the year $YEAR_MAX, the 52nd week of the year is only representable up to Friday " +
+                            "for compatibility with the LocalDate range, but got $dayOfWeek")
                 }
             }
             // Simply out of the supported range for `isoWeekYear`.
-            else -> throw IllegalArgumentException("The ISO week-year $isoWeekYear is out of range")
+            else -> fail("The ISO week-year $isoWeekYear is out of range")
         }
+    }
+
+    /**
+     * Constructs a [LocalIsoWeekDate] instance from the given date components.
+     *
+     * The [isoWeekNumber] component is 1-based.
+     *
+     * The supported ranges of components:
+     * - [isoWeekYear] the range is at least enough to represent dates of all instants between
+     *   [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+     * - [isoWeekNumber] `1..52` or `1..53`, depending on the [isoWeekYear]
+     * - [dayOfWeek] all values of [DayOfWeek]
+     *
+     * Additionally, the full range of supported dates is exactly the same as that of [LocalDate].
+     *
+     * @throws IllegalArgumentException if any parameter is out of range
+     * or if [isoWeekNumber] is invalid for the given [isoWeekYear].
+     * @see orNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
+     * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.constructorFunction
+     */
+    public constructor(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: DayOfWeek) : this(
+        isoWeekYear,
+        isoWeekNumber,
+        dayOfWeek,
+        Unit
+    ) {
+        checkValidity { throw IllegalArgumentException(it) }
     }
 
     /**
@@ -130,7 +159,7 @@ public class LocalIsoWeekDate(
     public constructor(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: Int) : this(
         isoWeekYear,
         isoWeekNumber,
-        DayOfWeek(dayOfWeek)
+        DayOfWeek(dayOfWeek),
     )
 
     public companion object {
@@ -149,11 +178,10 @@ public class LocalIsoWeekDate(
          *
          * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.orNull
          */
-        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: DayOfWeek): LocalIsoWeekDate? = try {
-            LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: DayOfWeek): LocalIsoWeekDate? =
+            LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek, Unit).also {
+                it.checkValidity { return null }
+            }
 
         /**
          * Constructs a [LocalIsoWeekDate] instance from the given date components
@@ -172,11 +200,8 @@ public class LocalIsoWeekDate(
          *
          * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.orNullDayOfWeekNumber
          */
-        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: Int): LocalIsoWeekDate? = try {
-            LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: Int): LocalIsoWeekDate? =
+            if (dayOfWeek in 1..7) orNull(isoWeekYear, isoWeekNumber, DayOfWeek.entries[dayOfWeek - 1]) else null
 
         /**
          * Parses an ISO 8601 week date string as a [LocalIsoWeekDate].

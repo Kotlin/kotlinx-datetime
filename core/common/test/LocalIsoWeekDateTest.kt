@@ -54,6 +54,7 @@ class LocalIsoWeekDateTest {
     fun construction() {
         val good = listOf(
             Triple(YEAR_MAX, 52, 5), Triple(YEAR_MIN, 1, 1),
+            Triple(2004, 53, 6), Triple(2024, 1, 1), Triple(2024, 52, 7),
         )
         val bad = listOf(
             // out-of-range day-of-week

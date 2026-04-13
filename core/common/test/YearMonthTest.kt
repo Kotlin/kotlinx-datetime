@@ -139,6 +139,12 @@ class YearMonthTest {
         assertEquals(null, YearMonth.orNull(Int.MIN_VALUE, 1))
         assertEquals(null, YearMonth.orNull(2007, 0))
         assertEquals(null, YearMonth.orNull(2007, 13))
+        assertEquals(null, YearMonth.orNull(YEAR_MIN - 1, 1))
+        assertEquals(null, YearMonth.orNull(YEAR_MAX + 1, 1))
+        assertEquals(null, YearMonth.orNull(YEAR_MIN - 1, Month.JANUARY))
+        assertEquals(null, YearMonth.orNull(YEAR_MAX + 1, Month.JANUARY))
+        assertEquals(YearMonth(YEAR_MIN, 1), YearMonth.orNull(YEAR_MIN, 1))
+        assertEquals(YearMonth(YEAR_MAX, 12), YearMonth.orNull(YEAR_MAX, 12))
         assertEquals(YearMonth(2007, 12), YearMonth.orNull(2007, 12))
         assertEquals(YearMonth(2007, Month.DECEMBER), YearMonth.orNull(2007, Month.DECEMBER))
     }
