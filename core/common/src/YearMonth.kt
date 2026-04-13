@@ -223,6 +223,26 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
 }
 
 /**
+ * A shortcut for calling [DateTimeFormat.parseOrNull].
+ *
+ * Parses a string that represents a date and returns the parsed [YearMonth] value,
+ * or `null` if the string does not match the format or does not represent a valid [YearMonth].
+ *
+ * If [format] is not specified, [YearMonth.Formats.ISO] is used.
+ * `2023-01` is an example of a string in this format.
+ *
+ * See [YearMonth.Formats] and [YearMonth.Format] for predefined and custom formats.
+ *
+ * @see YearMonth.toString for formatting using the default format.
+ * @see YearMonth.format for formatting using a custom format.
+ * @see YearMonth.Companion.parse for a version of this function that throws an exception on faulty input.
+ * @sample kotlinx.datetime.test.samples.YearMonthSamples.parseOrNull
+ */
+public expect fun YearMonth.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<YearMonth> = YearMonth.Formats.ISO
+): YearMonth?
+
+/**
  * Formats this value using the given [format].
  * Equivalent to calling [DateTimeFormat.format] on [format] with `this`.
  *

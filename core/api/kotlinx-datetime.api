@@ -545,6 +545,7 @@ public final class kotlinx/datetime/LocalIsoWeekDate : java/lang/Comparable {
 
 public final class kotlinx/datetime/LocalIsoWeekDate$Companion {
 	public final fun parse (Ljava/lang/String;)Lkotlinx/datetime/LocalIsoWeekDate;
+	public final fun parseOrNull (Ljava/lang/String;)Lkotlinx/datetime/LocalIsoWeekDate;
 }
 
 public final class kotlinx/datetime/LocalIsoWeekDateKt {
@@ -754,6 +755,11 @@ public final class kotlinx/datetime/YearMonth$Companion {
 public final class kotlinx/datetime/YearMonth$Formats {
 	public static final field INSTANCE Lkotlinx/datetime/YearMonth$Formats;
 	public final fun getISO ()Lkotlinx/datetime/format/DateTimeFormat;
+}
+
+public final class kotlinx/datetime/YearMonthJvmKt {
+	public static final fun parseOrNull (Lkotlinx/datetime/YearMonth$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlinx/datetime/YearMonth;
+	public static synthetic fun parseOrNull$default (Lkotlinx/datetime/YearMonth$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlinx/datetime/YearMonth;
 }
 
 public final class kotlinx/datetime/YearMonthKt {

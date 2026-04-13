@@ -60,3 +60,7 @@ public actual constructor(public actual val year: Int, month: Int) : Comparable<
 
     override fun hashCode(): Int = year * 31 + month.hashCode()
 }
+
+public actual fun YearMonth.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<YearMonth>
+): YearMonth? = format.parseOrNull(input)

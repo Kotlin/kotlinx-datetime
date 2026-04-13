@@ -228,6 +228,24 @@ public class LocalIsoWeekDate(
                 throw DateTimeFormatException("Invalid ISO week date: $isoString", e)
             }
         }
+
+        /**
+         * Parses an ISO 8601 week date string as a [LocalIsoWeekDate] or returns `null` if the string could not be
+         * parsed into a [LocalIsoWeekDate].
+         *
+         * See [parse] for the list of supported formats.
+         *
+         * @see parse for a version of this function that throws an exception on faulty input.
+         * @see toString for the dual operation: obtaining a string from a [LocalIsoWeekDate].
+         * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.parseOrNull
+         */
+        public fun parseOrNull(isoString: String): LocalIsoWeekDate? = try {
+            parse(isoString)
+        } catch (_: DateTimeFormatException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
+        }
     }
 
     /**
