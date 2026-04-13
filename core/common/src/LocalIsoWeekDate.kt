@@ -150,24 +150,63 @@ public class LocalIsoWeekDate(
          * @throws IllegalArgumentException if the text cannot be parsed or the boundaries of [LocalIsoWeekDate] are
          * exceeded.
          * @see toString for the dual operation: obtaining a string from a [LocalIsoWeekDate].
+         * @see parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.parsing
          */
-        public fun parse(isoString: String): LocalIsoWeekDate {
-            val sanitizedIsoString = removeLeadingZerosFromLongYearFormIsoWeekDate(isoString)
-            fun parseFailure(error: String): Nothing {
-                throw DateTimeFormatException("$error when parsing a LocalIsoWeekDate from \"$sanitizedIsoString\"")
-            }
+        public fun parse(isoString: String): LocalIsoWeekDate =
+            parseImpl(isoString, parseException = { message, position ->
+                throw DateTimeFormatException(
+                    "$message at position $position when parsing a LocalIsoWeekDate from \"$isoString\""
+                )
+            },
+                construct = { year, weekNumber, isoDayOfWeekNumber ->
+                    val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
+                    try {
+                        return LocalIsoWeekDate(year, weekNumber, dayOfWeek)
+                    } catch (e: IllegalArgumentException) {
+                        throw DateTimeFormatException("Invalid ISO week date: $isoString", e)
+                    }
+                }
+            )
 
-            val s = sanitizedIsoString
-
-            fun expect(what: String, where: Int, predicate: (Char) -> Boolean) {
-                val c = s[where]
-                if (!predicate(c)) {
-                    parseFailure("Expected $what, but got '$c' at position $where")
+        /**
+         * Parses an ISO 8601 week date string as a [LocalIsoWeekDate] or returns `null` if the string could not be
+         * parsed into a [LocalIsoWeekDate].
+         *
+         * See [parse] for the list of supported formats.
+         *
+         * @see parse for a version of this function that throws an exception on faulty input.
+         * @see toString for the dual operation: obtaining a string from a [LocalIsoWeekDate].
+         * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.parseOrNull
+         */
+        public fun parseOrNull(isoString: String): LocalIsoWeekDate? = parseImpl(isoString,
+            parseException = { _, _ -> return null },
+            construct = { year, weekNumber, isoDayOfWeekNumber ->
+                try {
+                    val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
+                    LocalIsoWeekDate(year, weekNumber, dayOfWeek)
+                } catch (_: IllegalArgumentException) {
+                    null
                 }
             }
+        )
+
+        private inline fun <T> parseImpl(
+            text: String,
+            parseException: (message: String, position: Int) -> Nothing,
+            construct: (
+                year: Int, weekNumber: Int, isoDayOfWeekNumber: Int,
+            ) -> T
+        ): T {
+            val sanitizedIsoString = removeLeadingZerosFromLongYearFormIsoWeekDate(text)
+            val s = sanitizedIsoString
+            // By how many chars to the right from `text` the part of the sanitized string after the year number is
+            val posAdjustment = text.length - sanitizedIsoString.length
+
             var i = 0
-            require(s.isNotEmpty()) { "An empty string is not a valid LocalIsoWeekDate" }
+            if (s.isEmpty()) {
+                parseException("An empty string is not a valid LocalIsoWeekDate", 0)
+            }
             val yearSign = when (val c = s[i]) {
                 '+', '-' -> {
                     ++i; c
@@ -184,23 +223,23 @@ public class LocalIsoWeekDate(
             val yearStrLength = i - yearStart
             val year = when {
                 yearStrLength > 10 -> {
-                    parseFailure("Expected at most 10 digits for the year number, got $yearStrLength digits")
+                    parseException("Expected at most 10 digits for the year number, got $yearStrLength digits", yearStart)
                 }
 
                 yearStrLength == 10 && s[yearStart] >= '2' -> {
-                    parseFailure("Expected at most 9 digits for the year number or year 1000000000, got $yearStrLength digits")
+                    parseException("Expected at most 9 digits for the year number or year 1000000000, got $yearStrLength digits", yearStart)
                 }
 
                 yearStrLength < 4 -> {
-                    parseFailure("The year number must be padded to 4 digits, got $yearStrLength digits")
+                    parseException("The year number must be padded to 4 digits, got $yearStrLength digits", yearStart)
                 }
 
                 else -> {
                     if (yearSign == '+' && yearStrLength == 4) {
-                        parseFailure("The '+' sign at the start is only valid for year numbers longer than 4 digits")
+                        parseException("The '+' sign at the start is only valid for year numbers longer than 4 digits", yearStart)
                     }
                     if (yearSign == ' ' && yearStrLength != 4) {
-                        parseFailure("A '+' or '-' sign is required for year numbers longer than 4 digits")
+                        parseException("A '+' or '-' sign is required for year numbers longer than 4 digits", yearStart)
                     }
                     if (yearSign == '-') -absYear else absYear
                 }
@@ -208,43 +247,28 @@ public class LocalIsoWeekDate(
             // reading exactly -Www-D
             //                 012345 6 chars
             if (s.length < i + 6) {
-                parseFailure("The input string is too short")
+                parseException("The input string is too short", s.length + posAdjustment)
             }
-            expect("'-'", i) { it == '-' }
-            expect("'W'", i + 1) { it == 'W' || it == 'w' }
-            expect("'-'", i + 4) { it == '-' }
+            if (s[i] != '-') { parseException("Expected ${"'-'"}, but got '${s[i]}'", i + posAdjustment) }
+            (i + 1).let { where ->
+                if (!(s[where] == 'W' || s[where] == 'w')) {
+                    parseException("Expected ${"'W'"}, but got '${s[where]}'", where + posAdjustment)
+                }
+            }
+            (i + 4).let { where ->
+                if (s[where] != '-') {
+                    parseException("Expected ${"'-'"}, but got '${s[where]}'", where + posAdjustment)
+                }
+            }
             for (j in listOf(2, 3, 5)) {
-                expect("an ASCII digit", i + j) { it in '0'..'9' }
+                if (s[i + j] !in '0'..'9') {
+                    parseException("Expected ${"an ASCII digit"}, but got '${s[i + j]}'", i + j + posAdjustment)
+                }
             }
             val weekNumber = (s[i + 2] - '0') * 10 + (s[i + 3] - '0')
             val isoDayOfWeekNumber = (s[i + 5] - '0')
-            val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
-            if (s.length > i + 6) {
-                parseFailure("Trailing characters")
-            }
-            try {
-                return LocalIsoWeekDate(year, weekNumber, dayOfWeek)
-            } catch (e: IllegalArgumentException) {
-                throw DateTimeFormatException("Invalid ISO week date: $isoString", e)
-            }
-        }
-
-        /**
-         * Parses an ISO 8601 week date string as a [LocalIsoWeekDate] or returns `null` if the string could not be
-         * parsed into a [LocalIsoWeekDate].
-         *
-         * See [parse] for the list of supported formats.
-         *
-         * @see parse for a version of this function that throws an exception on faulty input.
-         * @see toString for the dual operation: obtaining a string from a [LocalIsoWeekDate].
-         * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.parseOrNull
-         */
-        public fun parseOrNull(isoString: String): LocalIsoWeekDate? = try {
-            parse(isoString)
-        } catch (_: DateTimeFormatException) {
-            null
-        } catch (_: IllegalArgumentException) {
-            null
+            if (s.length > i + 6) { parseException("Trailing characters", i + 6 + posAdjustment) }
+            return construct(year, weekNumber, isoDayOfWeekNumber)
         }
     }
 
