@@ -230,6 +230,13 @@ class YearMonthSamples {
         check(YearMonth(2024, Month.APRIL).numberOfDays == 30)
     }
 
+    @Test
+    fun parseOrNull() {
+        // Parsing YearMonth values or failing
+        check(YearMonth.parseOrNull("2024-01") == YearMonth(2024, 1))
+        check(YearMonth.parseOrNull("2024-13") == null)
+    }
+
     class Formats {
         @Test
         fun iso() {
