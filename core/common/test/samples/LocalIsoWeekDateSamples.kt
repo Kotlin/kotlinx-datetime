@@ -85,4 +85,11 @@ class LocalIsoWeekDateSamples {
         check(LocalIsoWeekDate(2004, 52, 7) < LocalIsoWeekDate(2004, 53, 1))
         check(LocalIsoWeekDate(2004, 52, 7) < LocalIsoWeekDate(2005, 1, 1))
     }
+
+    @Test
+    fun parseOrNull() {
+        // Parsing LocalIsoWeekDate values or failing
+        check(LocalIsoWeekDate.parseOrNull("2024-W01-5") == LocalIsoWeekDate(2024, 1, DayOfWeek.FRIDAY))
+        check(LocalIsoWeekDate.parseOrNull("2024-W01-0") == null)
+    }
 }
