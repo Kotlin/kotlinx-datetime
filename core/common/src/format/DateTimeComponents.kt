@@ -157,7 +157,7 @@ public class DateTimeComponents internal constructor(internal val contents: Date
             hour()
             char(':')
             minute()
-            optional {
+            alternativeParsing({}) {
                 char(':')
                 second()
             }
