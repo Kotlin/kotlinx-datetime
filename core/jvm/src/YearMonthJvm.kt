@@ -110,3 +110,17 @@ private val isoFormat by lazy {
         .appendValue(java.time.temporal.ChronoField.MONTH_OF_YEAR, 2)
         .toFormatter()
 }
+
+public actual fun YearMonth.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<YearMonth>
+): YearMonth? =
+    if (format === YearMonth.Formats.ISO) {
+        try {
+            val sanitizedInput = removeLeadingZerosFromLongYearFormYearMonth(input.toString())
+            jtYearMonth.parse(sanitizedInput).let(::YearMonth)
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    } else {
+        format.parseOrNull(input)
+    }

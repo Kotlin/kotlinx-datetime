@@ -542,6 +542,7 @@ final class kotlinx.datetime/LocalIsoWeekDate : kotlin/Comparable<kotlinx.dateti
         final fun orNull(kotlin/Int, kotlin/Int, kotlin/Int): kotlinx.datetime/LocalIsoWeekDate? // kotlinx.datetime/LocalIsoWeekDate.Companion.orNull|orNull(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
         final fun orNull(kotlin/Int, kotlin/Int, kotlinx.datetime/DayOfWeek): kotlinx.datetime/LocalIsoWeekDate? // kotlinx.datetime/LocalIsoWeekDate.Companion.orNull|orNull(kotlin.Int;kotlin.Int;kotlinx.datetime.DayOfWeek){}[0]
         final fun parse(kotlin/String): kotlinx.datetime/LocalIsoWeekDate // kotlinx.datetime/LocalIsoWeekDate.Companion.parse|parse(kotlin.String){}[0]
+        final fun parseOrNull(kotlin/String): kotlinx.datetime/LocalIsoWeekDate? // kotlinx.datetime/LocalIsoWeekDate.Companion.parseOrNull|parseOrNull(kotlin.String){}[0]
     }
 }
 
@@ -1270,6 +1271,7 @@ final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/plusMonth(): kotlinx.dat
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/plusYear(): kotlinx.datetime/YearMonth // kotlinx.datetime/plusYear|plusYear@kotlinx.datetime.YearMonth(){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/until(kotlinx.datetime/YearMonth, kotlinx.datetime/DateTimeUnit.MonthBased): kotlin/Long // kotlinx.datetime/until|until@kotlinx.datetime.YearMonth(kotlinx.datetime.YearMonth;kotlinx.datetime.DateTimeUnit.MonthBased){}[0]
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/yearsUntil(kotlinx.datetime/YearMonth): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlinx.datetime.YearMonth(kotlinx.datetime.YearMonth){}[0]
+final fun (kotlinx.datetime/YearMonth.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth> = ...): kotlinx.datetime/YearMonth? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.YearMonth.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
 final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/first(): kotlinx.datetime/YearMonth // kotlinx.datetime/first|first@kotlinx.datetime.YearMonthProgression(){}[0]
 final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/firstOrNull(): kotlinx.datetime/YearMonth? // kotlinx.datetime/firstOrNull|firstOrNull@kotlinx.datetime.YearMonthProgression(){}[0]
 final fun (kotlinx.datetime/YearMonthProgression).kotlinx.datetime/last(): kotlinx.datetime/YearMonth // kotlinx.datetime/last|last@kotlinx.datetime.YearMonthProgression(){}[0]
