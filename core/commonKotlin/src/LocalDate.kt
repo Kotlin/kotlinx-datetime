@@ -56,7 +56,7 @@ public actual class LocalDate private constructor(
         public fun parse(isoString: String): LocalDate = parse(input = isoString)
 
         public actual fun orNull(year: Int, month: Int, day: Int): LocalDate? =
-            if (!isValidYear(year) || month !in 1..12 || day !in 1..31 ||
+            if (year !in YEAR_MIN..YEAR_MAX || month !in 1..12 || day !in 1..31 ||
                 (day > 28 && day > month.monthLength(isLeapYear(year)))) {
                 null
             } else {
