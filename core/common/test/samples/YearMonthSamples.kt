@@ -58,6 +58,20 @@ class YearMonthSamples {
     }
 
     @Test
+    fun orNullMonthNumber() {
+        // Constructing a YearMonth value or returning null if components are out of range
+        check(YearMonth.orNull(2024, 4) == YearMonth(2024, 4))
+        check(YearMonth.orNull(2024, 13) == null)
+    }
+
+    @Test
+    fun orNull() {
+        // Constructing a YearMonth value or returning null if components are out of range
+        check(YearMonth.orNull(2024, Month.APRIL) == YearMonth(2024, Month.APRIL))
+        check(YearMonth.orNull(Int.MAX_VALUE, Month.APRIL) == null)
+    }
+
+    @Test
     fun year() {
         // Getting the year
         check(YearMonth(2024, Month.APRIL).year == 2024)

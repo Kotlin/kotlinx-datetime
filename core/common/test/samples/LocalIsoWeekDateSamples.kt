@@ -65,6 +65,20 @@ class LocalIsoWeekDateSamples {
     }
 
     @Test
+    fun orNull() {
+        // Constructing a LocalIsoWeekDate or returning null if components are out of range
+        check(LocalIsoWeekDate.orNull(2004, 53, DayOfWeek.SATURDAY) == LocalIsoWeekDate(2004, 53, DayOfWeek.SATURDAY))
+        check(LocalIsoWeekDate.orNull(2004, 54, DayOfWeek.SATURDAY) == null)
+    }
+
+    @Test
+    fun orNullDayOfWeekNumber() {
+        // Constructing a LocalIsoWeekDate or returning null if components are out of range
+        check(LocalIsoWeekDate.orNull(2004, 53, 6) == LocalIsoWeekDate(2004, 53, 6))
+        check(LocalIsoWeekDate.orNull(2004, 53, 8) == null)
+    }
+
+    @Test
     fun parsing() {
         // Constructing a LocalIsoWeekDate from a string
         check(LocalDate(2005, 1, 2) == LocalIsoWeekDate.parse("2004-W53-7").toLocalDate())

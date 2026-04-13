@@ -72,9 +72,15 @@ class LocalIsoWeekDateTest {
             assertEquals(y, date.isoWeekYear)
             assertEquals(w, date.isoWeekNumber)
             assertEquals(d, date.dayOfWeek.isoDayNumber)
+            assertEquals(date, LocalIsoWeekDate.orNull(y, w, d))
+            assertEquals(date, LocalIsoWeekDate.orNull(y, w, DayOfWeek(d)))
         }
         for ((y, w, d) in bad) {
             assertFailsWith<IllegalArgumentException> { LocalIsoWeekDate(y, w, d) }
+            assertEquals(null, LocalIsoWeekDate.orNull(y, w, d))
+            if (d in 1..7) {
+                assertEquals(null, LocalIsoWeekDate.orNull(y, w, DayOfWeek(d)))
+            }
         }
     }
 

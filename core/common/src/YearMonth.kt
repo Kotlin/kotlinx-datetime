@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 JetBrains s.r.o. and contributors.
+ * Copyright 2019-2025 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
@@ -43,6 +43,8 @@ import kotlinx.serialization.Serializable
  * [YearMonth] can be constructed directly from its components using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * [parse] and [toString] methods can be used to obtain a [YearMonth] from and convert it to a string in the
  * ISO 8601 extended format.
  * See sample 2.
@@ -73,6 +75,8 @@ public expect class YearMonth
  * - [month] `1..12`
  *
  * @throws IllegalArgumentException if any parameter is out of range.
+ * @see orNull for a version that returns `null` instead of throwing an exception
+ * when the parameters are invalid.
  * @sample kotlinx.datetime.test.samples.YearMonthSamples.constructorFunctionMonthNumber
  */
 public constructor(year: Int, month: Int) : Comparable<YearMonth> {
@@ -128,11 +132,49 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
      * and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
      *
      * @throws IllegalArgumentException if [year] is out of range.
+     * @see orNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.YearMonthSamples.constructorFunction
      */
     public constructor(year: Int, month: Month)
 
     public companion object {
+        /**
+         * Constructs a [YearMonth] instance from the given year-month components
+         * or returns `null` if a value is out of range.
+         *
+         * The [month] component is 1-based.
+         *
+         * The supported ranges of components:
+         * - [year] the range is unspecified, but at least is enough to represent year-months of all instants between
+         *          [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+         *          and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
+         * - [month] `1..12`
+         *
+         * Use `YearMonth(year, month)` to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.YearMonthSamples.orNullMonthNumber
+         */
+        public fun orNull(year: Int, month: Int): YearMonth?
+
+        /**
+         * Constructs a [YearMonth] instance from the given year-month components
+         * or returns `null` if a value is out of range.
+         *
+         * The supported ranges of components:
+         * - [year] the range is unspecified, but at least is enough to represent year-months of all instants between
+         *          [Instant.DISTANT_PAST][kotlin.time.Instant.DISTANT_PAST]
+         *          and [Instant.DISTANT_FUTURE][kotlin.time.Instant.DISTANT_FUTURE] in any time zone.
+         * - [month] all values of the [Month] enum
+         *
+         * Use `YearMonth(year, month)` to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.YearMonthSamples.orNull
+         */
+        public fun orNull(year: Int, month: Month): YearMonth?
+
         /**
          * A shortcut for calling [DateTimeFormat.parse].
          *

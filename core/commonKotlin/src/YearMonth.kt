@@ -35,6 +35,18 @@ public actual constructor(public actual val year: Int, month: Int) : Comparable<
     public actual constructor(year: Int, month: Month): this(year, month.number)
 
     public actual companion object {
+        public actual fun orNull(year: Int, month: Int): YearMonth? = try {
+            YearMonth(year, month)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
+        public actual fun orNull(year: Int, month: Month): YearMonth? = try {
+            YearMonth(year, month)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<YearMonth>): YearMonth =
             format.parse(input)
 

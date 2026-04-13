@@ -32,6 +32,8 @@ import kotlin.math.absoluteValue
  * [LocalIsoWeekDate] can be constructed directly from its components using the constructor.
  * See sample 1.
  *
+ * A non-throwing version of the constructor is the [orNull] function.
+ *
  * [toLocalDate] and [LocalDate.toLocalIsoWeekDate] can be used to convert between [LocalDate] and [LocalIsoWeekDate].
  * See sample 2.
  *
@@ -121,6 +123,8 @@ public class LocalIsoWeekDate(
      *
      * @throws IllegalArgumentException if any parameter is out of range
      * or if [isoWeekNumber] is invalid for the given [isoWeekYear].
+     * @see orNull for a version that returns `null` instead of throwing an exception
+     * when the parameters are invalid.
      * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.constructorFunctionDayOfWeekNumber
      */
     public constructor(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: Int) : this(
@@ -130,6 +134,50 @@ public class LocalIsoWeekDate(
     )
 
     public companion object {
+        /**
+         * Constructs a [LocalIsoWeekDate] instance from the given date components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * The supported ranges of components:
+         * - [isoWeekYear] the range is at least enough to represent dates of all instants between
+         *   [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [isoWeekNumber] `1..52` or `1..53`, depending on the [isoWeekYear]
+         * - [dayOfWeek] all values of the [DayOfWeek] enum
+         *
+         * Use `LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)` to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.orNull
+         */
+        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: DayOfWeek): LocalIsoWeekDate? = try {
+            LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
+        /**
+         * Constructs a [LocalIsoWeekDate] instance from the given date components
+         * or returns `null` if a value is out of range or invalid.
+         *
+         * The components [isoWeekNumber] and [dayOfWeek] are 1-based.
+         *
+         * The supported ranges of components:
+         * - [isoWeekYear] the range is at least enough to represent dates of all instants between
+         *   [Instant.DISTANT_PAST] and [Instant.DISTANT_FUTURE]
+         * - [isoWeekNumber] `1..52` or `1..53`, depending on the [isoWeekYear]
+         * - [dayOfWeek] `1..7`
+         *
+         * Use `LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)` to throw an exception
+         * instead of returning `null` when the parameters are invalid.
+         *
+         * @sample kotlinx.datetime.test.samples.LocalIsoWeekDateSamples.orNullDayOfWeekNumber
+         */
+        public fun orNull(isoWeekYear: Int, isoWeekNumber: Int, dayOfWeek: Int): LocalIsoWeekDate? = try {
+            LocalIsoWeekDate(isoWeekYear, isoWeekNumber, dayOfWeek)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
         /**
          * Parses an ISO 8601 week date string as a [LocalIsoWeekDate].
          *
