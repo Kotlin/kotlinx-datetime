@@ -40,6 +40,18 @@ public actual class YearMonth internal constructor(
     })
 
     public actual companion object {
+        public actual fun orNull(year: Int, month: Int): YearMonth? = try {
+            YearMonth(year, month)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
+        public actual fun orNull(year: Int, month: Month): YearMonth? = try {
+            YearMonth(year, month)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
         public actual fun parse(input: CharSequence, format: DateTimeFormat<YearMonth>): YearMonth =
             if (format === Formats.ISO) {
                 try {
