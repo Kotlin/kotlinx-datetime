@@ -255,12 +255,8 @@ public class LocalIsoWeekDate private constructor(
         public fun parseOrNull(isoString: String): LocalIsoWeekDate? = parseImpl(isoString,
             parseException = { _, _ -> return null },
             construct = { year, weekNumber, isoDayOfWeekNumber ->
-                try {
-                    val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
-                    LocalIsoWeekDate(year, weekNumber, dayOfWeek)
-                } catch (_: IllegalArgumentException) {
-                    null
-                }
+                val dayOfWeek = DayOfWeek(isoDayOfWeekNumber)
+                orNull(year, weekNumber, dayOfWeek)
             }
         )
 
@@ -337,6 +333,9 @@ public class LocalIsoWeekDate private constructor(
                 if (s[i + j] !in '0'..'9') {
                     parseException("Expected ${"an ASCII digit"}, but got '${s[i + j]}'", i + j + posAdjustment)
                 }
+            }
+            if (s[i + 5] !in '1'..'7') {
+                parseException("Expected ${"'1'..'7'"}, but got '${s[i + 5]}'", i + 5 + posAdjustment)
             }
             val weekNumber = (s[i + 2] - '0') * 10 + (s[i + 3] - '0')
             val isoDayOfWeekNumber = (s[i + 5] - '0')
