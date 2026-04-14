@@ -113,6 +113,10 @@ public actual constructor(public actual val date: LocalDate, public actual val t
     }
 }
 
+public actual fun LocalDateTime.Companion.parseOrNull(
+    input: CharSequence, format: DateTimeFormat<LocalDateTime>
+): LocalDateTime? = format.parseOrNull(input)
+
 // org.threeten.bp.LocalDateTime#plusWithOverflow
 /**
  * @throws IllegalArgumentException if the result exceeds the boundaries

@@ -6,6 +6,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.format.*
 import kotlin.test.*
 
 class YearMonthTest {
@@ -58,6 +59,22 @@ class YearMonthTest {
             checkComponents(YearMonth.parse("+${"0".repeat(i)}2024-01"), 2024, 1)
             checkComponents(YearMonth.parse("-${"0".repeat(i)}2024-01"), -2024, 1)
         }
+    }
+
+    @Test
+    fun parseOrNull() {
+        assertEquals(YearMonth(2019, 10), YearMonth.parseOrNull("2019-10"))
+        assertNull(YearMonth.parseOrNull("2019-13"))
+        assertNull(YearMonth.parseOrNull("2019-10-01"))
+        assertNull(YearMonth.parseOrNull("invalid"))
+        // Test with custom format
+        val format = YearMonth.Format {
+            year()
+            char('/')
+            monthNumber()
+        }
+        assertEquals(YearMonth(2019, 10), YearMonth.parseOrNull("2019/10", format))
+        assertNull(YearMonth.parseOrNull("2019-10", format))
     }
 
     @Test

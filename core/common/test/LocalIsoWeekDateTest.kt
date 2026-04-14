@@ -117,4 +117,13 @@ class LocalIsoWeekDateTest {
             checkComponents(LocalIsoWeekDate.parse("-${"0".repeat(i)}2024-W01-1"), -2024, 1, DayOfWeek.MONDAY)
         }
     }
+
+    @Test
+    fun parseOrNull() {
+        assertEquals(LocalIsoWeekDate(2023, 42, DayOfWeek.WEDNESDAY), LocalIsoWeekDate.parseOrNull("2023-W42-3"))
+        assertNull(LocalIsoWeekDate.parseOrNull("2023-W53-1")) // 2023 is not a leap week year
+        assertNull(LocalIsoWeekDate.parseOrNull("2023-W42-8"))
+        assertNull(LocalIsoWeekDate.parseOrNull("invalid"))
+        assertNull(LocalIsoWeekDate.parseOrNull(""))
+    }
 }
