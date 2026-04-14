@@ -28,20 +28,6 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     @Suppress("DEPRECATION_ERROR")
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant = toInstant(this@TimeZone)
 
-    @Suppress("DEPRECATION")
-    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
-    )
-    public actual fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime =
-        toStdlibInstant().toLocalDateTime()
-
-    @PublishedApi
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
-        toInstant(this@TimeZone).toDeprecatedInstant()
-
     actual override fun equals(other: Any?): Boolean =
             (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
 
