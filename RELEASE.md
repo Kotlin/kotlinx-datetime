@@ -27,9 +27,7 @@ To release `kotlinx-datetime`:
    * Follow the established style from the earlier release notes.
    * Write each change on a single line (don't wrap with a caret return).
    * Look through the commit messages since the previous release:
-     > `git log v<old-version>..`
-
-     Example: `git log v0.7.0..` lists the commits made since 0.7.0.
+     > `git log origin/latest-release..`
 
 6. Create a new branch for this release:
    > `git checkout -b version-<version>`
