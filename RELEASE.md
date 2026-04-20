@@ -21,9 +21,9 @@ To release `kotlinx-datetime`:
 4. Search & replace `<old-version>` with `<version>` in
    * Documentation: [README.md](README.md)
    * [gradle.properties](gradle.properties)
-   * **NOT** [CHANGES.md](CHANGES.md)!
+   * **NOT** [CHANGELOG.md](CHANGELOG.md)!
 
-5. Write release notes in [CHANGES.md](CHANGES.md):
+5. Write release notes in [CHANGELOG.md](CHANGELOG.md):
    * Follow the established style from the earlier release notes.
    * Write each change on a single line (don't wrap with a caret return).
    * Look through the commit messages since the previous release:
@@ -109,7 +109,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
 
 21. In [GitHub](https://github.com/Kotlin/kotlinx-datetime):
    * Create a release named `v<version>`, creating the `v<version>` tag.
-   * Cut & paste lines from [CHANGES.md](CHANGES.md) into the description.
+   * Cut & paste lines from [CHANGELOG.md](CHANGELOG.md) into the description.
 
 22. Set the `latest-version` branch to `v<version>`.
    > `git checkout latest-release`
@@ -162,7 +162,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
 
 13. In [GitHub](https://github.com/Kotlin/kotlinx-datetime):
    * Create a release named `v<version>`, creating the `v<version>` tag.
-   * Cut & paste lines from [CHANGES.md](CHANGES.md) into the description.
+   * Cut & paste lines from [CHANGELOG.md](CHANGELOG.md) into the description.
 
 14. Set the `latest-version` branch to `v<version>`.
    > `git checkout latest-release`
