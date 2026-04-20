@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 0.8.0-rc01
+
+Breaking changes:
+
+- Deprecate `TimeZone` serialization ([#576](https://github.com/Kotlin/kotlinx-datetime/issues/576)).
+
+Additions:
+
+- Add `orNull` functions for non-throwing construction of datetime entities ([#68](https://github.com/Kotlin/kotlinx-datetime/issues/68)).
+- Add `parseOrNull` extension functions for non-throwing attempts at parsing ([#508](https://github.com/Kotlin/kotlinx-datetime/pull/508)).
+- Introduce `LocalIsoWeekDate` for representing [ISO week dates](https://en.wikipedia.org/wiki/ISO_week_date) ([#603](https://github.com/Kotlin/kotlinx-datetime/pull/603)).
+- Introduce functions for finding the next or previous date with the given day-of-week ([#129](https://github.com/Kotlin/kotlinx-datetime/issues/129)).
+
+Tweaks and fixes:
+
+- Fix bugs in `Instant.until` and `Instant.periodUntil` ([#534](https://github.com/Kotlin/kotlinx-datetime/pull/534)).
+- Always output seconds in the `DateTimeComponents.Formats.RFC_1123` format ([#608](https://github.com/Kotlin/kotlinx-datetime/pull/608)).
+
 ## 0.7.1
 
 - Add `kotlinx.datetime.Instant` and `kotlinx.datetime.Clock` type aliases to, respectively, `kotlin.time.Instant` and `kotlin.time.Clock` to make migration more convenient.
