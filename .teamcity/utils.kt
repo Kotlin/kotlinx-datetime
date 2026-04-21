@@ -8,8 +8,9 @@ import jetbrains.buildServer.configs.kotlin.*
 const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
 const val releaseVersionParameter = "releaseVersion"
+const val publicationCommandParameter = "publicationCommand"
 
-const val libraryStagingRepoDescription = "Kotlin-DateTime-library"
+const val libraryStagingRepoDescription = "<<LIBRARY_STAGING_REPO_DESCRIPTION>>"
 
 val platforms = Platform.values()
 const val jdk = "JDK_18"
@@ -33,21 +34,28 @@ fun Platform.teamcityAgentName(): String = buildTypeName()
 
 const val BUILD_CONFIGURE_VERSION_ID = "Build_Version"
 const val BUILD_ALL_ID = "Build_All"
+const val DEPLOY_ALL_ID = "Deploy_All"
 const val DEPLOY_CONFIGURE_VERSION_ID = "Deploy_Configure"
+const val DEPLOY_UPLOAD_ID = "Deplpy_Upload"
 const val DEPLOY_PUBLISH_ID = "Deploy_Publish"
 
-val BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID = AbsoluteId("KotlinTools_CreateSonatypeStagingRepository")
+val UPLOAD_DEPLOYMENT_TEMPLATE_ID = AbsoluteId("KotlinTools_KotlinLibrariesDeployLocalBundleToCentral")
+val PUBLISH_DEPLOYMENT_TEMPLATE_ID = AbsoluteId("KotlinTools_KotlinLibrariesPromoteDeployment")
 
 class KnownBuilds(private val project: Project) {
     private fun buildWithId(id: String): BuildType {
         return project.buildTypes.single { it.id.toString().endsWith(id) }
     }
 
+    val deploymentSubproject: Project get() = project.subProjects.single { it.id.toString().endsWith("Deployment") }
+
     val buildVersion: BuildType get() = buildWithId(BUILD_CONFIGURE_VERSION_ID)
     val buildAll: BuildType get() = buildWithId(BUILD_ALL_ID)
     fun buildOn(platform: Platform): BuildType = buildWithId("Build_${platform.buildTypeId()}")
+    val deployStart: BuildType get() = buildWithId(DEPLOY_ALL_ID)
     val deployVersion: BuildType get() = buildWithId(DEPLOY_CONFIGURE_VERSION_ID)
     val deployPublish: BuildType get() = buildWithId(DEPLOY_PUBLISH_ID)
+    val deployUpload: BuildType get() = buildWithId(DEPLOY_PUBLISH_ID)
     fun deployOn(platform: Platform): BuildType = buildWithId("Deploy_${platform.buildTypeId()}")
 }
 
