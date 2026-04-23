@@ -89,7 +89,7 @@ fun Project.additionalConfiguration() {
     val deployment = knownBuilds.deploymentSubproject
     val deployStart = deployment.knownBuilds.deployStart
     deployStart.params {
-        param("reverse.dep.*.DeploymentName", "kotlinx.collections.immutable %releaseVersion%")
+        param("reverse.dep.*.DeploymentName", "kotlinx-datetime %releaseVersion%")
 
         select(
             "reverse.dep.*.publicationCommand",
