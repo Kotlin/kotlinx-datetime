@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.8.0-rc02
+
+Equivalent to `rc01`, but published without `Instant` and `Clock`.
+A separate compatibility artifact contains them for binary compatibility.
+Please see <https://github.com/Kotlin/kotlinx-datetime/#deprecation-of-instant> for details.
+
 ## 0.8.0-rc01
 
 Breaking changes:
