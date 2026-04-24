@@ -55,7 +55,7 @@ class KnownBuilds(private val project: Project) {
     val deployStart: BuildType get() = buildWithId(DEPLOY_ALL_ID)
     val deployVersion: BuildType get() = buildWithId(DEPLOY_CONFIGURE_VERSION_ID)
     val deployPublish: BuildType get() = buildWithId(DEPLOY_PUBLISH_ID)
-    val deployUpload: BuildType get() = buildWithId(DEPLOY_PUBLISH_ID)
+    val deployUpload: BuildType get() = buildWithId(DEPLOY_UPLOAD_ID)
     fun deployOn(platform: Platform): BuildType = buildWithId("Deploy_${platform.buildTypeId()}")
 }
 
