@@ -553,7 +553,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2026a-spi.0.8.0-rc01")
+                implementation("kotlinx-datetime-zoneinfo", "2026b-spi.0.8.0-rc01")
             }
         }
     }
