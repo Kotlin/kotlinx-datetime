@@ -36,7 +36,7 @@ const val BUILD_CONFIGURE_VERSION_ID = "Build_Version"
 const val BUILD_ALL_ID = "Build_All"
 const val DEPLOY_ALL_ID = "Deploy_All"
 const val DEPLOY_CONFIGURE_VERSION_ID = "Deploy_Configure"
-const val DEPLOY_UPLOAD_ID = "Deplpy_Upload"
+const val DEPLOY_UPLOAD_ID = "Deploy_Upload"
 const val DEPLOY_PUBLISH_ID = "Deploy_Publish"
 
 val UPLOAD_DEPLOYMENT_TEMPLATE_ID = AbsoluteId("KotlinTools_KotlinLibrariesDeployLocalBundleToCentral")
