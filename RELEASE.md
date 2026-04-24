@@ -71,34 +71,38 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    > `git diff version-<version>-compat version-<version>-normal`
 
 16. In TeamCity, start deployment of `version-<version>-compat` by running the
-   `Deployment/Start Deployment [RUN THIS ONE]` configuration:
-   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_StartDeployment>.
+   `Deployment/Deploy [RUN THIS ONE]` configuration:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_All>.
    Use the `Run custom build` button.
    - In the `Changes` tab, select the build branch `version-<version>-compat`.
    - In the `Parameters` tab, set the parameters:
      * `Version` to `<version>-0.6.x-compat`.
-     * Leave `VersionSuffix` blank.
-     * Leave `ZoneInfoVersion` blank.
+     * `Artifacts to publish` to `zoneinfo only`.
 
 17. Start deployment of `version-<version>-normal`.
    - In the `Changes` tab, select the build branch `version-<version>-normal`.
    - In the `Parameters` tab, set the parameters:
        * `Version` to `<version>`.
-       * Leave `VersionSuffix` blank.
-       * Leave `ZoneInfoVersion` blank.
+     * `Artifacts to publish` to `all`.
 
-18. Wait for the *eight* deployment tasks to finish:
-   for both `version-<version>-normal` and `version-<version>-compat`,
-   `Start Deployment [RUN THIS ONE]`, `DeployCentral (Mac OS X)`,
-   `Deploy To Central`, and `Deploy ZoneInfo To Central` need to succeed.
+18. Wait for the two `Deployment/Upload deployment to central portal`
+   tasks to finish, one for `version-<version>-normal` and
+   one for `version-<version>-compat`:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Upload>.
 
-19. Notify the release facilitator.
-   Publish the release cooperatively.
-   The artifacts to publish are:
-   - `kotlinx-datetime` version `<version>`.
-   - `kotlinx-datetime` version `<version>-0.6.x-compat`.
-   - `kotlinx-datetime-zoneinfo` version `<tzdb_tag>-spi.<version>`.
-     *NOT* `<tzdb_tag>-spi.<version>-0.6.x-compat`!
+19. Click on the completed `Deployment/Upload deployment to central portal`
+   builds, check their `Artifacts` tabs.
+   They should have `deployment-<version>.zip` and `deployment-<version>-0.6.x-compat.zip`,
+   correspondingly.
+   Check the contents of these archives.
+   The non-compat archive should contain `kotlinx-datetime` with
+   version `<version>`, as well as the zoneinfo `<tzdb_tag>-spi.<version>`.
+   The compat archive should contain `kotlinx-datetime` with
+   version `<version>-0.6.x-compat`, but *NO* zoneinfo
+   `<tzdb_tag>-spi.<version>-0.6.x-compat`!
+   If all of this matches, approve the builds in
+   `Deployment/Publish deployment`:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Publish>.
 
 20. Merge `version-<version>` into `master`:
    > `git checkout master`
@@ -134,24 +138,23 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
 ### Publishing a normal release
 
 9. In TeamCity, start deployment of `version-<version>` by running the
-   `Deployment/Start Deployment [RUN THIS ONE]` configuration:
-   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_StartDeployment>.
+   `Deployment/Deploy [RUN THIS ONE]` configuration:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_All>.
    Use the `Run custom build` button.
    - In the `Changes` tab, select the build branch `version-<version>`.
    - In the `Parameters` tab, set the parameters:
      * `Version` to `<version>`.
-     * Leave `VersionSuffix` blank.
-     * Leave `ZoneInfoVersion` blank.
+     * `Artifacts to publish` to `all`.
 
-10. Wait for the *four* deployment tasks to finish:
-   `Start Deployment [RUN THIS ONE]`, `DeployCentral (Mac OS X)`,
-   `Deploy To Central`, and `Deploy ZoneInfo To Central` need to succeed.
+10. Wait for the `Deployment/Upload deployment to central portal` task to finish:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Upload>.
 
-11. Notify the release facilitator.
-   Publish the release cooperatively.
-   The artifacts to publish are:
-   - `kotlinx-datetime` version `<version>`.
-   - `kotlinx-datetime-zoneinfo` version `<tzdb_tag>-spi.<version>`.
+11. Click on the completed `Deployment/Upload deployment to central portal`
+   build, check its `Artifacts` tab, the `deployment-<version>.zip` archive.
+   It should contain `kotlinx-datetime` for all supported targets with
+   version `<version>`, as well as the zoneinfo `<tzdb_tag>-spi.<version>`.
+   If this matches, approve the build in `Deployment/Publish deployment`:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Publish>.
 
 12. Merge `version-<version>` into `master`:
    > `git checkout master`
@@ -198,21 +201,20 @@ versions as well.
   that wasn't yet published.
 
 2. In TeamCity, start deployment of `tzdb-<tzdb_tag>` by running the
-   `Deployment/Start Deployment [RUN THIS ONE]` configuration:
-   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_StartDeployment>.
+   `Deployment/Deploy [RUN THIS ONE]` configuration:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_All>.
    Use the `Run custom build` button.
    - In the `Changes` tab, select the build branch `tzdb-<tzdb_tag>`.
    - In the `Parameters` tab, set the parameters:
      * `Version` to the latest published `kotlinx-datetime` version.
-       Example: `0.7.1`.
-     * Leave `VersionSuffix` blank.
-     * Leave `ZoneInfoVersion` blank.
+       Example: `0.8.0`.
+     * `Artifacts to publish` to `zoneinfo`.
 
-3. Wait for the *four* deployment tasks to finish:
-   `Start Deployment [RUN THIS ONE]`, `DeployCentral (Mac OS X)`,
-   `Deploy To Central`, and `Deploy ZoneInfo To Central` need to succeed.
+3. Wait for the `Deployment/Upload deployment to central portal` task to finish:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Upload>.
 
-4. Notify the release facilitator.
-   Publish the release cooperatively.
-   The artifact to publish is
-   `kotlinx-datetime-zoneinfo` version `<tzdb_tag>-spi.<latest_version>`.
+4. Click on the completed `Deployment/Upload deployment to central portal`
+   build, check its `Artifacts` tab, the `deployment-<version>.zip` archive.
+   It should contain the zoneinfo `<tzdb_tag>-spi.<version>` and nothing else.
+   If this matches, approve the build in `Deployment/Publish deployment`:
+   <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Publish>.
