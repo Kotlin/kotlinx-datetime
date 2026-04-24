@@ -35,12 +35,9 @@ val timeTzdbInstall by tasks.creating(NpmTask::class) {
 }
 
 val tzdbDownloadAndCompile by tasks.creating(NpxTask::class) {
-    doFirst {
-        tzdbDirectory.mkdirs()
-    }
     dependsOn(timeTzdbInstall)
     command.set("@tubular/time-tzdb")
-    args.addAll("-b", "-o", "--large")
+    args.addAll("-b", "--large")
     if (tzdbVersion.isNotEmpty()) {
         args.addAll("-u", tzdbVersion)
     }
