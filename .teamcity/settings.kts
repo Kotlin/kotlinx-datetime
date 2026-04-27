@@ -44,24 +44,48 @@ project {
         }
     }
 
-    val deployVersion = deployVersion().apply {
-        dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
-        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
-            reuseBuilds = ReuseBuilds.NO
-        }
-    }
-    val deploys = platforms.map { deploy(it, deployVersion) }
-    val deployPublish = deployPublish(deployVersion).apply {
-        dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
-        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
-            reuseBuilds = ReuseBuilds.NO
-        }
-        deploys.forEach {
-            dependsOnSnapshot(it)
-        }
-    }
+    buildTypesOrder = listOf(buildAll, buildVersion, *builds.toTypedArray())
 
-    buildTypesOrder = listOf(buildAll, buildVersion, *builds.toTypedArray(), deployPublish, deployVersion, *deploys.toTypedArray())
+    subProject {
+        id("Deployment")
+        this.name = "Deployment"
+
+        params {
+            param("teamcity.ui.settings.readOnly", "true")
+        }
+
+        val deployVersion = deployVersion()
+        val deployAll = deployAll(deployVersion)
+        val deploys = platforms.map { buildArtifacts(deployVersion, it) }
+        val deployUpload = deployUpload(deployVersion).apply {
+            dependencies {
+                deploys.forEach { dep ->
+                    dependency(dep) {
+                        snapshot {
+                            onDependencyFailure = FailureAction.FAIL_TO_START
+                            onDependencyCancel = FailureAction.CANCEL
+                        }
+                        artifacts {
+                            artifactRules = "buildRepo.zip!** => buildRepo"
+                        }
+                    }
+                }
+            }
+        }
+        val deployPublish = deployPublish(deployVersion).apply {
+            dependsOnSnapshot(deployUpload)
+        }
+
+        deploys.forEach { deployAll.dependsOnSnapshot(it) }
+        deployAll.dependsOnSnapshot(deployUpload) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+        deployAll.dependsOnSnapshot(deployPublish) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+
+        buildTypesOrder = listOf(deployAll, deployVersion, *deploys.toTypedArray(), deployUpload, deployPublish)
+    }
 
     additionalConfiguration()
 }
@@ -134,17 +158,44 @@ fun Project.build(platform: Platform, versionBuild: BuildType) = buildType("Buil
     artifactRules = "+:build/maven=>maven\n+:build/api=>api"
 }
 
-fun Project.deployVersion() = BuildType {
-    id(DEPLOY_CONFIGURE_VERSION_ID)
-    this.name = "Deploy (Configure Version)"
+fun Project.deployAll(deployVersion: BuildType) = BuildType {
+    id(DEPLOY_ALL_ID)
+    name = "Deploy [RUN THIS ONE]"
+    description = "Start deployment pipeline"
+    type = BuildTypeSettings.Type.COMPOSITE
     commonConfigure()
 
+    failureConditions {
+        // For publication a day is given to receive the approval,
+        // so this job should not fail earlier.
+        executionTimeoutMin = 1440
+    }
+
+    buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
+    dependsOnSnapshot(deployVersion)
+
     params {
-        // enable editing of this configuration to set up things
-        param("teamcity.ui.settings.readOnly", "false")
+        text("reverse.dep.*.$releaseVersionParameter", "",
+            label = "Version",
+            description = "Version of artifacts to deploy",
+            display = ParameterDisplay.PROMPT,
+            regex = "[0-9]+\\.[0-9]+\\.[0-9]+(-.+)?",
+            validationMessage = "It does not look like a proper version"
+        )
+    }
+}.also { buildType(it) }
+
+fun Project.deployVersion() = BuildType {
+    id(DEPLOY_CONFIGURE_VERSION_ID)
+    name = "Generate build version"
+    description = "Generates build number used by all tasks in the pipeline and validates version numbers"
+    type = BuildTypeSettings.Type.REGULAR
+    commonConfigure()
+
+    buildNumberPattern = "%$releaseVersionParameter% %build.counter%"
+
+    params {
         param(versionSuffixParameter, "dev-%build.counter%")
-        param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
     requirements {
@@ -163,45 +214,81 @@ fun Project.deployVersion() = BuildType {
     }
 }.also { buildType(it) }
 
-fun Project.deployPublish(configureBuild: BuildType) = BuildType {
-    id(DEPLOY_PUBLISH_ID)
-    this.name = "Deploy (Publish)"
-    type = BuildTypeSettings.Type.COMPOSITE
-    dependsOnSnapshot(configureBuild)
-    buildNumberPattern = configureBuild.depParamRefs.buildNumber.ref
-    params {
-        // Tell configuration build how to get release version parameter from this build
-        // "dev" is the default and means publishing is not releasing to public
-        text(configureBuild.reverseDepParamRefs[releaseVersionParameter].name, "dev", display = ParameterDisplay.PROMPT, label = "Release Version")
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
-    }
+fun Project.deployUpload(deployVersion: BuildType) = BuildType {
+    templates(UPLOAD_DEPLOYMENT_TEMPLATE_ID)
+    id(DEPLOY_UPLOAD_ID)
+    name = "Upload deployment to central portal"
+    description = "Verifies artifacts, uploads it to the Central portal, and waits for verification results."
+    type = BuildTypeSettings.Type.DEPLOYMENT
     commonConfigure()
+
+    buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
+    dependsOnSnapshot(deployVersion)
+
+    artifactRules = """
+        %LocalDeploymentPaths%
+        buildRepo => buildRepo.zip
+    """.trimIndent()
+
+    params {
+        param("DeployVersion", "%$releaseVersionParameter%")
+    }
+}.also { buildType(it) }
+
+fun Project.deployPublish(deployVersion: BuildType) = BuildType {
+    templates(PUBLISH_DEPLOYMENT_TEMPLATE_ID)
+    id(DEPLOY_PUBLISH_ID)
+    name = "Publish deployment"
+    description = "Published previously uploaded deployment"
+    type = BuildTypeSettings.Type.DEPLOYMENT
+    commonConfigure()
+
+    failureConditions {
+        // Wait for a day for the approval
+        executionTimeoutMin = 1440
+    }
+
+    buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
+    dependsOnSnapshot(deployVersion)
+
+    params {
+        param("DeployVersion", "%$releaseVersionParameter%")
+        // Override parameter from the template
+        param("Approvers", DslContext.getParameter("Approvers", "<nobody>"))
+    }
 }.also { buildType(it) }
 
 
-fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("Deploy", platform) {
+fun Project.buildArtifacts(deployVersion: BuildType, platform: Platform) = buildType("Binaries", platform) {
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
     maxRunningBuilds = 1
-    params {
-        param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
-        param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
-    }
+
+    buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
+    dependsOnSnapshot(deployVersion)
 
     vcs {
         cleanCheckout = true
     }
 
+    artifactRules = """
+        build/maven/** => buildRepo.zip
+    """.trimIndent()
+
+    params {
+        param(versionSuffixParameter, "${deployVersion.depParamRefs[versionSuffixParameter]}")
+        param(publicationCommandParameter, "publishAllPublicationsToBuildLocalRepository")
+    }
+
     steps {
         gradle {
-            name = "Deploy ${platform.buildTypeName()} Binaries"
+            name = "Build ${platform.buildTypeName()} Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
-            tasks = "clean publish"
+            tasks = "clean %publicationCommand%"
             buildFile = ""
             gradleWrapperPath = ""
         }
     }
-}.dependsOnSnapshot(configureBuild)
+}
