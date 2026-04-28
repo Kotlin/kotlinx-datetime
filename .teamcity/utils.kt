@@ -10,8 +10,6 @@ const val teamcitySuffixParameter = "teamcitySuffix"
 const val releaseVersionParameter = "releaseVersion"
 const val publicationCommandParameter = "publicationCommand"
 
-const val libraryStagingRepoDescription = "<<LIBRARY_STAGING_REPO_DESCRIPTION>>"
-
 val platforms = Platform.values()
 const val jdk = "JDK_18"
 

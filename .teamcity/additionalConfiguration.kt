@@ -103,7 +103,4 @@ fun Project.additionalConfiguration() {
             display = ParameterDisplay.PROMPT
         )
     }
-    deployment.knownBuilds.deployPublish.params {
-        param("DeploymentId", "${deployment.knownBuilds.deployUpload.depParamRefs["output.DeploymentId"]}")
-    }
 }

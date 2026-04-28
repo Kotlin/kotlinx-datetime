@@ -72,9 +72,7 @@ project {
                 }
             }
         }
-        val deployPublish = deployPublish(deployVersion).apply {
-            dependsOnSnapshot(deployUpload)
-        }
+        val deployPublish = deployPublish(deployVersion, deployUpload)
 
         deploys.forEach { deployAll.dependsOnSnapshot(it) }
         deployAll.dependsOnSnapshot(deployUpload) {
@@ -235,7 +233,7 @@ fun Project.deployUpload(deployVersion: BuildType) = BuildType {
     }
 }.also { buildType(it) }
 
-fun Project.deployPublish(deployVersion: BuildType) = BuildType {
+fun Project.deployPublish(deployVersion: BuildType, deployUpload: BuildType) = BuildType {
     templates(PUBLISH_DEPLOYMENT_TEMPLATE_ID)
     id(DEPLOY_PUBLISH_ID)
     name = "Publish deployment"
@@ -250,9 +248,11 @@ fun Project.deployPublish(deployVersion: BuildType) = BuildType {
 
     buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
     dependsOnSnapshot(deployVersion)
+    dependsOnSnapshot(deployUpload)
 
     params {
         param("DeployVersion", "%$releaseVersionParameter%")
+        param("DeploymentId", "${deployUpload.depParamRefs["output.DeploymentId"]}")
         // Override parameter from the template
         param("Approvers", DslContext.getParameter("Approvers", "<nobody>"))
     }
