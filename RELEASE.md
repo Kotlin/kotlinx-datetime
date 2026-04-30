@@ -77,7 +77,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    - In the `Changes` tab, select the build branch `version-<version>-compat`.
    - In the `Parameters` tab, set the parameters:
      * `Version` to `<version>-0.6.x-compat`.
-     * `Artifacts to publish` to `zoneinfo only`.
+     * `Artifacts to publish` to `core only`.
 
 17. Start deployment of `version-<version>-normal`.
    - In the `Changes` tab, select the build branch `version-<version>-normal`.
