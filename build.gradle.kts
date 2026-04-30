@@ -30,12 +30,6 @@ allprojects {
 }
 
 subprojects {
-    // drop this after migration to 2.2.0
-    tasks.withType<KotlinJvmCompile>().configureEach {
-        compilerOptions {
-            freeCompilerArgs.add("-Xjvm-default=all-compatibility")
-        }
-    }
     kupInfra {
         tasks.withType<KotlinCompilationTask<*>>().configureEach {
             kupConfiguration()

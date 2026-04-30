@@ -36,7 +36,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test")
+                implementation("org.jetbrains.kotlin:kotlin-test")
             }
         }
     }

@@ -27,7 +27,7 @@ public fun Instant.toNSDate(): NSDate {
 }
 
 @PublishedApi
-@Suppress("DEPRECATION_ERROR")
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
 internal fun kotlinx.datetime.Instant.toNSDate(): NSDate = toStdlibInstant().toNSDate()
 
 /**

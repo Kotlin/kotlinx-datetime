@@ -4,7 +4,7 @@
 [![JetBrains official project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-datetime?filter=0.8.0)](https://search.maven.org/search?q=g:org.jetbrains.kotlinx%20AND%20a:kotlinx-datetime)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.1.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.3.20-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![KDoc link](https://img.shields.io/badge/API_reference-KDoc-blue)](https://kotlinlang.org/api/kotlinx-datetime/)
 [![Slack channel](https://img.shields.io/badge/chat-slack-blue.svg?logo=slack)](https://kotlinlang.slack.com/messages/kotlinx-datetime/)
 [![TeamCity build](https://img.shields.io/teamcity/build/s/KotlinTools_KotlinxDatetime_Build_All.svg?server=http%3A%2F%2Fteamcity.jetbrains.com)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxDatetime_Build_All&guest=1)
@@ -398,7 +398,7 @@ The implementation of datetime types, such as `LocalDateTime`, `TimeZone`, and s
 
 The library is published to Maven Central.
 
-The library is compatible with the Kotlin Standard Library not lower than `2.1.20`.
+The library is compatible with the Kotlin Standard Library not lower than `2.3.20`.
 
 If you target Android devices running **below API 26**, you need to use Android Gradle plugin 4.0 or newer
 and enable [core library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring).

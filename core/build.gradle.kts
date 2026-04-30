@@ -126,30 +126,34 @@ kotlin {
 
     // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
     // Tier 1
-    macosX64()
     macosArm64()
     iosSimulatorArm64()
-    iosX64()
     iosArm64()
     // Tier 2
     linuxX64()
     linuxArm64()
     watchosSimulatorArm64()
-    watchosX64()
     watchosArm32()
     watchosArm64()
     tvosSimulatorArm64()
-    tvosX64()
     tvosArm64()
     // Tier 3
     androidNativeArm32()
     androidNativeArm64()
     androidNativeX86()
     androidNativeX64()
+    iosX64()
     mingwX64()
     watchosDeviceArm64()
-    // Deprecated
+    // Deprecated, preserved for KT-58864
     @Suppress("DEPRECATION") linuxArm32Hfp()
+    // Deprecated for removal: KT-78660
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    run {
+        macosX64()
+        watchosX64()
+        tvosX64()
+    }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
@@ -188,7 +192,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlin:kotlin-test")
+                implementation("org.jetbrains.kotlin:kotlin-test")
             }
         }
 
