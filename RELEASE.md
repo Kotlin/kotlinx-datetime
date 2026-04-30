@@ -110,7 +110,8 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    > `git push`
 
 21. In [GitHub](https://github.com/Kotlin/kotlinx-datetime):
-   * Create a release named `v<version>`, creating the `v<version>` tag.
+   * Create a release named `v<version>`, creating the `v<version>` tag,
+     based off of the `version-<version>-normal` branch.
    * Cut & paste lines from [CHANGELOG.md](CHANGELOG.md) into the description.
 
 22. Set the `latest-version` branch to `v<version>`.
@@ -118,9 +119,14 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    > `git merge --ff-only master`
    > `git push`
 
-23. Announce the new release in [Slack](https://kotlinlang.slack.com).
+23. Create the `v<version>-0.6.x-compat` tag based off of the
+   `version-<version>-compat` branch:
+   > `git tag v<version>-0.6.x-compat version-<version>-compat`
+   > `git push --tags`
 
-24. Propose the website documentation update:
+24. Announce the new release in [Slack](https://kotlinlang.slack.com).
+
+25. Propose the website documentation update:
    * In the `JetBrains/kotlin-web-site` repository:
        - Update `dateTimeVersion` to `<version>` in
          <https://github.com/JetBrains/kotlin-web-site/blob/master/docs/v.list>.
@@ -132,7 +138,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
          <https://github.com/JetBrains/kotlin-compiler-server/blob/master/gradle/libs.versions.toml>
        - Create a pull request with the changes.
 
-25. Remove the `version-<version>-normal`, `version-<version>-compat`, and
+26. Remove the `version-<version>-normal`, `version-<version>-compat`, and
    `version-<version>` branches.
 
 ### Publishing a normal release
