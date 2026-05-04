@@ -114,7 +114,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
      based off of the `version-<version>-normal` branch.
    * Cut & paste lines from [CHANGELOG.md](CHANGELOG.md) into the description.
 
-22. Set the `latest-version` branch to `v<version>`.
+22. Set the `latest-release` branch to `v<version>`.
    > `git checkout latest-release`
    > `git merge --ff-only master`
    > `git push`
@@ -168,7 +168,8 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    > `git push`
 
 13. In [GitHub](https://github.com/Kotlin/kotlinx-datetime):
-   * Create a release named `v<version>`, creating the `v<version>` tag.
+   * Create a release named `v<version>`, creating the `v<version>` tag,
+     based off of the `master` branch.
    * Cut & paste lines from [CHANGELOG.md](CHANGELOG.md) into the description.
 
 14. Set the `latest-version` branch to `v<version>`.
@@ -214,13 +215,15 @@ versions as well.
    - In the `Parameters` tab, set the parameters:
      * `Version` to the latest published `kotlinx-datetime` version.
        Example: `0.8.0`.
-     * `Artifacts to publish` to `zoneinfo`.
+     * `Artifacts to publish` to `zoneinfo only`.
 
 3. Wait for the `Deployment/Upload deployment to central portal` task to finish:
    <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Upload>.
 
 4. Click on the completed `Deployment/Upload deployment to central portal`
-   build, check its `Artifacts` tab, the `deployment-<version>.zip` archive.
+   build, check its `Artifacts` tab, the `deployment-<version>.zip` archive
+   (where `<version>` is the latest published `kotlinx-datetime` version,
+   e.g. `0.8.0`).
    It should contain the zoneinfo `<tzdb_tag>-spi.<version>` and nothing else.
    If this matches, approve the build in `Deployment/Publish deployment`:
    <https://teamcity.jetbrains.com/buildConfiguration/KotlinTools_KotlinxDatetime_Deploy_Publish>.
