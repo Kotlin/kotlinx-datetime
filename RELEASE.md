@@ -51,7 +51,7 @@ When we no longer have the compatibility artifact, we'll remove the subsection.
    in [gradle.properties](gradle.properties).
 
 11. Commit and push the changes:
-   > `git commit -a -m 'Version <version>, compatibility artifact`
+   > `git commit -a -m 'Version <version>, compatibility artifact'`
    > `git push -u origin version-<version>-compat`
 
 12. Create another branch from `version-<version>`:
