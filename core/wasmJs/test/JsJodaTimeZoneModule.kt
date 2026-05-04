@@ -5,6 +5,7 @@
 
 package kotlinx.datetime.test
 
+@OptIn(ExperimentalWasmJsInterop::class)
 @JsModule("@js-joda/timezone")
 external object JsJodaTimeZoneModule
 

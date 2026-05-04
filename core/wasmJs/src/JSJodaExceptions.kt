@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:OptIn(ExperimentalWasmJsInterop::class)
 package kotlinx.datetime.internal
 
 private fun withCaughtJsException(body: () -> Unit): JsAny? = js("""{

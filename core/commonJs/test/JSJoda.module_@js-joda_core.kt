@@ -4,9 +4,11 @@
  */
 @file:kotlinx.datetime.internal.JsModule("@js-joda/core")
 @file:kotlinx.datetime.internal.JsNonModule
+@file:OptIn(ExperimentalWasmJsInterop::class)
 package kotlinx.datetime.test.JSJoda
 
 import kotlinx.datetime.internal.InteropInterface
+import kotlin.js.ExperimentalWasmJsInterop
 
 external class ZonedDateTime : InteropInterface {
     fun year(): Int
