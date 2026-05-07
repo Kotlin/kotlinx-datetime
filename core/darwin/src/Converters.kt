@@ -26,10 +26,6 @@ public fun Instant.toNSDate(): NSDate {
     return NSDate.dateWithTimeIntervalSince1970(secs)
 }
 
-@PublishedApi
-@Suppress("DEPRECATION_ERROR")
-internal fun kotlinx.datetime.Instant.toNSDate(): NSDate = toStdlibInstant().toNSDate()
-
 /**
  * Converts the [NSDate] to the corresponding [Instant].
  *
@@ -45,12 +41,6 @@ public fun NSDate.toKotlinInstant(youShallNotPass: OverloadMarker = OverloadMark
     val nanos = (secs - fullSeconds) * NANOS_PER_ONE
     return Instant.fromEpochSeconds(fullSeconds, nanos.toLong())
 }
-
-@PublishedApi
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-@kotlin.internal.LowPriorityInOverloadResolution
-internal fun NSDate.toKotlinInstant(): kotlinx.datetime.Instant =
-    toKotlinInstant().toDeprecatedInstant()
 
 /**
  * Converts the [TimeZone] to [NSTimeZone].
