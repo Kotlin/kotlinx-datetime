@@ -187,7 +187,7 @@ public constructor(year: Int, month: Int) : Comparable<YearMonth> {
          *
          * @see YearMonth.toString for formatting using the default format.
          * @see YearMonth.format for formatting using a custom format.
-         * @see YearMonth.parseOrNull for a version of this function that returns `null` on faulty input.
+         * @see YearMonth.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.YearMonthSamples.parsing
          */
         public fun parse(input: CharSequence, format: DateTimeFormat<YearMonth> = Formats.ISO): YearMonth
