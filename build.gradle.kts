@@ -61,3 +61,7 @@ dependencies {
     kover(project(":kotlinx-datetime"))
     kover(project(":kotlinx-datetime-serialization"))
 }
+
+artifactsValidation {
+    usePerProjectDumps = true
+}

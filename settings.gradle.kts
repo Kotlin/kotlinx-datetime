@@ -36,7 +36,3 @@ project(":integration-testing/js-with-timezones").name = "kotlinx-datetime-js-te
 include(":integration-testing/jpms-test")
 project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
 include(":benchmarks")
-
-extensions.getByType<ArtifactsValidatorPluginSettingsExtension>().apply {
-    dumpFileForProjects(rootDir.resolve("gradle/artifacts.zoneinfo.txt"), project(":kotlinx-datetime-zoneinfo"))
-}
