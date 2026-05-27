@@ -24,7 +24,15 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
 
     @Suppress("DEPRECATION_ERROR")
-    public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant = toInstant(this@TimeZone)
+    @Deprecated(
+        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
+    )
+    public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
+        optimizedToInstantOffsetBefore(this@TimeZone)
+
+    public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
+        this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
 
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -128,9 +136,15 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
     throw DateTimeArithmeticException(e)
 }
 
-
 @Suppress("DEPRECATION_ERROR")
+@Deprecated(
+    "Explicitly pass a TransitionHandler to `toInstant` calls",
+    replaceWith = ReplaceWith("this.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)")
+)
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
+    optimizedToInstantOffsetBefore(timeZone)
+
+internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
         this.value.atZone(timeZone.zoneId).toInstant().toKotlinInstant()
 
 @Suppress("DEPRECATION_ERROR")
@@ -141,8 +155,16 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
         this.value.atStartOfDay(timeZone.zoneId).toInstant().toKotlinInstant()
 
-internal actual fun localDateTimeToInstant(
-    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset?
-): Instant = java.time.ZonedDateTime.ofLocal(
-    dateTime.value, timeZone.zoneId, preferred?.zoneOffset
-).toInstant().toKotlinInstant()
+public actual fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+    val rules = zoneId.rules
+    val transition = rules.getTransition(dateTime.value)
+    return if (transition == null) {
+        LocalDateTimeOffsetInfo.Regular(rules.getOffset(dateTime.value).let(::UtcOffset))
+    } else {
+        LocalDateTimeOffsetInfo.Transition(
+            transition.instant.toKotlinInstant(),
+            transition.offsetBefore.let(::UtcOffset),
+            transition.offsetAfter.let(::UtcOffset),
+        )
+    }
+}

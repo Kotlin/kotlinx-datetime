@@ -361,11 +361,11 @@ class TimeZoneNativeTest {
         }
     }
 
-    private fun assertOffsetInfoType(info: OffsetInfo, expectedType: OffsetInfoType) {
+    private fun assertOffsetInfoType(info: LocalDateTimeOffsetInfo, expectedType: OffsetInfoType) {
         val actualType = when (info) {
-            is OffsetInfo.Regular -> REGULAR
-            is OffsetInfo.Gap -> GAP
-            is OffsetInfo.Overlap -> OVERLAP
+            is LocalDateTimeOffsetInfo.Regular -> REGULAR
+            is LocalDateTimeOffsetInfo.Gap -> GAP
+            is LocalDateTimeOffsetInfo.Overlap -> OVERLAP
         }
         assertEquals(expectedType, actualType)
     }

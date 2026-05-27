@@ -81,7 +81,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -160,7 +160,7 @@ class InstantTest {
     @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         val ldt1 = instant1.toLocalDateTime(zone)
         val offset1 = instant1.offsetIn(zone)
         checkComponents(ldt1, 2019, 10, 27, 2, 59)
@@ -196,8 +196,8 @@ class InstantTest {
         val tz = TimeZone.of("Europe/Berlin")
         // Same sign when the period is positive but smaller than the non-DST-aware date-based period
         assertPeriodSameSign(
-            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz).periodUntil(
-                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz), tz))
+            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE).periodUntil(
+                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE), tz))
         // Same sign when the period is negative but bigger than the non-DST-aware date-based period
         assertPeriodSameSign(
             Instant.parse("2025-07-27T00:59:00Z").periodUntil(
@@ -222,8 +222,8 @@ class InstantTest {
         val tz = TimeZone.of("Europe/Berlin")
         // No overshooting when the distance is positive but smaller than the non-DST-aware date-based distance
         run {
-            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz)
-            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz)
+            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
+            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
             val distance = i1.until(i2, DateTimeUnit.DAY, tz)
             assertTrue(i2 > i1.plus(distance, DateTimeUnit.DAY, tz))
         }
