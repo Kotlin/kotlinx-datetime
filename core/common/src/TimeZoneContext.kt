@@ -122,7 +122,9 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * It is guaranteed that passing any value from [availableZoneIds]
          * to this function will return a valid time zone.
          *
-         * How exactly the region-based time zone is acquired is system-dependent.
+         * How exactly the region-based time zone is acquired is system-dependent
+         * and may change in the future to gain access to the most idiomatic timezone database sources on each platform.
+         *
          * The current implementation:
          * - JVM: `java.time.ZoneId.of(zoneId)` is used.
          * - Kotlin/Native:
@@ -151,11 +153,14 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          *   if the `@js-joda/timezone` library is loaded,
          *   it is used to obtain the timezone rules.
          *   Otherwise, the [IllegalTimeZoneException] is thrown.
+         *   This behavior is likely to change in the future to use the `Temporal.js` timezone database
+         *   once `Temporal.js` gets widely adopted.
          *   See https://github.com/Kotlin/kotlinx-datetime/blob/master/README.md#note-about-time-zones-in-js
          * - Wasm/WASI:
          *   if the `kotlinx-datetime-zoneinfo` artifact is added to the project
          *   as a dependency, it is used to obtain the timezone rules.
          *   Otherwise, the [IllegalTimeZoneException] is thrown.
+         *   This behavior is likely to change in the future if Wasm/WASI exposes a way to access the timezone database.
          *
          * @throws IllegalTimeZoneException if [id] has an invalid format or a time zone
          * with the identifier [id] is not found.

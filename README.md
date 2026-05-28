@@ -42,6 +42,7 @@ The library provides a basic set of types for working with date and time:
 - `LocalTime` to represent the components of time only;
 - `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between
   `kotlin.time.Instant` and `LocalDateTime`;
+- `TimeZoneContext` to get access to the `TimeZone` data;
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
@@ -497,7 +498,48 @@ dependencies {
 }
 ```
 
-#### Note about time zones in JS
+#### Timezone databases
+
+By default, `kotlinx-datetime` uses the timezone information provided by the system
+(the exceptions are JS, Wasm/JS, and Wasm/WASI, which don't expose this information; see their subsections below).
+This information may be severely outdated, and depending on the use case, it may be important to access
+the most recent version of the timezone database.
+
+The `kotlinx-datetime-zoneinfo` artifact bundles the up-to-date version of the timezone database
+and is updated soon after the official announcement from [IANA](https://www.iana.org/time-zones).
+To access it, add this snippet:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                // 2026b is the most recent release of the IANA timezone database,
+                // 0.8.0 is `kotlinx-datetime` version
+                implementation("kotlinx-datetime-zoneinfo", "2026b-spi.0.8.0")
+            }
+        }
+    }
+}
+```
+
+This will introduce the `kotlinx.datetime.zoneinfo` package,
+containing `TimeZoneContext.Bundled`, which can be used in place of `TimeZoneContext.System`:
+
+```kotlin
+import kotlinx.datetime.zoneinfo.*
+
+fun main() {
+    println(TimeZoneContext.Bundled.currentTimeZoneId())
+}
+```
+
+Note that `kotlinx-datetime-zoneinfo` takes 1 megabyte of space as of writing,
+which may be prohibitively much.
+Carefully evaluate whether the risk of using an outdated timezone database provided by the system
+is severe enough to justify this tradeoff.
+
+##### Note about time zones in JS
 
 By default, there's only one time zone available in Kotlin/JS: the `SYSTEM` time zone with a fixed offset.
 
@@ -530,7 +572,7 @@ val jsJodaTz = JsJodaTimeZoneModule
 
 This code can be placed in any file in the Kotlin/JS source set.
 
-#### Note about time zones in Wasm/JS
+##### Note about time zones in Wasm/JS
 
 Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
 
@@ -558,7 +600,7 @@ external object JsJodaTimeZoneModule
 private val jsJodaTz = JsJodaTimeZoneModule
 ```
 
-#### Note about time zones in Wasm/WASI
+##### Note about time zones in Wasm/WASI
 
 By default, there's only one time zone available in Kotlin/Wasm WASI: the `UTC` time zone with a fixed offset.
 
@@ -575,6 +617,11 @@ kotlin {
     }
 }
 ```
+
+In addition to providing `TimeZoneContext.Bundled` like on other platforms,
+this dependency also modifies `TimeZoneContext.System` on Wasm/WASI exclusively,
+to support a way to use a valid timezone database on all targets.
+This behavior will be removed once Wasm/WASI exposes the system timezone database natively.
 
 ### Maven
 
