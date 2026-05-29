@@ -42,13 +42,12 @@ public interface TimeZoneDatabase {
     /**
      * Returns the set of timezone identifiers the database is guaranteed to recognize.
      *
+     * [getOrNull] is guaranteed not to return `null`, and [get] is guaranteed not to throw
+     * an [IllegalTimeZoneException] for any identifier returned by this function.
+     *
      * The set of strings returned by this function is not guaranteed to be complete.
      * For example, it may be unviable to enumerate all time zones supported by the database
      * if it dynamically creates the timezone rules based on the time zone's identifier.
-     *
-     * Every identifier returned by this function is guaranteed to be recognized by the database.
-     * That is, [getOrNull] is guaranteed not to return `null`, and [get] is guaranteed not to throw
-     * an [IllegalTimeZoneException] for any identifier returned by this function.
      */
     public fun availableZoneIds(): Set<String>
 }
@@ -57,14 +56,14 @@ public interface TimeZoneDatabase {
  * Provides the identifier of the current time zone.
  *
  * This interface only provides a single method called [currentTimeZoneId].
- * It does not have an inherent meaning and is application-specific.
+ * The meaning of the returned identifier is intentionally unspecified and application-specific.
  *
  * @see TimeZoneContext.System for the implementation where the system timezone configured on the host machine
  * is taken as the current one.
  */
 public interface TimeZoneIdProvider {
     /**
-     * The current time zone.
+     * The identifier of the current time zone.
      */
     public fun currentTimeZoneId(): String
 }
@@ -79,7 +78,7 @@ public interface TimeZoneIdProvider {
  *   the timezone database (the [TimeZoneDatabase] interface).
  *
  * In addition to combining these two interfaces,
- * the new [currentTimeZone] function is provided that
+ * an additional [currentTimeZone] function is provided that
  * is in most cases equivalent to `get(currentTimeZoneId())`,
  * but can additionally return a useful time zone
  * even when the [TimeZoneDatabase] does not recognize the timezone identifier.

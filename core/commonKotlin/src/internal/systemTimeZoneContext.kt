@@ -8,9 +8,8 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlin.time.Instant
 
-internal class RuleBasedTimeZone(val calculations: RuleBasedTimeZoneCalculations): TimeZone() {
+internal class RuleBasedTimeZone(private val calculations: RuleBasedTimeZoneCalculations): TimeZone() {
     override val id: String get() = calculations.id
-    val original: Any? = null
 
     override fun offsetAtImpl(instant: Instant): UtcOffset = calculations.offsetAtImpl(instant)
 

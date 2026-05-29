@@ -5,6 +5,7 @@ public final class kotlinx/datetime/zoneinfo/BundledTimeZoneContext : kotlinx/da
 	public fun currentTimeZoneId ()Ljava/lang/String;
 	public fun get (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
 	public fun getOrNull (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class kotlinx/datetime/zoneinfo/BundledTimeZoneContextKt {

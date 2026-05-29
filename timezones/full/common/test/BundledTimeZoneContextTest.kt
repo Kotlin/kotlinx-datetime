@@ -245,7 +245,7 @@ class BundledTimeZoneContextTest {
         }
     }
 
-    /** Tests that fixed-offset time zones are the sames as in [TimeZoneContext.System], but region-based ones aren't. */
+    /** Tests that fixed-offset time zones are the same as in [TimeZoneContext.System], but region-based ones aren't. */
     @Test
     fun testEqualityWithSystemTimezone() {
         val fixedOffsetTimeZones = listOf("UTC", "UTC+3", "GMT-08:00", "Z")

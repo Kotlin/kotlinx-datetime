@@ -516,7 +516,7 @@ kotlin {
             dependencies {
                 // 2026b is the most recent release of the IANA timezone database,
                 // 0.8.0 is `kotlinx-datetime` version
-                implementation("kotlinx-datetime-zoneinfo", "2026b-spi.0.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026b-spi.0.8.0")
             }
         }
     }
@@ -527,10 +527,19 @@ This will introduce the `kotlinx.datetime.zoneinfo` package,
 containing `TimeZoneContext.Bundled`, which can be used in place of `TimeZoneContext.System`:
 
 ```kotlin
+import kotlinx.datetime.*
 import kotlinx.datetime.zoneinfo.*
+import kotlin.time.*
+
+fun printCurrentTimeInBerlin(clock: Clock, timeZoneContext: TimeZoneContext) {
+    val instant = clock.now()
+    val localDateTime = instant.toLocalDateTime(timeZoneContext.get("Europe/Berlin"))
+    println(localDateTime)
+}
 
 fun main() {
-    println(TimeZoneContext.Bundled.currentTimeZoneId())
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.System)
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.Bundled)
 }
 ```
 
@@ -611,7 +620,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2026c-spi.0.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
             }
         }
     }

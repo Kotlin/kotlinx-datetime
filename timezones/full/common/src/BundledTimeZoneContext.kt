@@ -17,7 +17,7 @@ public val TimeZoneContext.Companion.Bundled: BundledTimeZoneContext
 /**
  * A [TimeZoneContext] that uses the timezone database from the `kotlinx-datetime-zoneinfo` artifact.
  *
- * This [TimeZoneContext] is drop-in replacement for [TimeZoneContext.System] for cases where
+ * This [TimeZoneContext] is a drop-in replacement for [TimeZoneContext.System] for cases where
  * the system timezone database is likely outdated.
  */
 public object BundledTimeZoneContext : TimeZoneContext {
@@ -73,11 +73,15 @@ public object BundledTimeZoneContext : TimeZoneContext {
      * @throws IllegalTimeZoneException if the identifier returned by [currentTimeZoneId]
      * is not recognized by this database.
      */
-    override fun currentTimeZone(): TimeZone =
-        getOrNull(currentTimeZoneId()) ?: throw IllegalTimeZoneException(
-            "Zone ID '${currentTimeZoneId()}', which is the current system timezone, " +
+    override fun currentTimeZone(): TimeZone {
+        val id = currentTimeZoneId()
+        return getOrNull(id) ?: throw IllegalTimeZoneException(
+            "Zone ID '$id', which is the current system timezone, " +
                     "was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
         )
+    }
+
+    override fun toString(): String = "TimeZoneContext.Bundled"
 }
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
