@@ -71,20 +71,25 @@ public fun Instant.Companion.parse(
 // Added after 0.8.0
 public fun Instant.plus(
     period: DateTimePeriod, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
-): Instant = try {
-    with(period) {
-        val initialOffset = offsetIn(timeZone)
-        val ldtPlusDate = toLocalDateTimeFailing(initialOffset)
+): Instant = with(period) {
+    val initialOffset = offsetIn(timeZone)
+    val ldtPlusDate = try {
+        toLocalDateTimeFailing(initialOffset)
             .run { if (totalMonths != 0L) { plus(totalMonths, DateTimeUnit.MONTH) } else { this } }
             .run { if (days != 0) { this.plus(days, DateTimeUnit.DAY) } else { this } }
-        localDateTimeToInstantLenient(ldtPlusDate, timeZone, onTransition, preferred = initialOffset)
-            .run { if (totalNanoseconds != 0L) plus(totalNanoseconds.nanoseconds).check(timeZone) else this }
-    }.check(timeZone)
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding DateTimePeriod to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding DateTimePeriod", e)
-}
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding DateTimePeriod", e)
+    }
+    val instantBeforeAddingTimeBasedUnits = localDateTimeToInstantLenient(
+        ldtPlusDate, timeZone, onTransition, preferred = initialOffset
+    )
+    try {
+        instantBeforeAddingTimeBasedUnits
+            .run { if (totalNanoseconds != 0L) plus(totalNanoseconds.nanoseconds) else this }
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding DateTimePeriod", e)
+    }
+}.check(timeZone)
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
@@ -453,22 +458,21 @@ public fun Instant.plus(
     unit: DateTimeUnit,
     timeZone: TimeZone,
     onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
-): Instant = try {
-    when (unit) {
-        is DateTimeUnit.DateBased -> {
-            val initialOffset = offsetIn(timeZone)
-            val initialLdt = toLocalDateTimeFailing(initialOffset)
-            localDateTimeToInstantLenient(
-                initialLdt.plus(value, unit), timeZone, onTransition, preferred = initialOffset
-            )
+): Instant = when (unit) {
+    is DateTimeUnit.DateBased -> {
+        val initialOffset = offsetIn(timeZone)
+        val initialLdt = toLocalDateTimeFailing(initialOffset)
+        val newLdt = try {
+            initialLdt.plus(value, unit)
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
         }
-        is DateTimeUnit.TimeBased ->
-            check(timeZone).plus(value, unit).check(timeZone)
+        localDateTimeToInstantLenient(
+            newLdt, timeZone, onTransition, preferred = initialOffset
+        )
     }
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
+    is DateTimeUnit.TimeBased ->
+        check(timeZone).plus(value, unit).check(timeZone)
 }
 
 /**

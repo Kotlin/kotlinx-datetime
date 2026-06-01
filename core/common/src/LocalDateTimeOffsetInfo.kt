@@ -93,8 +93,8 @@ public sealed interface LocalDateTimeOffsetInfo {
      *     }
      *     is LocalDateTimeOffsetInfo.Overlap -> {
      *         "Overlap occurred when transitioning " +
-     *             "from a bigger UTC offset (${transition.offsetAfter}) " +
-     *             "to a lower one (${transition.offsetBefore})."
+     *             "from a bigger UTC offset (${transition.offsetBefore}) " +
+     *             "to a lower one (${transition.offsetAfter})."
      *     }
      * }
      * ```

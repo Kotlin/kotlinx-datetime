@@ -114,6 +114,12 @@ private object SystemTimeZone: TimeZone() {
         return dateTime.toInstant(offset)
     }
 
+    // Assuming there are not going to be multiple transitions on the same day or transitions of 24 hours or longer
+    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+        TODO("Acquiring the offset information on JS is only supported with the timezone database. " +
+                "Please see https://github.com/Kotlin/kotlinx-datetime/#note-about-time-zones-in-js")
+    }
+
     override fun equals(other: Any?): Boolean = other === this
 
     override fun hashCode(): Int = id.hashCode()

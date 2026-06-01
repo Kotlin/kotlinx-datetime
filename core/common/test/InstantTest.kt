@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.NANOS_PER_ONE
+import kotlinx.datetime.plus
 import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.*
@@ -119,6 +120,50 @@ class InstantTest {
         expectBetween(instant1, instant6, 23, DateTimeUnit.HOUR)
         expectBetween(instant1, instant6, 0, DateTimeUnit.DAY)
         assertEquals(instant1, instant6.minus(23, DateTimeUnit.HOUR, zone))
+    }
+
+    @Test
+    fun instantArithmeticRethrowsFailingTransitionHandlerExceptions() {
+        class MyHandler(val predefinedException: Throwable): TransitionHandler {
+            override fun resolveDateTime(
+                dateTime: LocalDateTime,
+                transition: LocalDateTimeOffsetInfo.Transition,
+                preferredOffset: UtcOffset?,
+            ): Instant = throw predefinedException
+        }
+        val predefinedExceptions = listOf(
+            IllegalArgumentException("test"),
+            IllegalStateException("test"),
+            IllegalTimeZoneException("test"),
+            DateTimeArithmeticException("test"),
+            ArithmeticException("test"),
+        )
+        val timeZone = TimeZone.of("Europe/Berlin")
+        val dayBeforeEndInstant = Instant.parse("2019-10-26T02:30:00+02:00")
+        val monthBeforeEndInstant = Instant.parse("2019-09-27T02:30:00+02:00")
+        val yearBeforeEndInstant = Instant.parse("2018-10-27T02:30:00+02:00")
+        // Trying to end up in 2019-10-27T02:30, which is an overlap
+        val endInstant = Instant.parse("2019-10-27T01:30:00+02:00")
+        for (exception in predefinedExceptions) {
+            val handler = MyHandler(exception)
+            fun test(block: () -> Unit) {
+                assertSame(exception, assertFails { block() })
+            }
+            test { dayBeforeEndInstant.plus(DateTimePeriod(days = 1), timeZone, handler) }
+            test { dayBeforeEndInstant.minus(DateTimePeriod(days = -1), timeZone, handler) }
+            test { dayBeforeEndInstant.periodUntil(endInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.until(endInstant, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.daysUntil(endInstant, timeZone, handler) }
+            test { monthBeforeEndInstant.monthsUntil(endInstant, timeZone, handler) }
+            test { yearBeforeEndInstant.yearsUntil(endInstant, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, DateTimeUnit.DAY, timeZone, handler) }
+        }
+
     }
 
     @Test
