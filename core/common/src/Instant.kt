@@ -132,7 +132,8 @@ public fun Instant.minus(
  * The components of [DateTimePeriod] are calculated so that adding it to `this` instant
  * with the same [onTransition] handler results in the [other] instant.
  *
- * [onTransition] is invoked on several [LocalDateTime] values close to the [other] instant.
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to the [other] instant.
  *
  * All components of the [DateTimePeriod] returned are:
  * - Positive or zero if this instant is earlier than the other.
@@ -291,7 +292,8 @@ public fun Instant.yearsUntil(
  * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant
  * with the same [onTransition] handler results in this instant.
  *
- * [onTransition] is invoked on several [LocalDateTime] values close to `this` instant.
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to `this` instant.
  *
  * All components of the [DateTimePeriod] returned are:
  * - Negative or zero if this instant is earlier than the other.
