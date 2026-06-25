@@ -14,6 +14,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.jetbrains.kotlinx.artifacts-validator-plugin") version "0.0.2"
+}
+
 rootProject.name = "Kotlin-DateTime-library"
 
 include(":core")
