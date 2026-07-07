@@ -14,7 +14,7 @@
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
 
-"@js-joda/core@>= 3.2.0":
+"@js-joda/core@>= 3.2.0 < 7.0.0":
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/@js-joda/core/-/core-6.0.1.tgz#372b56137a0345333b12c6801ee48edd7435ef34"
   integrity sha512-Iev3Cfa3MC+06JXXeFzSLew/7yeCXLMhjesyH/BD4EQYlUUDV49Ln3s8hd7p5XK5UesO/dO3K1LFJ7RT7v0Ddg==

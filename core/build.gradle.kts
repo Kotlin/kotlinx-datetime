@@ -199,7 +199,7 @@ kotlin {
         val commonJsMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", ">= 3.2.0"))
+                implementation(npm("@js-joda/core", ">= 3.2.0 < 7.0.0"))
             }
         }
 
