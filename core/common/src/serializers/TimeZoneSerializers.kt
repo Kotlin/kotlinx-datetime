@@ -37,7 +37,7 @@ public object TimeZoneSerializer: KSerializer<TimeZone> {
  * JSON example: `"+02:00"`
  */
 @Deprecated(
-    "Serializing FixedOffsetTimeZoneSerializer is discouraged. Please serialize the string id instead.",
+    "Serializing FixedOffsetTimeZone is discouraged. Please serialize the string id instead.",
     level = DeprecationLevel.WARNING,
 )
 public object FixedOffsetTimeZoneSerializer: KSerializer<FixedOffsetTimeZone> {

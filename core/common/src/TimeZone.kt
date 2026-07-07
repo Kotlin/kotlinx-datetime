@@ -8,7 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -23,13 +22,33 @@ import kotlin.time.Instant
  * `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers, see [TimeZone.availableZoneIds].
  * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
  *
- * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
- * identifier.
- *
  * On the JVM, there are `TimeZone.toJavaZoneId()` and `java.time.ZoneId.toKotlinTimeZone()`
  * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  * Similarly, on the Darwin platforms, there are `TimeZone.toNSTimeZone()` and `NSTimeZone.toKotlinTimeZone()` extension
  * functions.
+ *
+ * ### Serializing a [TimeZone]
+ *
+ * Special care must be taken to serialize and deserialize a [TimeZone].
+ *
+ * - A timezone identifier that is available on one system may be unavailable on another one.
+ *   For example, in 2025, `America/Coyhaique` was introduced as a new timezone identifier.
+ *   A system whose timezone database was updated before 2025 wouldn't be able to recognize that identifier.
+ * - For a given timezone identifier, the behavior of the corresponding [TimeZone] object
+ *   also depends on the system configuration.
+ *   For example, in 2026, British Columbia decided to abolish daylight saving time transitions
+ *   and stay on a fixed [offset][UtcOffset] permanently.
+ *   Querying the [TimeZone] corresponding to the `America/Vancouver` identifier on an up-to-date system
+ *   would recognize this change,
+ *   but a system with an outdated timezone database would behave as if DST transitions were still practiced there.
+ *
+ * To sum it up, unless you control the timezone database, do not expect deserialization of valid timezone identifiers
+ * to succeed, and even when it succeeds, expect to see different results between systems.
+ * Consider sending [LocalDateTime] and [Instant] values between systems instead of a [TimeZone] identifier.
+ *
+ * To highlight these risks, [TimeZone] is intentionally not [Serializable], and no built-in serializer is provided
+ * for [TimeZone].
+ * Whenever it is necessary to serialize a [TimeZone], use its [TimeZone.id] instead.
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
