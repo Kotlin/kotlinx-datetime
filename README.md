@@ -448,7 +448,7 @@ Tips for fixing compilation errors:
     * `kotlinx.datetime.Instant.toStdlibInstant(): kotlin.time.Instant`
     * `kotlinx.datetime.Clock.toStdlibClock(): kotlin.time.Clock`
 
-> Compatibility releases will be published for all `0.7.x` versions of `kotlinx-datetime`, but not longer.
+> Compatibility releases will be published for versions up to `0.8.x` of `kotlinx-datetime`, but not longer.
 
 ### Gradle
 
