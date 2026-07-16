@@ -11,7 +11,7 @@ const val releaseVersionParameter = "releaseVersion"
 const val publicationCommandParameter = "publicationCommand"
 
 val platforms = Platform.values()
-const val jdk = "JDK_18"
+const val jdk = "JDK_17_0"
 
 enum class Platform {
     Windows, Linux, MacOS;
