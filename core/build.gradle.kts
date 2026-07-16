@@ -194,26 +194,26 @@ kotlin {
             }
         }
 
-        getByName("commonJsMain") {
+        named("commonJsMain") {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation(npm("@js-joda/core", ">= 3.2.0 < 7.0.0"))
             }
         }
 
-        getByName("commonJsTest") {
+        named("commonJsTest") {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        getByName("commonKotlinMain") {
+        named("commonKotlinMain") {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
-        getByName("wasmWasiTest") {
+        named("wasmWasiTest") {
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
