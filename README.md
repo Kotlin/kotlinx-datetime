@@ -574,9 +574,9 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 
 ## Building
 
-The project requires JDK 8 to build classes and to run tests.
+The project requires JDK 17 to build classes and to run tests.
 Gradle will try to find it among the installed JDKs or [download](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
-The path to JDK 8 can be additionally specified with the environment variable `JDK_8`.
+The path to JDK 17 can be additionally specified with the environment variable `JDK_17_0`.
 For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 
