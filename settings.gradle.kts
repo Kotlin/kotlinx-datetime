@@ -4,9 +4,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    val dokkaVersion: String by settings
-    val benchmarksVersion: String by settings
-    val bcvVersion: String by settings
+    val dokkaVersion = providers.gradleProperty("dokkaVersion")
+    val benchmarksVersion = providers.gradleProperty("benchmarksVersion")
+    val bcvVersion = providers.gradleProperty("bcvVersion")
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
         id("me.champeau.jmh") version benchmarksVersion

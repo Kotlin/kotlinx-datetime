@@ -8,11 +8,10 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 
-val mainJavaToolchainVersion: String by project
-val serializationVersion: String by project
+val serializationVersion = project.property("serializationVersion")
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(project.findProperty("mainJavaToolchainVersion") as String)) }
 }
 
 kotlin {
@@ -100,25 +99,19 @@ kotlin {
             }
         }
 
-        val jvmMain by getting
-        val jvmTest by getting
-
-        val jsMain by getting
-        val jsTest by getting {
+        jsTest {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        val wasmJsMain by getting
-        val wasmJsTest by getting {
+        wasmJsTest {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        val wasmWasiMain by getting
-        val wasmWasiTest by getting {
+        wasmWasiTest {
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
