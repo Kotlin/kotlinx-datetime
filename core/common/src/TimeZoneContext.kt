@@ -16,6 +16,7 @@ import kotlinx.datetime.internal.systemTimezoneDatabase
  * Typically, the identifiers follow the IANA time zone conventions (https://www.iana.org/time-zones):
  * for example, `Europe/Berlin` or `America/Los_Angeles`.
  */
+@MyJvmDefaultWithoutCompatibility
 public interface TimeZoneDatabase {
     /**
      * Returns the time zone identified by the provided [id].
@@ -83,6 +84,7 @@ public interface TimeZoneIdProvider {
  * but can additionally return a useful time zone
  * even when the [TimeZoneDatabase] does not recognize the timezone identifier.
  */
+@MyJvmDefaultWithoutCompatibility
 public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
     /**
      * Get the current time zone.

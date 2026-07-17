@@ -9,10 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 
-@OptIn(ExperimentalMultiplatform::class)
-@OptionalExpectation
-internal expect annotation class MyJvmDefaultWithoutCompatibility()
-
 /**
  * Common functions for all format builders.
  *
