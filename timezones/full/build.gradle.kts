@@ -72,6 +72,14 @@ val generateTzdbMetainformation by tasks.registering {
     }
 }
 
+val mainJavaToolchainVersion: String by project
+val modularJavaToolchainVersion: String by project
+val serializationVersion: String by project
+
+java {
+    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+}
+
 kotlin {
     explicitApi()
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
