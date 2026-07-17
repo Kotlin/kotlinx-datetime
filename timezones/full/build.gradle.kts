@@ -7,6 +7,7 @@ import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.npm.task.NpxTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform")
@@ -205,8 +206,80 @@ kotlin {
     }
 }
 
-tasks.named("jvmProcessResources") {
-    dependsOn(tzdbCopyToJvmResources)
+tasks {
+    named("jvmProcessResources") {
+        dependsOn(tzdbCopyToJvmResources)
+    }
+
+    // Copy-pasted from core/build.gradle.kts. TODO: unify in buildSrc/.
+
+    val compileJavaModuleInfo by registering(JavaCompile::class) {
+        val moduleName = "kotlinx.datetime.zoneinfo" // this module's name
+        val compileKotlinJvm by getting(KotlinCompile::class)
+        val sourceDir = file("jvm/java9/")
+        val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
+
+        // Use a Java 11 compiler for the module info.
+        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
+
+        // Always compile kotlin classes before the module descriptor.
+        dependsOn(compileKotlinJvm)
+
+        // Add the module-info source file.
+        source(sourceDir)
+
+        // Also add the module-info.java source file to the Kotlin compile task.
+        // The Kotlin compiler will parse and check module dependencies,
+        // but it currently won't compile to a module-info.class file.
+        // Note that module checking only works on JDK 9+,
+        // because the JDK built-in base modules are not available in earlier versions.
+        val javaVersion = compileKotlinJvm.kotlinJavaToolchain.javaVersion.getOrNull()
+        if (javaVersion?.isJava9Compatible == true) {
+            logger.info("Module-info checking is enabled; $compileKotlinJvm is compiled using Java $javaVersion")
+            compileKotlinJvm.source(sourceDir)
+        } else {
+            logger.info("Module-info checking is disabled")
+        }
+
+        // Set the task outputs and destination dir
+        outputs.dir(targetDir)
+        destinationDirectory.set(targetDir)
+
+        // Configure JVM compatibility
+        sourceCompatibility = JavaVersion.VERSION_1_9.toString()
+        targetCompatibility = JavaVersion.VERSION_1_9.toString()
+
+        // Set the Java release version.
+        options.release.set(9)
+
+        // Ignore warnings about using 'requires transitive' on automatic modules.
+        // not needed when compiling with recent JDKs, e.g. 17
+        options.compilerArgs.add("-Xlint:-requires-transitive-automatic")
+
+        // Patch the compileKotlinJvm output classes into the compilation so exporting packages works correctly.
+        options.compilerArgs.addAll(listOf("--patch-module", "$moduleName=${compileKotlinJvm.destinationDirectory.get()}"))
+
+        // Use the classpath of the compileKotlinJvm task.
+        // Also ensure that the module path is used instead of classpath.
+        classpath = compileKotlinJvm.libraries
+
+        modularity.inferModulePath.set(true)
+        options.javaModuleVersion.set(project.version.toString().takeUnless { it == Project.DEFAULT_VERSION })
+    }
+
+    val jvmJar by existing(Jar::class) {
+        manifest {
+            attributes(
+                "Multi-Release" to true,
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
+        }
+        from(compileJavaModuleInfo.map { it.destinationDirectory }) {
+            into("META-INF/versions/9/")
+        }
+    }
 }
 
 apiValidation {
