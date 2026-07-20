@@ -25,7 +25,7 @@ mavenPublicationsPom {
 val serializationVersion = project.property("serializationVersion")
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(project.findProperty("mainJavaToolchainVersion") as String)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(project.property("mainJavaToolchainVersion") as String)) }
 }
 
 kotlin {
@@ -237,7 +237,7 @@ tasks {
         val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
 
         // Use a Java 11 compiler for the module info.
-        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(project.findProperty("modularJavaToolchainVersion") as String)) })
+        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(project.property("modularJavaToolchainVersion") as String)) })
 
         // Always compile kotlin classes before the module descriptor.
         dependsOn(compileKotlinJvm)

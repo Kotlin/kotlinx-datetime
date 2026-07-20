@@ -11,7 +11,7 @@ plugins {
 val serializationVersion = project.property("serializationVersion")
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(project.findProperty("mainJavaToolchainVersion") as String)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(project.property("mainJavaToolchainVersion") as String)) }
 }
 
 kotlin {
