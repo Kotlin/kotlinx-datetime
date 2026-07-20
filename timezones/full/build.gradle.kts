@@ -21,7 +21,7 @@ node {
     nodeProjectDir.set(layout.buildDirectory.dir("node"))
 }
 
-val tzdbVersion: String by rootProject.properties
+val tzdbVersion = rootProject.property("tzdbVersion") as String
 version = "$tzdbVersion-spi.$version"
 
 val tzdbMetainformationDir =
@@ -32,14 +32,14 @@ val tzdbDirectory = File(project.projectDir, "tzdb")
 
 val copiedTzdbDirectory = project.layout.buildDirectory.dir("jvmResources")
 
-val timeTzdbInstall by tasks.creating(NpmTask::class) {
+val timeTzdbInstall = tasks.register<NpmTask>("timeTzdbInstall") {
     args.addAll(
         "install",
         "@tubular/time-tzdb",
     )
 }
 
-val tzdbDownloadAndCompile by tasks.creating(NpxTask::class) {
+tasks.register<NpxTask>("tzdbDownloadAndCompile") {
     dependsOn(timeTzdbInstall)
     command.set("@tubular/time-tzdb")
     args.addAll("-b", "--large")
@@ -49,7 +49,7 @@ val tzdbDownloadAndCompile by tasks.creating(NpxTask::class) {
     args.add(tzdbDirectory.toString())
 }
 
-val tzdbCopyToJvmResources by tasks.creating(Copy::class) {
+val tzdbCopyToJvmResources = tasks.register<Copy>("tzdbCopyToJvmResources") {
     val outputDir = copiedTzdbDirectory.map { it.dir("tzdb") }
     inputs.dir(tzdbDirectory)
     outputs.dir(outputDir)
@@ -57,7 +57,7 @@ val tzdbCopyToJvmResources by tasks.creating(Copy::class) {
     into(outputDir)
 }
 
-val generateTzdataAsKotlinFiles by tasks.registering {
+val generateTzdataAsKotlinFiles = tasks.register("generateTzdataAsKotlinFiles") {
     inputs.dir(tzdbDirectory)
     outputs.dir(tzdataAsKotlinFilesDir)
     doLast {
@@ -65,7 +65,7 @@ val generateTzdataAsKotlinFiles by tasks.registering {
     }
 }
 
-val generateTzdbMetainformation by tasks.registering {
+val generateTzdbMetainformation = tasks.register("generateTzdbMetainformation") {
     inputs.dir(tzdbDirectory)
     outputs.dir(tzdbMetainformationDir)
     doLast {
@@ -73,12 +73,8 @@ val generateTzdbMetainformation by tasks.registering {
     }
 }
 
-val mainJavaToolchainVersion: String by project
-val modularJavaToolchainVersion: String by project
-val serializationVersion: String by project
-
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(project.property("mainJavaToolchainVersion") as String)) }
 }
 
 kotlin {
@@ -144,30 +140,34 @@ kotlin {
 
     // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>
     // Tier 1
-    macosX64()
     macosArm64()
     iosSimulatorArm64()
-    iosX64()
     iosArm64()
     // Tier 2
     linuxX64()
     linuxArm64()
     watchosSimulatorArm64()
-    watchosX64()
     watchosArm32()
     watchosArm64()
     tvosSimulatorArm64()
-    tvosX64()
     tvosArm64()
     // Tier 3
     androidNativeArm32()
     androidNativeArm64()
     androidNativeX86()
     androidNativeX64()
+    iosX64()
     mingwX64()
     watchosDeviceArm64()
-    // Deprecated
+    // Deprecated, preserved for KT-58864
     @Suppress("DEPRECATION") linuxArm32Hfp()
+    // Deprecated for removal: KT-78660
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    run {
+        macosX64()
+        watchosX64()
+        tvosX64()
+    }
 
     sourceSets.all {
         val suffixIndex = name.indexOfLast { it.isUpperCase() }
@@ -185,11 +185,11 @@ kotlin {
             kotlin.srcDir(generateTzdbMetainformation)
         }
 
-        val commonWithoutResourcesMain by getting {
+        named("commonWithoutResourcesMain") {
             kotlin.srcDir(generateTzdataAsKotlinFiles)
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime"))
                 implementation(kotlin("test"))
@@ -200,7 +200,7 @@ kotlin {
             resources.srcDir(copiedTzdbDirectory)
         }
 
-        val wasmWasiMain by getting {
+        wasmWasiMain {
             languageSettings.optIn("kotlinx.datetime.internal.InternalDateTimeApi")
         }
     }
@@ -213,14 +213,16 @@ tasks {
 
     // Copy-pasted from core/build.gradle.kts. TODO: unify in buildSrc/.
 
-    val compileJavaModuleInfo by registering(JavaCompile::class) {
+    val compileJavaModuleInfo = register<JavaCompile>("compileJavaModuleInfo") {
         val moduleName = "kotlinx.datetime.zoneinfo" // this module's name
-        val compileKotlinJvm by getting(KotlinCompile::class)
+        val compileKotlinJvm = getByName<KotlinCompile>("compileKotlinJvm")
         val sourceDir = file("jvm/java9/")
         val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
 
         // Use a Java 11 compiler for the module info.
-        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
+        javaCompiler.set(project.javaToolchains.compilerFor {
+            languageVersion.set(JavaLanguageVersion.of(project.property("modularJavaToolchainVersion") as String))
+        })
 
         // Always compile kotlin classes before the module descriptor.
         dependsOn(compileKotlinJvm)
@@ -267,7 +269,7 @@ tasks {
         options.javaModuleVersion.set(project.version.toString().takeUnless { it == Project.DEFAULT_VERSION })
     }
 
-    val jvmJar by existing(Jar::class) {
+    named<Jar>("jvmJar") {
         manifest {
             attributes(
                 "Multi-Release" to true,
