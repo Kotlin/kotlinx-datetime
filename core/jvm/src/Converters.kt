@@ -72,7 +72,7 @@ public fun java.time.Period.toKotlinDatePeriod(): DatePeriod = DatePeriod(this.y
  * If the [TimeZone] value was obtained from a timezone database other than the system one,
  * a direct conversion is not possible.
  * In that case, the [ZoneId.of] will be queried with the timezone identifier of the [TimeZone]
- * and may throw an [IllegalArgumentException] if the timezone identifier is invalid or not supported.
+ * and may throw a [java.time.DateTimeException] if the timezone identifier is invalid or not supported.
  */
 public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this.zoneId) {
     is ZoneIdLike.ActualZoneId -> this.zoneId.actualZoneId

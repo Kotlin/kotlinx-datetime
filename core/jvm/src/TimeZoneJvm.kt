@@ -220,7 +220,7 @@ internal sealed interface ZoneIdLike {
         override fun toString(): String = actualZoneId.toString()
     }
 
-    class RuleBasedZoneId(val zoneRules: RuleBasedTimeZoneCalculations): ZoneIdLike {
+    class RuleBasedZoneId(private val zoneRules: RuleBasedTimeZoneCalculations): ZoneIdLike {
         override val id: String get() = zoneRules.id
 
         override fun offsetAt(instant: Instant): UtcOffset =
@@ -247,7 +247,7 @@ internal sealed interface ZoneIdLike {
         override fun instantToLocalDateTime(instant: Instant): LocalDateTime =
             instant.toLocalDateTime(offsetAt(instant))
 
-        override fun equals(other: Any?): Boolean = other is RuleBasedZoneId && zoneRules.id == other.zoneRules.id
+        override fun equals(other: Any?): Boolean = other is RuleBasedZoneId && zoneRules == other.zoneRules
         override fun hashCode(): Int = zoneRules.hashCode()
         override fun toString(): String = id
     }

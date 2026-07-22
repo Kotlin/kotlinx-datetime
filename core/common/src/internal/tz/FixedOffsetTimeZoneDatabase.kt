@@ -42,7 +42,7 @@ private fun <T> parseFixedOffsetTimeZone(
         id == "Z" || id == "z" -> onParsed(UtcOffset.ZERO.asTimeZone())
         id.length == 1 -> null
         id.startsWith("+") || id.startsWith("-") -> parse(id, null)
-        id == "UTC" || id == "GMT" || id == "UT" -> onParsed(FixedOffsetTimeZone.withSpecificName(UtcOffset.ZERO, id))
+        id == "GMT" || id == "UT" -> onParsed(FixedOffsetTimeZone.withSpecificName(UtcOffset.ZERO, id))
         id.startsWith("UTC+") || id.startsWith("GMT+") || id.startsWith("UTC-") || id.startsWith("GMT-") ->
             parse(id.substring(3), id.take(3))
         id.startsWith("UT+") || id.startsWith("UT-") ->
