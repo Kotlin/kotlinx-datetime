@@ -52,10 +52,10 @@ public fun Instant.Companion.parse(
  * Returns an instant that is the result of adding components of [DateTimePeriod] to this instant. The components are
  * added in the order from the largest units to the smallest, i.e., from years to nanoseconds.
  *
- * If, after adding the date portion of the [period], the resulting [LocalDateTime]
+ * If, after adding the date portion of the [period], the intermediate [LocalDateTime]
  * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
  * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
- * [offsetAt] with this [Instant] if it is valid for that datetime.
+ * [offsetAt] with this [Instant] if it is valid for the intermediate datetime.
  *
  * - If the [DateTimePeriod] only contains time-based components, please consider adding a [Duration] instead,
  *   as in `Clock.System.now() + 5.hours`.
@@ -95,10 +95,10 @@ public fun Instant.plus(
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
  * are subtracted in the order from the largest units to the smallest, i.e., from years to nanoseconds.
  *
- * If, after subtracting the date portion of the [period], the resulting [LocalDateTime]
+ * If, after subtracting the date portion of the [period], the intermediate [LocalDateTime]
  * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
  * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
- * [offsetAt] with this [Instant] if it is valid for that datetime.
+ * [offsetAt] with this [Instant] if it is valid for the intermediate datetime.
  *
  * - If the [DateTimePeriod] only contains time-based components, please consider subtracting a [Duration] instead,
  *   as in `Clock.System.now() - 5.hours`.
@@ -728,4 +728,3 @@ internal fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone):
 @Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
 internal fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
     minus(other, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
-

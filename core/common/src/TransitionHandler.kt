@@ -52,7 +52,7 @@ import kotlin.time.Instant
  */
 public interface TransitionHandler {
     /**
-     * Calculate the [Instant] corresponding to the given [dateTime].
+     * Calculates the [Instant] corresponding to the given [dateTime].
      *
      * This function should only be implemented but typically not called from client code.
      *
