@@ -279,18 +279,19 @@ private fun checkOverlap(timeZone: TimeZone, overlapStart: LocalDateTime) {
         timeZone.offsetInfoFor(overlapStart.plusNominalSeconds(-1))
     )
     val instantEnd = overlapStart.toInstant(timeZone, TransitionHandler.REJECT_TRANSITIONS)
-    assertEquals(
+    for (offsetBefore in listOf(
         (overlap.transitionInstant - 2.nanoseconds).offsetIn(timeZone),
         (overlap.transitionInstant - 1.nanoseconds).offsetIn(timeZone),
-    )
-    assertEquals(
+    )) {
+        assertEquals(overlap.offsetBefore, offsetBefore)
+    }
+    for (offsetAfter in listOf(
         overlap.transitionInstant.offsetIn(timeZone),
         (overlap.transitionInstant + 1.nanoseconds).offsetIn(timeZone),
-    )
-    assertEquals(
-        overlap.transitionInstant.offsetIn(timeZone),
         instantEnd.offsetIn(timeZone),
-    )
+    )) {
+        assertEquals(overlap.offsetAfter, offsetAfter)
+    }
 }
 
 private fun checkRegular(timeZone: TimeZone, dateTime: LocalDateTime, offset: UtcOffset) {
