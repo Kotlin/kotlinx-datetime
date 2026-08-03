@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 
 internal val systemTimezoneDatabase: TimeZoneDatabase =
-    FixedOffsetTimeZoneDatabase(timeZoneDatabaseImpl)
+    TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(timeZoneDatabaseImpl)
 
 internal expect val timeZoneDatabaseImpl: TimeZoneDatabase
 internal expect fun currentSystemDefaultTimeZone(): TimeZone

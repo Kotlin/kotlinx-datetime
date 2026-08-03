@@ -8,7 +8,7 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 
-internal class FixedOffsetTimeZoneDatabase(val inner: TimeZoneDatabase): TimeZoneDatabase {
+internal class TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(val inner: TimeZoneDatabase): TimeZoneDatabase {
     override fun get(id: String): TimeZone {
         return parseFixedOffsetTimeZone(
             id,

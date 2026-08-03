@@ -85,7 +85,7 @@ public object BundledTimeZoneContext : TimeZoneContext {
 }
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-private val impl: TimeZoneDatabase = FixedOffsetTimeZoneDatabase(object: TimeZoneDatabase {
+private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(object: TimeZoneDatabase {
     override fun get(id: String): TimeZone = getOrNull(id)
         ?: throw IllegalTimeZoneException(
             "Zone ID '$id' was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
