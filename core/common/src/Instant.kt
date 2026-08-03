@@ -183,6 +183,7 @@ public fun Instant.periodUntil(
  * The return value is calculated so that adding it to `this` instant
  * with the same [unit] and the same [onTransition] handler results in the [other] instant.
  *
+ * For [date-based units][DateTimeUnit.DateBased],
  * [onTransition] is invoked on a [LocalDateTime] value close to the [other] instant.
  *
  * The value returned is:
@@ -554,7 +555,8 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * The return value is calculated so that adding it to [other] instant
  * with the same [unit] and the same [onTransition] handler results in `this` instant.
  *
- * [onTransition] is invoked on a [LocalDateTime] value close to the [other] instant.
+ * For [date-based units][DateTimeUnit.DateBased],
+ * [onTransition] is invoked on a [LocalDateTime] value close to `this` instant.
  *
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
