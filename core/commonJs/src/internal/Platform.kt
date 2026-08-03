@@ -6,8 +6,6 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
-import kotlinx.datetime.IllegalTimeZoneException
-import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds

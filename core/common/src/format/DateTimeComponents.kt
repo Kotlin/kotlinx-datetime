@@ -6,7 +6,6 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.formatter.FormatterStructure

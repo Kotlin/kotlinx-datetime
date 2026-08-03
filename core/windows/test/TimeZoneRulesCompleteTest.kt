@@ -9,9 +9,7 @@ package kotlinx.datetime.test
 import kotlinx.cinterop.*
 import kotlinx.cinterop.ptr
 import kotlinx.datetime.*
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.number
 import platform.windows.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours

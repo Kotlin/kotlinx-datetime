@@ -7,7 +7,6 @@ package kotlinx.datetime.test.samples
 
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
-import kotlinx.datetime.onDay
 import kotlin.test.*
 
 class YearMonthSamples {

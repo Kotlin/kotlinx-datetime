@@ -6,11 +6,9 @@
 package kotlinx.datetime.format
 
 import kotlinx.datetime.*
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.internal.format.*
 import kotlinx.datetime.internal.format.parser.Copyable
-import kotlinx.datetime.number
 
 /**
  * A description of how the names of weekdays are formatted.
