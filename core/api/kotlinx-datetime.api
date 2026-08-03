@@ -774,28 +774,15 @@ public final class kotlinx/datetime/TimeZoneKt {
 }
 
 public abstract interface class kotlinx/datetime/TransitionHandler {
+	public static final field Companion Lkotlinx/datetime/TransitionHandler$Companion;
 	public abstract fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
 }
 
-public final class kotlinx/datetime/TransitionHandler$FIND_EARLIEST_VALID_TIME : kotlinx/datetime/TransitionHandler {
-	public static final field INSTANCE Lkotlinx/datetime/TransitionHandler$FIND_EARLIEST_VALID_TIME;
-	public fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
-}
-
-public final class kotlinx/datetime/TransitionHandler$REJECT_TRANSITIONS : kotlinx/datetime/TransitionHandler {
-	public static final field INSTANCE Lkotlinx/datetime/TransitionHandler$REJECT_TRANSITIONS;
-	public fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Ljava/lang/Void;
-	public synthetic fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
-}
-
-public final class kotlinx/datetime/TransitionHandler$REQUIRE_RESOLVED : kotlinx/datetime/TransitionHandler {
-	public static final field INSTANCE Lkotlinx/datetime/TransitionHandler$REQUIRE_RESOLVED;
-	public fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
-}
-
-public final class kotlinx/datetime/TransitionHandler$USE_OFFSET_BEFORE : kotlinx/datetime/TransitionHandler {
-	public static final field INSTANCE Lkotlinx/datetime/TransitionHandler$USE_OFFSET_BEFORE;
-	public fun resolveDateTime (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/LocalDateTimeOffsetInfo$Transition;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
+public final class kotlinx/datetime/TransitionHandler$Companion {
+	public final fun getFIND_EARLIEST_VALID_TIME ()Lkotlinx/datetime/TransitionHandler;
+	public final fun getREJECT_TRANSITIONS ()Lkotlinx/datetime/TransitionHandler;
+	public final fun getREQUIRE_RESOLVED ()Lkotlinx/datetime/TransitionHandler;
+	public final fun getUSE_OFFSET_BEFORE ()Lkotlinx/datetime/TransitionHandler;
 }
 
 public final class kotlinx/datetime/UtcOffset : java/io/Serializable {

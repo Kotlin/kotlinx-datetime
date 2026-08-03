@@ -84,20 +84,15 @@ abstract interface kotlinx.datetime/Clock { // kotlinx.datetime/Clock|null[0]
 abstract interface kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler|null[0]
     abstract fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
 
-    final object FIND_EARLIEST_VALID_TIME : kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler.FIND_EARLIEST_VALID_TIME|null[0]
-        final fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.FIND_EARLIEST_VALID_TIME.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
-    }
-
-    final object REJECT_TRANSITIONS : kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler.REJECT_TRANSITIONS|null[0]
-        final fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin/Nothing // kotlinx.datetime/TransitionHandler.REJECT_TRANSITIONS.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
-    }
-
-    final object REQUIRE_RESOLVED : kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler.REQUIRE_RESOLVED|null[0]
-        final fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.REQUIRE_RESOLVED.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
-    }
-
-    final object USE_OFFSET_BEFORE : kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler.USE_OFFSET_BEFORE|null[0]
-        final fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.USE_OFFSET_BEFORE.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
+    final object Companion { // kotlinx.datetime/TransitionHandler.Companion|null[0]
+        final val FIND_EARLIEST_VALID_TIME // kotlinx.datetime/TransitionHandler.Companion.FIND_EARLIEST_VALID_TIME|{}FIND_EARLIEST_VALID_TIME[0]
+            final fun <get-FIND_EARLIEST_VALID_TIME>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.FIND_EARLIEST_VALID_TIME.<get-FIND_EARLIEST_VALID_TIME>|<get-FIND_EARLIEST_VALID_TIME>(){}[0]
+        final val REJECT_TRANSITIONS // kotlinx.datetime/TransitionHandler.Companion.REJECT_TRANSITIONS|{}REJECT_TRANSITIONS[0]
+            final fun <get-REJECT_TRANSITIONS>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.REJECT_TRANSITIONS.<get-REJECT_TRANSITIONS>|<get-REJECT_TRANSITIONS>(){}[0]
+        final val REQUIRE_RESOLVED // kotlinx.datetime/TransitionHandler.Companion.REQUIRE_RESOLVED|{}REQUIRE_RESOLVED[0]
+            final fun <get-REQUIRE_RESOLVED>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.REQUIRE_RESOLVED.<get-REQUIRE_RESOLVED>|<get-REQUIRE_RESOLVED>(){}[0]
+        final val USE_OFFSET_BEFORE // kotlinx.datetime/TransitionHandler.Companion.USE_OFFSET_BEFORE|{}USE_OFFSET_BEFORE[0]
+            final fun <get-USE_OFFSET_BEFORE>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.USE_OFFSET_BEFORE.<get-USE_OFFSET_BEFORE>|<get-USE_OFFSET_BEFORE>(){}[0]
     }
 }
 
