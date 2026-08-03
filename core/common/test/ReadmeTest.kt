@@ -38,7 +38,7 @@ class ReadmeTest {
             TransitionHandler.REJECT_TRANSITIONS
         )
         val kotlinReleaseInstant2 = kotlinReleaseDateTime.toInstant(UtcOffset(hours = 3).asTimeZone())
-        assertEquals(kotlinReleaseInstant1,kotlinReleaseInstant2)
+        assertEquals(kotlinReleaseInstant1, kotlinReleaseInstant2)
     }
 
     @Test
