@@ -8,6 +8,7 @@ package kotlinx.datetime
 import kotlinx.datetime.internal.currentSystemDefaultTimeZone
 import kotlinx.datetime.internal.systemTimeZoneIdProvider
 import kotlinx.datetime.internal.systemTimezoneDatabase
+import kotlinx.datetime.internal.MyJvmDefaultWithoutCompatibility
 
 /**
  * A mapping from time zone identifiers to [TimeZone] objects.
