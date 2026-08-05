@@ -51,6 +51,7 @@ class ClockSamples {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun timeSourceAsClock() {
         // Creating a TimeSource
         // When testing a Clock in combination of kotlinx-coroutines-test, use the testTimeSource of the TestDispatcher.

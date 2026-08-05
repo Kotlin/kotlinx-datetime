@@ -138,7 +138,7 @@ class InstantTest {
             DateTimeArithmeticException("test"),
             ArithmeticException("test"),
         )
-        val timeZone = TimeZone.of("Europe/Berlin")
+        val timeZone = TimeZoneContext.System.get("Europe/Berlin")
         val dayBeforeEndInstant = Instant.parse("2019-10-26T02:30:00+02:00")
         val monthBeforeEndInstant = Instant.parse("2019-09-27T02:30:00+02:00")
         val yearBeforeEndInstant = Instant.parse("2018-10-27T02:30:00+02:00")

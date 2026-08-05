@@ -217,7 +217,7 @@ class TimeZoneSamples {
 
     @Test
     fun offsetInfoFor() {
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
         val dateTimes = listOf(
             LocalDateTime(2023, 6, 2, 12, 30), // regular
             LocalDateTime(2023, 3, 26, 2, 30), // clocks moved forward: time gap
