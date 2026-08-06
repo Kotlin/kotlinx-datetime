@@ -111,7 +111,7 @@ class InstantTest {
         val instant5 = instant1.plus(period, zone)
         checkComponents(instant5.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant5, zone))
-        assertEquals(period, instant5.minus(instant1, zone))
+        assertEquals(period, instant5.periodFrom(instant1, zone))
         assertEquals(26.hours, instant5.minus(instant1))
         assertEquals(instant1.plus(1, DateTimeUnit.HOUR), instant5.minus(period, zone))
 
@@ -156,7 +156,7 @@ class InstantTest {
             test { dayBeforeEndInstant.daysUntil(endInstant, timeZone, handler) }
             test { monthBeforeEndInstant.monthsUntil(endInstant, timeZone, handler) }
             test { yearBeforeEndInstant.yearsUntil(endInstant, timeZone, handler) }
-            test { endInstant.minus(dayBeforeEndInstant, timeZone, handler) }
+            test { endInstant.periodFrom(dayBeforeEndInstant, timeZone, handler) }
             test { dayBeforeEndInstant.plus(1, DateTimeUnit.DAY, timeZone, handler) }
             test { dayBeforeEndInstant.minus(-1, DateTimeUnit.DAY, timeZone, handler) }
             test { dayBeforeEndInstant.plus(1L, DateTimeUnit.DAY, timeZone, handler) }

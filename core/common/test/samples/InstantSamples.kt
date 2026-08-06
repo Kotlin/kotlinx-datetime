@@ -343,16 +343,34 @@ class InstantSamples {
 
     /** copy of [periodUntil] */
     @Test
-    fun minusInstantInZone() {
+    fun periodFrom() {
         // Finding a period that it would take to get from the starting instant to the ending instant
         val startInstant = Instant.parse("2024-01-01T02:00:00Z")
         val endInstant = Instant.parse("2024-03-01T03:15:03Z")
         // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
-        val periodInNewYork = endInstant.minus(startInstant, TimeZoneContext.System.get("America/New_York"))
+        val periodInNewYork = endInstant.periodFrom(startInstant, TimeZoneContext.System.get("America/New_York"))
         check(periodInNewYork == DateTimePeriod(months = 1, days = 29, hours = 1, minutes = 15, seconds = 3))
         // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
-        val periodInBerlin = endInstant.minus(startInstant, TimeZoneContext.System.get("Europe/Berlin"))
+        val periodInBerlin = endInstant.periodFrom(startInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
+    }
+
+    /** copy of [periodUntil] */
+    @Test
+    fun periodFromWithContextParameter() {
+        // Finding a period that it would take to get from the starting instant to the ending instant
+        val startInstant = Instant.parse("2024-01-01T02:00:00Z")
+        val endInstant = Instant.parse("2024-03-01T03:15:03Z")
+        // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
+        context(TimeZone.of("America/New_York")) {
+            val periodInNewYork = endInstant.periodFrom(startInstant)
+            check(periodInNewYork == DateTimePeriod(months = 1, days = 29, hours = 1, minutes = 15, seconds = 3))
+        }
+        // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
+        context(TimeZone.of("Europe/Berlin")) {
+            val periodInBerlin = endInstant.periodFrom(startInstant)
+            check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
+        }
     }
 
     @Test
