@@ -177,6 +177,28 @@ public fun Instant.periodUntil(
 }
 
 /**
+ * Returns a [DateTimePeriod] representing the difference between `this` and [other] instants.
+ *
+ * The components of [DateTimePeriod] are calculated so that adding it to `this` instant
+ * with the same [onTransition] handler results in the [other] instant.
+ *
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to the [other] instant.
+ *
+ * All components of the [DateTimePeriod] returned are:
+ * - Positive or zero if this instant is earlier than the other.
+ * - Negative or zero if this instant is later than the other.
+ * - Exactly zero if this instant is equal to the other.
+ *
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntilWithContextParameter
+ */
+context(timeZone: TimeZone)
+public fun Instant.periodUntil(
+    other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): DateTimePeriod = periodUntil(other, timeZone, onTransition)
+
+/**
  * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
  * in the specified [timeZone].
  *
@@ -224,6 +246,34 @@ public fun Instant.until(
     }
 
 /**
+ * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
+ * in the [timeZone] specified in the context parameter.
+ *
+ * The return value is calculated so that adding it to `this` instant
+ * with the same [unit] and the same [onTransition] handler results in the [other] instant.
+ *
+ * For [date-based units][DateTimeUnit.DateBased],
+ * [onTransition] can be invoked to account for possible transitions on the date of the [other] instant.
+ *
+ * The value returned is:
+ * - Positive or zero if this instant is earlier than the other.
+ * - Negative or zero if this instant is later than the other.
+ * - Zero if this instant is equal to the other.
+ *
+ * If the result does not fit in [Long], returns [Long.MAX_VALUE] for a positive result or [Long.MIN_VALUE] for a negative result.
+ *
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnitWithContextParameter
+ */
+// Added after 0.8.0
+context (timeZone: TimeZone)
+public fun Instant.until(
+    other: Instant,
+    unit: DateTimeUnit,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Long = until(other, unit, timeZone, onTransition)
+
+/**
  * Returns the whole number of the specified time [units][unit] between `this` and [other] instants.
  *
  * The value returned is:
@@ -260,6 +310,21 @@ public fun Instant.daysUntil(
 ): Int = until(other, DateTimeUnit.DAY, timeZone, onTransition).clampToInt()
 
 /**
+ * Returns the number of whole days between two instants in the [timeZone] specified in the context parameter.
+ *
+ * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see Instant.until
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.daysUntilWithContextParameter
+ */
+// Added after 0.8.0
+context (timeZone: TimeZone)
+public fun Instant.daysUntil(
+    other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = daysUntil(other, timeZone, onTransition)
+
+/**
  * Returns the number of whole months between two instants in the specified [timeZone].
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
@@ -274,6 +339,21 @@ public fun Instant.monthsUntil(
 ): Int = until(other, DateTimeUnit.MONTH, timeZone, onTransition).clampToInt()
 
 /**
+ * Returns the number of whole months between two instants in the [timeZone] specified in the context parameter.
+ *
+ * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see Instant.until
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.monthsUntilWithContextParameter
+ */
+// Added after 0.8.0
+context (timeZone: TimeZone)
+public fun Instant.monthsUntil(
+    other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = monthsUntil(other, timeZone, onTransition)
+
+/**
  * Returns the number of whole years between two instants in the specified [timeZone].
  *
  * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
@@ -286,6 +366,21 @@ public fun Instant.monthsUntil(
 public fun Instant.yearsUntil(
     other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): Int = until(other, DateTimeUnit.YEAR, timeZone, onTransition).clampToInt()
+
+/**
+ * Returns the number of whole years between two instants in the [timeZone] specified in the context parameter.
+ *
+ * If the result does not fit in [Int], returns [Int.MAX_VALUE] for a positive result or [Int.MIN_VALUE] for a negative result.
+ *
+ * @see Instant.until
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.InstantSamples.yearsUntilWithContextParameter
+ */
+// Added after 0.8.0
+context (timeZone: TimeZone)
+public fun Instant.yearsUntil(
+    other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = yearsUntil(other, timeZone, onTransition)
 
 /**
  * Returns a [DateTimePeriod] representing the difference between [other] and `this` instants.
@@ -309,7 +404,6 @@ public fun Instant.yearsUntil(
 public fun Instant.minus(
     other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
-
 
 /**
  * Returns an instant that is the result of adding one [unit] to this instant
