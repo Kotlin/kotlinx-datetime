@@ -185,6 +185,24 @@ class InstantSamples {
         check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
     }
 
+    /** copy of [minusInstantInZone] */
+    @Test
+    fun periodUntilWithContextParameter() {
+        // Finding a period that it would take to get from the starting instant to the ending instant
+        val startInstant = Instant.parse("2024-01-01T02:00:00Z")
+        val endInstant = Instant.parse("2024-03-01T03:15:03Z")
+        // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
+        context(TimeZone.of("America/New_York")) {
+            val periodInNewYork = startInstant.periodUntil(endInstant)
+            check(periodInNewYork == DateTimePeriod(months = 1, days = 29, hours = 1, minutes = 15, seconds = 3))
+        }
+        // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
+        context(TimeZone.of("Europe/Berlin")) {
+            val periodInBerlin = startInstant.periodUntil(endInstant)
+            check(periodInBerlin == DateTimePeriod(months = 2, days = 0, hours = 1, minutes = 15, seconds = 3))
+        }
+    }
+
     /** copy of [minusAsDateTimeUnit] */
     @Test
     fun untilAsDateTimeUnit() {
@@ -201,6 +219,24 @@ class InstantSamples {
             TimeZoneContext.System.get("Europe/Berlin")
         )
         check(monthsBetweenInBerlin == 2L)
+    }
+
+    /** copy of [minusAsDateTimeUnit] */
+    @Test
+    fun untilAsDateTimeUnitWithContextParameter() {
+        // Finding the difference between two instants in terms of the given calendar-based measurement unit
+        val startInstant = Instant.parse("2024-01-01T02:00:00Z")
+        val endInstant = Instant.parse("2024-03-01T02:00:00Z")
+        // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
+        context(TimeZone.of("America/New_York")) {
+            val monthsBetweenInNewYork = startInstant.until(endInstant, DateTimeUnit.MONTH)
+            check(monthsBetweenInNewYork == 1L)
+        }
+        // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
+        context(TimeZone.of("Europe/Berlin")) {
+            val monthsBetweenInBerlin = startInstant.until(endInstant, DateTimeUnit.MONTH)
+            check(monthsBetweenInBerlin == 2L)
+        }
     }
 
     /** copy of [minusAsTimeBasedUnit] */
@@ -252,6 +288,57 @@ class InstantSamples {
         // In Berlin, we find the difference between 2024-03-01 and 2025-03-01, which is exactly a year
         val yearsBetweenInBerlin = startInstant.yearsUntil(endInstant, TimeZoneContext.System.get("Europe/Berlin"))
         check(yearsBetweenInBerlin == 1)
+    }
+
+    @Test
+    fun daysUntilWithContextParameter() {
+        // Finding the number of full days between two instants in the given time zone
+        val startInstant = Instant.parse("2023-03-26T00:30:00Z")
+        val endInstant = Instant.parse("2023-03-28T00:15:00Z")
+        // In New York, these days are both 24 hour long, so the difference is 15 minutes short of 2 days
+        context(TimeZone.of("America/New_York")) {
+            val daysBetweenInNewYork = startInstant.daysUntil(endInstant)
+            check(daysBetweenInNewYork == 1)
+        }
+        // In Berlin, 2023-03-26 is 23 hours long, so the difference more than 2 days
+        context(TimeZone.of("Europe/Berlin")) {
+            val daysBetweenInBerlin = startInstant.daysUntil(endInstant)
+            check(daysBetweenInBerlin == 2)
+        }
+    }
+
+    @Test
+    fun monthsUntilWithContextParameter() {
+        // Finding the number of months between two instants in the given time zone
+        val startInstant = Instant.parse("2024-01-01T02:00:00Z")
+        val endInstant = Instant.parse("2024-03-01T02:00:00Z")
+        // In New York, we find the difference between 2023-12-31 and 2024-02-29, which is just short of two months
+        context(TimeZone.of("America/New_York")) {
+            val monthsBetweenInNewYork = startInstant.monthsUntil(endInstant)
+            check(monthsBetweenInNewYork == 1)
+        }
+        // In Berlin, we find the difference between 2024-01-01 and 2024-03-01, which is exactly two months
+        context(TimeZone.of("Europe/Berlin")) {
+            val monthsBetweenInBerlin = startInstant.monthsUntil(endInstant)
+            check(monthsBetweenInBerlin == 2)
+        }
+    }
+
+    @Test
+    fun yearsUntilWithContextParameter() {
+        // Finding the number of full years between two instants in the given time zone
+        val startInstant = Instant.parse("2024-03-01T02:01:00Z")
+        val endInstant = Instant.parse("2025-03-01T02:01:00Z")
+        // In New York, we find the difference between 2024-02-29 and 2025-02-28, which is just short of a year
+        context(TimeZone.of("America/New_York")) {
+            val yearsBetweenInNewYork = startInstant.yearsUntil(endInstant)
+            check(yearsBetweenInNewYork == 0)
+        }
+        // In Berlin, we find the difference between 2024-03-01 and 2025-03-01, which is exactly a year
+        context(TimeZone.of("Europe/Berlin")) {
+            val yearsBetweenInBerlin = startInstant.yearsUntil(endInstant)
+            check(yearsBetweenInBerlin == 1)
+        }
     }
 
     /** copy of [periodUntil] */
