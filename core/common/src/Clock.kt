@@ -16,14 +16,28 @@ import kotlin.jvm.JvmName
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Returns the current date at the given [time zone][timeZone], according to [this Clock][this].
+ * Returns the current date in the given [time zone][timeZone], according to [this Clock][this].
  *
  * The time zone is important because the current date is not the same in all time zones at the same instant.
  *
+ * @see today
  * @sample kotlinx.datetime.test.samples.ClockSamples.todayIn
  */
 public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
     now().toLocalDateTime(timeZone).date
+
+/**
+ * Returns the current date in the [time zone][timeZone] specified in the context parameter, according to [this Clock][this].
+ *
+ * Equivalent to the non-context-parameter-based function [Clock.todayIn].
+ *
+ * The time zone is important because the current date is not the same in all time zones at the same instant.
+ *
+ * @see todayIn
+ * @sample kotlinx.datetime.test.samples.ClockSamples.todayWithContextParameter
+ */
+context (timeZone: TimeZone)
+public fun Clock.today(): LocalDate = todayIn(timeZone)
 
 /**
  * Returns a [TimeSource] that uses this [Clock] to mark a time instant and to find the amount of time elapsed since that mark.
