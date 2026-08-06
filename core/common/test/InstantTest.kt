@@ -355,13 +355,13 @@ class InstantTest {
         repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
-            with(TimeZone.UTC) TZ@ {
+            context(TimeZone.UTC) TZ@{
                 val date1 = Instant.fromEpochMilliseconds(millis1).toLocalDateTime().date
                 val date2 = Instant.fromEpochMilliseconds(millis2).toLocalDateTime().date
-                val instant1 = date1.atStartOfDayIn(this@TZ)
-                val instant2 = date2.atStartOfDayIn(this@TZ)
+                val instant1 = date1.atStartOfDayIn(contextOf<TimeZone>())
+                val instant2 = date2.atStartOfDayIn(contextOf<TimeZone>())
 
-                val diff1 = instant1.periodUntil(instant2, this@TZ)
+                val diff1 = instant1.periodUntil(instant2, contextOf<TimeZone>())
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)

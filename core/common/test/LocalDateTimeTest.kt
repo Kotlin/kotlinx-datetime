@@ -60,8 +60,7 @@ class LocalDateTimeTest {
     fun localDtToInstantConversion() {
         val ldt1 = LocalDateTime.parse("2019-10-01T18:43:15.100500")
         val ldt2 = LocalDateTime.parse("2019-10-01T19:50:00.500600")
-
-        val diff = with(TimeZone.UTC) {
+        val diff = context(TimeZone.UTC) {
             ldt2.toInstant(TransitionHandler.REJECT_TRANSITIONS) - ldt1.toInstant(TransitionHandler.REJECT_TRANSITIONS)
         }
         assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
