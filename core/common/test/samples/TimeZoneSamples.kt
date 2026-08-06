@@ -62,9 +62,9 @@ class TimeZoneSamples {
         }
         fun logEntry(message: String, now: Instant = Clock.System.now()): String {
             val formattedTime = logTimeFormat.format {
-                with(TimeZoneContext.System.currentTimeZone()) {
+                context(TimeZoneContext.System.currentTimeZone()) {
                     setDateTime(now.toLocalDateTime())
-                    setOffset(offsetAt(now))
+                    setOffset(contextOf<TimeZone>().offsetAt(now))
                 }
             }
             return "[$formattedTime] $message"
@@ -106,11 +106,11 @@ class TimeZoneSamples {
      * @see instantToLocalDateTime
      */
     @Test
-    fun toLocalDateTimeWithTwoReceivers() {
+    fun toLocalDateTimeWithContextParameter() {
         // Converting an instant to a local date-time in a specific time zone
         val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
-        val localDateTime = with(zone) {
+        val localDateTime = context(zone) {
             instant.toLocalDateTime()
         }
         check(localDateTime == LocalDate(2023, 6, 2).atTime(8, 30))
@@ -120,11 +120,11 @@ class TimeZoneSamples {
      * @see localDateTimeToInstantInZone
      */
     @Test
-    fun toInstantWithTwoReceivers() {
+    fun toInstantWithContextParameter() {
         // Converting a local date-time to an instant in a specific time zone
         val zone = TimeZoneContext.System.get("America/New_York")
         val localDateTime = LocalDate(2023, 6, 2).atTime(12, 30)
-        val instant = with(zone) {
+        val instant = context(zone) {
             localDateTime.toInstant(TransitionHandler.REJECT_TRANSITIONS)
         }
         check(instant == Instant.parse("2023-06-02T16:30:00Z"))
