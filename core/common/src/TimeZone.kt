@@ -266,6 +266,24 @@ public expect class FixedOffsetTimeZone : TimeZone {
 @Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
 public typealias ZoneOffset = FixedOffsetTimeZone
 
+/**
+ * Finds the offset from UTC the [time zone][timeZone] specified in the context parameter
+ * has at the specified [instant] of physical time.
+ *
+ * Equivalent to the non-context-parameter-based function [TimeZone.offsetAt].
+ *
+ * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics
+ * because the offset can change over time due to daylight-saving-time transitions and other reasons.
+ * Use [TimeZone] directly with arithmetic operations instead.
+ *
+ * @see Instant.toLocalDateTime
+ * @see TimeZone.offsetAt
+ * @see offsetIn
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetWithContextParameter
+ */
+context (timeZone: TimeZone)
+public fun Instant.offset(): UtcOffset = timeZone.offsetAt(this)
+
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
@@ -339,6 +357,7 @@ public fun kotlinx.datetime.Instant.toLocalDateTime(offset: UtcOffset): LocalDat
  *
  * @see Instant.toLocalDateTime
  * @see TimeZone.offsetAt
+ * @see offset
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetIn
  */
 public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
@@ -488,6 +507,36 @@ public fun LocalDateTime.toInstant(
  */
 public fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant = toInstant(timeZone.offset)
 
+/**
+ * Returns an instant that corresponds to this civil datetime value in the specified fixed-offset [timeZone].
+ *
+ * For example, in `Etc/UTC+02`,
+ * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`.
+ * This function can be used to obtain that [Instant].
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInFixedOffsetZoneWithContextParameter
+ */
+context (timeZone: FixedOffsetTimeZone)
+public fun LocalDateTime.toInstant(): Instant = toInstant(timeZone.offset)
+
+/**
+ * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in
+ * the [time zone][timeZone] specified in the context parameter.
+ *
+ * Equivalent to the non-context-parameter-based function [TimeZone.offsetInfoFor].
+ *
+ * See the [LocalDateTimeOffsetInfo] documentation for a detailed description.
+ *
+ * See [LocalDateTime.toInstant] together with [TransitionHandler] for a more streamlined way
+ * to handle a subset of this function's use cases.
+ *
+ * @see offsetInfoFor
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoWithContextParameter
+ */
+context (timeZone: TimeZone)
+public fun LocalDateTime.offsetInfo(): LocalDateTimeOffsetInfo =
+    timeZone.offsetInfoFor(this)
+
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
 @kotlin.internal.LowPriorityInOverloadResolution
@@ -520,10 +569,30 @@ internal fun LocalDateTime.toInstant(offset: UtcOffset): kotlinx.datetime.Instan
  * `atTime(0, 0).toInstant(timeZone)` would return the `Instant` corresponding
  * to 01:00.
  *
+ * @see atStartOfDay
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
 @Suppress("DEPRECATION_ERROR")
 public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+/**
+ * Returns an instant that corresponds to the start of this date in the [timeZone] specified in the context parameter.
+ *
+ * Equivalent to the non-context-parameter-based function [LocalDate.atStartOfDayIn].
+ *
+ * Note that it's not equivalent to `atTime(0, 0).toInstant(timeZone)`
+ * because a day does not always start at a fixed time 00:00:00.
+ * For example, if, due to daylight saving time, clocks were shifted from 23:30
+ * of one day directly to 00:30 of the next day, skipping the midnight, then
+ * `atStartOfDayIn` would return the `Instant` corresponding to 00:30, whereas
+ * `atTime(0, 0).toInstant(timeZone)` would return the `Instant` corresponding
+ * to 01:00.
+ *
+ * @see atStartOfDayIn
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayWithContextParameter
+ */
+context (timeZone: TimeZone)
+public fun LocalDate.atStartOfDay(): Instant = atStartOfDayIn(timeZone)
 
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")

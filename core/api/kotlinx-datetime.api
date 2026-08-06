@@ -18,6 +18,7 @@ public final class kotlinx/datetime/ClockKt {
 	public static final fun asTimeSource (Lkotlinx/datetime/Clock;)Lkotlin/time/TimeSource$WithComparableMarks;
 	public static final fun toDeprecatedClock (Lkotlin/time/Clock;)Lkotlinx/datetime/Clock;
 	public static final fun toStdlibClock (Lkotlinx/datetime/Clock;)Lkotlin/time/Clock;
+	public static final fun today (Lkotlinx/datetime/TimeZone;Lkotlin/time/Clock;)Lkotlinx/datetime/LocalDate;
 	public static final fun todayAt (Lkotlin/time/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
 	public static final fun todayAt (Lkotlinx/datetime/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
 	public static final fun todayIn (Lkotlin/time/Clock;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/LocalDate;
@@ -794,13 +795,17 @@ public abstract interface class kotlinx/datetime/TimeZoneIdProvider {
 }
 
 public final class kotlinx/datetime/TimeZoneKt {
+	public static final fun atStartOfDay (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDate;)Lkotlin/time/Instant;
 	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun atStartOfDayIn (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public static synthetic fun atStartOfDayIn$default (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public static final fun offset (Lkotlinx/datetime/TimeZone;Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetAt (Lkotlinx/datetime/TimeZone;Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetAt (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/Instant;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetIn (Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetIn (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
+	public static final fun offsetInfo (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public static final fun toInstant (Lkotlinx/datetime/FixedOffsetTimeZone;Lkotlinx/datetime/LocalDateTime;)Lkotlin/time/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/FixedOffsetTimeZone;)Lkotlin/time/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
