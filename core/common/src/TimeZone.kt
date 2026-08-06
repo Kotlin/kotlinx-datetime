@@ -164,8 +164,11 @@ public expect open class TimeZone {
      * @see LocalDateTime.toInstant
      * @see Instant.offsetIn
      * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toLocalDateTimeWithTwoReceivers
      */
+    @Deprecated(
+        "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.WARNING,
+    )
     public fun Instant.toLocalDateTime(): LocalDateTime
 
     /**
@@ -177,7 +180,6 @@ public expect open class TimeZone {
      * @see LocalDateTime.toInstant
      * @see Instant.offsetIn
      * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toLocalDateTimeWithTwoReceivers
      */
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -199,52 +201,15 @@ public expect open class TimeZone {
      *   In this case, the earlier instant is returned.
      *
      * @see Instant.toLocalDateTime
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
      */
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        "Explicitly pass a TransitionHandler to `toInstant` calls " +
+                "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.WARNING,
         replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
     )
     public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
-
-    /**
-     * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
-     *
-     * For example, in `Europe/Berlin`,
-     * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`,
-     * with the UTC offset `+02:00`.
-     * This function can be used to obtain that [Instant].
-     *
-     * Because of the changes to the UTC offset over time in a given [TimeZone]
-     * (for example, when clocks are moved to account for daylight saving time),
-     * the conversion from [LocalDateTime] to [Instant] is not well-defined.
-     * [onTransition] is invoked in that case.
-     *
-     * [utcOffset] may additionally be passed to validate the full [TimeZone]/[LocalDateTime]/[UtcOffset] triple
-     * or to help handle scenarios where the conversion from [LocalDateTime] to [Instant] is not well-defined.
-     * An [IllegalArgumentException] will be thrown if the [utcOffset] is provided but does not match
-     * the expected UTC offset values for that [LocalDateTime].
-     *
-     * ### Behavior specifics
-     *
-     * - If only a single [Instant] has this [LocalDateTime] value in the time zone provided as an implicit receiver,
-     *   the conversion is unambiguous.
-     *   An [IllegalArgumentException] is thrown if [utcOffset] is not `null` and isn't equal to
-     *   [TimeZone.offsetAt] for the resulting value.
-     * - If a transition corresponds to this [LocalDateTime] in the time zone provided as an implicit receiver,
-     *   meaning either a [gap][LocalDateTimeOffsetInfo.Gap] or an [overlap][LocalDateTimeOffsetInfo.Overlap]
-     *   has occurred, [onTransition] is invoked.
-     *   [utcOffset] is passed to [TransitionHandler.resolveDateTime] as the `preferredOffset`.
-     *   A non-`null` [utcOffset] must be equal to [LocalDateTimeOffsetInfo.Transition.offsetBefore]
-     *   or [LocalDateTimeOffsetInfo.Transition.offsetAfter], or an [IllegalArgumentException] will be thrown.
-     *   Exceptions thrown from [onTransition] are rethrown untouched.
-     *
-     * @see Instant.toLocalDateTime
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
-     */
-    // Added after 0.8.0
-    public fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset? = null): Instant
 
     @PublishedApi
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
@@ -322,6 +287,20 @@ public fun TimeZone.offsetAt(instant: kotlinx.datetime.Instant): UtcOffset =
  */
 public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
 
+/**
+ * Return the civil datetime value that this instant has in the time zone provided as the context parameter [timeZone].
+ *
+ * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
+ * is not necessarily so.
+ *
+ * @see LocalDateTime.toInstant
+ * @see Instant.offsetIn
+ * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toLocalDateTimeWithContextParameter
+ */
+context(timeZone: TimeZone)
+public fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(timeZone)
+
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
@@ -394,6 +373,47 @@ public fun kotlinx.datetime.Instant.offsetIn(timeZone: TimeZone): UtcOffset =
     replaceWith = ReplaceWith("this.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)")
 )
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+/**
+ * Returns an instant that corresponds to this civil datetime value in the time zone provided as the context parameter.
+ *
+ * For example, in `Europe/Berlin`,
+ * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`,
+ * with the UTC offset `+02:00`.
+ * This function can be used to obtain that [Instant].
+ *
+ * Because of the changes to the UTC offset over time in a given [TimeZone]
+ * (for example, when clocks are moved to account for daylight saving time),
+ * the conversion from [LocalDateTime] to [Instant] is not well-defined.
+ * [onTransition] is invoked in that case.
+ *
+ * [utcOffset] may additionally be passed to validate the full [TimeZone]/[LocalDateTime]/[UtcOffset] triple
+ * or to help handle scenarios where the conversion from [LocalDateTime] to [Instant] is not well-defined.
+ * An [IllegalArgumentException] will be thrown if the [utcOffset] is provided but does not match
+ * the expected UTC offset values for that [LocalDateTime].
+ *
+ * ### Behavior specifics
+ *
+ * - If only a single [Instant] has this [LocalDateTime] value in the time zone provided as the [timeZone]
+ *   context parameter, the conversion is unambiguous.
+ *   An [IllegalArgumentException] is thrown if [utcOffset] is not `null` and isn't equal to
+ *   [TimeZone.offsetAt] for the resulting value.
+ * - If a transition corresponds to this [LocalDateTime] in the time zone provided as the [timeZone] context parameter,
+ *   meaning either a [gap][LocalDateTimeOffsetInfo.Gap] or an [overlap][LocalDateTimeOffsetInfo.Overlap]
+ *   has occurred, [onTransition] is invoked.
+ *   [utcOffset] is passed to [TransitionHandler.resolveDateTime] as the `preferredOffset`.
+ *   A non-`null` [utcOffset] must be equal to [LocalDateTimeOffsetInfo.Transition.offsetBefore]
+ *   or [LocalDateTimeOffsetInfo.Transition.offsetAfter], or an [IllegalArgumentException] will be thrown.
+ *   Exceptions thrown from [onTransition] are rethrown untouched.
+ *
+ * @see Instant.toLocalDateTime
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithContextParameter
+ */
+// Added after 0.8.0
+context(timeZone: TimeZone)
+public fun LocalDateTime.toInstant(
+    onTransition: TransitionHandler, utcOffset: UtcOffset? = null
+): Instant = toInstant(timeZone, onTransition, utcOffset)
 
 /**
  * Returns an instant that corresponds to this civil datetime value in the specified [timeZone].
