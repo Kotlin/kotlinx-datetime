@@ -398,11 +398,62 @@ public fun Instant.yearsUntil(
  *
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @see Instant.periodUntil
- * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstantInZone
  */
-// Added after 0.8.0
+// Added after 0.8.0, but source-compatible with the hidden `minus` that doesn't accept `onTransition`.
+@Deprecated(
+    "Instant.minus(Instant) was renamed to `periodFrom`",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("periodFrom(other, timeZone, onTransition)", "kotlinx.datetime.periodFrom")
+)
 public fun Instant.minus(
     other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
+
+/**
+ * Returns a [DateTimePeriod] representing the difference between [other] and `this` instants.
+ *
+ * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant
+ * with the same [onTransition] handler results in this instant.
+ *
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to `this` instant.
+ *
+ * All components of the [DateTimePeriod] returned are:
+ * - Negative or zero if this instant is earlier than the other.
+ * - Positive or zero if this instant is later than the other.
+ * - Exactly zero if this instant is equal to the other.
+ *
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @see Instant.periodUntil
+ * @sample kotlinx.datetime.test.samples.InstantSamples.periodFrom
+ */
+// Added after 0.8.0
+public fun Instant.periodFrom(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
+
+/**
+ * Returns a [DateTimePeriod] representing the difference between [other] and `this` instants.
+ *
+ * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant
+ * with the same [onTransition] handler results in this instant.
+ *
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to `this` instant.
+ *
+ * All components of the [DateTimePeriod] returned are:
+ * - Negative or zero if this instant is earlier than the other.
+ * - Positive or zero if this instant is later than the other.
+ * - Exactly zero if this instant is equal to the other.
+ *
+ * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
+ * @see Instant.periodUntil
+ * @sample kotlinx.datetime.test.samples.InstantSamples.periodFromWithContextParameter
+ */
+// Added after 0.8.0
+context (timeZone: TimeZone)
+public fun Instant.periodFrom(
+    other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
 
 /**

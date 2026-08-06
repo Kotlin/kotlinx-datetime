@@ -321,6 +321,10 @@ public final class kotlinx/datetime/InstantKt {
 	public static final fun parse (Lkotlin/time/Instant$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlin/time/Instant;
 	public static final fun parseOrNull (Lkotlin/time/Instant$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;)Lkotlin/time/Instant;
 	public static synthetic fun parseOrNull$default (Lkotlin/time/Instant$Companion;Ljava/lang/CharSequence;Lkotlinx/datetime/format/DateTimeFormat;ILjava/lang/Object;)Lkotlin/time/Instant;
+	public static final fun periodFrom (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/TransitionHandler;)Lkotlinx/datetime/DateTimePeriod;
+	public static final fun periodFrom (Lkotlinx/datetime/TimeZone;Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TransitionHandler;)Lkotlinx/datetime/DateTimePeriod;
+	public static synthetic fun periodFrom$default (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/TransitionHandler;ILjava/lang/Object;)Lkotlinx/datetime/DateTimePeriod;
+	public static synthetic fun periodFrom$default (Lkotlinx/datetime/TimeZone;Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TransitionHandler;ILjava/lang/Object;)Lkotlinx/datetime/DateTimePeriod;
 	public static final synthetic fun periodUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
 	public static final fun periodUntil (Lkotlin/time/Instant;Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/TransitionHandler;)Lkotlinx/datetime/DateTimePeriod;
 	public static final fun periodUntil (Lkotlinx/datetime/Instant;Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/DateTimePeriod;
@@ -440,6 +444,7 @@ public final class kotlinx/datetime/LocalDateKt {
 	public static final fun minus (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
 	public static final fun next (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DayOfWeek;)Lkotlinx/datetime/LocalDate;
 	public static final fun nextOrSame (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DayOfWeek;)Lkotlinx/datetime/LocalDate;
+	public static final fun periodFrom (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/LocalDate;)Lkotlinx/datetime/DatePeriod;
 	public static final fun plus (Lkotlinx/datetime/LocalDate;ILkotlinx/datetime/DateTimeUnit$DateBased;)Lkotlinx/datetime/LocalDate;
 	public static final fun previous (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DayOfWeek;)Lkotlinx/datetime/LocalDate;
 	public static final fun previousOrSame (Lkotlinx/datetime/LocalDate;Lkotlinx/datetime/DayOfWeek;)Lkotlinx/datetime/LocalDate;
