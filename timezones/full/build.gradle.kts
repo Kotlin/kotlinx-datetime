@@ -31,8 +31,6 @@ val tzdataAsKotlinFilesDir =
     project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzdataAsKotlinFiles")
 val tzdbDirectory = File(project.projectDir, "tzdb")
 
-val copiedTzdbDirectory = project.layout.buildDirectory.dir("jvmResources")
-
 val timeTzdbInstall = tasks.register<NpmTask>("timeTzdbInstall") {
     args.addAll(
         "install",
@@ -48,14 +46,6 @@ tasks.register<NpxTask>("tzdbDownloadAndCompile") {
         args.addAll("-u", tzdbVersion)
     }
     args.add(tzdbDirectory.toString())
-}
-
-val tzdbCopyToJvmResources = tasks.register<Copy>("tzdbCopyToJvmResources") {
-    val outputDir = copiedTzdbDirectory.map { it.dir("tzdb") }
-    inputs.dir(tzdbDirectory)
-    outputs.dir(outputDir)
-    from(tzdbDirectory)
-    into(outputDir)
 }
 
 val generateTzdataAsKotlinFiles = tasks.register("generateTzdataAsKotlinFiles") {
@@ -197,10 +187,6 @@ kotlin {
             }
         }
 
-        jvmMain {
-            resources.srcDir(copiedTzdbDirectory)
-        }
-
         wasmWasiMain {
             languageSettings.optIn("kotlinx.datetime.internal.InternalDateTimeApi")
         }
@@ -208,8 +194,10 @@ kotlin {
 }
 
 tasks {
-    named("jvmProcessResources") {
-        dependsOn(tzdbCopyToJvmResources)
+    named<ProcessResources>("jvmProcessResources") {
+        into("tzdb") {
+            from(tzdbDirectory)
+        }
     }
 
     // Copy-pasted from core/build.gradle.kts. TODO: unify in buildSrc/.
