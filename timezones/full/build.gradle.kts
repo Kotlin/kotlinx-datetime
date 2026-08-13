@@ -184,6 +184,7 @@ kotlin {
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime"))
                 implementation(kotlin("test"))
+                implementation(project(":test-utils"))
             }
         }
 

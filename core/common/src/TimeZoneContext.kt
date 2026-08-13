@@ -184,8 +184,9 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
         override fun getOrNull(id: String): TimeZone? = systemTimezoneDatabase.getOrNull(id)
 
         /**
-         * Returns the set of timezone identifiers the system timezone
-         * database recognizes in addition to the fixed-offset ones.
+         * Returns the set of IANA timezone identifiers the system timezone database recognizes.
+         *
+         * Most of the fixed-offset time zones recognized by [get] and [getOrNull] are not included in this set.
          *
          * Note that collecting the set of available time zones may be computationally expensive
          * or involve traversing the filesystem on some platforms.

@@ -55,8 +55,9 @@ public object BundledTimeZoneContext : TimeZoneContext {
     override fun getOrNull(id: String): TimeZone? = impl.getOrNull(id)
 
     /**
-     * Returns the set of identifiers of the time zones whose data is bundled in this timezone database
-     * in addition to the fixed-offset time zones.
+     * Returns the set of identifiers of the time zones whose data is bundled in this timezone database.
+     *
+     * Most of the fixed-offset time zones recognized by [get] and [getOrNull] are not included in this set.
      */
     override fun availableZoneIds(): Set<String> = impl.availableZoneIds()
 

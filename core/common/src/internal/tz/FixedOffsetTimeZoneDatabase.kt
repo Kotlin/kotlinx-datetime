@@ -23,6 +23,9 @@ internal class TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(val inner: TimeZo
         parseFixedOffsetTimeZone(id, onParsed = { it }, onFailure = { null }) ?: inner.getOrNull(id)
 
     override fun availableZoneIds(): Set<String> = inner.availableZoneIds()
+
+    override fun toString(): String =
+        "TimeZoneDatabaseWrapperWithFixedOffsetTimeZones($inner)"
 }
 
 // org.threeten.bp.ZoneId#of(java.lang.String)

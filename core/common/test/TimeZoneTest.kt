@@ -129,9 +129,7 @@ class TimeZoneTest {
     @Test
     fun utcOffsetNormalization() {
         val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map {
-            TimeZoneContext.System.get(
-                it
-            )
+            TimeZoneContext.System.get(it)
         }
         for (tz in sameOffsetTZs) {
             assertIs<FixedOffsetTimeZone>(tz)
@@ -259,4 +257,3 @@ class TimeZoneTest {
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
 
 }
-
