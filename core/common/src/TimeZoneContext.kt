@@ -252,6 +252,8 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
          */
         override fun currentTimeZone(): TimeZone = currentSystemDefaultTimeZone()
+
+        override fun toString(): String = "TimeZoneContext.System"
     }
 
     /** @suppress */

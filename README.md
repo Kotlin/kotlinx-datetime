@@ -514,7 +514,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // 2026b is the most recent release of the IANA timezone database,
+                // 2026c is the most recent release of the IANA timezone database,
                 // 0.8.0 is `kotlinx-datetime` version
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
             }
