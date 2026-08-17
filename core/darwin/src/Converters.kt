@@ -87,7 +87,8 @@ public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone
 public fun NSTimeZone.toKotlinTimeZone(): TimeZone = toKotlinTimeZone(TimeZoneContext.System)
 
 /**
- * Converts the [NSTimeZone] to the corresponding [TimeZone].
+ * Converts the [NSTimeZone] to the corresponding [TimeZone]
+ * by looking up the given [NSTimeZone.name] in the [timeZoneDatabase].
  */
 public fun NSTimeZone.toKotlinTimeZone(timeZoneDatabase: TimeZoneDatabase): TimeZone =
     timeZoneDatabase.get(name)
