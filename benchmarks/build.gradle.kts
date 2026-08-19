@@ -13,6 +13,7 @@ plugins {
 sourceSets {
     dependencies {
         implementation(project(":kotlinx-datetime"))
+        implementation(project(":kotlinx-datetime-zoneinfo"))
         implementation("org.openjdk.jmh:jmh-core:1.35")
     }
 }

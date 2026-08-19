@@ -503,7 +503,12 @@ internal fun LocalDateTime.toInstant(offset: UtcOffset): kotlinx.datetime.Instan
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
 @Suppress("DEPRECATION_ERROR")
-public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+public fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant {
+    val ldt = atTime(LocalTime.MIN)
+    return localDateTimeToInstantLenient(
+        ldt, timeZone.offsetInfoFor(ldt), TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
+    )
+}
 
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")

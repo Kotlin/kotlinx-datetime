@@ -372,7 +372,7 @@ class TimeZoneNativeTest {
         assertEquals(expectedType, actualType)
     }
 
-    // timeZone.atStartOfDay(LocalDate) tests
+    // LocalDate.atStartOfDayIn(TimeZone) tests
 
     @Test
     fun shouldProduceConsistentInstanceBetweenRegularAndFoundationTimeZones() {
@@ -382,8 +382,8 @@ class TimeZoneNativeTest {
 
             for ((localDateTime, _) in localDateTimes) {
                 val date = localDateTime.date
-                val regularInstance = regularTz.atStartOfDay(date)
-                val foundationInstance = foundationTz.atStartOfDay(date)
+                val regularInstance = date.atStartOfDayIn(regularTz)
+                val foundationInstance = date.atStartOfDayIn(foundationTz)
 
                 assertEquals(regularInstance, foundationInstance)
             }

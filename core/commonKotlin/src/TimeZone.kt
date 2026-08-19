@@ -78,10 +78,6 @@ public actual open class TimeZone internal constructor() {
     internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
         toInstant(this@TimeZone).toDeprecatedInstant()
 
-    internal open fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstantLenient(
-        LocalDateTime(date, LocalTime.MIN), this, TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
-    )
-
     internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
         instant.toLocalDateTimeImpl(offsetAt(instant))
     } catch (e: IllegalArgumentException) {
@@ -110,9 +106,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public actual val totalSeconds: Int get() = offset.totalSeconds
-
-    override fun atStartOfDay(date: LocalDate): Instant =
-        LocalDateTime(date, LocalTime.MIN).toInstant(offset)
 
     override fun offsetAt(instant: Instant): UtcOffset = offset
 
@@ -173,10 +166,6 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
-
-@Suppress("DEPRECATION_ERROR")
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
-    timeZone.atStartOfDay(this)
 
 internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
     timeZone.localDateTimeToInstant(this)
