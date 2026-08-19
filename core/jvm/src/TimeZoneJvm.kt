@@ -167,7 +167,7 @@ internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZ
 
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
-    this.value.toInstant(offset.zoneOffset).toKotlinInstant()
+    Instant.fromEpochSeconds(this.value.toEpochSecond(offset.zoneOffset), this.nanosecond)
 
 internal sealed interface ZoneIdLike {
     val id: String
