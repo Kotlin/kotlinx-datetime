@@ -5,9 +5,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.LocalDate.Companion.Format
 import kotlinx.datetime.LocalDate.Formats
-import kotlinx.datetime.LocalDateTime.Companion.Format
 import kotlinx.datetime.format.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -133,7 +131,7 @@ public expect class LocalDate : Comparable<LocalDate> {
          * @see LocalDate.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalDateSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()): LocalDate
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDate> = Formats.ISO): LocalDate
 
         /**
          * Returns a [LocalDate] that is [epochDays] number of days from the epoch day `1970-01-01`.
@@ -355,7 +353,7 @@ public expect class LocalDate : Comparable<LocalDate> {
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.parseOrNull
  */
 public expect fun LocalDate.Companion.parseOrNull(
-    input: CharSequence, format: DateTimeFormat<LocalDate> = getIsoDateFormat()
+    input: CharSequence, format: DateTimeFormat<LocalDate> = Formats.ISO
 ): LocalDate?
 
 /**
@@ -615,9 +613,6 @@ public expect fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): Loc
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.minus
  */
 public fun LocalDate.minus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = plus(-value, unit)
-
-// A workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoDateFormat() = LocalDate.Formats.ISO
 
 /**
  * Returns a [LocalDate] that has the given [dayOfWeek] not later than this date.

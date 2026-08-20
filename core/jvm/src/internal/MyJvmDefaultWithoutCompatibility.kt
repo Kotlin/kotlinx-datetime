@@ -3,6 +3,6 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.format
+package kotlinx.datetime.internal
 
 internal actual typealias MyJvmDefaultWithoutCompatibility = JvmDefaultWithoutCompatibility

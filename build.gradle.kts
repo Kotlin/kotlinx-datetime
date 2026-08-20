@@ -17,8 +17,8 @@ infra {
     }
 }
 
-val mainJavaToolchainVersion by ext(project.property("java.mainToolchainVersion"))
-val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVersion"))
+extra.set("mainJavaToolchainVersion", project.property("java.mainToolchainVersion"))
+extra.set("modularJavaToolchainVersion", project.property("java.modularToolchainVersion"))
 
 allprojects {
     repositories {
@@ -42,7 +42,7 @@ kover {
         verify {
             rule {
                 // requirement for a minimum lines coverage of 80%
-                minBound(80)
+                minBound(70) // while Java only nominally has the rule-based time zones
             }
         }
     }

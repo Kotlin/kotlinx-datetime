@@ -8,6 +8,7 @@
 package kotlinx.datetime
 
 import kotlinx.cinterop.*
+import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.NANOS_PER_ONE
 import platform.Foundation.*
 import kotlin.time.Instant
@@ -55,6 +56,9 @@ internal fun NSDate.toKotlinInstant(): kotlinx.datetime.Instant =
 /**
  * Converts the [TimeZone] to [NSTimeZone].
  *
+ * This function only takes the [TimeZone.id] into account.
+ * It does not inspect the transition rules associated with `this` time zone.
+ *
  * If the time zone is represented as a fixed number of seconds from UTC+0 (for example, if it is the result of a call
  * to [FixedOffsetTimeZone.offset]) and the offset is not given in even minutes but also includes seconds, this method throws
  * [IllegalArgumentException] to denote that lossy conversion would happen, as Darwin internally rounds the offsets
@@ -76,7 +80,18 @@ public fun TimeZone.toNSTimeZone(): NSTimeZone = if (this is FixedOffsetTimeZone
 /**
  * Converts the [NSTimeZone] to the corresponding [TimeZone].
  */
-public fun NSTimeZone.toKotlinTimeZone(): TimeZone = TimeZone.of(name)
+@Deprecated(
+    "Use the overload that specifies the timezone database to use.",
+    ReplaceWith("toKotlinTimeZone(TimeZoneContext.System)"),
+)
+public fun NSTimeZone.toKotlinTimeZone(): TimeZone = toKotlinTimeZone(TimeZoneContext.System)
+
+/**
+ * Converts the [NSTimeZone] to the corresponding [TimeZone]
+ * by looking up the given [NSTimeZone.name] in the [timeZoneDatabase].
+ */
+public fun NSTimeZone.toKotlinTimeZone(timeZoneDatabase: TimeZoneDatabase): TimeZone =
+    timeZoneDatabase.get(name)
 
 /**
  * Converts the given [LocalDate] to [NSDateComponents].

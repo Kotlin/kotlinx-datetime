@@ -8,7 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -19,17 +18,41 @@ import kotlin.time.Instant
  * A time zone can be used in [Instant.toLocalDateTime] and [LocalDateTime.toInstant], and also in
  * those arithmetic operations on [Instant] that require knowing the calendar.
  *
- * A [TimeZone] can be constructed using the [TimeZone.of] function, which accepts the string identifier, like
- * `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers, see [TimeZone.availableZoneIds].
- * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
+ * To obtain a [TimeZone], typically, a [TimeZoneContext], such as [TimeZoneContext.System] is used.
+ * - [TimeZoneContext.currentTimeZone] returns the currently chosen time zone.
+ * - [TimeZoneContext.get] returns the time zone with the specified identifier, like
+ *   `"Europe/Berlin"`, `"America/Los_Angeles"`, etc. For a list of such identifiers,
+ *   see [TimeZoneContext.availableZoneIds].
  *
- * For interaction with `kotlinx-serialization`, [TimeZoneSerializer] is provided that serializes the time zone as its
- * identifier.
+ * Also, the constant [TimeZone.UTC] is provided for the UTC time zone.
  *
  * On the JVM, there are `TimeZone.toJavaZoneId()` and `java.time.ZoneId.toKotlinTimeZone()`
  * extension functions to convert between `kotlinx.datetime` and `java.time` objects used for the same purpose.
  * Similarly, on the Darwin platforms, there are `TimeZone.toNSTimeZone()` and `NSTimeZone.toKotlinTimeZone()` extension
  * functions.
+ *
+ * ### Serializing a [TimeZone]
+ *
+ * Special care must be taken to serialize and deserialize a [TimeZone].
+ *
+ * - A timezone identifier that is available on one system may be unavailable on another one.
+ *   For example, in 2025, `America/Coyhaique` was introduced as a new timezone identifier.
+ *   A system whose timezone database was updated before 2025 wouldn't be able to recognize that identifier.
+ * - For a given timezone identifier, the behavior of the corresponding [TimeZone] object
+ *   also depends on the system configuration.
+ *   For example, in 2026, British Columbia decided to abolish daylight saving time transitions
+ *   and stay on a fixed [offset][UtcOffset] permanently.
+ *   Querying the [TimeZone] corresponding to the `America/Vancouver` identifier on an up-to-date system
+ *   would recognize this change,
+ *   but a system with an outdated timezone database would behave as if DST transitions were still practiced there.
+ *
+ * To sum it up, unless you control the timezone database, do not expect deserialization of valid timezone identifiers
+ * to succeed, and even when it succeeds, expect to see different results between systems.
+ * Consider sending [LocalDateTime] and [Instant] values between systems instead of a [TimeZone] identifier.
+ *
+ * To highlight these risks, [TimeZone] is intentionally not [Serializable], and no built-in serializer is provided
+ * for [TimeZone].
+ * Whenever it is necessary to serialize a [TimeZone], use its [TimeZone.id] instead.
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
@@ -37,7 +60,7 @@ public expect open class TimeZone {
     /**
      * Returns the identifier string of the time zone.
      *
-     * This identifier can be used later for finding this time zone with [TimeZone.of] function.
+     * This identifier can be used later for finding this time zone with [TimeZoneContext.get] function.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.id
      */
@@ -51,53 +74,16 @@ public expect open class TimeZone {
     public override fun toString(): String
 
     /**
-     * Compares this time zone to the other one. Time zones are equal if their identifier is the same.
+     * Compares this time zone to the other one.
+     *
+     * Time zones are equal if their identifier is the same, and they were obtained from the same
+     * [timezone database][TimeZoneDatabase].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
     public override fun equals(other: Any?): Boolean
 
     public companion object {
-        /**
-         * Queries the current system time zone.
-         *
-         * If the current system time zone changes, this function can reflect this change on the next invocation.
-         *
-         * It is recommended to call this function once at the start of an operation and reuse the result:
-         * querying the system time zone may involve heavy operations like reading the system files,
-         * and also, querying the system time zone multiple times in one operation may lead to inconsistent results
-         * if the system time zone changes in the middle of the operation.
-         *
-         * How exactly the time zone is acquired is system-dependent. The current implementation:
-         * - JVM: `java.time.ZoneId.systemDefault()` is queried.
-         * - Kotlin/Native:
-         *     - Darwin: first, `NSTimeZone.resetSystemTimeZone` is called to clear the cache of the system timezone.
-         *       Then, `NSTimeZone.systemTimeZone.name` is used to obtain the up-to-date timezone name.
-         *     - Linux: this function checks the `/etc/localtime` symbolic link.
-         *       If the link is missing, [UTC] is used.
-         *       If the file is not a link but a plain file,
-         *       the contents of `/etc/timezone` are additionally checked for the timezone name.
-         *       [IllegalTimeZoneException] is thrown if the timezone name cannot be determined
-         *       or is invalid.
-         *     - Windows: the `GetDynamicTimeZoneInformation` function is used,
-         *       with the native Windows timezone name being mapped to the corresponding IANA identifier.
-         *       [IllegalTimeZoneException] is thrown if this mapping fails. See [of] for details.
-         * - JavaScript and Wasm/JS:
-         *     - If the `@js-joda/timezone` library is loaded,
-         *       `Intl.DateTimeFormat().resolvedOptions().timeZone` is used to obtain the timezone name.
-         *       See https://github.com/Kotlin/kotlinx-datetime/blob/master/README.md#note-about-time-zones-in-js
-         *     - Otherwise, a time zone with the identifier `"SYSTEM"` is returned,
-         *       and JS `Date`'s `getTimezoneOffset()` is used to obtain the offset for the given moment.
-         * - Wasm/WASI: always returns the `UTC` timezone,
-         *   as the platform does not support retrieving system timezone information.
-         *
-         * Note that the implementation of this function for various platforms may change in the future,
-         * in particular, the JavaScript and Wasm/JS platforms.
-         *
-         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.currentSystemDefault
-         */
-        public fun currentSystemDefault(): TimeZone
-
         /**
          * Returns the time zone with the fixed UTC+0 offset.
          *
@@ -108,59 +94,30 @@ public expect open class TimeZone {
         public val UTC: FixedOffsetTimeZone
 
         /**
-         * Returns the time zone identified by the provided [zoneId].
-         *
-         * The supported variants of time zone identifiers:
-         * - `Z`, 'UTC', 'UT' or 'GMT' — identifies the fixed-offset time zone [TimeZone.UTC],
-         * - a string starting with '+', '-', `UTC+`, `UTC-`, `UT+`, `UT-`, `GMT+`, `GMT-` — identifiers the time zone
-         *   with the fixed offset specified after `+` or `-`,
-         * - all other strings are treated as region-based zone identifiers.
-         * In the IANA Time Zone Database (TZDB) which is used as the default source of time zones,
-         * these ids are usually in the form `area/city`, for example, `Europe/Berlin` or `America/Los_Angeles`.
-         *
-         * It is guaranteed that passing any value from [availableZoneIds] to this function will return
-         * a valid time zone.
-         *
-         * How exactly the region-based time zone is acquired is system-dependent. The current implementation:
-         * - JVM: `java.time.ZoneId.of(zoneId)` is used.
-         * - Kotlin/Native:
-         *     - Darwin devices: the timezone database in `/var/db/timezone/zoneinfo` is used by default,
-         *       and if it is not a valid timezone database, the same search procedure as on Linux is used.
-         *     - Darwin simulators: the timezone database in `/usr/share/zoneinfo.default` is used by default,
-         *       and if it is not a valid timezone database, the same search procedure as on Linux is used.
-         *     - Linux: `/usr/share/zoneinfo`, `/usr/share/lib/zoneinfo`, and `/etc/zoneinfo`
-         *       are checked in turn for the timezone database.
-         *       If none of them is a valid timezone database, `/etc/localtime` is checked.
-         *       If it is a symlink of the form `.../zoneinfo/...`,
-         *       the target of the symlink with the last part stripped is used as the timezone database.
-         *     - Windows: the contents of the
-         *       `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones`
-         *       registry key are queried to obtain the timezone database.
-         *       Then, the Windows-specific timezone name is mapped to the corresponding IANA identifier
-         *       using the information from the CLDR project:
-         *       https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml
-         * - JavaScript and Wasm/JS:
-         *   if the `@js-joda/timezone` library is loaded,
-         *   it is used to obtain the timezone rules.
-         *   Otherwise, the [IllegalTimeZoneException] is thrown.
-         *   See https://github.com/Kotlin/kotlinx-datetime/blob/master/README.md#note-about-time-zones-in-js
-         * - Wasm/WASI:
-         *   if the `kotlinx-datetime-zoneinfo` artifact is added to the project as a dependency,
-         *   it is used to obtain the timezone rules.
-         *   Otherwise, the [IllegalTimeZoneException] is thrown.
-         *
-         * @throws IllegalTimeZoneException if [zoneId] has an invalid format or a time-zone with the name [zoneId]
-         * is not found.
-         *
-         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.constructorFunction
+         * Equivalent to [TimeZoneContext.System.currentTimeZone].
          */
+        @Deprecated(
+            "Use TimeZoneContext.System.currentTimeZone instead",
+            ReplaceWith("TimeZoneContext.System.currentTimeZone()")
+        )
+        public fun currentSystemDefault(): TimeZone
+
+        /**
+         * Equivalent to [TimeZoneContext.System.get].
+         */
+        @Deprecated(
+            "Use TimeZoneContext.System.get instead",
+            ReplaceWith("TimeZoneContext.System.get(zoneId)")
+        )
         public fun of(zoneId: String): TimeZone
 
         /**
-         * Queries the set of identifiers of time zones available in the system.
-         *
-         * @sample kotlinx.datetime.test.samples.TimeZoneSamples.availableZoneIds
+         * Equivalent to [TimeZoneContext.System.availableZoneIds].
          */
+        @Deprecated(
+            "Use TimeZoneContext.System.availableZoneIds instead",
+            ReplaceWith("TimeZoneContext.System.availableZoneIds()")
+        )
         public val availableZoneIds: Set<String>
 
         /** @suppress */
@@ -220,7 +177,49 @@ public expect open class TimeZone {
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
      */
     @Suppress("DEPRECATION_ERROR")
+    @Deprecated(
+        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
+    )
     public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+    /**
+     * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
+     *
+     * For example, in `Europe/Berlin`,
+     * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`,
+     * with the UTC offset `+02:00`.
+     * This function can be used to obtain that [Instant].
+     *
+     * Because of the changes to the UTC offset over time in a given [TimeZone]
+     * (for example, when clocks are moved to account for daylight saving time),
+     * the conversion from [LocalDateTime] to [Instant] is not well-defined.
+     * [onTransition] is invoked in that case.
+     *
+     * [utcOffset] may additionally be passed to validate the full [TimeZone]/[LocalDateTime]/[UtcOffset] triple
+     * or to help handle scenarios where the conversion from [LocalDateTime] to [Instant] is not well-defined.
+     * An [IllegalArgumentException] will be thrown if the [utcOffset] is provided but does not match
+     * the expected UTC offset values for that [LocalDateTime].
+     *
+     * ### Behavior specifics
+     *
+     * - If only a single [Instant] has this [LocalDateTime] value in the time zone provided as an implicit receiver,
+     *   the conversion is unambiguous.
+     *   An [IllegalArgumentException] is thrown if [utcOffset] is not `null` and isn't equal to
+     *   [TimeZone.offsetAt] for the resulting value.
+     * - If a transition corresponds to this [LocalDateTime] in the time zone provided as an implicit receiver,
+     *   meaning either a [gap][LocalDateTimeOffsetInfo.Gap] or an [overlap][LocalDateTimeOffsetInfo.Overlap]
+     *   has occurred, [onTransition] is invoked.
+     *   [utcOffset] is passed to [TransitionHandler.resolveDateTime] as the `preferredOffset`.
+     *   A non-`null` [utcOffset] must be equal to [LocalDateTimeOffsetInfo.Transition.offsetBefore]
+     *   or [LocalDateTimeOffsetInfo.Transition.offsetAfter], or an [IllegalArgumentException] will be thrown.
+     *   Exceptions thrown from [onTransition] are rethrown untouched.
+     *
+     * @see Instant.toLocalDateTime
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toInstantWithTwoReceivers
+     */
+    // Added after 0.8.0
+    public fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset? = null): Instant
 
     @PublishedApi
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
@@ -231,7 +230,7 @@ public expect open class TimeZone {
 /**
  * A time zone that is known to always have the same offset from UTC.
  *
- * [TimeZone.of] will return an instance of this class if the time zone rules are fixed.
+ * [TimeZoneContext.System.get] will return an instance of this class if the time zone rules are fixed.
  *
  * Time zones that are [FixedOffsetTimeZone] at some point in time can become non-fixed in the future due to
  * changes in legislation or other reasons.
@@ -378,7 +377,96 @@ public fun kotlinx.datetime.Instant.offsetIn(timeZone: TimeZone): UtcOffset =
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInZone
  */
 @Suppress("DEPRECATION_ERROR")
+@Deprecated(
+    "Explicitly pass a TransitionHandler to `toInstant` calls",
+    replaceWith = ReplaceWith("this.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)")
+)
 public expect fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+
+/**
+ * Returns an instant that corresponds to this civil datetime value in the specified [timeZone].
+ *
+ * For example, in `Europe/Berlin`,
+ * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`,
+ * with the UTC offset `+02:00`.
+ * This function can be used to obtain that [Instant].
+ *
+ * Because of the changes to the UTC offset over time in a given [TimeZone]
+ * (for example, when clocks are moved to account for daylight saving time),
+ * the conversion from [LocalDateTime] to [Instant] is not well-defined.
+ * [onTransition] is invoked in that case.
+ *
+ * [utcOffset] may additionally be passed to validate the full [TimeZone]/[LocalDateTime]/[UtcOffset] triple
+ * or to help handle scenarios where the conversion from [LocalDateTime] to [Instant] is not well-defined.
+ * An [IllegalArgumentException] will be thrown if the [utcOffset] is provided but does not match
+ * the expected UTC offset values for that [LocalDateTime].
+ *
+ * ### Behavior specifics
+ *
+ * - If only a single [Instant] has this [LocalDateTime] value in the given [timeZone],
+ *   the conversion is unambiguous.
+ *   An [IllegalArgumentException] is thrown if [utcOffset] is not `null` and isn't equal to
+ *   [TimeZone.offsetAt] for the resulting value.
+ * - If a transition corresponds to this [LocalDateTime] in the given [timeZone],
+ *   meaning either a [gap][LocalDateTimeOffsetInfo.Gap] or an [overlap][LocalDateTimeOffsetInfo.Overlap]
+ *   has occurred, [onTransition] is invoked.
+ *   [utcOffset] is passed to [TransitionHandler.resolveDateTime] as the `preferredOffset`.
+ *   A non-`null` [utcOffset] must be equal to [LocalDateTimeOffsetInfo.Transition.offsetBefore]
+ *   or [LocalDateTimeOffsetInfo.Transition.offsetAfter], or an [IllegalArgumentException] will be thrown.
+ *   Exceptions thrown from [onTransition] are rethrown untouched.
+ *
+ * @see Instant.toLocalDateTime
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInZone
+ */
+public fun LocalDateTime.toInstant(
+    timeZone: TimeZone, onTransition: TransitionHandler, utcOffset: UtcOffset? = null
+): Instant = if (onTransition === TransitionHandler.USE_OFFSET_BEFORE && utcOffset === null) {
+    optimizedToInstantOffsetBefore(timeZone)
+} else {
+    when (val offsetInfo = timeZone.offsetInfoFor(this)) {
+        is LocalDateTimeOffsetInfo.Regular -> {
+            require(utcOffset == null || utcOffset == offsetInfo.offset) {
+                "The supplied UTC offset $utcOffset did not match the actual UTC offset ${offsetInfo.offset} " +
+                    "at $this in the time zone $timeZone"
+            }
+            toInstant(offsetInfo.offset)
+        }
+        is LocalDateTimeOffsetInfo.Transition -> {
+            require(utcOffset == null || utcOffset == offsetInfo.offsetBefore || utcOffset == offsetInfo.offsetAfter) {
+                "The supplied UTC offset $utcOffset did not match any of the offset " +
+                    "surrounding the transition $offsetInfo at $this in the time zone $timeZone"
+            }
+            onTransition.resolveDateTime(
+                dateTime = this,
+                transition = offsetInfo,
+                preferredOffset = utcOffset,
+            )
+        }
+    }
+}
+
+/**
+ * Returns an instant that corresponds to this civil datetime value in the specified fixed-offset [timeZone].
+ *
+ * For example, in `Etc/UTC+02`,
+ * `2026-05-27T03:21` corresponds to the [Instant] with the Unix epoch second value of `1779844860`.
+ * This function can be used to obtain that [Instant].
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInFixedOffsetZone
+ */
+public fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant = toInstant(timeZone.offset)
+
+/**
+ * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
+ *
+ * See the [LocalDateTimeOffsetInfo] documentation for a detailed description.
+ *
+ * See [LocalDateTime.toInstant] together with [TransitionHandler] for a more streamlined way
+ * to handle a subset of this function's use cases.
+ *
+ * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoFor
+ */
+public expect fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
@@ -423,6 +511,26 @@ public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: 
 internal fun LocalDate.atStartOfDayIn(timeZone: TimeZone): kotlinx.datetime.Instant =
     atStartOfDayIn(timeZone).toDeprecatedInstant()
 
-internal expect fun localDateTimeToInstant(
-    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset? = null
-): Instant
+// Convert dateTime to Instant in the given timeZone, use `preferred` on overlaps only, but it's okay for it to be invalid
+internal fun localDateTimeToInstantLenient(
+    dateTime: LocalDateTime, timeZone: TimeZone, handler: TransitionHandler, preferred: UtcOffset? = null
+): Instant = localDateTimeToInstantLenient(dateTime, timeZone.offsetInfoFor(dateTime), handler, preferred)
+
+internal fun localDateTimeToInstantLenient(
+    dateTime: LocalDateTime,
+    offsetInfo: LocalDateTimeOffsetInfo,
+    handler: TransitionHandler,
+    preferred: UtcOffset? = null
+): Instant = when (offsetInfo) {
+    is LocalDateTimeOffsetInfo.Regular -> dateTime.toInstant(offsetInfo.offset)
+    is LocalDateTimeOffsetInfo.Transition -> {
+        val actualPreferred = if (preferred == offsetInfo.offsetBefore || preferred == offsetInfo.offsetAfter) {
+            preferred
+        } else {
+            null
+        }
+        handler.resolveDateTime(dateTime, offsetInfo, actualPreferred)
+    }
+}
+
+internal expect fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant

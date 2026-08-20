@@ -18,7 +18,7 @@ class TimeZoneRulesCompleteTest {
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbOnFilesystem()
-        for (id in tzdb.availableTimeZoneIds()) {
+        for (id in tzdb.availableZoneIds()) {
             val rules = tzdb.rulesForId(id)
             runUnixCommand("env LOCALE=C zdump -V ${tzdb.tzdbPath}/$id").windowed(size = 2, step = 2).forEach { (line1, line2) ->
                 val beforeTransition = parseZdumpLine(line1)
@@ -33,18 +33,18 @@ class TimeZoneRulesCompleteTest {
                         val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime)
                         val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime)
                         assertEquals(infoAt1, infoAt2)
-                        assertIs<OffsetInfo.Regular>(infoAt1)
+                        assertIs<LocalDateTimeOffsetInfo.Regular>(infoAt1)
                     } else if (afterTransition.localDateTime < beforeTransition.localDateTime) {
                         // Overlap
                         val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(-1))
                         val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(1))
                         assertEquals(infoAt1, infoAt2)
-                        assertIs<OffsetInfo.Overlap>(infoAt1)
+                        assertIs<LocalDateTimeOffsetInfo.Overlap>(infoAt1)
                     } else if (afterTransition.localDateTime > beforeTransition.localDateTime) {
                         // Gap
                         val infoAt1 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(-1))
                         val infoAt2 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(1))
-                        assertIs<OffsetInfo.Gap>(infoAt1)
+                        assertIs<LocalDateTimeOffsetInfo.Gap>(infoAt1)
                         assertEquals(infoAt1, infoAt2)
                     }
                 } catch (e: Throwable) {

@@ -6,15 +6,19 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.testing.*
 import kotlin.test.*
+import kotlin.test.Test
 import kotlin.time.Instant
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.ExperimentalTime
 
 @OptIn(kotlin.time.ExperimentalTime::class)
 class TimezonesWithoutDatabaseTest {
     @Test
     fun system() {
-        val tz = TimeZone.currentSystemDefault()
+        val tz = TimeZoneContext.System.currentTimeZone()
         assertEquals("SYSTEM", tz.id)
         assertEquals("SYSTEM", tz.toString())
         val now = Clock.System.now()
@@ -28,6 +32,21 @@ class TimezonesWithoutDatabaseTest {
         assertEquals(today.atTime(0, 0).toInstant(tz), today.atStartOfDayIn(tz))
     }
 
+    // Run manually with Europe/Berlin
+    // Copy of `TimeZoneTest#checkKnownTimezoneDatabaseRecords`
+    @Ignore
+    @Test
+    fun systemCheckKnownTimezoneDatabaseRecords() {
+        with(TimeZoneContext.System.currentTimeZone()) {
+            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
+            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
+            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
+            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
+        }
+    }
+
+
     @Test
     fun utc() {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
@@ -40,21 +59,21 @@ class TimezonesWithoutDatabaseTest {
 
     @Test
     fun available() {
-        assertEquals(setOf("UTC"), TimeZone.availableZoneIds)
+        assertEquals(setOf("UTC"), TimeZoneContext.System.availableZoneIds())
     }
 
     @Test
     fun of() {
-        assertFailsWith<IllegalTimeZoneException> { TimeZone.of("Europe/Moscow") }
-        assertSame(TimeZone.currentSystemDefault(), TimeZone.of("SYSTEM"))
+        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("Europe/Moscow") }
+        assertSame(TimeZoneContext.System.currentTimeZone(), TimeZoneContext.System.get("SYSTEM"))
     }
 
     // from 310bp
     @Test
     fun timeZoneEquals() {
-        val test1 = TimeZone.of("SYSTEM")
-        val test2 = TimeZone.of("UTC")
-        val test2b = TimeZone.of("UTC+00:00")
+        val test1 = TimeZoneContext.System.get("SYSTEM")
+        val test2 = TimeZoneContext.System.get("UTC")
+        val test2b = TimeZoneContext.System.get("UTC+00:00")
         assertEquals(false, test1 == test2)
         assertEquals(false, test2 == test1)
 
@@ -77,13 +96,13 @@ class TimezonesWithoutDatabaseTest {
             Pair("GMT+01:00", "GMT+01:00"),
             Pair("UT+01:00", "UT+01:00"))
         for ((id, str) in idToString) {
-            assertEquals(str, TimeZone.of(id).toString())
+            assertEquals(str, TimeZoneContext.System.get(id).toString())
         }
     }
 
     @Test
     fun utcOffsetNormalization() {
-        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZone.of(it) }
+        val sameOffsetTZs = listOf("+04", "+04:00", "UTC+4", "UT+04", "GMT+04:00:00").map { TimeZoneContext.System.get(it) }
         for (tz in sameOffsetTZs) {
             assertIs<FixedOffsetTimeZone>(tz)
         }
@@ -97,3 +116,4 @@ class TimezonesWithoutDatabaseTest {
     }
 
 }
+

@@ -111,7 +111,7 @@ class UnicodeFormatTest {
             else -> listOf(UtcOffset.ZERO)
         }
         val zones = when {
-            directives.any { it is UnicodeFormat.Directive.ZoneBased } -> TimeZone.availableZoneIds
+            directives.any { it is UnicodeFormat.Directive.ZoneBased } -> TimeZoneContext.System.availableZoneIds()
             else -> setOf("Europe/Berlin")
         }
         val format = DateTimeComponents.Format { byUnicodePattern(pattern) }

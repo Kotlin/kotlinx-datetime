@@ -9,9 +9,7 @@ package kotlinx.datetime.test
 import kotlinx.cinterop.*
 import kotlinx.cinterop.ptr
 import kotlinx.datetime.*
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.internal.*
-import kotlinx.datetime.number
 import platform.windows.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
@@ -32,7 +30,7 @@ class TimeZoneRulesCompleteTest {
 
             dtzi.DynamicDaylightTimeDisabled = 0u
             val (_, tzWithDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)
-            assertTrue(tzWithDst is RegionTimeZone, "Expected RegionTimeZone, got ${tzWithDst::class}")
+            assertTrue(tzWithDst is RuleBasedTimeZone, "Expected RuleBasedTimeZone, got ${tzWithDst::class}")
 
             dtzi.DynamicDaylightTimeDisabled = 1u
             val (_, tzWithoutDst) = tzdb.currentSystemDefaultFromDtzi(dtzi)
@@ -55,7 +53,7 @@ class TimeZoneRulesCompleteTest {
                     instant.toLocalDateTime(dtzi, inputSystemtime.ptr, outputSystemtime.ptr)
                 return (ldtAccordingToWindows.toInstant(UtcOffset.ZERO) - instant).inWholeSeconds.toInt()
             }
-            fun transitionsAccordingToWindows(year: Int): List<OffsetInfo> = buildList {
+            fun transitionsAccordingToWindows(year: Int): List<LocalDateTimeOffsetInfo> = buildList {
                 var lastInstant = LocalDate(year, Month.JANUARY, 1)
                     .atTime(0, 0).toInstant(UtcOffset.ZERO)
                 var lastOffsetAccordingToWindows = offsetAtAccordingToWindows(lastInstant)
@@ -63,7 +61,7 @@ class TimeZoneRulesCompleteTest {
                     val instant = lastInstant + 24.hours
                     val offset = offsetAtAccordingToWindows(instant)
                     if (lastOffsetAccordingToWindows != offset) {
-                        add(OffsetInfo(
+                        add(LocalDateTimeOffsetInfo(
                             binarySearchInstant(lastInstant, instant) {
                                 offset == offsetAtAccordingToWindows(it)
                             },
@@ -249,7 +247,7 @@ private fun binarySearchInstant(instant1: Instant, instant2: Instant, predicate:
 
 private data class IncompatibilityWithWindowsRegistry(
     val timeZoneName: String,
-    val dataOnAffectedYears: List<OffsetInfo>,
+    val dataOnAffectedYears: List<LocalDateTimeOffsetInfo>,
     val recurringRules: String,
     val historicData: List<Pair<Int, String>>,
     val mismatches: List<Mismatch>,

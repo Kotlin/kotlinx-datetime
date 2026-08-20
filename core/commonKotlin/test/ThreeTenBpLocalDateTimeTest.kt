@@ -8,7 +8,6 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.LocalDateTime
 import kotlin.test.*
 
 class ThreeTenBpLocalDateTimeTest {

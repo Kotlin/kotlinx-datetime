@@ -142,7 +142,7 @@ class ConvertersTest {
     @Test
     fun timeZone() {
         fun test(tzid: String) {
-            val ktZone = TimeZone.of(tzid)
+            val ktZone = TimeZoneContext.System.get(tzid)
             val jtZone = ZoneId.of(tzid)
 
             assertEquals(ktZone, jtZone.toKotlinTimeZone())
@@ -161,7 +161,7 @@ class ConvertersTest {
 
     @Test
     fun fixedOffsetTimeZone() {
-        val zone = TimeZone.of("UTC") as FixedOffsetTimeZone
+        val zone = TimeZoneContext.System.get("UTC") as FixedOffsetTimeZone
 
         val jtZone = zone.toJavaZoneId()
         val jtZoneOffset = zone.toJavaZoneOffset()
@@ -176,7 +176,8 @@ class ConvertersTest {
     @Test
     fun zoneOffset() {
         fun test(offsetString: String) {
-            val ktUtcOffset = TimeZone.of(offsetString).offsetAt(kotlin.time.Instant.fromEpochMilliseconds(0))
+            val ktUtcOffset = TimeZoneContext.System.get(offsetString)
+                .offsetAt(kotlin.time.Instant.fromEpochMilliseconds(0))
             val ktZoneOffset = ktUtcOffset.asTimeZone()
             val jtZoneOffset = JTZoneOffset.of(offsetString)
 

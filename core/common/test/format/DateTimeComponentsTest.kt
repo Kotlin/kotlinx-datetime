@@ -63,6 +63,6 @@ class DateTimeComponentsTest {
         DateTimeComponents::offsetSecondsOfMinute,
     )
     val instant = Clock.System.now()
-    val timeZone = TimeZone.currentSystemDefault()
+    val timeZone = TimeZoneContext.System.currentTimeZone()
     val currentTimeDateTimeComponents = DateTimeComponents().apply { setDateTimeOffset(instant, timeZone.offsetAt(instant)) }
 }

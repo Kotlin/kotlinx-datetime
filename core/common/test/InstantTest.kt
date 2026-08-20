@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.NANOS_PER_ONE
+import kotlinx.datetime.plus
 import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.*
@@ -58,12 +59,12 @@ class InstantTest {
     fun instantToLocalDTConversion() {
         val now = Clock.System.now()
         println(now.toLocalDateTime(TimeZone.UTC))
-        println(now.toLocalDateTime(TimeZone.currentSystemDefault()))
+        println(now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()))
     }
 
     @Test
     fun instantCalendarArithmetic() {
-        val zone = TimeZone.of("Europe/Berlin")
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
 
         fun expectBetween(instant1: Instant, instant2: Instant, expected: Long, unit: DateTimeUnit) {
             assertEquals(expected, instant1.until(instant2, unit, zone), "i1.until(i2)")
@@ -81,7 +82,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -122,6 +123,50 @@ class InstantTest {
     }
 
     @Test
+    fun instantArithmeticRethrowsFailingTransitionHandlerExceptions() {
+        class MyHandler(val predefinedException: Throwable): TransitionHandler {
+            override fun resolveDateTime(
+                dateTime: LocalDateTime,
+                transition: LocalDateTimeOffsetInfo.Transition,
+                preferredOffset: UtcOffset?,
+            ): Instant = throw predefinedException
+        }
+        val predefinedExceptions = listOf(
+            IllegalArgumentException("test"),
+            IllegalStateException("test"),
+            IllegalTimeZoneException("test"),
+            DateTimeArithmeticException("test"),
+            ArithmeticException("test"),
+        )
+        val timeZone = TimeZoneContext.System.get("Europe/Berlin")
+        val dayBeforeEndInstant = Instant.parse("2019-10-26T02:30:00+02:00")
+        val monthBeforeEndInstant = Instant.parse("2019-09-27T02:30:00+02:00")
+        val yearBeforeEndInstant = Instant.parse("2018-10-27T02:30:00+02:00")
+        // Trying to end up in 2019-10-27T02:30, which is an overlap
+        val endInstant = Instant.parse("2019-10-27T01:30:00+02:00")
+        for (exception in predefinedExceptions) {
+            val handler = MyHandler(exception)
+            fun test(block: () -> Unit) {
+                assertSame(exception, assertFails { block() })
+            }
+            test { dayBeforeEndInstant.plus(DateTimePeriod(days = 1), timeZone, handler) }
+            test { dayBeforeEndInstant.minus(DateTimePeriod(days = -1), timeZone, handler) }
+            test { dayBeforeEndInstant.periodUntil(endInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.until(endInstant, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.daysUntil(endInstant, timeZone, handler) }
+            test { monthBeforeEndInstant.monthsUntil(endInstant, timeZone, handler) }
+            test { yearBeforeEndInstant.yearsUntil(endInstant, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, DateTimeUnit.DAY, timeZone, handler) }
+        }
+
+    }
+
+    @Test
     fun addingMultiplesOf2_32() {
         val pow2_32 = 1L shl 32
         val instant1 = Instant.fromEpochSeconds(0)
@@ -159,8 +204,8 @@ class InstantTest {
 
     @Test
     fun instantOffset() {
-        val zone = TimeZone.of("Europe/Berlin")
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        val zone = TimeZoneContext.System.get("Europe/Berlin")
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         val ldt1 = instant1.toLocalDateTime(zone)
         val offset1 = instant1.offsetIn(zone)
         checkComponents(ldt1, 2019, 10, 27, 2, 59)
@@ -186,18 +231,18 @@ class InstantTest {
     fun changingTimeZoneRules() {
         val start = Instant.parse("1991-01-25T23:15:15.855Z")
         val end = Instant.parse("2006-04-24T22:07:32.561Z")
-        val diff = start.periodUntil(end, TimeZone.of("Europe/Moscow"))
-        val end2 = start.plus(diff, TimeZone.of("Europe/Moscow"))
+        val diff = start.periodUntil(end, TimeZoneContext.System.get("Europe/Moscow"))
+        val end2 = start.plus(diff, TimeZoneContext.System.get("Europe/Moscow"))
         assertEquals(end, end2)
     }
 
     @Test
     fun periodUntilSameSign() {
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         // Same sign when the period is positive but smaller than the non-DST-aware date-based period
         assertPeriodSameSign(
-            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz).periodUntil(
-                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz), tz))
+            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE).periodUntil(
+                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE), tz))
         // Same sign when the period is negative but bigger than the non-DST-aware date-based period
         assertPeriodSameSign(
             Instant.parse("2025-07-27T00:59:00Z").periodUntil(
@@ -207,7 +252,7 @@ class InstantTest {
     @Test
     @Ignore
     fun periodUntilSameSignStressTest() {
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
         while (endMoment.elapsedNow().isNegative()) {
             val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
@@ -219,11 +264,11 @@ class InstantTest {
 
     @Test
     fun untilDays() {
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         // No overshooting when the distance is positive but smaller than the non-DST-aware date-based distance
         run {
-            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz)
-            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz)
+            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
+            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
             val distance = i1.until(i2, DateTimeUnit.DAY, tz)
             assertTrue(i2 > i1.plus(distance, DateTimeUnit.DAY, tz))
         }
@@ -239,7 +284,7 @@ class InstantTest {
     @Test
     @Ignore
     fun untilDaysStressTest() {
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
         while (endMoment.elapsedNow().isNegative()) {
             val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
@@ -255,7 +300,7 @@ class InstantTest {
 
     @Test
     fun dateTimePeriodWithGapBetweenMonthsAndDays() {
-        val zone = TimeZone.of("America/New_York")
+        val zone = TimeZoneContext.System.get("America/New_York")
         // LocalDateTime(2019, 3, 10, 2, 0) is a gap.
         // If months and days are not added atomically, the result will be adjusted.
         val start = Instant.parse("2019-02-10T02:00:00-05:00")
@@ -270,7 +315,7 @@ class InstantTest {
     fun periodUntilWithGapBetweenMonthsAndDays() {
         val start = Instant.parse("2024-01-30T01:10:00Z")
         val end = Instant.parse("2025-04-01T01:10:00Z")
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         val period = start.periodUntil(end, tz)
         assertEquals(DateTimePeriod(years = 1, months = 2, days = 2, hours = 1), period)
         assertEquals(end, start.plus(period, tz), "start: $start, end: $end, period: $period")
@@ -279,7 +324,7 @@ class InstantTest {
     @Test
     @Ignore
     fun periodUntilWithGapBetweenMonthsAndDaysStressTest() {
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         val endMoment = TimeSource.Monotonic.markNow() + STRESS_TEST_DURATION
         while (endMoment.elapsedNow().isNegative()) {
             val start = Instant.fromEpochSeconds(Random.nextLong(1700000000, 1767222000))
@@ -297,8 +342,8 @@ class InstantTest {
             val instant1 = Instant.fromEpochMilliseconds(millis1)
             val instant2 = Instant.fromEpochMilliseconds(millis2)
 
-            val diff = instant1.periodUntil(instant2, TimeZone.currentSystemDefault())
-            val instant3 = instant1.plus(diff, TimeZone.currentSystemDefault())
+            val diff = instant1.periodUntil(instant2, TimeZoneContext.System.currentTimeZone())
+            val instant3 = instant1.plus(diff, TimeZoneContext.System.currentTimeZone())
 
             if (instant2 != instant3)
                 println("start: $instant1, end: $instant2, start + diff: $instant3, diff: $diff")
@@ -331,7 +376,7 @@ class InstantTest {
         val instant1 = Instant.parse("2019-04-01T00:00:00Z")
         val instant2 = Instant.parse("2019-05-01T04:00:00Z")
 
-        for (zone in (-12..12 step 3).map { h -> TimeZone.of("${if (h >= 0) "+" else ""}$h") }) {
+        for (zone in (-12..12 step 3).map { h -> TimeZoneContext.System.get("${if (h >= 0) "+" else ""}$h") }) {
             val dt1 = instant1.toLocalDateTime(zone)
             val dt2 = instant2.toLocalDateTime(zone)
             val diff = instant1.periodUntil(instant2, zone)

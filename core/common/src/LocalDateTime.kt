@@ -53,7 +53,7 @@ import kotlin.jvm.JvmName
  * and the arithmetic on [Instant][kotlin.time.Instant] should be used.
  *
  * ```
- * val timeZone = TimeZone.of("Europe/Berlin")
+ * val timeZone = TimeZoneContext.System.get("Europe/Berlin")
  * val localDateTime = LocalDateTime(2021, 3, 27, 2, 16, 20)
  * val instant = localDateTime.toInstant(timeZone)
  *
@@ -199,7 +199,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * @see LocalDateTime.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()): LocalDateTime
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = Formats.ISO): LocalDateTime
 
         /**
          * Creates a new format for parsing and formatting [LocalDateTime] values.
@@ -428,7 +428,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
      * [Instant][kotlin.time.Instant] values.
      * Consider the following situation, where a later moment in time corresponds to an earlier [LocalDateTime] value:
      * ```
-     * val zone = TimeZone.of("Europe/Berlin")
+     * val zone = TimeZoneContext.System.get("Europe/Berlin")
      * val ldt1 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:16:20
      * // 45 minutes pass; clocks move back from 03:00 to 02:00 in the meantime
      * val ldt2 = Clock.System.now().toLocalDateTime(zone) // 2021-10-31T02:01:20
@@ -479,7 +479,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parseOrNull
  */
 public expect fun LocalDateTime.Companion.parseOrNull(
-    input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()
+    input: CharSequence, format: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO
 ): LocalDateTime?
 
 /**
@@ -543,6 +543,3 @@ public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String =
  */
 @Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDateTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
-
-// A workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoDateTimeFormat() = LocalDateTime.Formats.ISO

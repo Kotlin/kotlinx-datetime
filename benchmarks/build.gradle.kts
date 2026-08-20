@@ -10,10 +10,6 @@ plugins {
     id("me.champeau.jmh")
 }
 
-
-val mainJavaToolchainVersion by ext(project.property("java.mainToolchainVersion"))
-val modularJavaToolchainVersion by ext(project.property("java.modularToolchainVersion"))
-
 sourceSets {
     dependencies {
         implementation(project(":kotlinx-datetime"))

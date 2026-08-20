@@ -3,6 +3,7 @@ package kotlinx.datetime.timezones
 import kotlinx.datetime.timezones.tzData.*
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertNotNull
 
 class SimpleChecks {
     @Test
@@ -15,8 +16,8 @@ class SimpleChecks {
 
     @Test
     fun checkZonesData() {
-        zoneDataByName("UTC")
-        zoneDataByName("GMT")
-        zoneDataByName("Europe/Amsterdam")
+        assertNotNull(zoneDataByNameOrNull("UTC"))
+        assertNotNull(zoneDataByNameOrNull("GMT"))
+        assertNotNull(zoneDataByNameOrNull("Europe/Amsterdam"))
     }
 }

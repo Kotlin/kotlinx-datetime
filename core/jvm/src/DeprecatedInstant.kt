@@ -12,12 +12,10 @@ import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.internal.NANOS_PER_ONE
 import kotlinx.datetime.internal.multiplyAndDivide
-import kotlinx.datetime.internal.safeMultiply
 import kotlinx.datetime.serializers.InstantSerializer
 import kotlinx.serialization.Serializable
 import java.time.Clock
 import java.time.DateTimeException
-import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -48,7 +46,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
     )
     public actual fun toEpochMilliseconds(): Long = try {
         value.toEpochMilli()
-    } catch (e: ArithmeticException) {
+    } catch (_: ArithmeticException) {
         if (value.isAfter(java.time.Instant.EPOCH)) Long.MAX_VALUE else Long.MIN_VALUE
     }
 

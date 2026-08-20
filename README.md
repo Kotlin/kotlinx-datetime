@@ -42,13 +42,16 @@ The library provides a basic set of types for working with date and time:
 - `LocalTime` to represent the components of time only;
 - `TimeZone` and `FixedOffsetTimeZone` provide time zone information to convert between
   `kotlin.time.Instant` and `LocalDateTime`;
+- `TimeZoneContext` to get access to the `TimeZone` data;
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
-it represents a difference between two LocalDate values decomposed into date units.
-- `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations
-  on `kotlin.time.Instant` and `LocalDate`.
-- `UtcOffset` represents the amount of time the local datetime at a particular time zone differs from the datetime at UTC.
+it represents a difference between two LocalDate values decomposed into date units;
+- `DateTimeUnit` to provide a set of predefined date and time units to use in arithmetic operations
+  on `kotlin.time.Instant` and `LocalDate`;
+- `UtcOffset` to represent the amount of time the local datetime at a particular time zone differs from the datetime at UTC;
+- `LocalDateTimeOffsetInfo` to represent an attempt at determining the UTC offset that was in effect
+  when the given wall-clock time was observed.
 
 ### Type use-cases
 
@@ -88,7 +91,7 @@ The `TimeZone` type provides the rules to convert instants from and to datetime 
 ```kotlin
 val currentMoment: Instant = Clock.System.now()
 val datetimeInUtc: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
-val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+val datetimeInSystemZone: LocalDateTime = currentMoment.toLocalDateTime(TimeZoneContext.System.currentTimeZone())
 ```
 
 A `LocalDateTime` instance exposes familiar components of the Gregorian calendar:
@@ -97,9 +100,9 @@ The property `dayOfWeek` shows what weekday that date is,
 and `dayOfYear` shows the day number since the beginning of a year.
 
 
-Additional time zones can be acquired by their string identifier with the `TimeZone.of(id: String)` function.
+Additional time zones can be acquired by their string identifier with the `TimeZoneContext.get(id: String)` function.
 ```kotlin
-val tzBerlin = TimeZone.of("Europe/Berlin")
+val tzBerlin = TimeZoneContext.System.get("Europe/Berlin")
 val datetimeInBerlin = currentMoment.toLocalDateTime(tzBerlin)
 ```
 
@@ -109,11 +112,25 @@ A `LocalDateTime` instance can be constructed from individual components:
 val kotlinReleaseDateTime = LocalDateTime(2016, 2, 15, 16, 57, 0, 0)
 ```
 
+### Guessing an instant from local date and time components
+
 An instant can be obtained from `LocalDateTime` by interpreting it as a time moment
 in a particular `TimeZone`:
 
 ```kotlin
-val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(TimeZone.of("UTC+3"))
+val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(
+    TimeZoneContext.System.get("Europe/Moscow"),
+    TransitionHandler.REJECT_TRANSITIONS
+)
+```
+
+Various `TransitionHandler` values can be used to define what should happen if the date and time components
+correspond to several instants or none at all.
+
+For fixed-offset time zones, which don't have transitions, transition handlers are not required:
+
+```kotlin
+val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(UtcOffset(hours = 3).asTimeZone())
 ```
 
 ### Getting local date components
@@ -123,9 +140,9 @@ by converting it to `LocalDateTime` and taking its `date` property.
 
 ```kotlin
 val now: Instant = Clock.System.now()
-val today: LocalDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
+val today: LocalDate = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).date
 // or shorter
-val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+val today: LocalDate = Clock.System.todayIn(TimeZoneContext.System.currentTimeZone())
 ```
 Note, that today's date really depends on the time zone in which you're observing the current moment.
 
@@ -151,7 +168,7 @@ by converting it to `LocalDateTime` and taking its `time` property.
 
 ```kotlin
 val now: Instant = Clock.System.now()
-val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
+val thisTime: LocalTime = now.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).time
 ```
 
 A `LocalTime` can be constructed from four components, hour, minute, second, and nanosecond:
@@ -331,7 +348,7 @@ A particular amount of datetime units or a datetime period can be added to an `I
 
 ```kotlin
 val now = Clock.System.now()
-val systemTZ = TimeZone.currentSystemDefault()
+val systemTZ = TimeZoneContext.System.currentTimeZone()
 val tomorrow = now.plus(2, DateTimeUnit.DAY, systemTZ)
 val threeYearsAndAMonthLater = now.plus(DateTimePeriod(years = 3, months = 1), systemTZ)
 ```
@@ -366,9 +383,9 @@ perform all the required arithmetic on `Instant` values, and only convert to `Lo
 representation is needed.
 
 ```kotlin
-val timeZone = TimeZone.of("Europe/Berlin")
+val timeZone = TimeZoneContext.System.get("Europe/Berlin")
 val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
-val instant = localDateTime.toInstant(timeZone)
+val instant = localDateTime.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 val instantOneDayLater = instant.plus(1, DateTimeUnit.DAY, timeZone)
 val localDateTimeOneDayLater = instantOneDayLater.toLocalDateTime(timeZone)
@@ -448,7 +465,7 @@ Tips for fixing compilation errors:
     * `kotlinx.datetime.Instant.toStdlibInstant(): kotlin.time.Instant`
     * `kotlinx.datetime.Clock.toStdlibClock(): kotlin.time.Clock`
 
-> Compatibility releases will be published for all `0.7.x` versions of `kotlinx-datetime`, but not longer.
+> Compatibility releases will be published for versions up to `0.8.x` of `kotlinx-datetime`, but not longer.
 
 ### Gradle
 
@@ -481,7 +498,57 @@ dependencies {
 }
 ```
 
-#### Note about time zones in JS
+#### Timezone databases
+
+By default, `kotlinx-datetime` uses the timezone information provided by the system
+(the exceptions are JS, Wasm/JS, and Wasm/WASI, which don't expose this information; see their subsections below).
+This information may be severely outdated, and depending on the use case, it may be important to access
+the most recent version of the timezone database.
+
+The `kotlinx-datetime-zoneinfo` artifact bundles the up-to-date version of the timezone database
+and is updated soon after the official announcement from [IANA](https://www.iana.org/time-zones).
+To access it, add this snippet:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                // 2026c is the most recent release of the IANA timezone database,
+                // 0.8.0 is `kotlinx-datetime` version
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
+            }
+        }
+    }
+}
+```
+
+This will introduce the `kotlinx.datetime.zoneinfo` package,
+containing `TimeZoneContext.Bundled`, which can be used in place of `TimeZoneContext.System`:
+
+```kotlin
+import kotlinx.datetime.*
+import kotlinx.datetime.zoneinfo.*
+import kotlin.time.*
+
+fun printCurrentTimeInBerlin(clock: Clock, timeZoneContext: TimeZoneContext) {
+    val instant = clock.now()
+    val localDateTime = instant.toLocalDateTime(timeZoneContext.get("Europe/Berlin"))
+    println(localDateTime)
+}
+
+fun main() {
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.System)
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.Bundled)
+}
+```
+
+Note that `kotlinx-datetime-zoneinfo` takes 1 megabyte of space as of writing,
+which may be prohibitively much.
+Carefully evaluate whether the risk of using an outdated timezone database provided by the system
+is severe enough to justify this tradeoff.
+
+##### Note about time zones in JS
 
 By default, there's only one time zone available in Kotlin/JS: the `SYSTEM` time zone with a fixed offset.
 
@@ -514,7 +581,7 @@ val jsJodaTz = JsJodaTimeZoneModule
 
 This code can be placed in any file in the Kotlin/JS source set.
 
-#### Note about time zones in Wasm/JS
+##### Note about time zones in Wasm/JS
 
 Wasm/JS uses the same time zone support as JS, so almost the same instructions apply.
 
@@ -542,7 +609,7 @@ external object JsJodaTimeZoneModule
 private val jsJodaTz = JsJodaTimeZoneModule
 ```
 
-#### Note about time zones in Wasm/WASI
+##### Note about time zones in Wasm/WASI
 
 By default, there's only one time zone available in Kotlin/Wasm WASI: the `UTC` time zone with a fixed offset.
 
@@ -553,12 +620,17 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2026b-spi.0.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
             }
         }
     }
 }
 ```
+
+In addition to providing `TimeZoneContext.Bundled` like on other platforms,
+this dependency also modifies `TimeZoneContext.System` on Wasm/WASI exclusively,
+to support a way to use a valid timezone database on all targets.
+This behavior will be removed once Wasm/WASI exposes the system timezone database natively.
 
 ### Maven
 
@@ -574,9 +646,9 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 
 ## Building
 
-The project requires JDK 8 to build classes and to run tests.
+The project requires JDK 17 to build classes and to run tests.
 Gradle will try to find it among the installed JDKs or [download](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
-The path to JDK 8 can be additionally specified with the environment variable `JDK_8`.
+The path to JDK 17 can be additionally specified with the environment variable `JDK_17_0`.
 For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 

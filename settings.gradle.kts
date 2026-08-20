@@ -4,14 +4,18 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    val dokkaVersion: String by settings
-    val benchmarksVersion: String by settings
-    val bcvVersion: String by settings
+    val dokkaVersion = providers.gradleProperty("dokkaVersion")
+    val benchmarksVersion = providers.gradleProperty("benchmarksVersion")
+    val bcvVersion = providers.gradleProperty("bcvVersion")
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
         id("me.champeau.jmh") version benchmarksVersion
         id("org.jetbrains.kotlinx.binary-compatibility-validator") version bcvVersion
     }
+}
+
+plugins {
+    id("org.jetbrains.kotlinx.artifacts-validator-plugin") version "0.0.2"
 }
 
 rootProject.name = "Kotlin-DateTime-library"
@@ -29,3 +33,4 @@ project(":integration-testing/js-with-timezones").name = "kotlinx-datetime-js-te
 include(":integration-testing/jpms-test")
 project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
 include(":benchmarks")
+include(":test-utils")

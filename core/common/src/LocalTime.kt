@@ -39,10 +39,10 @@ import kotlin.jvm.JvmName
  *
  * ```
  * val time = LocalTime(13, 30)
- * val date = Clock.System.todayAt(TimeZone.currentSystemDefault())
- * val instant = time.atDate(date).toInstant(TimeZone.currentSystemDefault())
+ * val date = Clock.System.todayAt(TimeZoneContext.System.currentTimeZone())
+ * val instant = time.atDate(date).toInstant(TimeZoneContext.System.currentTimeZone())
  * val instantThreeHoursLater = instant.plus(3.hours)
- * val timeThreeHoursLater = instantThreeHoursLater.toLocalDateTime(TimeZone.currentSystemDefault()).time
+ * val timeThreeHoursLater = instantThreeHoursLater.toLocalDateTime(TimeZoneContext.System.currentTimeZone()).time
  * ```
  *
  * Since this pattern is extremely verbose and difficult to get right, it is recommended to work exclusively
@@ -122,7 +122,7 @@ public expect class LocalTime : Comparable<LocalTime> {
          * @see LocalTime.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalTimeSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()): LocalTime
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalTime> = Formats.ISO): LocalTime
 
         /**
          * Constructs a [LocalTime] that represents the specified number of seconds since the start of a calendar day.
@@ -387,7 +387,7 @@ public expect class LocalTime : Comparable<LocalTime> {
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.parseOrNull
  */
 public expect fun LocalTime.Companion.parseOrNull(
-    input: CharSequence, format: DateTimeFormat<LocalTime> = getIsoTimeFormat()
+    input: CharSequence, format: DateTimeFormat<LocalTime> = LocalTime.Formats.ISO
 ): LocalTime?
 
 /**
@@ -461,6 +461,3 @@ public fun LocalTime.atDate(year: Int, month: Month, dayOfMonth: Int, fakeArgume
  * @sample kotlinx.datetime.test.samples.LocalTimeSamples.atDate
  */
 public fun LocalTime.atDate(date: LocalDate): LocalDateTime = LocalDateTime(date, this)
-
-// workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoTimeFormat() = LocalTime.Formats.ISO

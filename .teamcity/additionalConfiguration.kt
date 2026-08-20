@@ -53,7 +53,7 @@ fun Project.additionalConfiguration() {
                 name = "Check if the Windows names need updating"
                 id = "Check_if_the_Windows_names_need_updating"
                 tasks = "downloadWindowsZonesMapping"
-                jdkHome = "%env.JDK_18%"
+                jdkHome = "%env.JDK_17_0%"
             }
         }
 

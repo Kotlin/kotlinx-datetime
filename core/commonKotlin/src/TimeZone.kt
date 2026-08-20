@@ -8,7 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.format.*
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.Serializable
@@ -17,60 +16,27 @@ import kotlin.time.Instant
 public actual open class TimeZone internal constructor() {
 
     public actual companion object {
-
-        public actual fun currentSystemDefault(): TimeZone {
-            // TODO: probably check if currentSystemDefault name is parseable as FixedOffsetTimeZone?
-            val (name, zone) = currentSystemDefaultZone()
-            return zone ?: of(name)
-        }
-
         public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
 
-        // org.threeten.bp.ZoneId#of(java.lang.String)
-        public actual fun of(zoneId: String): TimeZone {
-            // TODO: normalize aliases?
-            if (zoneId == "UTC") {
-                return UTC
-            }
-            if (zoneId == "Z" || zoneId == "z") {
-                return UtcOffset.ZERO.asTimeZone()
-            }
-            if (zoneId == "SYSTEM") {
-                return currentSystemDefault()
-            }
-            if (zoneId.length == 1) {
-                throw IllegalTimeZoneException("Invalid zone ID: $zoneId")
-            }
-            try {
-                if (zoneId.startsWith("+") || zoneId.startsWith("-")) {
-                    return lenientOffsetFormat.parse(zoneId).asTimeZone()
-                }
-                if (zoneId == "UTC" || zoneId == "GMT" || zoneId == "UT") {
-                    return FixedOffsetTimeZone(UtcOffset.ZERO, zoneId)
-                }
-                if (zoneId.startsWith("UTC+") || zoneId.startsWith("GMT+") ||
-                    zoneId.startsWith("UTC-") || zoneId.startsWith("GMT-")
-                ) {
-                    val prefix = zoneId.take(3)
-                    val offset = lenientOffsetFormat.parse(zoneId.substring(3))
-                    return offset.asTimeZone(prefix)
-                }
-                if (zoneId.startsWith("UT+") || zoneId.startsWith("UT-")) {
-                    val offset = lenientOffsetFormat.parse(zoneId.substring(2))
-                    return offset.asTimeZone("UT")
-                }
-            } catch (e: DateTimeFormatException) {
-                throw IllegalTimeZoneException(e)
-            }
-            return try {
-                timeZoneById(zoneId)
-            } catch (e: Exception) {
-                throw IllegalTimeZoneException("Invalid zone ID: $zoneId", e)
-            }
-        }
+        @Deprecated(
+            "Use TimeZoneContext.System.currentTimeZone() instead",
+            ReplaceWith("TimeZoneContext.System.currentTimeZone()")
+        )
+        public actual fun currentSystemDefault(): TimeZone =
+            TimeZoneContext.System.currentTimeZone()
 
+        @Deprecated(
+            "Use TimeZoneContext.System.get() instead",
+            ReplaceWith("TimeZoneContext.System.get(zoneId)")
+        )
+        public actual fun of(zoneId: String): TimeZone = TimeZoneContext.System.get(zoneId)
+
+        @Deprecated(
+            "Use TimeZoneContext.System.availableZoneIds() instead",
+            ReplaceWith("TimeZoneContext.System.availableZoneIds()")
+        )
         public actual val availableZoneIds: Set<String>
-            get() = getAvailableZoneIds()
+            get() = TimeZoneContext.System.availableZoneIds()
 
         @Deprecated(
             "Serializing TimeZone is discouraged, " +
@@ -88,8 +54,15 @@ public actual open class TimeZone internal constructor() {
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
 
     @Suppress("DEPRECATION_ERROR")
+    @Deprecated(
+        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
+    )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
-        localDateTimeToInstant(this)
+        toInstant(TransitionHandler.USE_OFFSET_BEFORE)
+
+    public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
+        this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
 
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -105,8 +78,9 @@ public actual open class TimeZone internal constructor() {
     internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
         toInstant(this@TimeZone).toDeprecatedInstant()
 
-    internal open fun atStartOfDay(date: LocalDate): Instant = error("Should be overridden") //value.atStartOfDay(date)
-    internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
+    internal open fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstantLenient(
+        LocalDateTime(date, LocalTime.MIN), this, TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
+    )
 
     internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
         instant.toLocalDateTimeImpl(offsetAtImpl(instant))
@@ -114,13 +88,18 @@ public actual open class TimeZone internal constructor() {
         throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
     }
 
+    internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
+
+    internal open fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
+
     internal open fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset? = null): Instant =
-        error("Should be overridden")
+        localDateTimeToInstantLenient(dateTime, this, TransitionHandler.USE_OFFSET_BEFORE, preferred)
 
     actual override fun equals(other: Any?): Boolean =
-        this === other || other is TimeZone && this.id == other.id
+        error("Should be overridden")
 
-    override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int =
+        error("Should be overridden")
 
     actual override fun toString(): String = id
 }
@@ -137,10 +116,18 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 
     override fun offsetAtImpl(instant: Instant): UtcOffset = offset
 
+    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        LocalDateTimeOffsetInfo.Regular(offset)
+
     override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
         dateTime.toInstant(offset)
 
     override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
+
+    override fun equals(other: Any?): Boolean =
+        this === other || other is FixedOffsetTimeZone && this.id == other.id
+
+    override fun hashCode(): Int = id.hashCode()
 
     /** @suppress */
     public actual companion object {
@@ -191,29 +178,9 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     timeZone.atStartOfDay(this)
 
-private val lenientOffsetFormat = UtcOffsetFormat.build {
-    alternativeParsing(
-        {
-            offsetHours(Padding.NONE)
-        },
-        {
-            isoOffset(
-                zOnZero = false,
-                useSeparator = false,
-                outputMinute = WhenToOutput.IF_NONZERO,
-                outputSecond = WhenToOutput.IF_NONZERO
-            )
-        }
-    ) {
-        isoOffset(
-            zOnZero = true,
-            useSeparator = true,
-            outputMinute = WhenToOutput.ALWAYS,
-            outputSecond = WhenToOutput.IF_NONZERO
-        )
-    }
-}
+internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
+    timeZone.localDateTimeToInstant(this)
 
-internal actual fun localDateTimeToInstant(
-    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset?
-): Instant = timeZone.localDateTimeToInstant(dateTime, preferred)
+public actual fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+    offsetInfoForImpl(dateTime)
+

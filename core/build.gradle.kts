@@ -22,12 +22,10 @@ mavenPublicationsPom {
     description.set("Kotlin Datetime Library")
 }
 
-val mainJavaToolchainVersion: String by project
-val modularJavaToolchainVersion: String by project
-val serializationVersion: String by project
+val serializationVersion = project.property("serializationVersion")
 
 java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(mainJavaToolchainVersion)) }
+    toolchain { languageVersion.set(JavaLanguageVersion.of(project.property("mainJavaToolchainVersion") as String)) }
 }
 
 kotlin {
@@ -191,29 +189,30 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-test")
+                implementation(project(":test-utils"))
             }
         }
 
-        val commonJsMain by getting {
+        named("commonJsMain") {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation(npm("@js-joda/core", "3.2.0"))
+                implementation(npm("@js-joda/core", ">= 3.2.0 < 7.0.0"))
             }
         }
 
-        val commonJsTest by getting {
+        named("commonJsTest") {
             dependencies {
                 implementation(npm("@js-joda/timezone", "2.3.0"))
             }
         }
 
-        val commonKotlinMain by getting {
+        named("commonKotlinMain") {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
             }
         }
 
-        val wasmWasiTest by getting {
+        named("wasmWasiTest") {
             dependencies {
                 runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
@@ -226,18 +225,18 @@ kotlin {
 }
 
 tasks {
-    val jvmTest by existing(Test::class) {
+    named<Test>("jvmTest") {
         // maxHeapSize = "1024m"
     }
 
-    val compileJavaModuleInfo by registering(JavaCompile::class) {
+    val compileJavaModuleInfo = register<JavaCompile>("compileJavaModuleInfo") {
         val moduleName = "kotlinx.datetime" // this module's name
-        val compileKotlinJvm by getting(KotlinCompile::class)
+        val compileKotlinJvm = getByName<KotlinCompile>("compileKotlinJvm")
         val sourceDir = file("jvm/java9/")
         val targetDir = compileKotlinJvm.destinationDirectory.map { it.dir("../java9/") }
 
         // Use a Java 11 compiler for the module info.
-        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(modularJavaToolchainVersion)) })
+        javaCompiler.set(project.javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(project.property("modularJavaToolchainVersion") as String)) })
 
         // Always compile kotlin classes before the module descriptor.
         dependsOn(compileKotlinJvm)
@@ -284,7 +283,7 @@ tasks {
     }
 
     // Configure the JAR task so that it will include the compiled module-info class file.
-    val jvmJar by existing(Jar::class) {
+    named<Jar>("jvmJar") {
         manifest {
             attributes(
                 "Multi-Release" to true,
@@ -300,7 +299,7 @@ tasks {
 
     // Workaround for https://youtrack.jetbrains.com/issue/KT-58303:
     // the `clean` task can't delete the expanded.lock file on Windows as it's still held by Gradle, failing the build
-    val clean by existing(Delete::class) {
+    named<Delete>("clean") {
         setDelete(fileTree(layout.buildDirectory) {
             exclude("tmp/.cache/expanded/expanded.lock")
         })
@@ -323,7 +322,7 @@ tasks {
     }
 }
 
-val downloadWindowsZonesMapping by tasks.registering {
+tasks.register("downloadWindowsZonesMapping") {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
     val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)

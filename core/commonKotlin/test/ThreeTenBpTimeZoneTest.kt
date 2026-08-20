@@ -32,14 +32,14 @@ class ThreeTenBpTimeZoneTest {
     fun nonExistentLocalTime() {
         val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
         val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
-        val tz = TimeZone.of("Europe/Berlin")
+        val tz = TimeZoneContext.System.get("Europe/Berlin")
         assertEquals(tz.localDateTimeToInstant(t1), tz.localDateTimeToInstant(t2))
     }
 
     @Test
     fun overlappingLocalTime() {
         val t = LocalDateTime(2007, 10, 28, 2, 30, 0, 0)
-        val zone = TimeZone.of("Europe/Paris")
+        val zone = TimeZoneContext.System.get("Europe/Paris")
         assertEquals(t.toInstant(UtcOffset(hours = 2)), zone.localDateTimeToInstant(t))
     }
 
