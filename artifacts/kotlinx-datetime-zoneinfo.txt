@@ -18,7 +18,6 @@ org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-tvossimulatorarm64/.klib,.module
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-tvosx64/.klib,.module,.pom,javadoc.jar,metadata.jar,sources.jar
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-wasm-js/.klib,.module,.pom,javadoc.jar,sources.jar
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-wasm-wasi/.klib,.module,.pom,javadoc.jar,sources.jar
-org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-watchosarm32/.klib,.module,.pom,javadoc.jar,metadata.jar,sources.jar
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-watchosarm64/.klib,.module,.pom,javadoc.jar,metadata.jar,sources.jar
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-watchosdevicearm64/.klib,.module,.pom,javadoc.jar,metadata.jar,sources.jar
 org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo-watchossimulatorarm64/.klib,.module,.pom,javadoc.jar,metadata.jar,sources.jar
