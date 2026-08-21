@@ -36,7 +36,7 @@ public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
  * @see todayIn
  * @sample kotlinx.datetime.test.samples.ClockSamples.todayWithContextParameter
  */
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Clock.today(): LocalDate = todayIn(timeZone)
 
 /**

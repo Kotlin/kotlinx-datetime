@@ -281,7 +281,7 @@ public typealias ZoneOffset = FixedOffsetTimeZone
  * @see offsetIn
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetWithContextParameter
  */
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.offset(): UtcOffset = timeZone.offsetAt(this)
 
 @Suppress("DEPRECATION")
@@ -516,7 +516,7 @@ public fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant = toI
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInFixedOffsetZoneWithContextParameter
  */
-context (timeZone: FixedOffsetTimeZone)
+context(timeZone: FixedOffsetTimeZone)
 public fun LocalDateTime.toInstant(): Instant = toInstant(timeZone.offset)
 
 /**
@@ -533,7 +533,7 @@ public fun LocalDateTime.toInstant(): Instant = toInstant(timeZone.offset)
  * @see offsetInfoFor
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoWithContextParameter
  */
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun LocalDateTime.offsetInfo(): LocalDateTimeOffsetInfo =
     timeZone.offsetInfoFor(this)
 
@@ -591,7 +591,7 @@ public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: 
  * @see atStartOfDayIn
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayWithContextParameter
  */
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun LocalDate.atStartOfDay(): Instant = atStartOfDayIn(timeZone)
 
 @PublishedApi
