@@ -267,7 +267,7 @@ public fun Instant.until(
  * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnitWithContextParameter
  */
 // Added after 0.8.0
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.until(
     other: Instant,
     unit: DateTimeUnit,
@@ -320,7 +320,7 @@ public fun Instant.daysUntil(
  * @sample kotlinx.datetime.test.samples.InstantSamples.daysUntilWithContextParameter
  */
 // Added after 0.8.0
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.daysUntil(
     other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): Int = daysUntil(other, timeZone, onTransition)
@@ -349,7 +349,7 @@ public fun Instant.monthsUntil(
  * @sample kotlinx.datetime.test.samples.InstantSamples.monthsUntilWithContextParameter
  */
 // Added after 0.8.0
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.monthsUntil(
     other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): Int = monthsUntil(other, timeZone, onTransition)
@@ -378,7 +378,7 @@ public fun Instant.yearsUntil(
  * @sample kotlinx.datetime.test.samples.InstantSamples.yearsUntilWithContextParameter
  */
 // Added after 0.8.0
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.yearsUntil(
     other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): Int = yearsUntil(other, timeZone, onTransition)
@@ -452,7 +452,7 @@ public fun Instant.periodFrom(
  * @sample kotlinx.datetime.test.samples.InstantSamples.periodFromWithContextParameter
  */
 // Added after 0.8.0
-context (timeZone: TimeZone)
+context(timeZone: TimeZone)
 public fun Instant.periodFrom(
     other: Instant, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
 ): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
