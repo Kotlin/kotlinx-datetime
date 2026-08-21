@@ -11,10 +11,10 @@ import kotlin.time.Instant
 internal class RuleBasedTimeZone(private val calculations: RuleBasedTimeZoneCalculations): TimeZone() {
     override val id: String get() = calculations.id
 
-    override fun offsetAtImpl(instant: Instant): UtcOffset = calculations.offsetAtImpl(instant)
+    override fun offsetAt(instant: Instant): UtcOffset = calculations.offsetAt(instant)
 
-    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        calculations.offsetInfoForImpl(dateTime)
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        calculations.offsetInfoFor(dateTime)
 
     override fun equals(other: Any?): Boolean =
         other is RuleBasedTimeZone && calculations == other.calculations

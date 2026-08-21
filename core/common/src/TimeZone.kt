@@ -67,6 +67,31 @@ public expect open class TimeZone {
     public val id: String
 
     /**
+     * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
+     *
+     * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics
+     * because the offset can change over time due to daylight-saving-time transitions and other reasons.
+     * Use [TimeZone] directly with arithmetic operations instead.
+     *
+     * @see Instant.toLocalDateTime
+     * @see TimeZone.offsetAt
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetAt
+     */
+    public fun offsetAt(instant: Instant): UtcOffset
+
+    /**
+     * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
+     *
+     * See the [LocalDateTimeOffsetInfo] documentation for a detailed description.
+     *
+     * See [LocalDateTime.toInstant] together with [TransitionHandler] for a more streamlined way
+     * to handle a subset of this function's use cases.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoFor
+     */
+    public fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
+
+    /**
      * Equivalent to [id].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
@@ -276,19 +301,6 @@ public expect class FixedOffsetTimeZone : TimeZone {
 @Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
 public typealias ZoneOffset = FixedOffsetTimeZone
 
-/**
- * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
- *
- * **Pitfall**: the offset returned from this function should typically not be used for datetime arithmetics
- * because the offset can change over time due to daylight-saving-time transitions and other reasons.
- * Use [TimeZone] directly with arithmetic operations instead.
- *
- * @see Instant.toLocalDateTime
- * @see TimeZone.offsetAt
- * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetAt
- */
-public expect fun TimeZone.offsetAt(instant: Instant): UtcOffset
-
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
@@ -351,7 +363,7 @@ public fun kotlinx.datetime.Instant.toLocalDateTime(offset: UtcOffset): LocalDat
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetIn
  */
 public fun Instant.offsetIn(timeZone: TimeZone): UtcOffset =
-        timeZone.offsetAt(this)
+    timeZone.offsetAt(this)
 
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -455,18 +467,6 @@ public fun LocalDateTime.toInstant(
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.localDateTimeToInstantInFixedOffsetZone
  */
 public fun LocalDateTime.toInstant(timeZone: FixedOffsetTimeZone): Instant = toInstant(timeZone.offset)
-
-/**
- * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
- *
- * See the [LocalDateTimeOffsetInfo] documentation for a detailed description.
- *
- * See [LocalDateTime.toInstant] together with [TransitionHandler] for a more streamlined way
- * to handle a subset of this function's use cases.
- *
- * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoFor
- */
-public expect fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")

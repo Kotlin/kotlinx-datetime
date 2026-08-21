@@ -732,6 +732,8 @@ public class kotlinx/datetime/TimeZone {
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
+	public final fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
+	public final fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TransitionHandler;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
@@ -786,7 +788,6 @@ public final class kotlinx/datetime/TimeZoneKt {
 	public static final fun offsetAt (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/Instant;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetIn (Lkotlin/time/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
 	public static final fun offsetIn (Lkotlinx/datetime/Instant;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/UtcOffset;
-	public static final fun offsetInfoFor (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/FixedOffsetTimeZone;)Lkotlin/time/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;)Lkotlinx/datetime/Instant;
 	public static final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;

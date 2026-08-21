@@ -83,14 +83,14 @@ public actual open class TimeZone internal constructor() {
     )
 
     internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
-        instant.toLocalDateTimeImpl(offsetAtImpl(instant))
+        instant.toLocalDateTimeImpl(offsetAt(instant))
     } catch (e: IllegalArgumentException) {
         throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
     }
 
-    internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
+    public actual open fun offsetAt(instant: Instant): UtcOffset = error("Should be overridden")
 
-    internal open fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
+    public actual open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
 
     internal open fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset? = null): Instant =
         localDateTimeToInstantLenient(dateTime, this, TransitionHandler.USE_OFFSET_BEFORE, preferred)
@@ -114,9 +114,9 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
     override fun atStartOfDay(date: LocalDate): Instant =
         LocalDateTime(date, LocalTime.MIN).toInstant(offset)
 
-    override fun offsetAtImpl(instant: Instant): UtcOffset = offset
+    override fun offsetAt(instant: Instant): UtcOffset = offset
 
-    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         LocalDateTimeOffsetInfo.Regular(offset)
 
     override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
@@ -144,9 +144,9 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
     }
 }
 
-
-public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
-    offsetAtImpl(instant)
+@PublishedApi
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal fun TimeZone.offsetAt(instant: Instant): UtcOffset = offsetAt(instant) // member shadows the extension
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
     timeZone.instantToLocalDateTime(this)
@@ -180,7 +180,4 @@ public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: 
 
 internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
     timeZone.localDateTimeToInstant(this)
-
-public actual fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-    offsetInfoForImpl(dateTime)
 

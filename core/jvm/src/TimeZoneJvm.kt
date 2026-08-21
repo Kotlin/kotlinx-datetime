@@ -20,6 +20,11 @@ import kotlin.time.toKotlinInstant
 public actual open class TimeZone internal constructor(internal val zoneId: ZoneIdLike) {
     public actual val id: String get() = zoneId.id
 
+    public actual fun offsetAt(instant: Instant): UtcOffset =
+        zoneId.offsetAt(instant)
+
+    public actual fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        zoneId.offsetInfoFor(dateTime)
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
@@ -133,7 +138,10 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
     }
 }
 
-public actual fun TimeZone.offsetAt(instant: Instant): UtcOffset =
+// compatibility with 0.8.0
+@PublishedApi
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal fun TimeZone.offsetAt(instant: Instant): UtcOffset =
     zoneId.offsetAt(instant)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
@@ -163,9 +171,6 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     timeZone.zoneId.atStartOfDay(this)
-
-public actual fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-    zoneId.offsetInfoFor(dateTime)
 
 internal sealed interface ZoneIdLike {
     val id: String
@@ -224,10 +229,10 @@ internal sealed interface ZoneIdLike {
         override val id: String get() = zoneRules.id
 
         override fun offsetAt(instant: Instant): UtcOffset =
-            zoneRules.offsetAtImpl(instant)
+            zoneRules.offsetAt(instant)
 
         override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-            zoneRules.offsetInfoForImpl(dateTime)
+            zoneRules.offsetInfoFor(dateTime)
 
         override fun atStartOfDay(date: LocalDate): Instant {
             val ldt = LocalDateTime(date, LocalTime.MIN)

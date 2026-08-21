@@ -97,16 +97,16 @@ private object SystemTimeZone: TimeZone() {
     override val id: String get() = "SYSTEM"
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L21-L24 */
-    override fun offsetAtImpl(instant: Instant): UtcOffset =
+    override fun offsetAt(instant: Instant): UtcOffset =
         UtcOffset(minutes = -Date(instant.toEpochMilliseconds().toDouble()).getTimezoneOffset().toInt())
 
     // Assuming there are not going to be multiple transitions on the same day or transitions of 24 hours or longer
-    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
         val offsetGuess = Date(milliseconds = dateTime.toInstant(UTC).toEpochMilliseconds().toDouble())
             .getTimezoneOffset().toInt().let { UtcOffset(minutes = -it) }
         val instantGuess = dateTime.toInstant(offsetGuess)
-        val offsetBefore = offsetAtImpl(instantGuess - 24.hours)
-        val offsetAfter = offsetAtImpl(instantGuess + 24.hours)
+        val offsetBefore = offsetAt(instantGuess - 24.hours)
+        val offsetAfter = offsetAt(instantGuess + 24.hours)
         // No transitions (assuming no wild irregularities)
         if (offsetBefore == offsetAfter) return LocalDateTimeOffsetInfo.Regular(offsetGuess)
         // Binary search for the transition
@@ -114,7 +114,7 @@ private object SystemTimeZone: TimeZone() {
         var r = 24.hours.inWholeSeconds
         while (l != r) {
             val current = (l + r) / 2 // small values, no need for tricks
-            if (offsetAtImpl(instantGuess + current.seconds) == offsetBefore) {
+            if (offsetAt(instantGuess + current.seconds) == offsetBefore) {
                 l = current + 1
             } else {
                 r = current
@@ -182,4 +182,5 @@ internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZ
     override fun currentTimeZoneId(): String = currentTimeZoneIdImpl()
 }
 
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun currentTimeZoneIdImpl(): String = js("Intl.DateTimeFormat().resolvedOptions().timeZone")

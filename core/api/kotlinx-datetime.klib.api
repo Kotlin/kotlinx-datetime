@@ -458,6 +458,8 @@ final class kotlinx.datetime/FixedOffsetTimeZone : kotlinx.datetime/TimeZone { /
 
     final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/FixedOffsetTimeZone.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.hashCode|hashCode(){}[0]
+    final fun offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/FixedOffsetTimeZone.offsetAt|offsetAt(kotlin.time.Instant){}[0]
+    final fun offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/FixedOffsetTimeZone.offsetInfoFor|offsetInfoFor(kotlinx.datetime.LocalDateTime){}[0]
 
     final object Companion { // kotlinx.datetime/FixedOffsetTimeZone.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/FixedOffsetTimeZone> // kotlinx.datetime/FixedOffsetTimeZone.Companion.serializer|serializer(){}[0]
@@ -801,6 +803,8 @@ open class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
     final fun (kotlinx.datetime/LocalDateTime).toInstant(kotlinx.datetime/TransitionHandler, kotlinx.datetime/UtcOffset? = ...): kotlin.time/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TransitionHandler;kotlinx.datetime.UtcOffset?){}[0]
     open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/TimeZone.equals|equals(kotlin.Any?){}[0]
     open fun hashCode(): kotlin/Int // kotlinx.datetime/TimeZone.hashCode|hashCode(){}[0]
+    open fun offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/TimeZone.offsetAt|offsetAt(kotlin.time.Instant){}[0]
+    open fun offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/TimeZone.offsetInfoFor|offsetInfoFor(kotlinx.datetime.LocalDateTime){}[0]
     open fun toString(): kotlin/String // kotlinx.datetime/TimeZone.toString|toString(){}[0]
 
     final object Companion { // kotlinx.datetime/TimeZone.Companion|null[0]
@@ -1369,7 +1373,6 @@ final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/format(kotlinx.datetime.
 final fun (kotlinx.datetime/LocalTime.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> = ...): kotlinx.datetime/LocalTime? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.LocalTime.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalTime>){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlin.time.Instant){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlinx.datetime/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlinx.datetime.Instant){}[0]
-final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/offsetInfoFor|offsetInfoFor@kotlinx.datetime.TimeZone(kotlinx.datetime.LocalDateTime){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/asTimeZone(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/asTimeZone|asTimeZone@kotlinx.datetime.UtcOffset(){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.UtcOffset(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
 final fun (kotlinx.datetime/UtcOffset.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset> = ...): kotlinx.datetime/UtcOffset? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.UtcOffset.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
