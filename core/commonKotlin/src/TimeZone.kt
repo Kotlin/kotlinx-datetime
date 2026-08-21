@@ -88,8 +88,15 @@ public actual open class TimeZone internal constructor() {
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
 
     @Suppress("DEPRECATION_ERROR")
+    @Deprecated(
+        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
+    )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
-        localDateTimeToInstant(this)
+        toInstant(TransitionHandler.USE_OFFSET_BEFORE)
+
+    public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
+        this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
 
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -105,8 +112,9 @@ public actual open class TimeZone internal constructor() {
     internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
         toInstant(this@TimeZone).toDeprecatedInstant()
 
-    internal open fun atStartOfDay(date: LocalDate): Instant = error("Should be overridden") //value.atStartOfDay(date)
-    internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
+    internal open fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstantLenient(
+        LocalDateTime(date, LocalTime.MIN), this, TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
+    )
 
     internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
         instant.toLocalDateTimeImpl(offsetAtImpl(instant))
@@ -114,8 +122,12 @@ public actual open class TimeZone internal constructor() {
         throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
     }
 
+    internal open fun offsetAtImpl(instant: Instant): UtcOffset = error("Should be overridden")
+
+    internal open fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
+
     internal open fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset? = null): Instant =
-        error("Should be overridden")
+        localDateTimeToInstantLenient(dateTime, this, TransitionHandler.USE_OFFSET_BEFORE, preferred)
 
     actual override fun equals(other: Any?): Boolean =
         this === other || other is TimeZone && this.id == other.id
@@ -136,6 +148,9 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
         LocalDateTime(date, LocalTime.MIN).toInstant(offset)
 
     override fun offsetAtImpl(instant: Instant): UtcOffset = offset
+
+    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        LocalDateTimeOffsetInfo.Regular(offset)
 
     override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
         dateTime.toInstant(offset)
@@ -191,6 +206,9 @@ public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: Ov
 public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     timeZone.atStartOfDay(this)
 
+internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
+    timeZone.localDateTimeToInstant(this)
+
 private val lenientOffsetFormat = UtcOffsetFormat.build {
     alternativeParsing(
         {
@@ -214,6 +232,5 @@ private val lenientOffsetFormat = UtcOffsetFormat.build {
     }
 }
 
-internal actual fun localDateTimeToInstant(
-    dateTime: LocalDateTime, timeZone: TimeZone, preferred: UtcOffset?
-): Instant = timeZone.localDateTimeToInstant(dateTime, preferred)
+public actual fun TimeZone.offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+    offsetInfoForImpl(dateTime)

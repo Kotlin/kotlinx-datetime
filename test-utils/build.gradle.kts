@@ -4,11 +4,7 @@ import java.util.Locale
 
 plugins {
     id("kotlin-multiplatform")
-    kotlin("plugin.serialization")
-    id("org.jetbrains.kotlinx.kover")
 }
-
-val serializationVersion = project.property("serializationVersion")
 
 java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(project.property("mainJavaToolchainVersion") as String)) }
@@ -24,6 +20,7 @@ kotlin {
     linuxX64()
     linuxArm64()
     watchosSimulatorArm64()
+    watchosArm32()
     watchosArm64()
     tvosSimulatorArm64()
     tvosArm64()
@@ -54,14 +51,6 @@ kotlin {
     js {
         nodejs {
         }
-        compilations.all {
-            compileTaskProvider.configure {
-                compilerOptions {
-                    sourceMap = true
-                    moduleKind = JsModuleKind.MODULE_UMD
-                }
-            }
-        }
     }
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -88,31 +77,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":kotlinx-datetime"))
-            }
-        }
-
-        commonTest {
-            dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-test")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-            }
-        }
-
-        jsTest {
-            dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
-            }
-        }
-
-        wasmJsTest {
-            dependencies {
-                implementation(npm("@js-joda/timezone", "2.3.0"))
-            }
-        }
-
-        wasmWasiTest {
-            dependencies {
-                runtimeOnly(project(":kotlinx-datetime-zoneinfo"))
             }
         }
     }

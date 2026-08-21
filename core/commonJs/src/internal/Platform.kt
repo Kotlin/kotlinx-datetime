@@ -8,6 +8,8 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 private val tzdb: Result<TimeZoneDatabase?> = runCatching {
@@ -95,23 +97,46 @@ private val tzdb: Result<TimeZoneDatabase?> = runCatching {
 private object SystemTimeZone: TimeZone() {
     override val id: String get() = "SYSTEM"
 
-    /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/LocalDate.js#L1404-L1416 +
-    * https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L69-L71 */
-    override fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstant(date.atTime(LocalTime.MIN))
-
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L21-L24 */
     override fun offsetAtImpl(instant: Instant): UtcOffset =
         UtcOffset(minutes = -Date(instant.toEpochMilliseconds().toDouble()).getTimezoneOffset().toInt())
 
-    /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L49-L55 */
-    override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant {
-        val epochMilli = dateTime.toInstant(UTC).toEpochMilliseconds()
-        val offsetInMinutesBeforePossibleTransition = Date(epochMilli.toDouble()).getTimezoneOffset().toInt()
-        val epochMilliSystemZone = epochMilli +
-                offsetInMinutesBeforePossibleTransition * SECONDS_PER_MINUTE * MILLIS_PER_ONE
-        val offsetInMinutesAfterPossibleTransition = Date(epochMilliSystemZone.toDouble()).getTimezoneOffset().toInt()
-        val offset = UtcOffset(minutes = -offsetInMinutesAfterPossibleTransition)
-        return dateTime.toInstant(offset)
+    // Assuming there are not going to be multiple transitions on the same day or transitions of 24 hours or longer
+    override fun offsetInfoForImpl(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+        val offsetGuess = Date(milliseconds = dateTime.toInstant(UTC).toEpochMilliseconds().toDouble())
+            .getTimezoneOffset().toInt().let { UtcOffset(minutes = -it) }
+        val instantGuess = dateTime.toInstant(offsetGuess)
+        val offsetBefore = offsetAtImpl(instantGuess - 24.hours)
+        val offsetAfter = offsetAtImpl(instantGuess + 24.hours)
+        // No transitions (assuming no wild irregularities)
+        if (offsetBefore == offsetAfter) return LocalDateTimeOffsetInfo.Regular(offsetGuess)
+        // Binary search for the transition
+        var l = -(24.hours.inWholeSeconds)
+        var r = 24.hours.inWholeSeconds
+        while (l != r) {
+            val current = (l + r) / 2 // small values, no need for tricks
+            if (offsetAtImpl(instantGuess + current.seconds) == offsetBefore) {
+                l = current + 1
+            } else {
+                r = current
+            }
+        }
+        val transitionStart = instantGuess + l.seconds // first moment with `offsetAfter`
+        return if (offsetBefore.totalSeconds < offsetAfter.totalSeconds) {
+            // Gap
+            when {
+                dateTime < transitionStart.toLocalDateTime(offsetBefore) -> LocalDateTimeOffsetInfo.Regular(offsetBefore)
+                dateTime >= transitionStart.toLocalDateTime(offsetAfter) -> LocalDateTimeOffsetInfo.Regular(offsetAfter)
+                else -> LocalDateTimeOffsetInfo.Gap(transitionStart, offsetBefore, offsetAfter)
+            }
+        } else {
+            // Overlap
+            when {
+                dateTime < transitionStart.toLocalDateTime(offsetAfter) -> LocalDateTimeOffsetInfo.Regular(offsetAfter)
+                dateTime >= transitionStart.toLocalDateTime(offsetBefore) -> LocalDateTimeOffsetInfo.Regular(offsetBefore)
+                else -> LocalDateTimeOffsetInfo.Overlap(transitionStart, offsetBefore, offsetAfter)
+            }
+        }
     }
 
     override fun equals(other: Any?): Boolean = other === this

@@ -6,9 +6,13 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.testing.*
 import kotlin.test.*
+import kotlin.test.Test
 import kotlin.time.Instant
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.ExperimentalTime
 
 @OptIn(kotlin.time.ExperimentalTime::class)
 class TimezonesWithoutDatabaseTest {
@@ -27,6 +31,21 @@ class TimezonesWithoutDatabaseTest {
         val today = now.toLocalDateTime(tz).date
         assertEquals(today.atTime(0, 0).toInstant(tz), today.atStartOfDayIn(tz))
     }
+
+    // Run manually with Europe/Berlin
+    // Copy of `TimeZoneTest#checkKnownTimezoneDatabaseRecords`
+    @Ignore
+    @Test
+    fun systemCheckKnownTimezoneDatabaseRecords() {
+        with(TimeZone.currentSystemDefault()) {
+            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
+            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
+            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
+            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
+            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
+        }
+    }
+
 
     @Test
     fun utc() {
@@ -97,3 +116,4 @@ class TimezonesWithoutDatabaseTest {
     }
 
 }
+

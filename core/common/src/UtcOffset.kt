@@ -118,7 +118,7 @@ public expect class UtcOffset {
          * @see UtcOffset.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()): UtcOffset
+        public fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset> = Formats.ISO): UtcOffset
 
         /**
          * Creates a new format for parsing and formatting [UtcOffset] values.
@@ -232,7 +232,7 @@ public expect class UtcOffset {
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.parseOrNull
  */
 public expect fun UtcOffset.Companion.parseOrNull(
-    input: CharSequence, format: DateTimeFormat<UtcOffset> = getIsoUtcOffsetFormat()
+    input: CharSequence, format: DateTimeFormat<UtcOffset> = UtcOffset.Formats.ISO
 ): UtcOffset?
 
 /**
@@ -278,6 +278,3 @@ public fun UtcOffset(): UtcOffset = UtcOffset.ZERO
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.asFixedOffsetTimeZone
  */
 public fun UtcOffset.asTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(this)
-
-// workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoUtcOffsetFormat() = UtcOffset.Formats.ISO

@@ -45,10 +45,12 @@ The library provides a basic set of types for working with date and time:
 - `Month` and `DayOfWeek` enums;
 - `DateTimePeriod` to represent a difference between two instants decomposed into date and time units;
 - `DatePeriod` is a subclass of `DateTimePeriod` with zero time components,
-it represents a difference between two LocalDate values decomposed into date units.
-- `DateTimeUnit` provides a set of predefined date and time units to use in arithmetic operations
-  on `kotlin.time.Instant` and `LocalDate`.
-- `UtcOffset` represents the amount of time the local datetime at a particular time zone differs from the datetime at UTC.
+it represents a difference between two LocalDate values decomposed into date units;
+- `DateTimeUnit` to provide a set of predefined date and time units to use in arithmetic operations
+  on `kotlin.time.Instant` and `LocalDate`;
+- `UtcOffset` to represent the amount of time the local datetime at a particular time zone differs from the datetime at UTC;
+- `LocalDateTimeOffsetInfo` to represent an attempt at determining the UTC offset that was in effect
+  when the given wall-clock time was observed.
 
 ### Type use-cases
 
@@ -109,11 +111,25 @@ A `LocalDateTime` instance can be constructed from individual components:
 val kotlinReleaseDateTime = LocalDateTime(2016, 2, 15, 16, 57, 0, 0)
 ```
 
+### Guessing an instant from local date and time components
+
 An instant can be obtained from `LocalDateTime` by interpreting it as a time moment
 in a particular `TimeZone`:
 
 ```kotlin
-val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(TimeZone.of("UTC+3"))
+val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(
+    TimeZone.of("Europe/Moscow"),
+    TransitionHandler.REJECT_TRANSITIONS
+)
+```
+
+Various `TransitionHandler` values can be used to define what should happen if the date and time components
+correspond to several instants or none at all.
+
+For fixed-offset time zones, which don't have transitions, transition handlers are not required:
+
+```kotlin
+val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(UtcOffset(hours = 3).asTimeZone())
 ```
 
 ### Getting local date components
@@ -368,7 +384,7 @@ representation is needed.
 ```kotlin
 val timeZone = TimeZone.of("Europe/Berlin")
 val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
-val instant = localDateTime.toInstant(timeZone)
+val instant = localDateTime.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 val instantOneDayLater = instant.plus(1, DateTimeUnit.DAY, timeZone)
 val localDateTimeOneDayLater = instantOneDayLater.toLocalDateTime(timeZone)
@@ -448,7 +464,7 @@ Tips for fixing compilation errors:
     * `kotlinx.datetime.Instant.toStdlibInstant(): kotlin.time.Instant`
     * `kotlinx.datetime.Clock.toStdlibClock(): kotlin.time.Clock`
 
-> Compatibility releases will be published for all `0.7.x` versions of `kotlinx-datetime`, but not longer.
+> Compatibility releases will be published for versions up to `0.8.x` of `kotlinx-datetime`, but not longer.
 
 ### Gradle
 
@@ -553,7 +569,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2026b-spi.0.8.0")
+                implementation("kotlinx-datetime-zoneinfo", "2026c-spi.0.8.0")
             }
         }
     }
@@ -574,9 +590,9 @@ Add a dependency to the `<dependencies>` element. Note that you need to use the 
 
 ## Building
 
-The project requires JDK 8 to build classes and to run tests.
+The project requires JDK 17 to build classes and to run tests.
 Gradle will try to find it among the installed JDKs or [download](https://docs.gradle.org/current/userguide/toolchains.html#sec:provisioning) it automatically if it couldn't be found.
-The path to JDK 8 can be additionally specified with the environment variable `JDK_8`.
+The path to JDK 17 can be additionally specified with the environment variable `JDK_17_0`.
 For local builds, you can use a later version of JDK if you don't have that
 version installed. Specify the version of this JDK with the `java.mainToolchainVersion` Gradle property.
 

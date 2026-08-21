@@ -62,7 +62,9 @@ class LocalDateTimeTest {
         val ldt1 = LocalDateTime.parse("2019-10-01T18:43:15.100500")
         val ldt2 = LocalDateTime.parse("2019-10-01T19:50:00.500600")
 
-        val diff = with(TimeZone.UTC) { ldt2.toInstant() - ldt1.toInstant() }
+        val diff = with(TimeZone.UTC) {
+            ldt2.toInstant(TransitionHandler.REJECT_TRANSITIONS) - ldt1.toInstant(TransitionHandler.REJECT_TRANSITIONS)
+        }
         assertEquals(with(Duration) { 1.hours + 7.minutes - 15.seconds + 400100.microseconds }, diff)
         assertFailsWith<DateTimeArithmeticException> { (Instant.MAX - 3.days).toLocalDateTime(TimeZone.UTC) }
         assertFailsWith<DateTimeArithmeticException> { (Instant.MIN + 6.hours).toLocalDateTime(TimeZone.UTC) }
@@ -72,7 +74,9 @@ class LocalDateTimeTest {
     fun localDtToInstantConversionRespectsTimezones() {
         val ldt1 = LocalDateTime.parse("2011-03-26T04:00:00")
         val ldt2 = LocalDateTime.parse("2011-03-27T04:00:00")
-        val diff = with(TimeZone.of("Europe/Moscow")) { ldt2.toInstant() - ldt1.toInstant() }
+        val diff = with(TimeZone.of("Europe/Moscow")) {
+            ldt2.toInstant(TransitionHandler.REJECT_TRANSITIONS) - ldt1.toInstant(TransitionHandler.REJECT_TRANSITIONS)
+        }
         assertEquals(23.hours, diff)
     }
 

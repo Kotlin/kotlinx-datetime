@@ -81,6 +81,21 @@ abstract interface kotlinx.datetime/Clock { // kotlinx.datetime/Clock|null[0]
     }
 }
 
+abstract interface kotlinx.datetime/TransitionHandler { // kotlinx.datetime/TransitionHandler|null[0]
+    abstract fun resolveDateTime(kotlinx.datetime/LocalDateTime, kotlinx.datetime/LocalDateTimeOffsetInfo.Transition, kotlinx.datetime/UtcOffset?): kotlin.time/Instant // kotlinx.datetime/TransitionHandler.resolveDateTime|resolveDateTime(kotlinx.datetime.LocalDateTime;kotlinx.datetime.LocalDateTimeOffsetInfo.Transition;kotlinx.datetime.UtcOffset?){}[0]
+
+    final object Companion { // kotlinx.datetime/TransitionHandler.Companion|null[0]
+        final val FIND_EARLIEST_VALID_TIME // kotlinx.datetime/TransitionHandler.Companion.FIND_EARLIEST_VALID_TIME|{}FIND_EARLIEST_VALID_TIME[0]
+            final fun <get-FIND_EARLIEST_VALID_TIME>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.FIND_EARLIEST_VALID_TIME.<get-FIND_EARLIEST_VALID_TIME>|<get-FIND_EARLIEST_VALID_TIME>(){}[0]
+        final val REJECT_TRANSITIONS // kotlinx.datetime/TransitionHandler.Companion.REJECT_TRANSITIONS|{}REJECT_TRANSITIONS[0]
+            final fun <get-REJECT_TRANSITIONS>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.REJECT_TRANSITIONS.<get-REJECT_TRANSITIONS>|<get-REJECT_TRANSITIONS>(){}[0]
+        final val REQUIRE_RESOLVED // kotlinx.datetime/TransitionHandler.Companion.REQUIRE_RESOLVED|{}REQUIRE_RESOLVED[0]
+            final fun <get-REQUIRE_RESOLVED>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.REQUIRE_RESOLVED.<get-REQUIRE_RESOLVED>|<get-REQUIRE_RESOLVED>(){}[0]
+        final val USE_OFFSET_BEFORE // kotlinx.datetime/TransitionHandler.Companion.USE_OFFSET_BEFORE|{}USE_OFFSET_BEFORE[0]
+            final fun <get-USE_OFFSET_BEFORE>(): kotlinx.datetime/TransitionHandler // kotlinx.datetime/TransitionHandler.Companion.USE_OFFSET_BEFORE.<get-USE_OFFSET_BEFORE>|<get-USE_OFFSET_BEFORE>(){}[0]
+    }
+}
+
 sealed interface <#A: kotlin/Any?> kotlinx.datetime.format/DateTimeFormat { // kotlinx.datetime.format/DateTimeFormat|null[0]
     abstract fun <#A1: kotlin.text/Appendable> formatTo(#A1, #A): #A1 // kotlinx.datetime.format/DateTimeFormat.formatTo|formatTo(0:0;1:0){0§<kotlin.text.Appendable>}[0]
     abstract fun format(#A): kotlin/String // kotlinx.datetime.format/DateTimeFormat.format|format(1:0){}[0]
@@ -136,6 +151,62 @@ sealed interface kotlinx.datetime.format/DateTimeFormatBuilder { // kotlinx.date
         abstract fun year(kotlinx.datetime.format/Padding = ...) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.year|year(kotlinx.datetime.format.Padding){}[0]
         abstract fun yearMonth(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/YearMonth>) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.yearMonth|yearMonth(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.YearMonth>){}[0]
         abstract fun yearTwoDigits(kotlin/Int) // kotlinx.datetime.format/DateTimeFormatBuilder.WithYearMonth.yearTwoDigits|yearTwoDigits(kotlin.Int){}[0]
+    }
+}
+
+sealed interface kotlinx.datetime/LocalDateTimeOffsetInfo { // kotlinx.datetime/LocalDateTimeOffsetInfo|null[0]
+    sealed interface Transition : kotlinx.datetime/LocalDateTimeOffsetInfo { // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition|null[0]
+        abstract val offsetAfter // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.offsetAfter|{}offsetAfter[0]
+            abstract fun <get-offsetAfter>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.offsetAfter.<get-offsetAfter>|<get-offsetAfter>(){}[0]
+        abstract val offsetBefore // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.offsetBefore|{}offsetBefore[0]
+            abstract fun <get-offsetBefore>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.offsetBefore.<get-offsetBefore>|<get-offsetBefore>(){}[0]
+        abstract val transitionInstant // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.transitionInstant|{}transitionInstant[0]
+            abstract fun <get-transitionInstant>(): kotlin.time/Instant // kotlinx.datetime/LocalDateTimeOffsetInfo.Transition.transitionInstant.<get-transitionInstant>|<get-transitionInstant>(){}[0]
+    }
+
+    final class Gap : kotlinx.datetime/LocalDateTimeOffsetInfo.Transition { // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap|null[0]
+        constructor <init>(kotlin.time/Instant, kotlinx.datetime/UtcOffset, kotlinx.datetime/UtcOffset) // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.<init>|<init>(kotlin.time.Instant;kotlinx.datetime.UtcOffset;kotlinx.datetime.UtcOffset){}[0]
+
+        final val offsetAfter // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.offsetAfter|{}offsetAfter[0]
+            final fun <get-offsetAfter>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.offsetAfter.<get-offsetAfter>|<get-offsetAfter>(){}[0]
+        final val offsetBefore // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.offsetBefore|{}offsetBefore[0]
+            final fun <get-offsetBefore>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.offsetBefore.<get-offsetBefore>|<get-offsetBefore>(){}[0]
+        final val transitionInstant // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.transitionInstant|{}transitionInstant[0]
+            final fun <get-transitionInstant>(): kotlin.time/Instant // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.transitionInstant.<get-transitionInstant>|<get-transitionInstant>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.datetime/LocalDateTimeOffsetInfo.Gap.toString|toString(){}[0]
+    }
+
+    final class Overlap : kotlinx.datetime/LocalDateTimeOffsetInfo.Transition { // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap|null[0]
+        constructor <init>(kotlin.time/Instant, kotlinx.datetime/UtcOffset, kotlinx.datetime/UtcOffset) // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.<init>|<init>(kotlin.time.Instant;kotlinx.datetime.UtcOffset;kotlinx.datetime.UtcOffset){}[0]
+
+        final val offsetAfter // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.offsetAfter|{}offsetAfter[0]
+            final fun <get-offsetAfter>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.offsetAfter.<get-offsetAfter>|<get-offsetAfter>(){}[0]
+        final val offsetBefore // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.offsetBefore|{}offsetBefore[0]
+            final fun <get-offsetBefore>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.offsetBefore.<get-offsetBefore>|<get-offsetBefore>(){}[0]
+        final val transitionInstant // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.transitionInstant|{}transitionInstant[0]
+            final fun <get-transitionInstant>(): kotlin.time/Instant // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.transitionInstant.<get-transitionInstant>|<get-transitionInstant>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.datetime/LocalDateTimeOffsetInfo.Overlap.toString|toString(){}[0]
+    }
+
+    final class Regular : kotlinx.datetime/LocalDateTimeOffsetInfo { // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular|null[0]
+        constructor <init>(kotlinx.datetime/UtcOffset) // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.<init>|<init>(kotlinx.datetime.UtcOffset){}[0]
+
+        final val offset // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.offset|{}offset[0]
+            final fun <get-offset>(): kotlinx.datetime/UtcOffset // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.offset.<get-offset>|<get-offset>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.datetime/LocalDateTimeOffsetInfo.Regular.toString|toString(){}[0]
+    }
+
+    final object Companion { // kotlinx.datetime/LocalDateTimeOffsetInfo.Companion|null[0]
+        final fun Transition(kotlin.time/Instant, kotlinx.datetime/UtcOffset, kotlinx.datetime/UtcOffset): kotlinx.datetime/LocalDateTimeOffsetInfo.Transition // kotlinx.datetime/LocalDateTimeOffsetInfo.Companion.Transition|Transition(kotlin.time.Instant;kotlinx.datetime.UtcOffset;kotlinx.datetime.UtcOffset){}[0]
     }
 }
 
@@ -699,6 +770,7 @@ open class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
     final fun (kotlinx.datetime/Instant).toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/TimeZone.toLocalDateTime|toLocalDateTime@kotlinx.datetime.Instant(){}[0]
     final fun (kotlinx.datetime/LocalDateTime).toInstant(): kotlinx.datetime/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(){}[0]
     final fun (kotlinx.datetime/LocalDateTime).toInstant(kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.OverloadMarker){}[0]
+    final fun (kotlinx.datetime/LocalDateTime).toInstant(kotlinx.datetime/TransitionHandler, kotlinx.datetime/UtcOffset? = ...): kotlin.time/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TransitionHandler;kotlinx.datetime.UtcOffset?){}[0]
     open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/TimeZone.equals|equals(kotlin.Any?){}[0]
     open fun hashCode(): kotlin/Int // kotlinx.datetime/TimeZone.hashCode|hashCode(){}[0]
     open fun toString(): kotlin/String // kotlinx.datetime/TimeZone.toString|toString(){}[0]
@@ -1129,32 +1201,45 @@ final fun (kotlin.time/Clock).kotlinx.datetime/todayAt(kotlinx.datetime/TimeZone
 final fun (kotlin.time/Clock).kotlinx.datetime/todayIn(kotlinx.datetime/TimeZone): kotlinx.datetime/LocalDate // kotlinx.datetime/todayIn|todayIn@kotlin.time.Clock(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Duration).kotlinx.datetime/toDateTimePeriod(): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/toDateTimePeriod|toDateTimePeriod@kotlin.time.Duration(){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/daysUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/daysUntil|daysUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/daysUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Int // kotlinx.datetime/daysUntil|daysUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>, kotlinx.datetime/UtcOffset = ...): kotlin/String // kotlinx.datetime/format|format@kotlin.time.Instant(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>;kotlinx.datetime.UtcOffset){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin/Long // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Int, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlin/Long, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/minus(kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/minus|minus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/monthsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/monthsUntil|monthsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/monthsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Int // kotlinx.datetime/monthsUntil|monthsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/offsetIn(kotlinx.datetime/TimeZone): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetIn|offsetIn@kotlin.time.Instant(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/periodUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/periodUntil|periodUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/periodUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlinx.datetime/DateTimePeriod // kotlinx.datetime/periodUntil|periodUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Int, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Int, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Int, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Int;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Long, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Long, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlin/Long, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlin.Long;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimePeriod, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlinx.datetime.DateTimePeriod;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/plus(kotlinx.datetime/DateTimeUnit.TimeBased): kotlin.time/Instant // kotlinx.datetime/plus|plus@kotlin.time.Instant(kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/toDeprecatedInstant(): kotlinx.datetime/Instant // kotlinx.datetime/toDeprecatedInstant|toDeprecatedInstant@kotlin.time.Instant(){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/toLocalDateTime(kotlinx.datetime/TimeZone): kotlinx.datetime/LocalDateTime // kotlinx.datetime/toLocalDateTime|toLocalDateTime@kotlin.time.Instant(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/until(kotlin.time/Instant, kotlinx.datetime/DateTimeUnit.TimeBased): kotlin/Long // kotlinx.datetime/until|until@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.DateTimeUnit.TimeBased){}[0]
 final fun (kotlin.time/Instant).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone){}[0]
+final fun (kotlin.time/Instant).kotlinx.datetime/yearsUntil(kotlin.time/Instant, kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler = ...): kotlin/Int // kotlinx.datetime/yearsUntil|yearsUntil@kotlin.time.Instant(kotlin.time.Instant;kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler){}[0]
 final fun (kotlin.time/Instant.Companion).kotlinx.datetime/parse(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents>): kotlin.time/Instant // kotlinx.datetime/parse|parse@kotlin.time.Instant.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
 final fun (kotlin.time/Instant.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime.format/DateTimeComponents> = ...): kotlin.time/Instant? // kotlinx.datetime/parseOrNull|parseOrNull@kotlin.time.Instant.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.format.DateTimeComponents>){}[0]
 final fun (kotlin.time/TimeSource).kotlinx.datetime/asClock(kotlin.time/Instant): kotlin.time/Clock // kotlinx.datetime/asClock|asClock@kotlin.time.TimeSource(kotlin.time.Instant){}[0]
@@ -1240,8 +1325,10 @@ final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/reversed(): k
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Int, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Int;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
 final fun (kotlinx.datetime/LocalDateProgression).kotlinx.datetime/step(kotlin/Long, kotlinx.datetime/DateTimeUnit.DayBased): kotlinx.datetime/LocalDateProgression // kotlinx.datetime/step|step@kotlinx.datetime.LocalDateProgression(kotlin.Long;kotlinx.datetime.DateTimeUnit.DayBased){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.LocalDateTime(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
+final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/FixedOffsetTimeZone): kotlin.time/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.FixedOffsetTimeZone){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/TimeZone): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/TimeZone, kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone;kotlinx.datetime.OverloadMarker){}[0]
+final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/TimeZone, kotlinx.datetime/TransitionHandler, kotlinx.datetime/UtcOffset? = ...): kotlin.time/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.TimeZone;kotlinx.datetime.TransitionHandler;kotlinx.datetime.UtcOffset?){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/UtcOffset): kotlinx.datetime/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.UtcOffset){}[0]
 final fun (kotlinx.datetime/LocalDateTime).kotlinx.datetime/toInstant(kotlinx.datetime/UtcOffset, kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.UtcOffset;kotlinx.datetime.OverloadMarker){}[0]
 final fun (kotlinx.datetime/LocalDateTime.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalDateTime> = ...): kotlinx.datetime/LocalDateTime? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.LocalDateTime.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalDateTime>){}[0]
@@ -1254,6 +1341,7 @@ final fun (kotlinx.datetime/LocalTime).kotlinx.datetime/format(kotlinx.datetime.
 final fun (kotlinx.datetime/LocalTime.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/LocalTime> = ...): kotlinx.datetime/LocalTime? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.LocalTime.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.LocalTime>){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlin.time.Instant){}[0]
 final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetAt(kotlinx.datetime/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/offsetAt|offsetAt@kotlinx.datetime.TimeZone(kotlinx.datetime.Instant){}[0]
+final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/offsetInfoFor|offsetInfoFor@kotlinx.datetime.TimeZone(kotlinx.datetime.LocalDateTime){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/asTimeZone(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/asTimeZone|asTimeZone@kotlinx.datetime.UtcOffset(){}[0]
 final fun (kotlinx.datetime/UtcOffset).kotlinx.datetime/format(kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset>): kotlin/String // kotlinx.datetime/format|format@kotlinx.datetime.UtcOffset(kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]
 final fun (kotlinx.datetime/UtcOffset.Companion).kotlinx.datetime/parseOrNull(kotlin/CharSequence, kotlinx.datetime.format/DateTimeFormat<kotlinx.datetime/UtcOffset> = ...): kotlinx.datetime/UtcOffset? // kotlinx.datetime/parseOrNull|parseOrNull@kotlinx.datetime.UtcOffset.Companion(kotlin.CharSequence;kotlinx.datetime.format.DateTimeFormat<kotlinx.datetime.UtcOffset>){}[0]

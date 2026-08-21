@@ -8,9 +8,11 @@
 
 package kotlinx.datetime.test
 import kotlinx.datetime.*
+import kotlinx.datetime.testing.*
 import kotlin.test.*
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.time.Duration.Companion.nanoseconds
 
 class TimeZoneTest {
 
@@ -59,8 +61,8 @@ class TimeZoneTest {
                 continue
             }
             availableZones.add(zoneName)
-            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone)
-            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone)
+            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
+            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
         }
         if (nonAvailableZones.isNotEmpty()) {
             println("Available zones: $availableZones")
@@ -253,69 +255,3 @@ class TimeZoneTest {
 
 }
 
-/**
- * [gapStart] is the first non-existent moment.
- */
-private fun checkGap(timeZone: TimeZone, gapStart: LocalDateTime) {
-    val instant = gapStart.toInstant(timeZone)
-    /** the first [LocalDateTime] after the gap */
-    val adjusted = instant.toLocalDateTime(timeZone)
-    try {
-        // there is at least a one-second gap
-        assertNotEquals(gapStart, adjusted)
-        // the offsets before the gap are equal
-        assertEquals(
-            instant.offsetIn(timeZone),
-            instant.plus(1, DateTimeUnit.SECOND).offsetIn(timeZone))
-        // the offsets after the gap are equal
-        assertEquals(
-            instant.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
-            instant.minus(2, DateTimeUnit.SECOND).offsetIn(timeZone)
-        )
-    } catch (e: Throwable) {
-        throw Exception("Didn't find a gap at $gapStart for $timeZone", e)
-    }
-}
-
-/**
- * [overlapStart] is the first non-ambiguous date-time.
- */
-private fun checkOverlap(timeZone: TimeZone, overlapStart: LocalDateTime) {
-    // the earlier occurrence of the overlap
-    val instantStart = overlapStart.plusNominalSeconds(-1).toInstant(timeZone).plus(1, DateTimeUnit.SECOND)
-    // the later occurrence of the overlap
-    val instantEnd = overlapStart.plusNominalSeconds(1).toInstant(timeZone).minus(1, DateTimeUnit.SECOND)
-    assertEquals(instantEnd, overlapStart.toInstant(timeZone))
-    try {
-        // there is at least a one-second overlap
-        assertNotEquals(instantStart, instantEnd)
-        // the offsets before the overlap are equal
-        assertEquals(
-            instantStart.minus(1, DateTimeUnit.SECOND).offsetIn(timeZone),
-            instantStart.minus(2, DateTimeUnit.SECOND).offsetIn(timeZone)
-        )
-        // the offsets after the overlap are equal
-        assertEquals(
-            instantStart.offsetIn(timeZone),
-            instantEnd.offsetIn(timeZone)
-        )
-    } catch (e: Throwable) {
-        throw Exception("Didn't find an overlap at $overlapStart for $timeZone", e)
-    }
-}
-
-private fun checkRegular(timeZone: TimeZone, dateTime: LocalDateTime, offset: UtcOffset) {
-    val instant = dateTime.toInstant(timeZone)
-    assertEquals(offset, instant.offsetIn(timeZone))
-    try {
-        // not a gap:
-        assertEquals(dateTime, instant.toLocalDateTime(timeZone))
-        // not an overlap, or an overlap longer than one hour:
-        assertTrue(dateTime.plusNominalSeconds(3600) <= instant.plus(1, DateTimeUnit.HOUR).toLocalDateTime(timeZone))
-    } catch (e: Throwable) {
-        throw Exception("The date-time at $dateTime for $timeZone was in a gap or overlap", e)
-    }
-}
-
-private fun LocalDateTime.plusNominalSeconds(seconds: Int): LocalDateTime =
-    toInstant(UtcOffset.ZERO).plus(seconds, DateTimeUnit.SECOND).toLocalDateTime(UtcOffset.ZERO)

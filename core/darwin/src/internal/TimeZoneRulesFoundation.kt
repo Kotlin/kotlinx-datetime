@@ -9,6 +9,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.convert
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDateTimeOffsetInfo
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
@@ -36,7 +37,7 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
      * all platforms.
      */
     @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
-    override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
+    override fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo {
         val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
             ?.apply { timeZone = nsTimeZone }
 
@@ -59,19 +60,19 @@ internal class TimeZoneRulesFoundation(private val zoneId: String) : TimeZoneRul
             val ldtAfter = transitionDateTimeInstant.toLocalDateTime(offsetAfter)
 
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
-                OffsetInfo.Regular(offsetBefore)
+                LocalDateTimeOffsetInfo.Regular(offsetBefore)
             } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
                 offset = offsetAfter
                 currentDate = transitionDateTime
                 continue
             } else if (ldtAfter < ldtBefore) {
-                OffsetInfo.Overlap(transitionDateTimeInstant, offsetBefore, offsetAfter)
+                LocalDateTimeOffsetInfo.Overlap(transitionDateTimeInstant, offsetBefore, offsetAfter)
             } else {
-                OffsetInfo.Gap(transitionDateTimeInstant, offsetBefore, offsetAfter)
+                LocalDateTimeOffsetInfo.Gap(transitionDateTimeInstant, offsetBefore, offsetAfter)
             }
         } while (yearOfNextDate <= year)
 
-        return OffsetInfo.Regular(offset)
+        return LocalDateTimeOffsetInfo.Regular(offset)
     }
 
     @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)

@@ -7,6 +7,7 @@ package kotlinx.datetime.test
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.NANOS_PER_ONE
+import kotlinx.datetime.plus
 import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.*
@@ -81,7 +82,7 @@ class InstantTest {
             }
         }
 
-        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone)
+        val instant1 = LocalDateTime(2019, Month.OCTOBER, 27, 2, 59).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         checkComponents(instant1.toLocalDateTime(zone), 2019, 10, 27, 2, 59)
 
         val instant2 = instant1.plus(DateTimePeriod(hours = 24), zone)
@@ -119,6 +120,50 @@ class InstantTest {
         expectBetween(instant1, instant6, 23, DateTimeUnit.HOUR)
         expectBetween(instant1, instant6, 0, DateTimeUnit.DAY)
         assertEquals(instant1, instant6.minus(23, DateTimeUnit.HOUR, zone))
+    }
+
+    @Test
+    fun instantArithmeticRethrowsFailingTransitionHandlerExceptions() {
+        class MyHandler(val predefinedException: Throwable): TransitionHandler {
+            override fun resolveDateTime(
+                dateTime: LocalDateTime,
+                transition: LocalDateTimeOffsetInfo.Transition,
+                preferredOffset: UtcOffset?,
+            ): Instant = throw predefinedException
+        }
+        val predefinedExceptions = listOf(
+            IllegalArgumentException("test"),
+            IllegalStateException("test"),
+            IllegalTimeZoneException("test"),
+            DateTimeArithmeticException("test"),
+            ArithmeticException("test"),
+        )
+        val timeZone = TimeZone.of("Europe/Berlin")
+        val dayBeforeEndInstant = Instant.parse("2019-10-26T02:30:00+02:00")
+        val monthBeforeEndInstant = Instant.parse("2019-09-27T02:30:00+02:00")
+        val yearBeforeEndInstant = Instant.parse("2018-10-27T02:30:00+02:00")
+        // Trying to end up in 2019-10-27T02:30, which is an overlap
+        val endInstant = Instant.parse("2019-10-27T01:30:00+02:00")
+        for (exception in predefinedExceptions) {
+            val handler = MyHandler(exception)
+            fun test(block: () -> Unit) {
+                assertSame(exception, assertFails { block() })
+            }
+            test { dayBeforeEndInstant.plus(DateTimePeriod(days = 1), timeZone, handler) }
+            test { dayBeforeEndInstant.minus(DateTimePeriod(days = -1), timeZone, handler) }
+            test { dayBeforeEndInstant.periodUntil(endInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.until(endInstant, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.daysUntil(endInstant, timeZone, handler) }
+            test { monthBeforeEndInstant.monthsUntil(endInstant, timeZone, handler) }
+            test { yearBeforeEndInstant.yearsUntil(endInstant, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.plus(1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { dayBeforeEndInstant.minus(-1L, DateTimeUnit.DAY, timeZone, handler) }
+            test { endInstant.minus(dayBeforeEndInstant, DateTimeUnit.DAY, timeZone, handler) }
+        }
+
     }
 
     @Test
@@ -160,7 +205,7 @@ class InstantTest {
     @Test
     fun instantOffset() {
         val zone = TimeZone.of("Europe/Berlin")
-        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone)
+        val instant1 = LocalDateTime(2019, 10, 27, 2, 59, 0, 0).toInstant(zone, TransitionHandler.USE_OFFSET_BEFORE)
         val ldt1 = instant1.toLocalDateTime(zone)
         val offset1 = instant1.offsetIn(zone)
         checkComponents(ldt1, 2019, 10, 27, 2, 59)
@@ -196,8 +241,8 @@ class InstantTest {
         val tz = TimeZone.of("Europe/Berlin")
         // Same sign when the period is positive but smaller than the non-DST-aware date-based period
         assertPeriodSameSign(
-            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz).periodUntil(
-                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz), tz))
+            LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE).periodUntil(
+                LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE), tz))
         // Same sign when the period is negative but bigger than the non-DST-aware date-based period
         assertPeriodSameSign(
             Instant.parse("2025-07-27T00:59:00Z").periodUntil(
@@ -222,8 +267,8 @@ class InstantTest {
         val tz = TimeZone.of("Europe/Berlin")
         // No overshooting when the distance is positive but smaller than the non-DST-aware date-based distance
         run {
-            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz)
-            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz)
+            val i1 = LocalDateTime(2025, 3, 29, 2, 30).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
+            val i2 = LocalDateTime(2025, 3, 30, 3, 10).toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
             val distance = i1.until(i2, DateTimeUnit.DAY, tz)
             assertTrue(i2 > i1.plus(distance, DateTimeUnit.DAY, tz))
         }

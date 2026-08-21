@@ -199,7 +199,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
          * @see LocalDateTime.Companion.parseOrNull for a version of this function that returns `null` on faulty input.
          * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parsing
          */
-        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()): LocalDateTime
+        public fun parse(input: CharSequence, format: DateTimeFormat<LocalDateTime> = Formats.ISO): LocalDateTime
 
         /**
          * Creates a new format for parsing and formatting [LocalDateTime] values.
@@ -479,7 +479,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
  * @sample kotlinx.datetime.test.samples.LocalDateTimeSamples.parseOrNull
  */
 public expect fun LocalDateTime.Companion.parseOrNull(
-    input: CharSequence, format: DateTimeFormat<LocalDateTime> = getIsoDateTimeFormat()
+    input: CharSequence, format: DateTimeFormat<LocalDateTime> = LocalDateTime.Formats.ISO
 ): LocalDateTime?
 
 /**
@@ -543,6 +543,3 @@ public fun LocalDateTime.format(format: DateTimeFormat<LocalDateTime>): String =
  */
 @Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDateTime.parse(this)"), DeprecationLevel.WARNING)
 public fun String.toLocalDateTime(): LocalDateTime = LocalDateTime.parse(this)
-
-// A workaround for https://youtrack.jetbrains.com/issue/KT-65484
-internal fun getIsoDateTimeFormat() = LocalDateTime.Formats.ISO

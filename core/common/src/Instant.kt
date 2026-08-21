@@ -52,6 +52,11 @@ public fun Instant.Companion.parse(
  * Returns an instant that is the result of adding components of [DateTimePeriod] to this instant. The components are
  * added in the order from the largest units to the smallest, i.e., from years to nanoseconds.
  *
+ * If, after adding the date portion of the [period], the intermediate [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for the intermediate datetime.
+ *
  * - If the [DateTimePeriod] only contains time-based components, please consider adding a [Duration] instead,
  *   as in `Clock.System.now() + 5.hours`.
  *   Then, it will not be necessary to pass the [timeZone].
@@ -63,24 +68,37 @@ public fun Instant.Companion.parse(
  * [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusPeriod
  */
-public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = try {
-    with(period) {
-        val initialOffset = offsetIn(timeZone)
-        val ldtPlusDate = toLocalDateTimeFailing(initialOffset)
+// Added after 0.8.0
+public fun Instant.plus(
+    period: DateTimePeriod, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant = with(period) {
+    val initialOffset = offsetIn(timeZone)
+    val ldtPlusDate = try {
+        toLocalDateTimeFailing(initialOffset)
             .run { if (totalMonths != 0L) { plus(totalMonths, DateTimeUnit.MONTH) } else { this } }
             .run { if (days != 0) { this.plus(days, DateTimeUnit.DAY) } else { this } }
-        localDateTimeToInstant(ldtPlusDate, timeZone, preferred = initialOffset)
-            .run { if (totalNanoseconds != 0L) plus(totalNanoseconds.nanoseconds).check(timeZone) else this }
-    }.check(timeZone)
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding CalendarPeriod to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding CalendarPeriod", e)
-}
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding DateTimePeriod", e)
+    }
+    val instantBeforeAddingTimeBasedUnits = localDateTimeToInstantLenient(
+        ldtPlusDate, timeZone, onTransition, preferred = initialOffset
+    )
+    try {
+        instantBeforeAddingTimeBasedUnits
+            .run { if (totalNanoseconds != 0L) plus(totalNanoseconds.nanoseconds) else this }
+    } catch (e: IllegalArgumentException) {
+        throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding DateTimePeriod", e)
+    }
+}.check(timeZone)
 
 /**
  * Returns an instant that is the result of subtracting components of [DateTimePeriod] from this instant. The components
  * are subtracted in the order from the largest units to the smallest, i.e., from years to nanoseconds.
+ *
+ * If, after subtracting the date portion of the [period], the intermediate [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for the intermediate datetime.
  *
  * - If the [DateTimePeriod] only contains time-based components, please consider subtracting a [Duration] instead,
  *   as in `Clock.System.now() - 5.hours`.
@@ -93,22 +111,29 @@ public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant = t
  * [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusPeriod
  */
-public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+// Added after 0.8.0
+public fun Instant.minus(
+    period: DateTimePeriod, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant =
     /* An overflow can happen for any component, but we are only worried about nanoseconds, as having an overflow in
     any other component means that `plus` will throw due to the minimum value of the numeric type overflowing the
     `Instant` limits. */
     if (period.totalNanoseconds != Long.MIN_VALUE) {
         val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -totalNanoseconds) }
-        plus(negatedPeriod, timeZone)
+        plus(negatedPeriod, timeZone, onTransition)
     } else {
         val negatedPeriod = with(period) { buildDateTimePeriod(-totalMonths, -days, -(totalNanoseconds+1)) }
-        plus(negatedPeriod, timeZone).plus(1, DateTimeUnit.NANOSECOND)
+        plus(negatedPeriod, timeZone, onTransition).plus(1, DateTimeUnit.NANOSECOND)
     }
 
 /**
  * Returns a [DateTimePeriod] representing the difference between `this` and [other] instants.
  *
- * The components of [DateTimePeriod] are calculated so that adding it to `this` instant results in the [other] instant.
+ * The components of [DateTimePeriod] are calculated so that adding it to `this` instant
+ * with the same [onTransition] handler results in the [other] instant.
+ *
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to the [other] instant.
  *
  * All components of the [DateTimePeriod] returned are:
  * - Positive or zero if this instant is earlier than the other.
@@ -118,21 +143,34 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntil
  */
-public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod {
+// Added after 0.8.0
+public fun Instant.periodUntil(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): DateTimePeriod {
     val initialOffset = offsetIn(timeZone)
     val initialLdt = toLocalDateTimeFailing(initialOffset)
     val otherLdt = other.toLocalDateTimeFailing(timeZone)
-    val timeAfterAddingDate =
-        localDateTimeToInstant(otherLdt.date.atTime(initialLdt.time), timeZone, preferred = initialOffset)
+    val otherLdtDate = otherLdt.date
+    val timeAfterAddingDate = localDateTimeToInstantLenient(
+        otherLdtDate.atTime(initialLdt.time), timeZone, onTransition, preferred = initialOffset
+    )
     val delta = when {
         other > this && timeAfterAddingDate > other -> -1 // addition won't throw: end date - date >= 1
         other < this && timeAfterAddingDate < other -> 1 // addition won't throw: date - end date >= 1
         else -> 0
     }
-    val endDate = otherLdt.date.plus(delta, DateTimeUnit.DAY) // `endDate` is guaranteed to be valid
-    val unresolvedLdtWithDays = endDate.atTime(initialLdt.time)
-    val newInstant = localDateTimeToInstant(unresolvedLdtWithDays, timeZone, preferred = initialOffset)
-        // won't throw: thisLdt + days <= otherLdt
+    val endDate: LocalDate
+    val newInstant: Instant
+    if (delta == 0) {
+        endDate = otherLdtDate
+        newInstant = timeAfterAddingDate
+    } else {
+        endDate = otherLdt.date.plus(delta, DateTimeUnit.DAY) // `endDate` is guaranteed to be valid
+        val unresolvedLdtWithDays = endDate.atTime(initialLdt.time)
+        newInstant = localDateTimeToInstantLenient(
+            unresolvedLdtWithDays, timeZone, onTransition, preferred = initialOffset
+        ) // won't throw: thisLdt + days <= otherLdt
+    }
     val nanoseconds = newInstant.until(other, DateTimeUnit.NANOSECOND) // |otherLdt - thisLdt| < 24h
     val datePeriod = endDate - initialLdt.date
     return buildDateTimePeriod(datePeriod.totalMonths, datePeriod.days, nanoseconds)
@@ -141,6 +179,12 @@ public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeri
 /**
  * Returns the whole number of the specified date or time [units][unit] between `this` and [other] instants
  * in the specified [timeZone].
+ *
+ * The return value is calculated so that adding it to `this` instant
+ * with the same [unit] and the same [onTransition] handler results in the [other] instant.
+ *
+ * For [date-based units][DateTimeUnit.DateBased],
+ * [onTransition] can be invoked to account for possible transitions on the date of the [other] instant.
  *
  * The value returned is:
  * - Positive or zero if this instant is earlier than the other.
@@ -152,13 +196,20 @@ public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeri
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnit
  */
-public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+// Added after 0.8.0
+public fun Instant.until(
+    other: Instant,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Long =
     when (unit) {
         is DateTimeUnit.DateBased -> {
             val start = toLocalDateTimeFailing(timeZone)
             val end = other.toLocalDateTimeFailing(timeZone)
-            val timeAfterAddingDate =
-                localDateTimeToInstant(end.date.atTime(start.time), timeZone, preferred = this.offsetIn(timeZone))
+            val timeAfterAddingDate = localDateTimeToInstantLenient(
+                end.date.atTime(start.time), timeZone, onTransition, preferred = this.offsetIn(timeZone)
+            )
             val delta = when {
                 other > this && timeAfterAddingDate > other -> -1 // addition won't throw: end date - date >= 1
                 other < this && timeAfterAddingDate < other -> 1 // addition won't throw: date - end date >= 1
@@ -203,8 +254,10 @@ public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.daysUntil
  */
-public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
-        until(other, DateTimeUnit.DAY, timeZone).clampToInt()
+// Added after 0.8.0
+public fun Instant.daysUntil(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = until(other, DateTimeUnit.DAY, timeZone, onTransition).clampToInt()
 
 /**
  * Returns the number of whole months between two instants in the specified [timeZone].
@@ -215,8 +268,10 @@ public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.monthsUntil
  */
-public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
-        until(other, DateTimeUnit.MONTH, timeZone).clampToInt()
+// Added after 0.8.0
+public fun Instant.monthsUntil(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = until(other, DateTimeUnit.MONTH, timeZone, onTransition).clampToInt()
 
 /**
  * Returns the number of whole years between two instants in the specified [timeZone].
@@ -227,13 +282,19 @@ public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
  * @throws DateTimeArithmeticException if `this` or [other] instant is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.yearsUntil
  */
-public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
-        until(other, DateTimeUnit.YEAR, timeZone).clampToInt()
+// Added after 0.8.0
+public fun Instant.yearsUntil(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Int = until(other, DateTimeUnit.YEAR, timeZone, onTransition).clampToInt()
 
 /**
  * Returns a [DateTimePeriod] representing the difference between [other] and `this` instants.
  *
- * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant results in this instant.
+ * The components of [DateTimePeriod] are calculated so that adding it back to the `other` instant
+ * with the same [onTransition] handler results in this instant.
+ *
+ * [onTransition] is invoked on intermediate computations of date and time components required to compute the period,
+ * subject to the implementation, close to `this` instant.
  *
  * All components of the [DateTimePeriod] returned are:
  * - Negative or zero if this instant is earlier than the other.
@@ -244,8 +305,10 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * @see Instant.periodUntil
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstantInZone
  */
-public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
-        other.periodUntil(this, timeZone)
+// Added after 0.8.0
+public fun Instant.minus(
+    other: Instant, timeZone: TimeZone, onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): DateTimePeriod = other.periodUntil(this, timeZone, onTransition)
 
 
 /**
@@ -258,7 +321,7 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
  */
 @Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit, timeZone)"))
 public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(1L, unit, timeZone)
+    plus(1L, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 /**
  * Returns an instant that is the result of subtracting one [unit] from this instant
@@ -270,7 +333,7 @@ public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  */
 @Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit, timeZone)"))
 public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(-1, unit, timeZone)
+    plus(-1, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 /**
  * Returns an instant that is the result of adding one [unit] to this instant.
@@ -298,36 +361,55 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant
  * in the specified [timeZone].
  *
+ * When [unit] is [DateTimeUnit.DateBased] and the resulting [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for that datetime.
+ *
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * Note that the time zone and the transition handler do not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when adding date-based units to a [LocalDate][LocalDate.plus].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
-public fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(value.toLong(), unit, timeZone)
+// Added after 0.8.0
+public fun Instant.plus(
+    value: Int,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant =
+    plus(value.toLong(), unit, timeZone, onTransition)
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
  * in the specified [timeZone].
  *
+ * When [unit] is [DateTimeUnit.DateBased] and the resulting [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for that datetime.
+ *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * Note that the time zone and the transition handler do not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when subtracting date-based units from a [LocalDate].
- *
- * If the [value] is positive, the returned instant is earlier than this instant.
- * If the [value] is negative, the returned instant is later than this instant.
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
-public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
-    plus(-value.toLong(), unit, timeZone)
+// Added after 0.8.0
+public fun Instant.minus(
+    value: Int,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant =
+    plus(-value.toLong(), unit, timeZone, onTransition)
 
 /**
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant.
@@ -359,49 +441,72 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * Returns an instant that is the result of adding the [value] number of the specified [unit] to this instant
  * in the specified [timeZone].
  *
+ * When [unit] is [DateTimeUnit.DateBased] and the resulting [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for that datetime.
+ *
  * If the [value] is positive, the returned instant is later than this instant.
  * If the [value] is negative, the returned instant is earlier than this instant.
  *
- * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * Note that the time zone and the transition handler do not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when adding date-based units to a [LocalDate].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
-public fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant = try {
-    when (unit) {
-        is DateTimeUnit.DateBased -> {
-            val initialOffset = offsetIn(timeZone)
-            val initialLdt = toLocalDateTimeFailing(initialOffset)
-            localDateTimeToInstant(initialLdt.plus(value, unit), timeZone, preferred = initialOffset)
+// Added after 0.8.0
+public fun Instant.plus(
+    value: Long,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant = when (unit) {
+    is DateTimeUnit.DateBased -> {
+        val initialOffset = offsetIn(timeZone)
+        val initialLdt = toLocalDateTimeFailing(initialOffset)
+        val newLdt = try {
+            initialLdt.plus(value, unit)
+        } catch (e: IllegalArgumentException) {
+            throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
         }
-        is DateTimeUnit.TimeBased ->
-            check(timeZone).plus(value, unit).check(timeZone)
+        localDateTimeToInstantLenient(
+            newLdt, timeZone, onTransition, preferred = initialOffset
+        )
     }
-} catch (e: ArithmeticException) {
-    throw DateTimeArithmeticException("Arithmetic overflow when adding to an Instant", e)
-} catch (e: IllegalArgumentException) {
-    throw DateTimeArithmeticException("Boundaries of Instant exceeded when adding a value", e)
+    is DateTimeUnit.TimeBased ->
+        check(timeZone).plus(value, unit).check(timeZone)
 }
 
 /**
  * Returns an instant that is the result of subtracting the [value] number of the specified [unit] from this instant
  * in the specified [timeZone].
  *
+ * When [unit] is [DateTimeUnit.DateBased] and the resulting [LocalDateTime]
+ * corresponds to a [time transition][LocalDateTimeOffsetInfo.Transition], [onTransition] is invoked.
+ * The `preferredOffset` passed to [TransitionHandler.resolveDateTime] is the result of calling
+ * [offsetAt] with this [Instant] if it is valid for that datetime.
+ *
  * If the [value] is positive, the returned instant is earlier than this instant.
  * If the [value] is negative, the returned instant is later than this instant.
  *
- * Note that the time zone does not need to be passed when the [unit] is a time-based unit.
+ * Note that the time zone and the transition handler do not need to be passed when the [unit] is a time-based unit.
  * It is also not needed when subtracting date-based units from a [LocalDate].
  *
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
-public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+// Added after 0.8.0
+public fun Instant.minus(
+    value: Long,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Instant =
     if (value != Long.MIN_VALUE) {
-        plus(-value, unit, timeZone)
+        plus(-value, unit, timeZone, onTransition)
     } else {
-        plus(-(value + 1), unit, timeZone).plus(1, unit, timeZone)
+        plus(-(value + 1), unit, timeZone, onTransition).plus(1, unit, timeZone, onTransition)
     }
 
 /**
@@ -447,6 +552,12 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * Returns the whole number of the specified date or time [units][unit] between [other] and `this` instants
  * in the specified [timeZone].
  *
+ * The return value is calculated so that adding it to [other] instant
+ * with the same [unit] and the same [onTransition] handler results in `this` instant.
+ *
+ * For [date-based units][DateTimeUnit.DateBased],
+ * [onTransition] can be invoked to account for possible transitions on the date of `this` instant.
+ *
  * The value returned is negative or zero if this instant is earlier than the other,
  * and positive or zero if this instant is later than the other.
  *
@@ -456,8 +567,14 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * @see Instant.until for the same operation but with swapped arguments.
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusAsDateTimeUnit
  */
-public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
-        other.until(this, unit, timeZone)
+// Added after 0.8.0
+public fun Instant.minus(
+    other: Instant,
+    unit: DateTimeUnit,
+    timeZone: TimeZone,
+    onTransition: TransitionHandler = TransitionHandler.USE_OFFSET_BEFORE
+): Long =
+    other.until(this, unit, timeZone, onTransition)
 
 /**
  * Returns the whole number of the specified time [units][unit] between [other] and `this` instants.
@@ -546,3 +663,70 @@ private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =
 
 private fun LocalDateTime.plus(value: Int, unit: DateTimeUnit.DateBased) =
     date.plus(value, unit).atTime(time)
+
+// BINARY COMPATIBILITY
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+    plus(period, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
+    minus(period, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod =
+    periodUntil(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+    until(other, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
+    daysUntil(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
+    monthsUntil(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
+    yearsUntil(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
+    minus(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(value, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    minus(value, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    plus(value, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
+    minus(value, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+
+@PublishedApi
+@Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
+internal fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
+    minus(other, unit, timeZone, TransitionHandler.USE_OFFSET_BEFORE)

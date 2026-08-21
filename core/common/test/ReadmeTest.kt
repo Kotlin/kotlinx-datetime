@@ -33,7 +33,12 @@ class ReadmeTest {
 
         val kotlinReleaseDateTime = LocalDateTime(2016, 2, 15, 16, 57, 0, 0)
 
-        val kotlinReleaseInstant = kotlinReleaseDateTime.toInstant(TimeZone.of("UTC+3"))
+        val kotlinReleaseInstant1 = kotlinReleaseDateTime.toInstant(
+            TimeZone.of("Europe/Moscow"),
+            TransitionHandler.REJECT_TRANSITIONS
+        )
+        val kotlinReleaseInstant2 = kotlinReleaseDateTime.toInstant(UtcOffset(hours = 3).asTimeZone())
+        assertEquals(kotlinReleaseInstant1, kotlinReleaseInstant2)
     }
 
     @Test
@@ -196,7 +201,7 @@ class ReadmeTest {
     fun testDateTimeArithmetic() {
         val timeZone = TimeZone.of("Europe/Berlin")
         val localDateTime = LocalDateTime.parse("2021-03-27T02:16:20")
-        val instant = localDateTime.toInstant(timeZone)
+        val instant = localDateTime.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
         val instantOneDayLater = instant.plus(1, DateTimeUnit.DAY, timeZone)
         val localDateTimeOneDayLater = instantOneDayLater.toLocalDateTime(timeZone)

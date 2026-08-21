@@ -5,9 +5,7 @@
 
 package kotlinx.datetime.internal
 
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.UtcOffset
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import kotlin.math.*
 import kotlin.time.Instant
 
@@ -15,7 +13,7 @@ internal interface TimeZoneRules {
 
     fun infoAtInstant(instant: Instant): UtcOffset
 
-    fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo
+    fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo
 }
 
 internal class TimeZoneRulesCommon(
@@ -91,7 +89,7 @@ internal class TimeZoneRulesCommon(
         return offsets[index]
     }
 
-    override fun infoAtDatetime(localDateTime: LocalDateTime): OffsetInfo {
+    override fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo {
         if (recurringZoneRules != null && transitionLocalDateTimes.lastOrNull()?.let { localDateTime > it } != false) {
             return recurringZoneRules.infoAtLocalDateTime(localDateTime, offsets.last())
         }
@@ -102,7 +100,7 @@ internal class TimeZoneRulesCommon(
         }
         if (lastIndexNotBiggerThanLdt == -1) {
             // before the first transition
-            return OffsetInfo.Regular(offsets.first())
+            return LocalDateTimeOffsetInfo.Regular(offsets.first())
         }
         return if (lastIndexNotBiggerThanLdt % 2 == 0) {
             // inside a transition: after the smaller LDT but before the bigger one
@@ -115,15 +113,15 @@ internal class TimeZoneRulesCommon(
             offsetInfoForTransitionIndex(lastIndexNotBiggerThanLdt / 2 + 1)
         } else {
             // outside a transition
-            OffsetInfo.Regular(offsets[lastIndexNotBiggerThanLdt / 2 + 1])
+            LocalDateTimeOffsetInfo.Regular(offsets[lastIndexNotBiggerThanLdt / 2 + 1])
         }
     }
 
-    private fun offsetInfoForTransitionIndex(transitionIndex: Int): OffsetInfo {
+    private fun offsetInfoForTransitionIndex(transitionIndex: Int): LocalDateTimeOffsetInfo {
         val transitionInstant = Instant.fromEpochSeconds(transitionEpochSeconds[transitionIndex])
         val offsetBefore = offsets[transitionIndex]
         val offsetAfter = offsets[transitionIndex + 1]
-        return OffsetInfo(transitionInstant, offsetBefore, offsetAfter)
+        return LocalDateTimeOffsetInfo(transitionInstant, offsetBefore, offsetAfter)
     }
 
     override fun toString(): String = buildString {
@@ -190,24 +188,24 @@ internal class RecurringZoneRules(
      * and tzdb-based platforms compute the same results.  When you change logic here, reflect the
      * same change in [TimeZoneRulesCommon.infoAtDatetime].
      */
-    fun infoAtLocalDateTime(localDateTime: LocalDateTime, offsetAtYearStart: UtcOffset): OffsetInfo {
+    fun infoAtLocalDateTime(localDateTime: LocalDateTime, offsetAtYearStart: UtcOffset): LocalDateTimeOffsetInfo {
         val year = localDateTime.year
         var offset = offsetAtYearStart
         for (rule in rulesForYear(year)) {
             val ldtBefore = rule.transitionDateTime.toLocalDateTime(rule.offsetBefore)
             val ldtAfter = rule.transitionDateTime.toLocalDateTime(rule.offsetAfter)
             return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
-                OffsetInfo.Regular(rule.offsetBefore)
+                LocalDateTimeOffsetInfo.Regular(rule.offsetBefore)
             } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
                 offset = rule.offsetAfter
                 continue
             } else if (ldtAfter < ldtBefore) {
-                OffsetInfo.Overlap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
+                LocalDateTimeOffsetInfo.Overlap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
             } else {
-                OffsetInfo.Gap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
+                LocalDateTimeOffsetInfo.Gap(rule.transitionDateTime, rule.offsetBefore, rule.offsetAfter)
             }
         }
-        return OffsetInfo.Regular(offset)
+        return LocalDateTimeOffsetInfo.Regular(offset)
     }
 
     override fun toString(): String = rules.joinToString(", ")
