@@ -751,9 +751,9 @@ public class kotlinx/datetime/TimeZone {
 	public final fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public final fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
-	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
+	public final synthetic fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public static synthetic fun toInstant$default (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
-	public final fun toLocalDateTime (Lkotlin/time/Instant;)Lkotlinx/datetime/LocalDateTime;
+	public final synthetic fun toLocalDateTime (Lkotlin/time/Instant;)Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalDateTime (Lkotlinx/datetime/Instant;)Lkotlinx/datetime/LocalDateTime;
 	public fun toString ()Ljava/lang/String;
 }
