@@ -156,18 +156,11 @@ public expect open class TimeZone {
     }
 
     /**
-     * Return the civil datetime value that this instant has in the time zone provided as an implicit receiver.
-     *
-     * Note that while this conversion is unambiguous, the inverse ([LocalDateTime.toInstant])
-     * is not necessarily so.
-     *
-     * @see LocalDateTime.toInstant
-     * @see Instant.offsetIn
-     * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
+     * @suppress
      */
     @Deprecated(
         "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.HIDDEN,
     )
     public fun Instant.toLocalDateTime(): LocalDateTime
 
@@ -189,25 +182,13 @@ public expect open class TimeZone {
     public fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime
 
     /**
-     * Returns an instant that corresponds to this civil datetime value in the time zone provided as an implicit receiver.
-     *
-     * Note that the conversion is not always well-defined. There can be the following possible situations:
-     * - Only one instant has this datetime value in the time zone.
-     *   In this case, the conversion is unambiguous.
-     * - No instant has this datetime value in the time zone.
-     *   Such a situation appears when the time zone experiences a transition from a lesser to a greater offset.
-     *   In this case, the conversion is performed with the lesser (earlier) offset, as if the time gap didn't occur yet.
-     * - Two possible instants can have these datetime components in the time zone.
-     *   In this case, the earlier instant is returned.
-     *
-     * @see Instant.toLocalDateTime
+     * @suppress
      */
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
         "Explicitly pass a TransitionHandler to `toInstant` calls " +
                 "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
+        level = DeprecationLevel.HIDDEN,
     )
     public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
 

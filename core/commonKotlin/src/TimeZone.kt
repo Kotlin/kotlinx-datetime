@@ -53,7 +53,7 @@ public actual open class TimeZone internal constructor() {
 
     @Deprecated(
         "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.HIDDEN,
     )
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
 
@@ -61,7 +61,7 @@ public actual open class TimeZone internal constructor() {
     @Deprecated(
         "Explicitly pass a TransitionHandler to `toInstant` calls " +
                 "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.HIDDEN,
         replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
     )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
