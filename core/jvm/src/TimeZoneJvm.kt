@@ -149,7 +149,7 @@ public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
     timeZone.zoneId.instantToLocalDateTime(this)
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    java.time.LocalDateTime.ofInstant(this.toJavaInstant(), offset.zoneOffset).let(::LocalDateTime)
+    LocalDateTime(java.time.LocalDateTime.ofEpochSecond(epochSeconds, nanosecondsOfSecond, offset.zoneOffset))
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }

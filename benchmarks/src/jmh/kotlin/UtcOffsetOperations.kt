@@ -23,4 +23,8 @@ open class UtcOffsetOperations {
 
     @Benchmark
     fun localDateTimeToInstant() = dateTimeToday.toInstant(offset)
+
+    @Suppress("INVISIBLE_REFERENCE")
+    @Benchmark
+    fun instantToLocalDateTime() = instantToday.toLocalDateTime(offset)
 }
