@@ -144,7 +144,7 @@ class TimeZoneSamples {
     @Test
     fun offsetWithContextParameter() {
         // Getting the offset of a time zone at a specific instant
-        context(TimeZone.of("America/New_York")) {
+        context(TimeZoneContext.System.get("America/New_York")) {
             val instant = Instant.parse("2023-06-02T12:30:00Z")
             val offset = instant.offset()
             check(offset == UtcOffset(hours = -4))
@@ -239,7 +239,7 @@ class TimeZoneSamples {
     @Test
     fun atStartOfDayWithContextParameter() {
         // Finding the start of a given day in specific time zones
-        context(TimeZone.of("America/Cuiaba")) {
+        context(TimeZoneContext.System.get("America/Cuiaba")) {
             // The normal case where `atStartOfDay` returns the instant of 00:00:00 in the given time zone.
             val normalDate = LocalDate(2023, 6, 2)
             val startOfDay = normalDate.atStartOfDay()
@@ -279,7 +279,7 @@ class TimeZoneSamples {
 
     @Test
     fun offsetInfoWithContextParameter() {
-        context(TimeZone.of("Europe/Berlin")) {
+        context(TimeZoneContext.System.get("Europe/Berlin")) {
             val dateTimes = listOf(
                 LocalDateTime(2023, 6, 2, 12, 30), // regular
                 LocalDateTime(2023, 3, 26, 2, 30), // clocks moved forward: time gap

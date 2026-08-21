@@ -59,7 +59,7 @@ class ClockSamples {
         context(TimeZone.UTC) {
             check(clock.today() == LocalDate(2020, 1, 1))
         }
-        context(TimeZone.of("America/New_York")) {
+        context(TimeZoneContext.System.get("America/New_York")) {
             check(clock.today() == LocalDate(2019, 12, 31))
         }
     }
