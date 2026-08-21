@@ -146,7 +146,7 @@ internal fun TimeZone.offsetAt(instant: Instant): UtcOffset =
     zoneId.offsetAt(instant)
 
 public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    timeZone.zoneId.instantToLocalDateTime(this)
+    toLocalDateTime(timeZone.zoneId.offsetAt(this))
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
     LocalDateTime(java.time.LocalDateTime.ofEpochSecond(epochSeconds, nanosecondsOfSecond, offset.zoneOffset))
@@ -176,8 +176,6 @@ internal sealed interface ZoneIdLike {
 
     fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
-    fun instantToLocalDateTime(instant: Instant): LocalDateTime
-
     fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant
 
     class ActualZoneId(val actualZoneId: ZoneId) : ZoneIdLike {
@@ -199,12 +197,6 @@ internal sealed interface ZoneIdLike {
                     transition.offsetAfter.let(::UtcOffset),
                 )
             }
-        }
-
-        override fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
-            java.time.LocalDateTime.ofInstant(instant.toJavaInstant(), actualZoneId).let(::LocalDateTime)
-        } catch (e: DateTimeException) {
-            throw DateTimeArithmeticException(e)
         }
 
         override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
@@ -233,9 +225,6 @@ internal sealed interface ZoneIdLike {
                 TransitionHandler.USE_OFFSET_BEFORE,
                 preferred
             )
-
-        override fun instantToLocalDateTime(instant: Instant): LocalDateTime =
-            instant.toLocalDateTime(offsetAt(instant))
 
         override fun equals(other: Any?): Boolean = other is RuleBasedZoneId && zoneRules == other.zoneRules
         override fun hashCode(): Int = zoneRules.hashCode()
