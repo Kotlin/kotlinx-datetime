@@ -156,6 +156,3 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
 
-internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
-    timeZone.localDateTimeToInstant(this)
-

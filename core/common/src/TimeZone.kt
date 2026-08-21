@@ -436,28 +436,24 @@ public expect fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
  */
 public fun LocalDateTime.toInstant(
     timeZone: TimeZone, onTransition: TransitionHandler, utcOffset: UtcOffset? = null
-): Instant = if (onTransition === TransitionHandler.USE_OFFSET_BEFORE && utcOffset === null) {
-    optimizedToInstantOffsetBefore(timeZone)
-} else {
-    when (val offsetInfo = timeZone.offsetInfoFor(this)) {
-        is LocalDateTimeOffsetInfo.Regular -> {
-            require(utcOffset == null || utcOffset == offsetInfo.offset) {
-                "The supplied UTC offset $utcOffset did not match the actual UTC offset ${offsetInfo.offset} " +
-                    "at $this in the time zone $timeZone"
-            }
-            toInstant(offsetInfo.offset)
+): Instant = when (val offsetInfo = timeZone.offsetInfoFor(this)) {
+    is LocalDateTimeOffsetInfo.Regular -> {
+        require(utcOffset == null || utcOffset == offsetInfo.offset) {
+            "The supplied UTC offset $utcOffset did not match the actual UTC offset ${offsetInfo.offset} " +
+                "at $this in the time zone $timeZone"
         }
-        is LocalDateTimeOffsetInfo.Transition -> {
-            require(utcOffset == null || utcOffset == offsetInfo.offsetBefore || utcOffset == offsetInfo.offsetAfter) {
-                "The supplied UTC offset $utcOffset did not match any of the offset " +
-                    "surrounding the transition $offsetInfo at $this in the time zone $timeZone"
-            }
-            onTransition.resolveDateTime(
-                dateTime = this,
-                transition = offsetInfo,
-                preferredOffset = utcOffset,
-            )
+        toInstant(offsetInfo.offset)
+    }
+    is LocalDateTimeOffsetInfo.Transition -> {
+        require(utcOffset == null || utcOffset == offsetInfo.offsetBefore || utcOffset == offsetInfo.offsetAfter) {
+            "The supplied UTC offset $utcOffset did not match any of the offset " +
+                "surrounding the transition $offsetInfo at $this in the time zone $timeZone"
         }
+        onTransition.resolveDateTime(
+            dateTime = this,
+            transition = offsetInfo,
+            preferredOffset = utcOffset,
+        )
     }
 }
 
@@ -541,5 +537,3 @@ internal fun localDateTimeToInstantLenient(
         handler.resolveDateTime(dateTime, offsetInfo, actualPreferred)
     }
 }
-
-internal expect fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant
