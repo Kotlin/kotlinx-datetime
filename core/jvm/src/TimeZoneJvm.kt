@@ -184,16 +184,18 @@ internal sealed interface ZoneIdLike {
 
         override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
             val rules = actualZoneId.rules
-            val transition = rules.getTransition(dateTime.value)
-            return if (transition == null) {
-                LocalDateTimeOffsetInfo.Regular(rules.getOffset(dateTime.value).let(::UtcOffset))
-            } else {
-                LocalDateTimeOffsetInfo.Transition(
-                    transition.instant.toKotlinInstant(),
-                    transition.offsetBefore.let(::UtcOffset),
-                    transition.offsetAfter.let(::UtcOffset),
-                )
+            val validOffsets = rules.getValidOffsets(dateTime.value)
+            validOffsets.singleOrNull()?.let { offset ->
+                // fast path for the common case of only a single offset: we're making only one call to the Java API
+                return LocalDateTimeOffsetInfo.Regular(UtcOffset(offset))
             }
+            val transition = rules.getTransition(dateTime.value)
+            check(transition != null) { "Inconsistent reading: no transition at $dateTime, offsets: $validOffsets" }
+            return LocalDateTimeOffsetInfo.Transition(
+                transition.instant.toKotlinInstant(),
+                transition.offsetBefore.let(::UtcOffset),
+                transition.offsetAfter.let(::UtcOffset),
+            )
         }
 
         override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
