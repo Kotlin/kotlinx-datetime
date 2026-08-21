@@ -320,7 +320,11 @@ public fun TimeZone.offsetAt(instant: kotlinx.datetime.Instant): UtcOffset =
  * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.instantToLocalDateTime
  */
-public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
+public fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
+    toLocalDateTime(offsetIn(timeZone))
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Instant $this is not representable as LocalDateTime.", e)
+}
 
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",

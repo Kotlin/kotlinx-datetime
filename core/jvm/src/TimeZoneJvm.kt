@@ -145,9 +145,6 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
 internal fun TimeZone.offsetAt(instant: Instant): UtcOffset =
     zoneId.offsetAt(instant)
 
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    toLocalDateTime(timeZone.zoneId.offsetAt(this))
-
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
     LocalDateTime(java.time.LocalDateTime.ofEpochSecond(epochSeconds, nanosecondsOfSecond, offset.zoneOffset))
 } catch (e: DateTimeException) {

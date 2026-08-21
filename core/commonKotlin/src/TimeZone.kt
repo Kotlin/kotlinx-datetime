@@ -51,7 +51,7 @@ public actual open class TimeZone internal constructor() {
     public actual open val id: String
         get() = error("Should be overridden")
 
-    public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
+    public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
 
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
@@ -77,12 +77,6 @@ public actual open class TimeZone internal constructor() {
     @kotlin.internal.LowPriorityInOverloadResolution
     internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
         toInstant(this@TimeZone).toDeprecatedInstant()
-
-    internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
-        instant.toLocalDateTimeImpl(offsetAt(instant))
-    } catch (e: IllegalArgumentException) {
-        throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
-    }
 
     public actual open fun offsetAt(instant: Instant): UtcOffset = error("Should be overridden")
 
@@ -115,8 +109,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
     override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
         dateTime.toInstant(offset)
 
-    override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
-
     override fun equals(other: Any?): Boolean =
         this === other || other is FixedOffsetTimeZone && this.id == other.id
 
@@ -140,9 +132,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 @PublishedApi
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 internal fun TimeZone.offsetAt(instant: Instant): UtcOffset = offsetAt(instant) // member shadows the extension
-
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    timeZone.instantToLocalDateTime(this)
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
     toLocalDateTimeImpl(offset)
