@@ -18,14 +18,15 @@ import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
-public actual open class TimeZone internal constructor(internal val zoneId: ZoneIdLike) {
-    public actual val id: String get() = zoneId.id
+public actual open class TimeZone internal constructor() {
+    public actual open val id: String get() =
+        error("Should be overridden")
 
-    public actual fun offsetAt(instant: Instant): UtcOffset =
-        zoneId.offsetAt(instant)
+    public actual open fun offsetAt(instant: Instant): UtcOffset =
+        error("Should be overridden")
 
-    public actual fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        zoneId.offsetInfoFor(dateTime)
+    public actual open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        error("Should be overridden")
 
     // experimental member-extensions
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
@@ -56,11 +57,13 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         toInstant(this@TimeZone).toDeprecatedInstant()
 
     actual override fun equals(other: Any?): Boolean =
-            (this === other) || (other is TimeZone && this.zoneId == other.zoneId)
+        error("Should be overridden")
 
-    override fun hashCode(): Int = zoneId.hashCode()
+    override fun hashCode(): Int =
+        error("Should be overridden")
 
-    actual override fun toString(): String = zoneId.toString()
+    actual override fun toString(): String =
+        error("Should be overridden")
 
     public actual companion object {
         public actual val UTC: FixedOffsetTimeZone =
@@ -93,7 +96,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
             zoneId.isFixedOffset ->
                 FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId)
             else ->
-                TimeZone(ZoneIdLike.ActualZoneId(zoneId))
+                JvmTimeZone(zoneId)
         }
 
         @Deprecated(
@@ -117,8 +120,7 @@ private val ZoneId.isFixedOffset: Boolean
     }
 
 public actual class FixedOffsetTimeZone
-internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZone(ZoneIdLike.ActualZoneId(zoneId)) {
-
+internal constructor(public actual val offset: UtcOffset, internal val actualZoneId: ZoneId): TimeZone() {
     public actual constructor(offset: UtcOffset) : this(offset, offset.zoneOffset)
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
@@ -137,13 +139,27 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
         public actual fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
             FixedOffsetTimeZoneSerializer
     }
+
+    override val id: String
+        get() = actualZoneId.id
+
+    override fun offsetAt(instant: Instant): UtcOffset = offset
+
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        LocalDateTimeOffsetInfo.Regular(offset)
+
+    override fun equals(other: Any?): Boolean =
+        other is FixedOffsetTimeZone && actualZoneId == other.actualZoneId
+
+    override fun hashCode(): Int = actualZoneId.hashCode()
+
+    override fun toString(): String = actualZoneId.toString()
 }
 
 // compatibility with 0.8.0
 @PublishedApi
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-internal fun TimeZone.offsetAt(instant: Instant): UtcOffset =
-    zoneId.offsetAt(instant)
+internal fun TimeZone.offsetAt(instant: Instant): UtcOffset = offsetAt(instant)
 
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
     LocalDateTime(java.time.LocalDateTime.ofEpochSecond(epochSeconds, nanosecondsOfSecond, offset.zoneOffset))
@@ -163,53 +179,49 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.value.toEpochSecond(offset.zoneOffset), this.nanosecond)
 
-internal sealed interface ZoneIdLike {
-    val id: String
+internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
+    override val id: String
+        get() = actualZoneId.id
 
-    fun offsetAt(instant: Instant): UtcOffset
+    override fun offsetAt(instant: Instant): UtcOffset =
+        actualZoneId.rules.getOffset(instant.toJavaInstant()).let(::UtcOffset)
 
-    fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
-
-    class ActualZoneId(val actualZoneId: ZoneId) : ZoneIdLike {
-        override val id: String
-            get() = actualZoneId.id
-
-        override fun offsetAt(instant: Instant): UtcOffset =
-            actualZoneId.rules.getOffset(instant.toJavaInstant()).let(::UtcOffset)
-
-        override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
-            val rules = actualZoneId.rules
-            val validOffsets = rules.getValidOffsets(dateTime.value)
-            validOffsets.singleOrNull()?.let { offset ->
-                // fast path for the common case of only a single offset: we're making only one call to the Java API
-                return LocalDateTimeOffsetInfo.Regular(UtcOffset(offset))
-            }
-            val transition = rules.getTransition(dateTime.value)
-            check(transition != null) { "Inconsistent reading: no transition at $dateTime, offsets: $validOffsets" }
-            return LocalDateTimeOffsetInfo.Transition(
-                transition.instant.toKotlinInstant(),
-                transition.offsetBefore.let(::UtcOffset),
-                transition.offsetAfter.let(::UtcOffset),
-            )
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+        val rules = actualZoneId.rules
+        val validOffsets = rules.getValidOffsets(dateTime.value)
+        validOffsets.singleOrNull()?.let { offset ->
+            // fast path for the common case of only a single offset: we're making only one call to the Java API
+            return LocalDateTimeOffsetInfo.Regular(UtcOffset(offset))
         }
-
-        override fun equals(other: Any?): Boolean = other is ActualZoneId && actualZoneId == other.actualZoneId
-        override fun hashCode(): Int = actualZoneId.hashCode()
-        override fun toString(): String = actualZoneId.toString()
+        val transition = rules.getTransition(dateTime.value)
+        check(transition != null) { "Inconsistent reading: no transition at $dateTime, offsets: $validOffsets" }
+        return LocalDateTimeOffsetInfo.Transition(
+            transition.instant.toKotlinInstant(),
+            transition.offsetBefore.let(::UtcOffset),
+            transition.offsetAfter.let(::UtcOffset),
+        )
     }
 
-    class RuleBasedZoneId(
-        private val tzid: TimeZoneRules, override val id: String, val origin: Any?
-    ): ZoneIdLike {
-        override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+    override fun equals(other: Any?): Boolean =
+        other is JvmTimeZone && actualZoneId == other.actualZoneId
 
-        override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-            tzid.infoAtDatetime(dateTime)
+    override fun hashCode(): Int = actualZoneId.hashCode()
 
-        override fun equals(other: Any?): Boolean =
-            other is RuleBasedZoneId && id == other.id && origin == other.origin
+    override fun toString(): String = actualZoneId.toString()
+}
 
-        override fun hashCode(): Int = id.hashCode()
-        override fun toString(): String = id
-    }
+internal class RuleBasedTimeZone(
+    private val tzid: TimeZoneRules, override val id: String, val origin: Any?, overloadResolver: Unit
+): TimeZone() {
+    override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        tzid.infoAtDatetime(dateTime)
+
+    override fun equals(other: Any?): Boolean =
+        other is RuleBasedTimeZone && id == other.id && origin == other.origin
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = id
 }
