@@ -8,10 +8,10 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.RuleBasedTimeZone
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.TimeZoneDatabase
 import kotlinx.datetime.UtcOffset
-import kotlinx.datetime.ZoneIdLike
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneId.getAvailableZoneIds
@@ -42,7 +42,7 @@ internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZ
 }
 
 internal actual fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone =
-    TimeZone(ZoneIdLike.RuleBasedZoneId(tzid, id, origin))
+    RuleBasedTimeZone(tzid, id, origin, Unit)
 
 internal actual fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
     FixedOffsetTimeZone(offset, ZoneId.of(id))

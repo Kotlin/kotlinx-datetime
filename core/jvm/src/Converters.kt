@@ -74,9 +74,10 @@ public fun java.time.Period.toKotlinDatePeriod(): DatePeriod = DatePeriod(this.y
  * In that case, the [ZoneId.of] will be queried with the timezone identifier of the [TimeZone]
  * and may throw a [java.time.DateTimeException] if the timezone identifier is invalid or not supported.
  */
-public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this.zoneId) {
-    is ZoneIdLike.ActualZoneId -> this.zoneId.actualZoneId
-    is ZoneIdLike.RuleBasedZoneId -> java.time.ZoneId.of(this.id)
+public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this) {
+    is JvmTimeZone -> actualZoneId
+    is FixedOffsetTimeZone -> actualZoneId
+    else -> java.time.ZoneId.of(this.id)
 }
 
 /**
