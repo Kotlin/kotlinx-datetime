@@ -14,8 +14,6 @@ internal interface RuleBasedTimeZoneDatabase: TimeZoneDatabase {
     fun rulesForId(id: String): TimeZoneRulesCommon =
         rulesForIdOrNull(id) ?: throw IllegalTimeZoneException("Unknown time zone $id")
 
-    override fun get(id: String): TimeZone = RuleBasedTimeZoneCalculations(rulesForId(id), id, this).asTimeZone()
-    override fun getOrNull(id: String): TimeZone? = rulesForIdOrNull(id)?.let {
-        RuleBasedTimeZoneCalculations(it, id, this).asTimeZone()
-    }
+    override fun get(id: String): TimeZone = RuleBasedTimeZone(rulesForId(id), id, this)
+    override fun getOrNull(id: String): TimeZone? = rulesForIdOrNull(id)?.let { RuleBasedTimeZone(it, id, this) }
 }

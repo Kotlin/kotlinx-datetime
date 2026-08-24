@@ -8,8 +8,7 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.TransitionHandler
-import kotlinx.datetime.internal.RuleBasedTimeZoneCalculations
+import kotlinx.datetime.internal.TimeZoneRules
 import kotlinx.datetime.serializers.*
 import kotlinx.datetime.toInstant
 import java.time.DateTimeException
@@ -199,17 +198,18 @@ internal sealed interface ZoneIdLike {
         override fun toString(): String = actualZoneId.toString()
     }
 
-    class RuleBasedZoneId(private val zoneRules: RuleBasedTimeZoneCalculations): ZoneIdLike {
-        override val id: String get() = zoneRules.id
-
-        override fun offsetAt(instant: Instant): UtcOffset =
-            zoneRules.offsetAt(instant)
+    class RuleBasedZoneId(
+        private val tzid: TimeZoneRules, override val id: String, val origin: Any?
+    ): ZoneIdLike {
+        override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 
         override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-            zoneRules.offsetInfoFor(dateTime)
+            tzid.infoAtDatetime(dateTime)
 
-        override fun equals(other: Any?): Boolean = other is RuleBasedZoneId && zoneRules == other.zoneRules
-        override fun hashCode(): Int = zoneRules.hashCode()
+        override fun equals(other: Any?): Boolean =
+            other is RuleBasedZoneId && id == other.id && origin == other.origin
+
+        override fun hashCode(): Int = id.hashCode()
         override fun toString(): String = id
     }
 }
