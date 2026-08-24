@@ -41,7 +41,8 @@ internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZ
     override fun currentTimeZoneId(): String = systemDefault().id
 }
 
-internal actual fun RuleBasedTimeZoneCalculations.asTimeZone(): TimeZone = TimeZone(ZoneIdLike.RuleBasedZoneId(this))
+internal actual fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone =
+    TimeZone(ZoneIdLike.RuleBasedZoneId(tzid, id, origin))
 
 internal actual fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
     FixedOffsetTimeZone(offset, ZoneId.of(id))
