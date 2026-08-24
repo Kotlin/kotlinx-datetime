@@ -14,7 +14,7 @@ internal expect val timeZoneDatabaseImpl: TimeZoneDatabase
 internal expect fun currentSystemDefaultTimeZone(): TimeZone
 internal expect val systemTimeZoneIdProvider: TimeZoneIdProvider
 
-internal expect fun RuleBasedTimeZoneCalculations.asTimeZone(): TimeZone
+internal expect fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone
 internal expect fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone
 
 internal fun FixedOffsetTimeZone.Companion.withSpecificPrefix(offset: UtcOffset, prefix: String): FixedOffsetTimeZone =
