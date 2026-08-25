@@ -63,7 +63,7 @@ class TimeZoneSamples {
             val formattedTime = logTimeFormat.format {
                 context(TimeZoneContext.System.currentTimeZone()) {
                     setDateTime(now.toLocalDateTime())
-                    setOffset(contextOf<TimeZone>().offsetAt(now))
+                    setOffset(now.offset())
                 }
             }
             return "[$formattedTime] $message"
