@@ -125,6 +125,9 @@ class DateTimePeriodTest {
         assertFailsToParse<IllegalArgumentException>("P1Y9223372036854775805M")
         assertFailsToParse<IllegalArgumentException>("PT+-2H")
 
+        // overflow of `Int.MAX_VALUE` days when `weeks * 7` are overflowing an `Int`
+        assertFailsToParse<IllegalArgumentException>("P613566757W")
+
         // Failing parsing tests - DateTimeFormatException
         assertFailsToParse<DateTimeFormatException>("P3000000000Y")
         assertFailsToParse<DateTimeFormatException>("P3000000000M")

@@ -331,7 +331,7 @@ public sealed class DateTimePeriod {
                         parseException("Unexpected end of input; 'P' designator is required", i)
                     if (state == AFTER_T)
                         parseException("Unexpected end of input; at least one time component is required after 'T'", i)
-                    val daysTotal = when (val n = days.toLong() + weeks * 7) {
+                    val daysTotal = when (val n = days.toLong() + weeks.toLong() * 7) {
                         in Int.MIN_VALUE..Int.MAX_VALUE -> n.toInt()
                         else -> parseException("The total number of days under 'D' and 'W' designators should fit into an Int", 0)
                     }
