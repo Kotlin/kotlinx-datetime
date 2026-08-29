@@ -86,6 +86,31 @@ class LocalIsoWeekDateTest {
     }
 
     @Test
+    fun conversionAtTheEndsOfTheSupportedRange() {
+        val table = listOf(
+            LocalDate(YEAR_MIN, 1, 1) to "-999999999-W01-1",
+            LocalDate(YEAR_MIN, 12, 31) to "-999999998-W01-1",
+            LocalDate(YEAR_MAX - 1, 12, 31) to "+999999998-W53-4",
+            LocalDate(YEAR_MAX, 1, 1) to "+999999998-W53-5",
+            LocalDate(YEAR_MAX, 1, 3) to "+999999998-W53-7",
+            LocalDate(YEAR_MAX, 1, 4) to "+999999999-W01-1",
+            LocalDate(YEAR_MAX, 12, 31) to "+999999999-W52-5",
+        )
+        for ((date, weekDateString) in table) {
+            val weekDate = date.toLocalIsoWeekDate()
+            assertEquals(weekDateString, weekDate.toString())
+            assertEquals(date, weekDate.toLocalDate())
+            assertEquals(weekDate, LocalIsoWeekDate.parse(weekDateString))
+        }
+        for (date in LocalDate(YEAR_MIN, 1, 1)..LocalDate(YEAR_MIN, 12, 31)) {
+            assertEquals(date, date.toLocalIsoWeekDate().toLocalDate())
+        }
+        for (date in LocalDate(YEAR_MAX, 1, 1)..LocalDate(YEAR_MAX, 12, 31)) {
+            assertEquals(date, date.toLocalIsoWeekDate().toLocalDate())
+        }
+    }
+
+    @Test
     fun parsing() {
         fun checkComponents(weekDate: LocalIsoWeekDate, year: Int, week: Int, dayOfWeek: DayOfWeek) {
             assertEquals(year, weekDate.isoWeekYear)

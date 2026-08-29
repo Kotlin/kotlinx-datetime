@@ -432,8 +432,8 @@ public fun LocalDate.toLocalIsoWeekDate(): LocalIsoWeekDate {
             isoWeekYear = year - 1
             startOfIsoWeekYear(isoWeekYear)
         } else {
-            val nextYear = startOfIsoWeekYear(year + 1)
-            if (this >= nextYear) {
+            val nextYear = if (year < YEAR_MAX) startOfIsoWeekYear(year + 1) else null
+            if (nextYear != null && this >= nextYear) {
                 isoWeekYear = year + 1
                 nextYear
             } else {
