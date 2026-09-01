@@ -33,13 +33,6 @@ kotlin {
     watchosDeviceArm64()
     // Deprecated, preserved for KT-58864
     @Suppress("DEPRECATION") linuxArm32Hfp()
-    // Deprecated for removal: KT-78660
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    run {
-        macosX64()
-        watchosX64()
-        tvosX64()
-    }
 
     jvm {
         attributes {
