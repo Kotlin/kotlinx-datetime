@@ -57,7 +57,7 @@ public actual class Instant internal constructor(
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
         level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
+        replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     // org.threeten.bp.Instant#toEpochMilli
     public actual fun toEpochMilliseconds(): Long = try {

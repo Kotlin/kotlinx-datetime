@@ -42,7 +42,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
         level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
+        replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     public actual fun toEpochMilliseconds(): Long = try {
         value.toEpochMilli()

@@ -98,7 +98,7 @@ public expect class Instant : Comparable<Instant> {
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
         level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
+        replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     public fun toEpochMilliseconds(): Long
 
@@ -319,7 +319,7 @@ public val Instant.isDistantPast: Boolean
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
     level = DeprecationLevel.WARNING,
-    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlin.time.isDistantFuture")
+    replaceWith = ReplaceWith("this.toStdlibInstant().isDistantFuture", "kotlin.time.isDistantFuture")
 )
 public val Instant.isDistantFuture: Boolean
     get() = this >= Instant.DISTANT_FUTURE
