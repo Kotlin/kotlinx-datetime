@@ -114,6 +114,24 @@ class DateTimeFormatTest {
         }
     }
 
+    @OptIn(FormatStringsInDatetimeFormats::class)
+    @Test
+    fun testEscapedQuoteInUnicodePatternLiteral() {
+        val time = LocalTime(23, 53)
+        for ((pattern, expected) in listOf(
+            "'o''clock' HH:mm" to "o'clock 23:53",
+            "'''x' HH:mm" to "'x 23:53",
+            "'x''' HH:mm" to "x' 23:53",
+            "'a''''b' HH:mm" to "a''b 23:53",
+            "'' HH:mm" to "' 23:53",
+            "'''' HH:mm" to "' 23:53",
+        )) {
+            val format = LocalTime.Format { byUnicodePattern(pattern) }
+            assertEquals(expected, format.format(time), pattern)
+            assertEquals(time, format.parse(expected), pattern)
+        }
+    }
+
     @Test
     fun testParseStringWithNumbers() {
         val formats = listOf(
