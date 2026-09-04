@@ -48,11 +48,8 @@ kotlin {
                             }
                             group("darwin") {
                                 group("darwinDevices") {
-                                    withMacosX64()
                                     withMacosArm64()
-                                    withWatchosX64()
                                     withWatchosArm64()
-                                    withTvosX64()
                                     withTvosArm64()
                                     withIosArm64()
                                     withWatchosDeviceArm64()
@@ -143,13 +140,6 @@ kotlin {
     watchosDeviceArm64()
     // Deprecated, preserved for KT-58864
     @Suppress("DEPRECATION") linuxArm32Hfp()
-    // Deprecated for removal: KT-78660
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    run {
-        macosX64()
-        watchosX64()
-        tvosX64()
-    }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
