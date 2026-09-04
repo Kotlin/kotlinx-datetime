@@ -40,18 +40,11 @@ class UnicodeFormatTest {
             "yyyy_MM_dd_HH_mm_ss", "yyyy-MM-d 'at' HH:mm ", "yyyy:MM:dd HH:mm:ss",
             "yyyy年MM月dd日 HH:mm:ss", "yyyy年MM月dd日", "dd.MM.yyyy. HH:mm:ss", "ss", "ddMMyyyy",
             "yyyyMMdd'T'HHmmss'Z'", "yyyyMMdd'T'HHmmss", "yyyy-MM-dd'T'HH:mm:ssX",
-            // every supported UTC-offset directive, at every supported length.
-            // `x` alone is omitted: Java parses its own output "+0001" as just "+00", because the
-            // no-offset text of `x` is "+00" and it greedily matches that prefix.
-            "X", "XX", "XXX", "XXXX", "XXXXX",
-            "xx", "xxx", "xxxx", "xxxxx",
-            "Z", "ZZ", "ZZZ", "ZZZZZ",
         )
         val localizedPatterns = listOf(
             "MMMM", "hh:mm a", "h:mm a", "dd MMMM yyyy", "dd MMM yyyy", "yyyy-MM-dd hh:mm:ss", "d MMMM yyyy", "MMM",
             "MMM dd, yyyy", "dd-MMM-yyyy", "d MMM yyyy", "MMM yyyy", "MMMM yyyy", "EEE", "EEEE", "hh:mm:ss a",
             "d MMM uuuu HH:mm:ss ", "MMMM d, yyyy", "MMMM dd, yyyy", "yyyy-MM-dd HH:mm:ss z", "hh:mm", "MMM dd",
-            "ZZZZ", // localized GMT offset, same as `OOOO`
         )
         val unsupportedPatterns = listOf(
             "YYYY-MM-dd",
@@ -64,6 +57,32 @@ class UnicodeFormatTest {
                 }
             }
         }
+        for (pattern in localizedPatterns) {
+            val error = assertFailsWith<IllegalArgumentException> {
+                DateTimeComponents.Format {
+                    byUnicodePattern(pattern)
+                }
+            }
+            assertContains(error.message!!, "locale-dependent")
+        }
+        for (pattern in nonLocalizedPatterns) {
+            checkPattern(pattern)
+        }
+    }
+
+    @Test
+    fun testUtcOffsetFormats() {
+        // every supported UTC-offset directive, at every supported length.
+        // `x` alone is omitted: Java parses its own output "+0001" as just "+00", because the
+        // no-offset text of `x` is "+00" and it greedily matches that prefix.
+        val nonLocalizedPatterns = listOf(
+            "X", "XX", "XXX", "XXXX", "XXXXX",
+            "xx", "xxx", "xxxx", "xxxxx",
+            "Z", "ZZ", "ZZZ", "ZZZZZ",
+        )
+        val localizedPatterns = listOf(
+            "ZZZZ", // localized GMT offset, same as `OOOO`
+        )
         for (pattern in localizedPatterns) {
             val error = assertFailsWith<IllegalArgumentException> {
                 DateTimeComponents.Format {
