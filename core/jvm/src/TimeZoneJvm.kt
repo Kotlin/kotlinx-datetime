@@ -8,8 +8,6 @@
 
 package kotlinx.datetime
 
-import kotlinx.datetime.internal.TimeZoneRules
-import kotlinx.datetime.serializers.*
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
@@ -87,20 +85,4 @@ internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
     override fun hashCode(): Int = actualZoneId.hashCode()
 
     override fun toString(): String = actualZoneId.toString()
-}
-
-internal class RuleBasedTimeZone(
-    private val tzid: TimeZoneRules, override val id: String, val origin: Any?, overloadResolver: Unit
-): TimeZone() {
-    override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
-
-    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        tzid.infoAtDatetime(dateTime)
-
-    override fun equals(other: Any?): Boolean =
-        other is RuleBasedTimeZone && id == other.id && origin == other.origin
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = id
 }

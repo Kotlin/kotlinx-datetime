@@ -13,5 +13,3 @@ internal val systemTimezoneDatabase: TimeZoneDatabase =
 internal expect val timeZoneDatabaseImpl: TimeZoneDatabase
 internal expect fun currentSystemDefaultTimeZone(): TimeZone
 internal expect val systemTimeZoneIdProvider: TimeZoneIdProvider
-
-internal expect fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone
