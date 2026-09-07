@@ -172,15 +172,22 @@ internal sealed interface UnicodeFormat {
             var literal = ""
             var lastCharacter: Char? = null
             var lastCharacterCount = 0
-            for (character in pattern) {
+            var index = 0
+            while (index < pattern.length) {
+                val character = pattern[index++]
                 if (character == lastCharacter) {
                     ++lastCharacterCount
                 } else if (insideLiteral) {
-                    if (character == '\'') {
+                    if (character != '\'') {
+                        literal += character
+                    } else if (pattern.getOrNull(index) == '\'') {
+                        literal += '\''
+                        ++index
+                    } else {
                         groups.last()?.add(StringLiteral(literal.ifEmpty { "'" }))
                         insideLiteral = false
                         literal = ""
-                    } else literal += character
+                    }
                 } else {
                     if (lastCharacterCount > 0) {
                         groups.last()?.add(unicodeDirective(lastCharacter!!, lastCharacterCount))
