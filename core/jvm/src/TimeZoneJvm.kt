@@ -21,7 +21,7 @@ internal fun TimeZone.Companion.ofZone(zoneId: ZoneId): TimeZone = when {
     zoneId is jtZoneOffset ->
         FixedOffsetTimeZone(UtcOffset(zoneId))
     zoneId.isFixedOffset ->
-        FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId)
+        FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId.toString())
     else ->
         JvmTimeZone(zoneId)
 }
@@ -34,45 +34,6 @@ private val ZoneId.isFixedOffset: Boolean
     } catch (_: ArrayIndexOutOfBoundsException) {
         false // Happens for America/Costa_Rica, Africa/Cairo, Egypt
     }
-
-internal actual val UtcImpl: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, ZoneId.of("UTC"))
-
-public actual class FixedOffsetTimeZone
-internal constructor(public actual val offset: UtcOffset, internal val actualZoneId: ZoneId): TimeZone() {
-    public actual constructor(offset: UtcOffset) : this(offset, offset.zoneOffset)
-
-    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public actual val totalSeconds: Int get() = offset.totalSeconds
-
-    /** @suppress */
-    public actual companion object {
-        /** @suppress */
-        @Deprecated(
-            "Serializing FixedOffsetTimeZone is discouraged, " +
-                    "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
-                    "Please serialize the string id instead.",
-            level = DeprecationLevel.WARNING,
-        )
-        @Suppress("DEPRECATION")
-        public actual fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
-            FixedOffsetTimeZoneSerializer
-    }
-
-    override val id: String
-        get() = actualZoneId.id
-
-    override fun offsetAt(instant: Instant): UtcOffset = offset
-
-    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        LocalDateTimeOffsetInfo.Regular(offset)
-
-    override fun equals(other: Any?): Boolean =
-        other is FixedOffsetTimeZone && actualZoneId == other.actualZoneId
-
-    override fun hashCode(): Int = actualZoneId.hashCode()
-
-    override fun toString(): String = actualZoneId.toString()
-}
 
 // compatibility with 0.8.0
 @PublishedApi

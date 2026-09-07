@@ -12,42 +12,6 @@ import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
 import kotlin.time.Instant
 
-internal actual val UtcImpl: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
-
-public actual class FixedOffsetTimeZone internal constructor(public actual val offset: UtcOffset, override val id: String) : TimeZone() {
-
-    public actual constructor(offset: UtcOffset) : this(offset, offset.toString())
-
-    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public actual val totalSeconds: Int get() = offset.totalSeconds
-
-    override fun offsetAt(instant: Instant): UtcOffset = offset
-
-    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        LocalDateTimeOffsetInfo.Regular(offset)
-
-    override fun toString(): String = id
-
-    override fun equals(other: Any?): Boolean =
-        this === other || other is FixedOffsetTimeZone && this.id == other.id
-
-    override fun hashCode(): Int = id.hashCode()
-
-    /** @suppress */
-    public actual companion object {
-        /** @suppress */
-        @Deprecated(
-            "Serializing FixedOffsetTimeZone is discouraged, " +
-                    "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
-                    "Please serialize the string id instead.",
-            level = DeprecationLevel.WARNING,
-        )
-        @Suppress("DEPRECATION")
-        public actual fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
-            FixedOffsetTimeZoneSerializer
-    }
-}
-
 @PublishedApi
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 internal fun TimeZone.offsetAt(instant: Instant): UtcOffset = offsetAt(instant) // member shadows the extension

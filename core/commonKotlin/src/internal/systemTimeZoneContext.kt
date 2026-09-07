@@ -26,6 +26,3 @@ internal class RuleBasedTimeZone(
 
 internal actual fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone =
     RuleBasedTimeZone(tzid, id, origin, Unit)
-
-internal actual fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
-    FixedOffsetTimeZone(offset, id)

@@ -125,7 +125,7 @@ public open class TimeZone internal constructor() {
          *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.utc
          */
-        public val UTC: FixedOffsetTimeZone get() = UtcImpl
+        public val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
 
         /**
          * Equivalent to [TimeZoneContext.System.currentTimeZone].
@@ -214,7 +214,6 @@ public open class TimeZone internal constructor() {
         toInstant(this@TimeZone).toDeprecatedInstant()
 }
 
-internal expect val UtcImpl: FixedOffsetTimeZone
 
 /**
  * A time zone that is known to always have the same offset from UTC.
@@ -231,23 +230,36 @@ internal expect val UtcImpl: FixedOffsetTimeZone
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.casting
  */
-public expect class FixedOffsetTimeZone : TimeZone {
-    /**
-     * Constructs a time zone with the fixed [offset] from UTC.
-     *
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.constructorFunction
-     */
-    public constructor(offset: UtcOffset)
-
+public class FixedOffsetTimeZone internal constructor(
     /**
      * The constant offset from UTC that this time zone has.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.offset
      */
-    public val offset: UtcOffset
+    public val offset: UtcOffset,
+    override val id: String
+): TimeZone() {
+    /**
+     * Constructs a time zone with the fixed [offset] from UTC.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.constructorFunction
+     */
+    public constructor(offset: UtcOffset) : this(offset, offset.toString())
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public val totalSeconds: Int
+    public val totalSeconds: Int get() = offset.totalSeconds
+
+    override fun offsetAt(instant: Instant): UtcOffset = offset
+
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        LocalDateTimeOffsetInfo.Regular(offset)
+
+    override fun toString(): String = id
+
+    override fun equals(other: Any?): Boolean =
+        this === other || other is FixedOffsetTimeZone && this.id == other.id
+
+    override fun hashCode(): Int = id.hashCode()
 
     /** @suppress */
     public companion object {
@@ -258,7 +270,18 @@ public expect class FixedOffsetTimeZone : TimeZone {
                     "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
-        public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone>
+        @Suppress("DEPRECATION")
+        public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
+            FixedOffsetTimeZoneSerializer
+
+        internal fun withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
+            FixedOffsetTimeZone(offset, id)
+
+        internal fun withSpecificPrefix(offset: UtcOffset, prefix: String): FixedOffsetTimeZone =
+            when (offset.totalSeconds) {
+                0 -> withSpecificName(offset, prefix)
+                else -> withSpecificName(offset, "$prefix$offset")
+            }
     }
 }
 
