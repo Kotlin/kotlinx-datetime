@@ -239,6 +239,15 @@ class LocalDateSamples {
     }
 
     @Test
+    fun periodFrom() {
+        // Finding the period between two dates
+        val startDate = LocalDate(2023, Month.JANUARY, 2)
+        val endDate = LocalDate(2024, Month.APRIL, 1)
+        val period = endDate.periodFrom(startDate)
+        check(period == DatePeriod(years = 1, months = 2, days = 30))
+    }
+
+    @Test
     fun until() {
         // Measuring the difference between two dates in terms of the given unit
         val startDate = LocalDate(2023, Month.JANUARY, 2)

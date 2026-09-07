@@ -111,7 +111,7 @@ class InstantTest {
         val instant5 = instant1.plus(period, zone)
         checkComponents(instant5.toLocalDateTime(zone), 2019, 10, 28, 3, 59)
         assertEquals(period, instant1.periodUntil(instant5, zone))
-        assertEquals(period, instant5.minus(instant1, zone))
+        assertEquals(period, instant5.periodFrom(instant1, zone))
         assertEquals(26.hours, instant5.minus(instant1))
         assertEquals(instant1.plus(1, DateTimeUnit.HOUR), instant5.minus(period, zone))
 
@@ -156,7 +156,7 @@ class InstantTest {
             test { dayBeforeEndInstant.daysUntil(endInstant, timeZone, handler) }
             test { monthBeforeEndInstant.monthsUntil(endInstant, timeZone, handler) }
             test { yearBeforeEndInstant.yearsUntil(endInstant, timeZone, handler) }
-            test { endInstant.minus(dayBeforeEndInstant, timeZone, handler) }
+            test { endInstant.periodFrom(dayBeforeEndInstant, timeZone, handler) }
             test { dayBeforeEndInstant.plus(1, DateTimeUnit.DAY, timeZone, handler) }
             test { dayBeforeEndInstant.minus(-1, DateTimeUnit.DAY, timeZone, handler) }
             test { dayBeforeEndInstant.plus(1L, DateTimeUnit.DAY, timeZone, handler) }
@@ -355,13 +355,13 @@ class InstantTest {
         repeat(STRESS_TEST_ITERATIONS) {
             val millis1 = Random.nextLong(2_000_000_000_000L)
             val millis2 = Random.nextLong(2_000_000_000_000L)
-            with(TimeZone.UTC) TZ@ {
+            context(TimeZone.UTC) TZ@{
                 val date1 = Instant.fromEpochMilliseconds(millis1).toLocalDateTime().date
                 val date2 = Instant.fromEpochMilliseconds(millis2).toLocalDateTime().date
-                val instant1 = date1.atStartOfDayIn(this@TZ)
-                val instant2 = date2.atStartOfDayIn(this@TZ)
+                val instant1 = date1.atStartOfDayIn(contextOf<TimeZone>())
+                val instant2 = date2.atStartOfDayIn(contextOf<TimeZone>())
 
-                val diff1 = instant1.periodUntil(instant2, this@TZ)
+                val diff1 = instant1.periodUntil(instant2, contextOf<TimeZone>())
                 val diff2 = date1.periodUntil(date2)
 
                 if (diff1 != diff2)
