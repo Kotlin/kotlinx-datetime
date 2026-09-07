@@ -15,10 +15,3 @@ internal expect fun currentSystemDefaultTimeZone(): TimeZone
 internal expect val systemTimeZoneIdProvider: TimeZoneIdProvider
 
 internal expect fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone
-internal expect fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone
-
-internal fun FixedOffsetTimeZone.Companion.withSpecificPrefix(offset: UtcOffset, prefix: String): FixedOffsetTimeZone =
-    when (offset.totalSeconds) {
-        0 -> FixedOffsetTimeZone.withSpecificName(offset, prefix)
-        else -> FixedOffsetTimeZone.withSpecificName(offset, "$prefix$offset")
-    }
