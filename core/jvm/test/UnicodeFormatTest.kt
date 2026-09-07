@@ -80,6 +80,21 @@ class UnicodeFormatTest {
         checkPattern("yyyyDDDHHmm")
     }
 
+    @Test
+    fun testEscapedQuoteInLiteral() {
+        // '' inside a quoted literal is one apostrophe, as in java.time
+        for (pattern in listOf(
+            "'o''clock' HH:mm",
+            "'''x' HH:mm",
+            "'x''' HH:mm",
+            "'a''''b' HH:mm",
+            "'' HH:mm",
+            "'''' HH:mm",
+        )) {
+            checkPattern(pattern)
+        }
+    }
+
     private fun checkPattern(pattern: String) {
         val unicodeFormat = UnicodeFormat.parse(pattern)
         val directives = directivesInFormat(unicodeFormat)
