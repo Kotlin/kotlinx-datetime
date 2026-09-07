@@ -473,6 +473,8 @@ public operator fun LocalDate.minus(period: DatePeriod): LocalDate =
 public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
 
 /**
+ * Equivalent to `this.periodFrom(other)`, but in an operator form.
+ *
  * Returns a [DatePeriod] representing the difference between [other] and `this` dates.
  *
  * The components of [DatePeriod] are calculated so that adding it back to the `other` date results in this date.
@@ -486,6 +488,22 @@ public expect fun LocalDate.periodUntil(other: LocalDate): DatePeriod
  * @sample kotlinx.datetime.test.samples.LocalDateSamples.minusDate
  */
 public operator fun LocalDate.minus(other: LocalDate): DatePeriod = other.periodUntil(this)
+
+/**
+ * Returns a [DatePeriod] representing the difference between [other] and `this` dates.
+ *
+ * The components of [DatePeriod] are calculated so that adding it back to the `other` date results in this date.
+ *
+ * All components of the [DatePeriod] returned are:
+ * - Negative or zero if this date is earlier than the other.
+ * - Positive or zero if this date is later than the other.
+ * - Exactly zero if this date is equal to the other.
+ *
+ * @see LocalDate.minus for an operator with the same effect.
+ * @see LocalDate.periodUntil for the same operation with the order of arguments reversed.
+ * @sample kotlinx.datetime.test.samples.LocalDateSamples.periodFrom
+ */
+public fun LocalDate.periodFrom(other: LocalDate): DatePeriod = other.periodUntil(this)
 
 /**
  * Returns the whole number of the specified date [units][unit] between `this` and [other] dates.
