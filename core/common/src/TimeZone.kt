@@ -9,6 +9,7 @@
 package kotlinx.datetime
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.serializers.*
 import kotlin.time.Instant
 
 /**
@@ -56,7 +57,7 @@ import kotlin.time.Instant
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
-public expect open class TimeZone {
+public open class TimeZone internal constructor() {
     /**
      * Returns the identifier string of the time zone.
      *
@@ -64,7 +65,8 @@ public expect open class TimeZone {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.id
      */
-    public val id: String
+    public open val id: String
+        get() = error("Should be overridden")
 
     /**
      * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
@@ -77,7 +79,8 @@ public expect open class TimeZone {
      * @see TimeZone.offsetAt
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetAt
      */
-    public fun offsetAt(instant: Instant): UtcOffset
+    public open fun offsetAt(instant: Instant): UtcOffset =
+        error("Should be overridden")
 
     /**
      * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
@@ -89,14 +92,16 @@ public expect open class TimeZone {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoFor
      */
-    public fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
+    public open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
+        error("Should be overridden")
 
     /**
      * Equivalent to [id].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
-    public override fun toString(): String
+    public override fun toString(): String =
+        error("Should be overridden")
 
     /**
      * Compares this time zone to the other one.
@@ -106,7 +111,11 @@ public expect open class TimeZone {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
-    public override fun equals(other: Any?): Boolean
+    public override fun equals(other: Any?): Boolean =
+        error("Should be overridden")
+
+    public override fun hashCode(): Int =
+        error("Should be overridden")
 
     public companion object {
         /**
@@ -116,7 +125,7 @@ public expect open class TimeZone {
          *
          * @sample kotlinx.datetime.test.samples.TimeZoneSamples.utc
          */
-        public val UTC: FixedOffsetTimeZone
+        public val UTC: FixedOffsetTimeZone get() = UtcImpl
 
         /**
          * Equivalent to [TimeZoneContext.System.currentTimeZone].
@@ -125,7 +134,8 @@ public expect open class TimeZone {
             "Use TimeZoneContext.System.currentTimeZone instead",
             ReplaceWith("TimeZoneContext.System.currentTimeZone()")
         )
-        public fun currentSystemDefault(): TimeZone
+        public fun currentSystemDefault(): TimeZone =
+            TimeZoneContext.System.currentTimeZone()
 
         /**
          * Equivalent to [TimeZoneContext.System.get].
@@ -134,7 +144,8 @@ public expect open class TimeZone {
             "Use TimeZoneContext.System.get instead",
             ReplaceWith("TimeZoneContext.System.get(zoneId)")
         )
-        public fun of(zoneId: String): TimeZone
+        public fun of(zoneId: String): TimeZone =
+            TimeZoneContext.System.get(zoneId)
 
         /**
          * Equivalent to [TimeZoneContext.System.availableZoneIds].
@@ -143,7 +154,8 @@ public expect open class TimeZone {
             "Use TimeZoneContext.System.availableZoneIds instead",
             ReplaceWith("TimeZoneContext.System.availableZoneIds()")
         )
-        public val availableZoneIds: Set<String>
+        public val availableZoneIds: Set<String> get() =
+            TimeZoneContext.System.availableZoneIds()
 
         /** @suppress */
         @Deprecated(
@@ -152,7 +164,9 @@ public expect open class TimeZone {
                     "Please serialize the string id instead.",
             level = DeprecationLevel.WARNING,
         )
-        public fun serializer(): kotlinx.serialization.KSerializer<TimeZone>
+        @Suppress("DEPRECATION")
+        public fun serializer(): kotlinx.serialization.KSerializer<TimeZone> =
+            TimeZoneSerializer
     }
 
     /**
@@ -162,7 +176,7 @@ public expect open class TimeZone {
         "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
         level = DeprecationLevel.HIDDEN,
     )
-    public fun Instant.toLocalDateTime(): LocalDateTime
+    public fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
 
     /**
      * Return the civil datetime value that this instant has in the time zone provided as an implicit receiver.
@@ -179,7 +193,7 @@ public expect open class TimeZone {
         level = DeprecationLevel.WARNING,
         replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
     )
-    public fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime
+    public fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime = toStdlibInstant().toLocalDateTime()
 
     /**
      * @suppress
@@ -190,13 +204,17 @@ public expect open class TimeZone {
                 "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
         level = DeprecationLevel.HIDDEN,
     )
-    public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+    public fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant =
+        toInstant(this@TimeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
     @PublishedApi
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
     @kotlin.internal.LowPriorityInOverloadResolution
-    internal fun LocalDateTime.toInstant(): kotlinx.datetime.Instant
+    internal fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
+        toInstant(this@TimeZone).toDeprecatedInstant()
 }
+
+internal expect val UtcImpl: FixedOffsetTimeZone
 
 /**
  * A time zone that is known to always have the same offset from UTC.
@@ -607,4 +625,3 @@ internal fun localDateTimeToInstantLenient(
         handler.resolveDateTime(dateTime, offsetInfo, actualPreferred)
     }
 }
-

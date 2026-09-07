@@ -138,6 +138,8 @@ private object SystemTimeZone: TimeZone() {
         }
     }
 
+    override fun toString(): String = "SYSTEM"
+
     override fun equals(other: Any?): Boolean = other === this
 
     override fun hashCode(): Int = id.hashCode()
