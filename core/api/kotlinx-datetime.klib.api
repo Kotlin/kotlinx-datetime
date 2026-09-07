@@ -460,6 +460,7 @@ final class kotlinx.datetime/FixedOffsetTimeZone : kotlinx.datetime/TimeZone { /
     final fun hashCode(): kotlin/Int // kotlinx.datetime/FixedOffsetTimeZone.hashCode|hashCode(){}[0]
     final fun offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/FixedOffsetTimeZone.offsetAt|offsetAt(kotlin.time.Instant){}[0]
     final fun offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/FixedOffsetTimeZone.offsetInfoFor|offsetInfoFor(kotlinx.datetime.LocalDateTime){}[0]
+    final fun toString(): kotlin/String // kotlinx.datetime/FixedOffsetTimeZone.toString|toString(){}[0]
 
     final object Companion { // kotlinx.datetime/FixedOffsetTimeZone.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/FixedOffsetTimeZone> // kotlinx.datetime/FixedOffsetTimeZone.Companion.serializer|serializer(){}[0]
