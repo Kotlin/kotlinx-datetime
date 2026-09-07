@@ -578,7 +578,7 @@ internal sealed interface UnicodeFormat {
                     when (formatLength) {
                         1, 2, 3 -> builder.offset(zOnZero = false, useSeparator = false)
                         4 -> LocalizedZoneOffset(4).addToFormat(builder)
-                        5 -> builder.offset(zOnZero = false, useSeparator = true)
+                        5 -> builder.offset(zOnZero = true, useSeparator = true)
                         else -> unknownLength()
                     }
                 }

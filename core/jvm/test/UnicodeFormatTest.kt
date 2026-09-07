@@ -71,6 +71,32 @@ class UnicodeFormatTest {
     }
 
     @Test
+    fun testUtcOffsetFormats() {
+        // every supported UTC-offset directive, at every supported length.
+        // `x` alone is omitted: Java parses its own output "+0001" as just "+00", because the
+        // no-offset text of `x` is "+00" and it greedily matches that prefix.
+        val nonLocalizedPatterns = listOf(
+            "X", "XX", "XXX", "XXXX", "XXXXX",
+            "xx", "xxx", "xxxx", "xxxxx",
+            "Z", "ZZ", "ZZZ", "ZZZZZ",
+        )
+        val localizedPatterns = listOf(
+            "ZZZZ", // localized GMT offset, same as `OOOO`
+        )
+        for (pattern in localizedPatterns) {
+            val error = assertFailsWith<IllegalArgumentException> {
+                DateTimeComponents.Format {
+                    byUnicodePattern(pattern)
+                }
+            }
+            assertContains(error.message!!, "locale-dependent")
+        }
+        for (pattern in nonLocalizedPatterns) {
+            checkPattern(pattern)
+        }
+    }
+
+    @Test
     fun testOptionalSection() {
         checkPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS]X")
     }
