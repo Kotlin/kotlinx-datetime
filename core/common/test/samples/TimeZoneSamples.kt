@@ -61,9 +61,9 @@ class TimeZoneSamples {
         }
         fun logEntry(message: String, now: Instant = Clock.System.now()): String {
             val formattedTime = logTimeFormat.format {
-                with(TimeZoneContext.System.currentTimeZone()) {
+                context(TimeZoneContext.System.currentTimeZone()) {
                     setDateTime(now.toLocalDateTime())
-                    setOffset(offsetAt(now))
+                    setOffset(now.offset())
                 }
             }
             return "[$formattedTime] $message"
@@ -105,11 +105,11 @@ class TimeZoneSamples {
      * @see instantToLocalDateTime
      */
     @Test
-    fun toLocalDateTimeWithTwoReceivers() {
+    fun toLocalDateTimeWithContextParameter() {
         // Converting an instant to a local date-time in a specific time zone
         val zone = TimeZoneContext.System.get("America/New_York")
         val instant = Instant.parse("2023-06-02T12:30:00Z")
-        val localDateTime = with(zone) {
+        val localDateTime = context(zone) {
             instant.toLocalDateTime()
         }
         check(localDateTime == LocalDate(2023, 6, 2).atTime(8, 30))
@@ -119,11 +119,11 @@ class TimeZoneSamples {
      * @see localDateTimeToInstantInZone
      */
     @Test
-    fun toInstantWithTwoReceivers() {
+    fun toInstantWithContextParameter() {
         // Converting a local date-time to an instant in a specific time zone
         val zone = TimeZoneContext.System.get("America/New_York")
         val localDateTime = LocalDate(2023, 6, 2).atTime(12, 30)
-        val instant = with(zone) {
+        val instant = context(zone) {
             localDateTime.toInstant(TransitionHandler.REJECT_TRANSITIONS)
         }
         check(instant == Instant.parse("2023-06-02T16:30:00Z"))
@@ -139,6 +139,16 @@ class TimeZoneSamples {
         val instant = Instant.parse("2023-06-02T12:30:00Z")
         val offset = zone.offsetAt(instant)
         check(offset == UtcOffset(hours = -4))
+    }
+
+    @Test
+    fun offsetWithContextParameter() {
+        // Getting the offset of a time zone at a specific instant
+        context(TimeZoneContext.System.get("America/New_York")) {
+            val instant = Instant.parse("2023-06-02T12:30:00Z")
+            val offset = instant.offset()
+            check(offset == UtcOffset(hours = -4))
+        }
     }
 
     @Test
@@ -192,6 +202,16 @@ class TimeZoneSamples {
     }
 
     @Test
+    fun localDateTimeToInstantInFixedOffsetZoneWithContextParameter() {
+        // Converting a local date-time to an instant in the UTC time zone
+        val localDateTime = LocalDate(2023, 6, 2).atTime(12, 30)
+        context(TimeZone.UTC) {
+            val instant = localDateTime.toInstant()
+            check(instant == Instant.parse("2023-06-02T12:30:00Z"))
+        }
+    }
+
+    @Test
     fun localDateTimeToInstantInOffset() {
         // Converting a local date-time to an instant in a specific offset
         val offset = UtcOffset.parse("+01:30")
@@ -213,6 +233,22 @@ class TimeZoneSamples {
         val dateWithoutMidnight = LocalDate(1985, 11, 2)
         val startOfDayWithoutMidnight = dateWithoutMidnight.atStartOfDayIn(zone)
         check(startOfDayWithoutMidnight.toLocalDateTime(zone) == dateWithoutMidnight.atTime(hour = 1, minute = 0))
+    }
+
+    @Ignore // fails on Windows; TODO investigate
+    @Test
+    fun atStartOfDayWithContextParameter() {
+        // Finding the start of a given day in specific time zones
+        context(TimeZoneContext.System.get("America/Cuiaba")) {
+            // The normal case where `atStartOfDay` returns the instant of 00:00:00 in the given time zone.
+            val normalDate = LocalDate(2023, 6, 2)
+            val startOfDay = normalDate.atStartOfDay()
+            check(startOfDay.toLocalDateTime() == normalDate.atTime(hour = 0, minute = 0))
+            // The edge case where 00:00:00 does not exist in this time zone on this date due to clocks moving forward.
+            val dateWithoutMidnight = LocalDate(1985, 11, 2)
+            val startOfDayWithoutMidnight = dateWithoutMidnight.atStartOfDay()
+            check(startOfDayWithoutMidnight.toLocalDateTime() == dateWithoutMidnight.atTime(hour = 1, minute = 0))
+        }
     }
 
     @Test
@@ -239,6 +275,33 @@ class TimeZoneSamples {
             "moving at 2023-03-26T01:00:00Z from +01:00 to +02:00 (gap)",
             "moving at 2023-10-29T01:00:00Z from +02:00 to +01:00 (overlap)",
         ))
+    }
+
+    @Test
+    fun offsetInfoWithContextParameter() {
+        context(TimeZoneContext.System.get("Europe/Berlin")) {
+            val dateTimes = listOf(
+                LocalDateTime(2023, 6, 2, 12, 30), // regular
+                LocalDateTime(2023, 3, 26, 2, 30), // clocks moved forward: time gap
+                LocalDateTime(2023, 10, 29, 2, 30), // clocks moved backward: time overlap
+            )
+            val offsetDescriptions = dateTimes.map { dateTime ->
+                when (val offsetInfo = dateTime.offsetInfo()) {
+                    is LocalDateTimeOffsetInfo.Regular -> offsetInfo.offset.toString()
+                    is LocalDateTimeOffsetInfo.Gap ->
+                        "moving at ${offsetInfo.transitionInstant} " +
+                            "from ${offsetInfo.offsetBefore} to ${offsetInfo.offsetAfter} (gap)"
+                    is LocalDateTimeOffsetInfo.Overlap ->
+                        "moving at ${offsetInfo.transitionInstant} " +
+                            "from ${offsetInfo.offsetBefore} to ${offsetInfo.offsetAfter} (overlap)"
+                }
+            }
+            check(offsetDescriptions == listOf(
+                "+02:00",
+                "moving at 2023-03-26T01:00:00Z from +01:00 to +02:00 (gap)",
+                "moving at 2023-10-29T01:00:00Z from +02:00 to +01:00 (overlap)",
+            ))
+        }
     }
 
     class FixedOffsetTimeZoneSamples {
@@ -289,3 +352,4 @@ class TimeZoneSamples {
         }
     }
 }
+

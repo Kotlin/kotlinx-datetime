@@ -27,18 +27,21 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         zoneId.offsetInfoFor(dateTime)
 
     // experimental member-extensions
+    @Deprecated(
+        "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.HIDDEN,
+    )
     public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
 
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        "Explicitly pass a TransitionHandler to `toInstant` calls " +
+                "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.HIDDEN,
         replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
     )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
         optimizedToInstantOffsetBefore(this@TimeZone)
-
-    public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
-        this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
 
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",

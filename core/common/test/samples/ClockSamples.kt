@@ -51,6 +51,20 @@ class ClockSamples {
     }
 
     @Test
+    fun todayWithContextParameter() {
+        // Getting the current date in different time zones
+        val clock = object : Clock {
+            override fun now(): Instant = Instant.parse("2020-01-01T02:00:00Z")
+        }
+        context(TimeZone.UTC) {
+            check(clock.today() == LocalDate(2020, 1, 1))
+        }
+        context(TimeZoneContext.System.get("America/New_York")) {
+            check(clock.today() == LocalDate(2019, 12, 31))
+        }
+    }
+
+    @Test
     @Suppress("DEPRECATION")
     fun timeSourceAsClock() {
         // Creating a TimeSource

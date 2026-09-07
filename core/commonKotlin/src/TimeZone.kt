@@ -51,18 +51,21 @@ public actual open class TimeZone internal constructor() {
     public actual open val id: String
         get() = error("Should be overridden")
 
+    @Deprecated(
+        "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.HIDDEN,
+    )
     public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
 
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
-        "Explicitly pass a TransitionHandler to `toInstant` calls",
+        "Explicitly pass a TransitionHandler to `toInstant` calls " +
+                "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
+        level = DeprecationLevel.HIDDEN,
         replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
     )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
         toInstant(TransitionHandler.USE_OFFSET_BEFORE)
-
-    public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
-        this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
 
     @Suppress("DEPRECATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
