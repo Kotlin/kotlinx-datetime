@@ -849,7 +849,7 @@ internal fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
 @PublishedApi
 @Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
 internal fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
-    minus(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
+    periodFrom(other, timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 @PublishedApi
 @Deprecated("Binary compatibility with 0.8.0", level = DeprecationLevel.HIDDEN)
