@@ -51,7 +51,7 @@ public actual open class TimeZone internal constructor() {
     public actual open val id: String
         get() = error("Should be overridden")
 
-    public actual fun Instant.toLocalDateTime(): LocalDateTime = instantToLocalDateTime(this)
+    public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
 
     @Suppress("DEPRECATION_ERROR")
     @Deprecated(
@@ -78,16 +78,6 @@ public actual open class TimeZone internal constructor() {
     internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
         toInstant(this@TimeZone).toDeprecatedInstant()
 
-    internal open fun atStartOfDay(date: LocalDate): Instant = localDateTimeToInstantLenient(
-        LocalDateTime(date, LocalTime.MIN), this, TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
-    )
-
-    internal open fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
-        instant.toLocalDateTimeImpl(offsetAt(instant))
-    } catch (e: IllegalArgumentException) {
-        throw DateTimeArithmeticException("Instant $instant is not representable as LocalDateTime.", e)
-    }
-
     public actual open fun offsetAt(instant: Instant): UtcOffset = error("Should be overridden")
 
     public actual open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
@@ -111,9 +101,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
     public actual val totalSeconds: Int get() = offset.totalSeconds
 
-    override fun atStartOfDay(date: LocalDate): Instant =
-        LocalDateTime(date, LocalTime.MIN).toInstant(offset)
-
     override fun offsetAt(instant: Instant): UtcOffset = offset
 
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
@@ -121,8 +108,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 
     override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
         dateTime.toInstant(offset)
-
-    override fun instantToLocalDateTime(instant: Instant): LocalDateTime = instant.toLocalDateTime(offset)
 
     override fun equals(other: Any?): Boolean =
         this === other || other is FixedOffsetTimeZone && this.id == other.id
@@ -148,9 +133,6 @@ public actual class FixedOffsetTimeZone internal constructor(public actual val o
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 internal fun TimeZone.offsetAt(instant: Instant): UtcOffset = offsetAt(instant) // member shadows the extension
 
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    timeZone.instantToLocalDateTime(this)
-
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
     toLocalDateTimeImpl(offset)
 } catch (e: IllegalArgumentException) {
@@ -173,11 +155,4 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
-
-@Suppress("DEPRECATION_ERROR")
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
-    timeZone.atStartOfDay(this)
-
-internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
-    timeZone.localDateTimeToInstant(this)
 

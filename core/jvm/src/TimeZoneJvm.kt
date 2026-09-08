@@ -8,8 +8,10 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.TransitionHandler
 import kotlinx.datetime.internal.RuleBasedTimeZoneCalculations
 import kotlinx.datetime.serializers.*
+import kotlinx.datetime.toInstant
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneOffset as jtZoneOffset
@@ -35,7 +37,7 @@ public actual open class TimeZone internal constructor(internal val zoneId: Zone
         replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
     )
     public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
-        optimizedToInstantOffsetBefore(this@TimeZone)
+        toInstant(this@TimeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
     public actual fun LocalDateTime.toInstant(onTransition: TransitionHandler, utcOffset: UtcOffset?): Instant =
         this@toInstant.toInstant(this@TimeZone, onTransition, utcOffset)
@@ -144,11 +146,8 @@ internal constructor(public actual val offset: UtcOffset, zoneId: ZoneId): TimeZ
 internal fun TimeZone.offsetAt(instant: Instant): UtcOffset =
     zoneId.offsetAt(instant)
 
-public actual fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime =
-    timeZone.zoneId.instantToLocalDateTime(this)
-
 internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = try {
-    java.time.LocalDateTime.ofInstant(this.toJavaInstant(), offset.zoneOffset).let(::LocalDateTime)
+    LocalDateTime(java.time.LocalDateTime.ofEpochSecond(epochSeconds, nanosecondsOfSecond, offset.zoneOffset))
 } catch (e: DateTimeException) {
     throw DateTimeArithmeticException(e)
 }
@@ -159,18 +158,11 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
     replaceWith = ReplaceWith("this.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)")
 )
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
-    optimizedToInstantOffsetBefore(timeZone)
-
-internal actual fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant =
-    timeZone.zoneId.localDateTimeToInstant(this, null)
+    toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
-    this.value.toInstant(offset.zoneOffset).toKotlinInstant()
-
-@Suppress("DEPRECATION_ERROR")
-public actual fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
-    timeZone.zoneId.atStartOfDay(this)
+    Instant.fromEpochSeconds(this.value.toEpochSecond(offset.zoneOffset), this.nanosecond)
 
 internal sealed interface ZoneIdLike {
     val id: String
@@ -178,12 +170,6 @@ internal sealed interface ZoneIdLike {
     fun offsetAt(instant: Instant): UtcOffset
 
     fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
-
-    fun instantToLocalDateTime(instant: Instant): LocalDateTime
-
-    fun atStartOfDay(date: LocalDate): Instant
-
-    fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant
 
     class ActualZoneId(val actualZoneId: ZoneId) : ZoneIdLike {
         override val id: String
@@ -194,31 +180,19 @@ internal sealed interface ZoneIdLike {
 
         override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
             val rules = actualZoneId.rules
-            val transition = rules.getTransition(dateTime.value)
-            return if (transition == null) {
-                LocalDateTimeOffsetInfo.Regular(rules.getOffset(dateTime.value).let(::UtcOffset))
-            } else {
-                LocalDateTimeOffsetInfo.Transition(
-                    transition.instant.toKotlinInstant(),
-                    transition.offsetBefore.let(::UtcOffset),
-                    transition.offsetAfter.let(::UtcOffset),
-                )
+            val validOffsets = rules.getValidOffsets(dateTime.value)
+            validOffsets.singleOrNull()?.let { offset ->
+                // fast path for the common case of only a single offset: we're making only one call to the Java API
+                return LocalDateTimeOffsetInfo.Regular(UtcOffset(offset))
             }
+            val transition = rules.getTransition(dateTime.value)
+            check(transition != null) { "Inconsistent reading: no transition at $dateTime, offsets: $validOffsets" }
+            return LocalDateTimeOffsetInfo.Transition(
+                transition.instant.toKotlinInstant(),
+                transition.offsetBefore.let(::UtcOffset),
+                transition.offsetAfter.let(::UtcOffset),
+            )
         }
-
-        override fun instantToLocalDateTime(instant: Instant): LocalDateTime = try {
-            java.time.LocalDateTime.ofInstant(instant.toJavaInstant(), actualZoneId).let(::LocalDateTime)
-        } catch (e: DateTimeException) {
-            throw DateTimeArithmeticException(e)
-        }
-
-        override fun atStartOfDay(date: LocalDate): Instant =
-            date.value.atStartOfDay(actualZoneId).toInstant().toKotlinInstant()
-
-        override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
-            java.time.ZonedDateTime.ofLocal(
-                dateTime.value, actualZoneId, preferred?.zoneOffset
-            ).toInstant().toKotlinInstant()
 
         override fun equals(other: Any?): Boolean = other is ActualZoneId && actualZoneId == other.actualZoneId
         override fun hashCode(): Int = actualZoneId.hashCode()
@@ -233,24 +207,6 @@ internal sealed interface ZoneIdLike {
 
         override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
             zoneRules.offsetInfoFor(dateTime)
-
-        override fun atStartOfDay(date: LocalDate): Instant {
-            val ldt = LocalDateTime(date, LocalTime.MIN)
-            return localDateTimeToInstantLenient(
-                ldt, offsetInfoFor(ldt), TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
-            )
-        }
-
-        override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
-            localDateTimeToInstantLenient(
-                dateTime,
-                offsetInfoFor(dateTime),
-                TransitionHandler.USE_OFFSET_BEFORE,
-                preferred
-            )
-
-        override fun instantToLocalDateTime(instant: Instant): LocalDateTime =
-            instant.toLocalDateTime(offsetAt(instant))
 
         override fun equals(other: Any?): Boolean = other is RuleBasedZoneId && zoneRules == other.zoneRules
         override fun hashCode(): Int = zoneRules.hashCode()

@@ -320,7 +320,11 @@ public fun TimeZone.offsetAt(instant: kotlinx.datetime.Instant): UtcOffset =
  * @throws DateTimeArithmeticException if this value is too large to fit in [LocalDateTime].
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.instantToLocalDateTime
  */
-public expect fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime
+public fun Instant.toLocalDateTime(timeZone: TimeZone): LocalDateTime = try {
+    toLocalDateTime(offsetIn(timeZone))
+} catch (e: IllegalArgumentException) {
+    throw DateTimeArithmeticException("Instant $this is not representable as LocalDateTime.", e)
+}
 
 @Suppress("DEPRECATION")
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
@@ -432,28 +436,24 @@ public expect fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
  */
 public fun LocalDateTime.toInstant(
     timeZone: TimeZone, onTransition: TransitionHandler, utcOffset: UtcOffset? = null
-): Instant = if (onTransition === TransitionHandler.USE_OFFSET_BEFORE && utcOffset === null) {
-    optimizedToInstantOffsetBefore(timeZone)
-} else {
-    when (val offsetInfo = timeZone.offsetInfoFor(this)) {
-        is LocalDateTimeOffsetInfo.Regular -> {
-            require(utcOffset == null || utcOffset == offsetInfo.offset) {
-                "The supplied UTC offset $utcOffset did not match the actual UTC offset ${offsetInfo.offset} " +
-                    "at $this in the time zone $timeZone"
-            }
-            toInstant(offsetInfo.offset)
+): Instant = when (val offsetInfo = timeZone.offsetInfoFor(this)) {
+    is LocalDateTimeOffsetInfo.Regular -> {
+        require(utcOffset == null || utcOffset == offsetInfo.offset) {
+            "The supplied UTC offset $utcOffset did not match the actual UTC offset ${offsetInfo.offset} " +
+                "at $this in the time zone $timeZone"
         }
-        is LocalDateTimeOffsetInfo.Transition -> {
-            require(utcOffset == null || utcOffset == offsetInfo.offsetBefore || utcOffset == offsetInfo.offsetAfter) {
-                "The supplied UTC offset $utcOffset did not match any of the offset " +
-                    "surrounding the transition $offsetInfo at $this in the time zone $timeZone"
-            }
-            onTransition.resolveDateTime(
-                dateTime = this,
-                transition = offsetInfo,
-                preferredOffset = utcOffset,
-            )
+        toInstant(offsetInfo.offset)
+    }
+    is LocalDateTimeOffsetInfo.Transition -> {
+        require(utcOffset == null || utcOffset == offsetInfo.offsetBefore || utcOffset == offsetInfo.offsetAfter) {
+            "The supplied UTC offset $utcOffset did not match any of the offset " +
+                "surrounding the transition $offsetInfo at $this in the time zone $timeZone"
         }
+        onTransition.resolveDateTime(
+            dateTime = this,
+            transition = offsetInfo,
+            preferredOffset = utcOffset,
+        )
     }
 }
 
@@ -503,7 +503,12 @@ internal fun LocalDateTime.toInstant(offset: UtcOffset): kotlinx.datetime.Instan
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.atStartOfDayIn
  */
 @Suppress("DEPRECATION_ERROR")
-public expect fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant
+public fun LocalDate.atStartOfDayIn(timeZone: TimeZone, youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant {
+    val ldt = atTime(LocalTime.MIN)
+    return localDateTimeToInstantLenient(
+        ldt, timeZone.offsetInfoFor(ldt), TransitionHandler.FIND_EARLIEST_VALID_TIME, preferred = null
+    )
+}
 
 @PublishedApi
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
@@ -532,5 +537,3 @@ internal fun localDateTimeToInstantLenient(
         handler.resolveDateTime(dateTime, offsetInfo, actualPreferred)
     }
 }
-
-internal expect fun LocalDateTime.optimizedToInstantOffsetBefore(timeZone: TimeZone): Instant
