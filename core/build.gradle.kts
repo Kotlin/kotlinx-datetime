@@ -104,6 +104,7 @@ kotlin {
                 }
             }
         }
+        configureTestWithTheLatestJsTarget()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
