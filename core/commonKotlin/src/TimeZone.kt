@@ -10,127 +10,7 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
-
-public actual open class TimeZone internal constructor() {
-
-    public actual companion object {
-        public actual val UTC: FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset.ZERO, "UTC")
-
-        @Deprecated(
-            "Use TimeZoneContext.System.currentTimeZone() instead",
-            ReplaceWith("TimeZoneContext.System.currentTimeZone()")
-        )
-        public actual fun currentSystemDefault(): TimeZone =
-            TimeZoneContext.System.currentTimeZone()
-
-        @Deprecated(
-            "Use TimeZoneContext.System.get() instead",
-            ReplaceWith("TimeZoneContext.System.get(zoneId)")
-        )
-        public actual fun of(zoneId: String): TimeZone = TimeZoneContext.System.get(zoneId)
-
-        @Deprecated(
-            "Use TimeZoneContext.System.availableZoneIds() instead",
-            ReplaceWith("TimeZoneContext.System.availableZoneIds()")
-        )
-        public actual val availableZoneIds: Set<String>
-            get() = TimeZoneContext.System.availableZoneIds()
-
-        @Deprecated(
-            "Serializing TimeZone is discouraged, " +
-                    "as deserialization can fail depending on the configuration. " +
-                    "Please serialize the string id instead.",
-            level = DeprecationLevel.WARNING,
-        )
-        @Suppress("DEPRECATION")
-        public actual fun serializer(): kotlinx.serialization.KSerializer<TimeZone> = TimeZoneSerializer
-    }
-
-    public actual open val id: String
-        get() = error("Should be overridden")
-
-    @Deprecated(
-        "Pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.HIDDEN,
-    )
-    public actual fun Instant.toLocalDateTime(): LocalDateTime = toLocalDateTime(this@TimeZone)
-
-    @Suppress("DEPRECATION_ERROR")
-    @Deprecated(
-        "Explicitly pass a TransitionHandler to `toInstant` calls " +
-                "and pass the time zone as a context parameter using the `context(timeZone) { }` syntax",
-        level = DeprecationLevel.HIDDEN,
-        replaceWith = ReplaceWith("this.toInstant(TransitionHandler.USE_OFFSET_BEFORE)")
-    )
-    public actual fun LocalDateTime.toInstant(youShallNotPass: OverloadMarker): Instant =
-        toInstant(TransitionHandler.USE_OFFSET_BEFORE)
-
-    @Suppress("DEPRECATION")
-    @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("this.toStdlibInstant().toLocalDateTime()")
-    )
-    public actual fun kotlinx.datetime.Instant.toLocalDateTime(): LocalDateTime =
-        toStdlibInstant().toLocalDateTime()
-
-    @PublishedApi
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-    @kotlin.internal.LowPriorityInOverloadResolution
-    internal actual fun LocalDateTime.toInstant(): kotlinx.datetime.Instant =
-        toInstant(this@TimeZone).toDeprecatedInstant()
-
-    public actual open fun offsetAt(instant: Instant): UtcOffset = error("Should be overridden")
-
-    public actual open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo = error("Should be overridden")
-
-    internal open fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset? = null): Instant =
-        localDateTimeToInstantLenient(dateTime, this, TransitionHandler.USE_OFFSET_BEFORE, preferred)
-
-    actual override fun equals(other: Any?): Boolean =
-        error("Should be overridden")
-
-    override fun hashCode(): Int =
-        error("Should be overridden")
-
-    actual override fun toString(): String = id
-}
-
-public actual class FixedOffsetTimeZone internal constructor(public actual val offset: UtcOffset, override val id: String) : TimeZone() {
-
-    public actual constructor(offset: UtcOffset) : this(offset, offset.toString())
-
-    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public actual val totalSeconds: Int get() = offset.totalSeconds
-
-    override fun offsetAt(instant: Instant): UtcOffset = offset
-
-    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        LocalDateTimeOffsetInfo.Regular(offset)
-
-    override fun localDateTimeToInstant(dateTime: LocalDateTime, preferred: UtcOffset?): Instant =
-        dateTime.toInstant(offset)
-
-    override fun equals(other: Any?): Boolean =
-        this === other || other is FixedOffsetTimeZone && this.id == other.id
-
-    override fun hashCode(): Int = id.hashCode()
-
-    /** @suppress */
-    public actual companion object {
-        /** @suppress */
-        @Deprecated(
-            "Serializing FixedOffsetTimeZone is discouraged, " +
-                    "as deserialization can fail or return a non-fixed-offset zone depending on the configuration. " +
-                    "Please serialize the string id instead.",
-            level = DeprecationLevel.WARNING,
-        )
-        @Suppress("DEPRECATION")
-        public actual fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
-            FixedOffsetTimeZoneSerializer
-    }
-}
 
 @PublishedApi
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
@@ -153,9 +33,8 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
 
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
-    timeZone.localDateTimeToInstant(this)
+    localDateTimeToInstantLenient(this, timeZone, TransitionHandler.USE_OFFSET_BEFORE, null)
 
 @Suppress("DEPRECATION_ERROR")
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)
-
