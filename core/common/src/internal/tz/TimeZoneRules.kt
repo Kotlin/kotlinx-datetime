@@ -9,14 +9,7 @@ import kotlinx.datetime.*
 import kotlin.math.*
 import kotlin.time.Instant
 
-internal interface TimeZoneRules {
-
-    fun infoAtInstant(instant: Instant): UtcOffset
-
-    fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo
-}
-
-internal class TimeZoneRulesCommon(
+internal class TimeZoneRules(
     /**
      * The list of [Instant.epochSeconds] parts of the instants when recorded transitions occur, in ascending order.
      */
@@ -36,7 +29,7 @@ internal class TimeZoneRulesCommon(
      * [recurringZoneRules].
      */
     val recurringZoneRules: RecurringZoneRules?,
-) : TimeZoneRules {
+) {
     init {
         require(offsets.size == transitionEpochSeconds.size + 1) {
             "offsets.size must be one more than transitionEpochSeconds.size"
@@ -44,7 +37,7 @@ internal class TimeZoneRulesCommon(
     }
 
     /**
-     * Constructs a [TimeZoneRulesCommon] without any historic data.
+     * Constructs a [TimeZoneRules] without any historic data.
      */
     constructor(initialOffset: UtcOffset, rules: RecurringZoneRules) : this(
         transitionEpochSeconds = emptyList(),
@@ -73,7 +66,7 @@ internal class TimeZoneRulesCommon(
         }
     }
 
-    override fun infoAtInstant(instant: Instant): UtcOffset {
+    fun infoAtInstant(instant: Instant): UtcOffset {
         val epochSeconds = instant.epochSeconds
         // good: no transitions, or instant is after the last transition
         if (recurringZoneRules != null && transitionEpochSeconds.lastOrNull()?.let { epochSeconds >= it } != false) {
@@ -89,7 +82,7 @@ internal class TimeZoneRulesCommon(
         return offsets[index]
     }
 
-    override fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+    fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo {
         if (recurringZoneRules != null && transitionLocalDateTimes.lastOrNull()?.let { localDateTime > it } != false) {
             return recurringZoneRules.infoAtLocalDateTime(localDateTime, offsets.last())
         }
@@ -183,10 +176,10 @@ internal class RecurringZoneRules(
     }
 
     /**
-     * IMPORTANT: keep this implementation in sync with [TimeZoneRulesCommon.infoAtDatetime].
+     * IMPORTANT: keep this implementation in sync with [TimeZoneRules.infoAtDatetime].
      * The algorithms and corner-case handling should stay identical so that Darwin (Foundation-based)
      * and tzdb-based platforms compute the same results.  When you change logic here, reflect the
-     * same change in [TimeZoneRulesCommon.infoAtDatetime].
+     * same change in [TimeZoneRules.infoAtDatetime].
      */
     fun infoAtLocalDateTime(localDateTime: LocalDateTime, offsetAtYearStart: UtcOffset): LocalDateTimeOffsetInfo {
         val year = localDateTime.year

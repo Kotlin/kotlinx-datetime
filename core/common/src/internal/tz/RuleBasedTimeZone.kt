@@ -12,12 +12,12 @@ import kotlinx.datetime.UtcOffset
 import kotlin.time.Instant
 
 internal class RuleBasedTimeZone(
-    private val tzid: TimeZoneRules, override val id: String, val origin: Any?
+    val rules: TimeZoneRules, override val id: String, val origin: Any?
 ): TimeZone() {
-    override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
+    override fun offsetAt(instant: Instant): UtcOffset = rules.infoAtInstant(instant)
 
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        tzid.infoAtDatetime(dateTime)
+        rules.infoAtDatetime(dateTime)
 
     override fun equals(other: Any?): Boolean =
         other is RuleBasedTimeZone && id == other.id && origin == other.origin

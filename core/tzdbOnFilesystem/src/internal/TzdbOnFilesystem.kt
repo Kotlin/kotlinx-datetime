@@ -6,14 +6,24 @@
 package kotlinx.datetime.internal
 
 import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.TimeZoneDatabase
+import kotlinx.datetime.TimeZone
 
-internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): RuleBasedTimeZoneDatabase {
+internal interface RuleBasedTimeZoneDatabase: TimeZoneDatabase {
+    fun rulesForIdOrNull(id: String): TimeZoneRules?
+    fun rulesForId(id: String): TimeZoneRules =
+        rulesForIdOrNull(id) ?: throw IllegalTimeZoneException("Unknown time zone $id")
+
+}
+
+internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase {
 
     internal val tzdbPath = tzdbPaths(defaultTzdbPath).find { path ->
         tabPaths.any { path.containsFile(it) }
     } ?: throw IllegalStateException("Could not find the path to the timezone database")
 
-    override fun rulesForId(id: String): TimeZoneRulesCommon {
+
+    override fun get(id: String): TimeZone {
         if (id.length <= 1) { throw IllegalTimeZoneException("Timezone ID '$id' is not valid") }
         val idAsPath = Path.fromString(id)
         if (idAsPath.isAbsolute) { throw IllegalTimeZoneException("Timezone ID '$idAsPath' must not begin with a '/'") }
@@ -22,16 +32,16 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): RuleBasedTimeZon
         }
         val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
         val contents = file.readBytes() ?: throw IllegalTimeZoneException("File '$file' not found")
-        return readTzFile(contents).toTimeZoneRules()
+        return RuleBasedTimeZone(readTzFileToRules(contents), id, this)
     }
 
-    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? {
+    override fun getOrNull(id: String): TimeZone? {
         val idAsPath = Path.fromString(id)
         if (idAsPath.isAbsolute) { return null }
         if (idAsPath.components.any { it == ".." }) { return null }
         val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
         val contents = file.readBytes() ?: return null
-        return readTzFile(contents).toTimeZoneRules()
+        return RuleBasedTimeZone(readTzFileToRules(contents), id, this)
     }
 
     override fun availableZoneIds(): Set<String> = buildSet {

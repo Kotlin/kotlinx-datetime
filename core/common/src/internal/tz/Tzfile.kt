@@ -40,13 +40,13 @@ internal class TzFileData(
 }
 
 internal class TzFile(val data: TzFileData, val rules: PosixTzString?) {
-    fun toTimeZoneRules(): TimeZoneRulesCommon {
+    fun toTimeZoneRules(): TimeZoneRules {
         val tzOffsets = buildList {
             add(data.states[0].offset)
             data.transitions.forEach { add(data.states[it.stateIndex].offset) }
         }
         val offsets = tzOffsets.map { it.toUtcOffset() }
-        return TimeZoneRulesCommon(data.transitions.map { it.time }, offsets, rules?.toRecurringZoneRules())
+        return TimeZoneRules(data.transitions.map { it.time }, offsets, rules?.toRecurringZoneRules())
     }
 }
 
@@ -69,8 +69,11 @@ internal class TzFileOffset(val totalSeconds: Int) {
     fun toUtcOffset(): UtcOffset = UtcOffset(seconds = totalSeconds)
 }
 
+internal fun readTzFileToRules(data: ByteArray): TimeZoneRules =
+    readTzFile(data).toTimeZoneRules()
+
 // https://datatracker.ietf.org/doc/html/rfc8536
-internal fun readTzFile(data: ByteArray): TzFile {
+private fun readTzFile(data: ByteArray): TzFile {
     class Header(
         val version: Int?,
         val ttisutcnt: Int,

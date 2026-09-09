@@ -19,31 +19,31 @@ class TimeZoneRulesCompleteTest {
     fun iterateOverAllTimezones() {
         val tzdb = TzdbOnFilesystem()
         for (id in tzdb.availableZoneIds()) {
-            val rules = tzdb.rulesForId(id)
+            val rules = tzdb.get(id)
             runUnixCommand("env LOCALE=C zdump -V ${tzdb.tzdbPath}/$id").windowed(size = 2, step = 2).forEach { (line1, line2) ->
                 val beforeTransition = parseZdumpLine(line1)
                 val afterTransition = parseZdumpLine(line2)
                 try {
-                    val infoAfter = rules.infoAtInstant(afterTransition.instant)
-                    val infoBefore = rules.infoAtInstant(beforeTransition.instant)
+                    val infoAfter = rules.offsetAt(afterTransition.instant)
+                    val infoBefore = rules.offsetAt(beforeTransition.instant)
                     assertEquals(beforeTransition.offset, infoBefore)
                     assertEquals(afterTransition.offset, infoAfter)
                     if (beforeTransition.localDateTime.plusSeconds(1) == afterTransition.localDateTime) {
                         // Regular
-                        val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime)
-                        val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime)
+                        val infoAt1 = rules.offsetInfoFor(beforeTransition.localDateTime)
+                        val infoAt2 = rules.offsetInfoFor(afterTransition.localDateTime)
                         assertEquals(infoAt1, infoAt2)
                         assertIs<LocalDateTimeOffsetInfo.Regular>(infoAt1)
                     } else if (afterTransition.localDateTime < beforeTransition.localDateTime) {
                         // Overlap
-                        val infoAt1 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(-1))
-                        val infoAt2 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(1))
+                        val infoAt1 = rules.offsetInfoFor(beforeTransition.localDateTime.plusSeconds(-1))
+                        val infoAt2 = rules.offsetInfoFor(afterTransition.localDateTime.plusSeconds(1))
                         assertEquals(infoAt1, infoAt2)
                         assertIs<LocalDateTimeOffsetInfo.Overlap>(infoAt1)
                     } else if (afterTransition.localDateTime > beforeTransition.localDateTime) {
                         // Gap
-                        val infoAt1 = rules.infoAtDatetime(afterTransition.localDateTime.plusSeconds(-1))
-                        val infoAt2 = rules.infoAtDatetime(beforeTransition.localDateTime.plusSeconds(1))
+                        val infoAt1 = rules.offsetInfoFor(afterTransition.localDateTime.plusSeconds(-1))
+                        val infoAt2 = rules.offsetInfoFor(beforeTransition.localDateTime.plusSeconds(1))
                         assertIs<LocalDateTimeOffsetInfo.Gap>(infoAt1)
                         assertEquals(infoAt1, infoAt2)
                     }

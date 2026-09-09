@@ -37,21 +37,21 @@ private var timeZonesProvider: TimeZonesProvider? = null
 internal actual fun currentSystemDefaultTimeZone(): TimeZone = TimeZone.UTC
 
 @OptIn(InternalDateTimeApi::class)
-internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: RuleBasedTimeZoneDatabase {
-    override fun rulesForId(id: String): TimeZoneRulesCommon {
+internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDatabase {
+    override fun get(id: String): TimeZone {
         val data = timeZonesProvider?.zoneDataByName(id)
             ?: throw IllegalTimeZoneException("The `kotlinx-datetime-zoneinfo` artifact is required but missing")
-        return readTzFile(data).toTimeZoneRules()
+        return RuleBasedTimeZone(readTzFileToRules(data), id, this)
     }
 
-    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? {
+    override fun getOrNull(id: String): TimeZone? {
         val provider = timeZonesProvider ?: return null
         val data = try {
             provider.zoneDataByName(id)
         } catch (_: Throwable) {
             return null
         }
-        return readTzFile(data).toTimeZoneRules()
+        return RuleBasedTimeZone(readTzFileToRules(data), id, this)
     }
 
     override fun availableZoneIds(): Set<String> = timeZonesProvider?.getTimeZones() ?: setOf("UTC")

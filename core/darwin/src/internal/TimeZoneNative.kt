@@ -16,7 +16,7 @@ import kotlinx.datetime.TimeZoneDatabase
 import platform.Foundation.*
 
 internal fun timeZoneByIdFoundationOrNull(zoneId: String): TimeZone? = NSTimeZone.timeZoneWithName(zoneId)?.let {
-    RuleBasedTimeZone(TimeZoneRulesFoundation(it), zoneId, foundationTimeZoneOrigin)
+    DarwinTimeZone(it, zoneId)
 }
 
 private val foundationTimeZoneOrigin = Any()

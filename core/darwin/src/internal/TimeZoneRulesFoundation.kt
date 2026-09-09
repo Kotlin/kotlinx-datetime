@@ -11,6 +11,7 @@ import kotlinx.cinterop.convert
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDateTimeOffsetInfo
 import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toNSDate
@@ -23,8 +24,9 @@ import platform.Foundation.NSTimeZone
 import platform.Foundation.timeZoneWithName
 import kotlin.time.Instant
 
-internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : TimeZoneRules {
-    override fun infoAtInstant(instant: Instant): UtcOffset =
+internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val id: String) : TimeZone() {
+
+    override fun offsetAt(instant: Instant): UtcOffset =
         infoAtNsDate(instant.toNSDate())
 
     /**
@@ -34,13 +36,13 @@ internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : Tim
      * all platforms.
      */
     @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
-    override fun infoAtDatetime(localDateTime: LocalDateTime): LocalDateTimeOffsetInfo {
+    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
         val calendar = NSCalendar.calendarWithIdentifier(NSCalendarIdentifierISO8601)
             ?.apply { timeZone = nsTimeZone }
 
-        val year = localDateTime.year
+        val year = dateTime.year
         val startOfTheYear = calendar?.dateFromComponents(LocalDateTime(year, 1, 1, 0, 0).toNSDateComponents())
-        check(startOfTheYear != null) { "Failed to get the start of the year for $localDateTime, timezone: $nsTimeZone" }
+        check(startOfTheYear != null) { "Failed to get the start of the year for $dateTime, timezone: $nsTimeZone" }
 
         var currentDate: NSDate = startOfTheYear
         var offset = infoAtNsDate(startOfTheYear)
@@ -56,9 +58,9 @@ internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : Tim
             val offsetAfter = infoAtNsDate(transitionDateTime)
             val ldtAfter = transitionDateTimeInstant.toLocalDateTime(offsetAfter)
 
-            return if (localDateTime < ldtBefore && localDateTime < ldtAfter) {
+            return if (dateTime < ldtBefore && dateTime < ldtAfter) {
                 LocalDateTimeOffsetInfo.Regular(offsetBefore)
-            } else if (localDateTime >= ldtBefore && localDateTime >= ldtAfter) {
+            } else if (dateTime >= ldtBefore && dateTime >= ldtAfter) {
                 offset = offsetAfter
                 currentDate = transitionDateTime
                 continue
@@ -77,4 +79,12 @@ internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : Tim
         val offsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate)
         return UtcOffset(seconds = offsetSeconds.convert())
     }
+
+    public override fun toString(): String = id
+
+    public override fun equals(other: Any?): Boolean =
+        other === this || other is DarwinTimeZone && id == other.id
+
+    public override fun hashCode(): Int =
+        id.hashCode()
 }

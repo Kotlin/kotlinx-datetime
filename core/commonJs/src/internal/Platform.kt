@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.js.*
 
-private val jodaTzdb: Result<RuleBasedTimeZoneDatabase?> = runCatching {
+private val jodaTzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
      * References:
      * - <https://momentjs.com/timezone/docs/#/data-formats/packed-format/>
@@ -63,7 +63,7 @@ private val jodaTzdb: Result<RuleBasedTimeZoneDatabase?> = runCatching {
         return (wholeMinutes * SECONDS_PER_MINUTE + seconds) * sign
     }
 
-    val zones = mutableMapOf<String, TimeZoneRulesCommon>()
+    val zones = mutableMapOf<String, TimeZoneRules>()
     val (zonesPacked, linksPacked) = readTzdb() ?: return@runCatching null
     for (zone in zonesPacked) {
         val components = zone.split('|')
@@ -72,7 +72,7 @@ private val jodaTzdb: Result<RuleBasedTimeZoneDatabase?> = runCatching {
         }
         val indices = components[3].map { charCodeToInt(it) }
         val lengthsOfPeriodsWithOffsets = components[4].split(' ').map(::base60MinutesInSeconds)
-        zones[components[0]] = TimeZoneRulesCommon(
+        zones[components[0]] = TimeZoneRules(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).let {
                 if (it.size == indices.size - 1) it else it.take<Long>(indices.size - 1)
             },
@@ -86,10 +86,10 @@ private val jodaTzdb: Result<RuleBasedTimeZoneDatabase?> = runCatching {
             zones[components[1]] = rules
         }
     }
-    object : RuleBasedTimeZoneDatabase {
-        override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? = zones[id]
-
+    object : TimeZoneDatabase {
         override fun availableZoneIds(): Set<String> = zones.keys
+        override fun getOrNull(id: String): TimeZone? = zones[id]?.let { RuleBasedTimeZone(it, id, this) }
+        override fun toString(): String = "JsJoda"
     }
 }
 
@@ -144,8 +144,6 @@ private object SystemTimeZone: TimeZone() {
 
     override fun hashCode(): Int = id.hashCode()
 }
-
-internal fun rulesForIdForTests(zoneId: String): TimeZoneRulesCommon? = jodaTzdb.getOrThrow()?.rulesForId(zoneId)
 
 internal external class Date() {
     constructor(milliseconds: Double)

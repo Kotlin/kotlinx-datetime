@@ -10,11 +10,11 @@ import kotlinx.cinterop.*
 import platform.windows.*
 import kotlin.experimental.*
 
-internal class TzdbInRegistry: RuleBasedTimeZoneDatabase {
+internal class TzdbInRegistry: TimeZoneDatabase {
 
     // TODO: starting version 1703 of Windows 10, the ICU library is also bundled, with more accurate/ timezone information.
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
-    private val windowsToRules: Map<String, TimeZoneRulesCommon> = buildMap {
+    private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
             val recurringRules = RecurringZoneRules(recurring.transitions)
             val rules = run {
@@ -70,20 +70,23 @@ internal class TzdbInRegistry: RuleBasedTimeZoneDatabase {
                     transitionEpochSeconds.add(newYearInLastOffset.epochSeconds)
                 }
                 offsets.add(recurring.offsetAtYearStart())
-                TimeZoneRulesCommon(transitionEpochSeconds, offsets, recurringRules)
+                TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
             }
             put(name, rules)
         }
     }
 
-    override fun rulesForId(id: String): TimeZoneRulesCommon {
+    override fun get(id: String): TimeZone {
         val standardName = standardToWindows[id] ?: throw IllegalTimeZoneException("Unknown time zone $id")
-        return windowsToRules[standardName]
+        val rules = windowsToRules[standardName]
                 ?: throw IllegalTimeZoneException("The rules for time zone $id are absent in the Windows registry")
+        return RuleBasedTimeZone(rules, id, this)
     }
 
-    override fun rulesForIdOrNull(id: String): TimeZoneRulesCommon? =
-        standardToWindows[id]?.let { windowsToRules[it] }
+    override fun getOrNull(id: String): TimeZone? {
+        val rules = standardToWindows[id]?.let { windowsToRules[it] } ?: return null
+        return RuleBasedTimeZone(rules, id, this)
+    }
 
     override fun availableZoneIds(): Set<String> = standardToWindows.filter {
         windowsToRules.containsKey(it.value)
