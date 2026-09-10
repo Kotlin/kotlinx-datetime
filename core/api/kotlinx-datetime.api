@@ -790,6 +790,11 @@ public final class kotlinx/datetime/TimeZoneContext$System : kotlinx/datetime/Ti
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class kotlinx/datetime/TimeZoneContextKt {
+	public static final fun kotlinxDatetimeInternalReadBytesIntoTimeZone (Ljava/lang/String;[BLjava/lang/Object;)Lkotlinx/datetime/TimeZone;
+	public static final fun kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones (Lkotlinx/datetime/TimeZoneDatabase;)Lkotlinx/datetime/TimeZoneDatabase;
+}
+
 public abstract interface class kotlinx/datetime/TimeZoneDatabase {
 	public abstract fun availableZoneIds ()Ljava/util/Set;
 	public fun get (Ljava/lang/String;)Lkotlinx/datetime/TimeZone;

@@ -192,6 +192,10 @@ kotlin {
             languageSettings.optIn("kotlinx.datetime.internal.InternalDateTimeApi")
         }
     }
+
+    compilerOptions {
+        optIn.add("kotlinx.datetime.InternalKotlinxDatetimeImplementationHelpers")
+    }
 }
 
 tasks {

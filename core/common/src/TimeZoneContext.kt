@@ -9,6 +9,9 @@ import kotlinx.datetime.internal.currentSystemDefaultTimeZone
 import kotlinx.datetime.internal.systemTimeZoneIdProvider
 import kotlinx.datetime.internal.systemTimezoneDatabase
 import kotlinx.datetime.internal.MyJvmDefaultWithoutCompatibility
+import kotlinx.datetime.internal.RuleBasedTimeZone
+import kotlinx.datetime.internal.TimeZoneDatabaseWrapperWithFixedOffsetTimeZones
+import kotlinx.datetime.internal.readTzFile
 
 /**
  * A mapping from time zone identifiers to [TimeZone] objects.
@@ -259,3 +262,22 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
     /** @suppress */
     public companion object
 }
+
+/**
+ * This is an annotation marking `kotlinx-datetime` implementation details exposed for technical reasons.
+ *
+ * APIs marked with this are subject to change without notice and should not be used by client code.
+ */
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+internal annotation class InternalKotlinxDatetimeImplementationHelpers
+
+/** This is an internal `kotlinx-datetime` API that cannot be used by client code. */
+@InternalKotlinxDatetimeImplementationHelpers
+public fun kotlinxDatetimeInternalReadBytesIntoTimeZone(id: String, data: ByteArray, origin: Any): TimeZone =
+    RuleBasedTimeZone(readTzFile(data).toTimeZoneRules(), id, origin)
+
+/** This is an internal `kotlinx-datetime` API that cannot be used by client code. */
+@InternalKotlinxDatetimeImplementationHelpers
+public fun kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones(
+    inner: TimeZoneDatabase
+): TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(inner)

@@ -85,8 +85,7 @@ public object BundledTimeZoneContext : TimeZoneContext {
     override fun toString(): String = "TimeZoneContext.Bundled"
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(object: TimeZoneDatabase {
+private val impl: TimeZoneDatabase = kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones(object: TimeZoneDatabase {
     override fun get(id: String): TimeZone = getOrNull(id)
         ?: throw IllegalTimeZoneException(
             "Zone ID '$id' was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
@@ -94,7 +93,7 @@ private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZ
 
     override fun getOrNull(id: String): TimeZone? {
         val data = zoneDataByNameOrNull(id) ?: return null
-        return RuleBasedTimeZone(readTzFile(data).toTimeZoneRules(), id, this)
+        return kotlinxDatetimeInternalReadBytesIntoTimeZone(id, data, this)
     }
 
     override fun availableZoneIds(): Set<String> = timeZones

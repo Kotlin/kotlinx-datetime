@@ -1426,6 +1426,8 @@ final fun kotlinx.datetime/LocalDateTime(kotlin/Int, kotlinx.datetime/Month, kot
 final fun kotlinx.datetime/Month(kotlin/Int): kotlinx.datetime/Month // kotlinx.datetime/Month|Month(kotlin.Int){}[0]
 final fun kotlinx.datetime/UtcOffset(): kotlinx.datetime/UtcOffset // kotlinx.datetime/UtcOffset|UtcOffset(){}[0]
 final fun kotlinx.datetime/UtcOffset(kotlin/Int? = ..., kotlin/Int? = ..., kotlin/Int? = ...): kotlinx.datetime/UtcOffset // kotlinx.datetime/UtcOffset|UtcOffset(kotlin.Int?;kotlin.Int?;kotlin.Int?){}[0]
+final fun kotlinx.datetime/kotlinxDatetimeInternalReadBytesIntoTimeZone(kotlin/String, kotlin/ByteArray, kotlin/Any): kotlinx.datetime/TimeZone // kotlinx.datetime/kotlinxDatetimeInternalReadBytesIntoTimeZone|kotlinxDatetimeInternalReadBytesIntoTimeZone(kotlin.String;kotlin.ByteArray;kotlin.Any){}[0]
+final fun kotlinx.datetime/kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones(kotlinx.datetime/TimeZoneDatabase): kotlinx.datetime/TimeZoneDatabase // kotlinx.datetime/kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones|kotlinxDatetimeInternalTimeZoneDatabaseWrapperWithFixedOffsetTimeZones(kotlinx.datetime.TimeZoneDatabase){}[0]
 
 // Targets: [apple]
 final fun (kotlin.time/Instant).kotlinx.datetime/toNSDate(): platform.Foundation/NSDate // kotlinx.datetime/toNSDate|toNSDate@kotlin.time.Instant(){}[0]
