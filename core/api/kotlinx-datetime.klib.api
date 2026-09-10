@@ -296,6 +296,32 @@ abstract class kotlinx.datetime.serializers/FormattedYearMonthSerializer : kotli
     open fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.datetime/YearMonth) // kotlinx.datetime.serializers/FormattedYearMonthSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.datetime.YearMonth){}[0]
 }
 
+abstract class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
+    abstract val id // kotlinx.datetime/TimeZone.id|{}id[0]
+        abstract fun <get-id>(): kotlin/String // kotlinx.datetime/TimeZone.id.<get-id>|<get-id>(){}[0]
+
+    abstract fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/TimeZone.equals|equals(kotlin.Any?){}[0]
+    abstract fun hashCode(): kotlin/Int // kotlinx.datetime/TimeZone.hashCode|hashCode(){}[0]
+    abstract fun offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/TimeZone.offsetAt|offsetAt(kotlin.time.Instant){}[0]
+    abstract fun offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/TimeZone.offsetInfoFor|offsetInfoFor(kotlinx.datetime.LocalDateTime){}[0]
+    abstract fun toString(): kotlin/String // kotlinx.datetime/TimeZone.toString|toString(){}[0]
+    final fun (kotlin.time/Instant).toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/TimeZone.toLocalDateTime|toLocalDateTime@kotlin.time.Instant(){}[0]
+    final fun (kotlinx.datetime/Instant).toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/TimeZone.toLocalDateTime|toLocalDateTime@kotlinx.datetime.Instant(){}[0]
+    final fun (kotlinx.datetime/LocalDateTime).toInstant(): kotlinx.datetime/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(){}[0]
+    final fun (kotlinx.datetime/LocalDateTime).toInstant(kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.OverloadMarker){}[0]
+
+    final object Companion { // kotlinx.datetime/TimeZone.Companion|null[0]
+        final val UTC // kotlinx.datetime/TimeZone.Companion.UTC|{}UTC[0]
+            final fun <get-UTC>(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/TimeZone.Companion.UTC.<get-UTC>|<get-UTC>(){}[0]
+        final val availableZoneIds // kotlinx.datetime/TimeZone.Companion.availableZoneIds|{}availableZoneIds[0]
+            final fun <get-availableZoneIds>(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZone.Companion.availableZoneIds.<get-availableZoneIds>|<get-availableZoneIds>(){}[0]
+
+        final fun currentSystemDefault(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZone.Companion.currentSystemDefault|currentSystemDefault(){}[0]
+        final fun of(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZone.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/TimeZone> // kotlinx.datetime/TimeZone.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class kotlinx.datetime.format/DateTimeComponents { // kotlinx.datetime.format/DateTimeComponents|null[0]
     final var amPm // kotlinx.datetime.format/DateTimeComponents.amPm|{}amPm[0]
         final fun <get-amPm>(): kotlinx.datetime.format/AmPmMarker? // kotlinx.datetime.format/DateTimeComponents.amPm.<get-amPm>|<get-amPm>(){}[0]
@@ -791,32 +817,6 @@ open class kotlinx.datetime/LocalDateProgression : kotlin.collections/Collection
     open fun toString(): kotlin/String // kotlinx.datetime/LocalDateProgression.toString|toString(){}[0]
 
     final object Companion // kotlinx.datetime/LocalDateProgression.Companion|null[0]
-}
-
-open class kotlinx.datetime/TimeZone { // kotlinx.datetime/TimeZone|null[0]
-    open val id // kotlinx.datetime/TimeZone.id|{}id[0]
-        open fun <get-id>(): kotlin/String // kotlinx.datetime/TimeZone.id.<get-id>|<get-id>(){}[0]
-
-    final fun (kotlin.time/Instant).toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/TimeZone.toLocalDateTime|toLocalDateTime@kotlin.time.Instant(){}[0]
-    final fun (kotlinx.datetime/Instant).toLocalDateTime(): kotlinx.datetime/LocalDateTime // kotlinx.datetime/TimeZone.toLocalDateTime|toLocalDateTime@kotlinx.datetime.Instant(){}[0]
-    final fun (kotlinx.datetime/LocalDateTime).toInstant(): kotlinx.datetime/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(){}[0]
-    final fun (kotlinx.datetime/LocalDateTime).toInstant(kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/TimeZone.toInstant|toInstant@kotlinx.datetime.LocalDateTime(kotlinx.datetime.OverloadMarker){}[0]
-    open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.datetime/TimeZone.equals|equals(kotlin.Any?){}[0]
-    open fun hashCode(): kotlin/Int // kotlinx.datetime/TimeZone.hashCode|hashCode(){}[0]
-    open fun offsetAt(kotlin.time/Instant): kotlinx.datetime/UtcOffset // kotlinx.datetime/TimeZone.offsetAt|offsetAt(kotlin.time.Instant){}[0]
-    open fun offsetInfoFor(kotlinx.datetime/LocalDateTime): kotlinx.datetime/LocalDateTimeOffsetInfo // kotlinx.datetime/TimeZone.offsetInfoFor|offsetInfoFor(kotlinx.datetime.LocalDateTime){}[0]
-    open fun toString(): kotlin/String // kotlinx.datetime/TimeZone.toString|toString(){}[0]
-
-    final object Companion { // kotlinx.datetime/TimeZone.Companion|null[0]
-        final val UTC // kotlinx.datetime/TimeZone.Companion.UTC|{}UTC[0]
-            final fun <get-UTC>(): kotlinx.datetime/FixedOffsetTimeZone // kotlinx.datetime/TimeZone.Companion.UTC.<get-UTC>|<get-UTC>(){}[0]
-        final val availableZoneIds // kotlinx.datetime/TimeZone.Companion.availableZoneIds|{}availableZoneIds[0]
-            final fun <get-availableZoneIds>(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime/TimeZone.Companion.availableZoneIds.<get-availableZoneIds>|<get-availableZoneIds>(){}[0]
-
-        final fun currentSystemDefault(): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZone.Companion.currentSystemDefault|currentSystemDefault(){}[0]
-        final fun of(kotlin/String): kotlinx.datetime/TimeZone // kotlinx.datetime/TimeZone.Companion.of|of(kotlin.String){}[0]
-        final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.datetime/TimeZone> // kotlinx.datetime/TimeZone.Companion.serializer|serializer(){}[0]
-    }
 }
 
 open class kotlinx.datetime/YearMonthProgression : kotlin.collections/Collection<kotlinx.datetime/YearMonth> { // kotlinx.datetime/YearMonthProgression|null[0]

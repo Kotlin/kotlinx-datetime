@@ -57,7 +57,7 @@ import kotlin.time.Instant
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.usage
  */
-public open class TimeZone internal constructor() {
+public abstract class TimeZone internal constructor() {
     /**
      * Returns the identifier string of the time zone.
      *
@@ -65,8 +65,7 @@ public open class TimeZone internal constructor() {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.id
      */
-    public open val id: String
-        get() = error("Should be overridden")
+    public abstract val id: String
 
     /**
      * Finds the offset from UTC this time zone has at the specified [instant] of physical time.
@@ -79,8 +78,7 @@ public open class TimeZone internal constructor() {
      * @see TimeZone.offsetAt
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetAt
      */
-    public open fun offsetAt(instant: Instant): UtcOffset =
-        error("Should be overridden")
+    public abstract fun offsetAt(instant: Instant): UtcOffset
 
     /**
      * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
@@ -92,16 +90,14 @@ public open class TimeZone internal constructor() {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoFor
      */
-    public open fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        error("Should be overridden")
+    public abstract fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
     /**
      * Equivalent to [id].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
-    public override fun toString(): String =
-        error("Should be overridden")
+    public abstract override fun toString(): String
 
     /**
      * Compares this time zone to the other one.
@@ -111,11 +107,9 @@ public open class TimeZone internal constructor() {
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */
-    public override fun equals(other: Any?): Boolean =
-        error("Should be overridden")
+    public abstract override fun equals(other: Any?): Boolean
 
-    public override fun hashCode(): Int =
-        error("Should be overridden")
+    public abstract override fun hashCode(): Int
 
     public companion object {
         /**
