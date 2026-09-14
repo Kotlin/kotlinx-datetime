@@ -15,31 +15,8 @@ import java.time.LocalDate as JTLocalDate
 import java.time.Period as JTPeriod
 import java.time.ZoneId
 import java.time.ZoneOffset as JTZoneOffset
-import kotlinx.datetime.Instant as kxdtInstant
 
 class ConvertersTest {
-
-    @Test
-    fun instant() {
-
-        fun test(seconds: Long, nanosecond: Int) {
-            val ktInstant = kxdtInstant.fromEpochSeconds(seconds, nanosecond.toLong())
-            val jtInstant = JTInstant.ofEpochSecond(seconds, nanosecond.toLong())
-
-            assertEquals(ktInstant, jtInstant.toKotlinInstant())
-            assertEquals(jtInstant, ktInstant.toJavaInstant())
-
-            assertEquals(ktInstant, jtInstant.toString().let(kxdtInstant::parse))
-            assertEquals(jtInstant, ktInstant.toString().let(JTInstant::parse))
-        }
-
-        repeat(STRESS_TEST_ITERATIONS) {
-            val seconds = Random.nextLong(1_000_000_000_000)
-            val nanos = Random.nextInt()
-            test(seconds, nanos)
-        }
-    }
-
     @OptIn(ExperimentalStdlibApi::class)
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
