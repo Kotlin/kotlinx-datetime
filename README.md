@@ -514,9 +514,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // 2026c is the most recent release of the IANA timezone database,
+                // 2026d is the most recent release of the IANA timezone database,
                 // 0.8.0 is `kotlinx-datetime` version
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026d-spi.0.8.0")
             }
         }
     }
@@ -620,7 +620,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026d-spi.0.8.0")
             }
         }
     }
