@@ -481,7 +481,57 @@ dependencies {
 }
 ```
 
-#### Note about time zones in JS
+#### Timezone databases
+
+By default, `kotlinx-datetime` uses the timezone information provided by the system
+(the exceptions are JS, Wasm/JS, and Wasm/WASI, which don't expose this information; see their subsections below).
+This information may be severely outdated, and depending on the use case, it may be important to access
+the most recent version of the timezone database.
+
+The `kotlinx-datetime-zoneinfo` artifact bundles the up-to-date version of the timezone database
+and is updated soon after the official announcement from [IANA](https://www.iana.org/time-zones).
+To access it, add this snippet:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                // 2026c is the most recent release of the IANA timezone database,
+                // 0.8.0 is `kotlinx-datetime` version
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime-zoneinfo:2026c-spi.0.8.0")
+            }
+        }
+    }
+}
+```
+
+This will introduce the `kotlinx.datetime.zoneinfo` package,
+containing `TimeZoneContext.Bundled`, which can be used in place of `TimeZoneContext.System`:
+
+```kotlin
+import kotlinx.datetime.*
+import kotlinx.datetime.zoneinfo.*
+import kotlin.time.*
+
+fun printCurrentTimeInBerlin(clock: Clock, timeZoneContext: TimeZoneContext) {
+    val instant = clock.now()
+    val localDateTime = instant.toLocalDateTime(timeZoneContext.get("Europe/Berlin"))
+    println(localDateTime)
+}
+
+fun main() {
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.System)
+    printCurrentTimeInBerlin(Clock.System, TimeZoneContext.Bundled)
+}
+```
+
+Note that `kotlinx-datetime-zoneinfo` takes 1 megabyte of space as of writing,
+which may be prohibitively much.
+Carefully evaluate whether the risk of using an outdated timezone database provided by the system
+is severe enough to justify this tradeoff.
+
+##### Note about time zones in JS
 
 By default, there's only one time zone available in Kotlin/JS: the `SYSTEM` time zone with a fixed offset.
 
@@ -553,7 +603,7 @@ kotlin {
     sourceSets {
         val wasmWasiMain by getting {
             dependencies {
-                implementation("kotlinx-datetime-zoneinfo", "2026c-spi.0.8.0")
+                implementation("kotlinx-datetime-zoneinfo", "2026d-spi.0.8.0")
             }
         }
     }
