@@ -10,6 +10,10 @@ import kotlinx.datetime.zoneinfo.*;
 
 public class QueryTimeZone {
     TimeZone readEuropeBerlin() {
-        return BundledTimeZoneContext.INSTANCE.get("Europe/Berlin");
+        return BundledTimeZoneContext.INSTANCE.getOrNull("Europe/Berlin");
+    }
+
+    public static void main(String[] args) {
+        new QueryTimeZone().readEuropeBerlin();
     }
 }

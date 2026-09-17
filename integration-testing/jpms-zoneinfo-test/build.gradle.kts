@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    application
 }
 
 java {
@@ -7,6 +8,15 @@ java {
 }
 
 dependencies {
-    api(project(":kotlinx-datetime"))
-    api(project(":kotlinx-datetime-zoneinfo"))
+    implementation(project(":kotlinx-datetime"))
+    implementation(project(":kotlinx-datetime-zoneinfo"))
+}
+
+application {
+    mainClass.set("my.jpms.test.QueryTimeZone")
+    mainModule.set("my.jpms.test")
+}
+
+tasks.named("check") {
+    dependsOn(tasks.named("run"))
 }
