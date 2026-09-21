@@ -22,7 +22,7 @@ private class TzdbBionic(private val rules: Map<String, Entry>) : RuleBasedTimeZ
 }
 
 // see https://android.googlesource.com/platform/bionic/+/master/libc/tzcode/bionic.cpp for the format
-internal fun TzdbBionic(): RuleBasedTimeZoneDatabase = TzdbBionic(buildMap<String, TzdbBionic.Entry> {
+internal fun TzdbBionic(): RuleBasedTimeZoneDatabase = TzdbBionic(buildMap {
     for (path in listOf(
         Path.fromString("/system/usr/share/zoneinfo/tzdata"), // immutable fallback tzdb
         Path.fromString("/apex/com.android.tzdata/etc/tz/tzdata"), // an up-to-date tzdb, may not exist

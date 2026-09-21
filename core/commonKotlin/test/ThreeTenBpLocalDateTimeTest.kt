@@ -38,7 +38,7 @@ class ThreeTenBpLocalDateTimeTest {
         var hour = 0
         var min = 0
         var sec = 0
-        for (i in 0..3699) {
+        repeat(3700) {
             t = t.plusSeconds(1)
             sec++
             if (sec == 60) {

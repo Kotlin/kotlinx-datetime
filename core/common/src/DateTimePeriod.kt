@@ -578,9 +578,9 @@ public class DatePeriod internal constructor(
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(
-    internal override val totalMonths: Long,
+    override val totalMonths: Long,
     override val days: Int,
-    internal override val totalNanoseconds: Long,
+    override val totalNanoseconds: Long,
 ) : DateTimePeriod()
 
 private fun totalMonths(years: Int, months: Int): Long = (years.toLong() * 12 + months.toLong()).also {

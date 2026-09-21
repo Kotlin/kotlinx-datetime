@@ -3,11 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:OptIn(ExperimentalForeignApi::class)
-
 package kotlinx.datetime.internal
 
-import kotlinx.cinterop.*
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.TimeZone
