@@ -74,7 +74,7 @@ private val jodaTzdb: Result<RuleBasedTimeZoneDatabase?> = runCatching {
         val lengthsOfPeriodsWithOffsets = components[4].split(' ').map(::base60MinutesInSeconds)
         zones[components[0]] = TimeZoneRulesCommon(
             transitionEpochSeconds = lengthsOfPeriodsWithOffsets.runningReduce(Long::plus).let {
-                if (it.size == indices.size - 1) it else it.take<Long>(indices.size - 1)
+                if (it.size == indices.size - 1) it else it.take(indices.size - 1)
             },
             offsets = indices.map { offsets[it] },
             recurringZoneRules = null

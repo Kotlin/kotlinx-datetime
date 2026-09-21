@@ -1,6 +1,4 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
-import java.util.Locale
 
 plugins {
     id("kotlin-multiplatform")

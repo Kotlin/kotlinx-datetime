@@ -10,7 +10,6 @@ package kotlinx.datetime
 
 import kotlinx.datetime.internal.*
 import kotlinx.datetime.serializers.*
-import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 public actual open class TimeZone internal constructor() {

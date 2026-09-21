@@ -11,10 +11,7 @@ import kotlin.test.*
 import kotlin.test.Test
 import kotlin.time.Instant
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.nanoseconds
-import kotlin.time.ExperimentalTime
 
-@OptIn(kotlin.time.ExperimentalTime::class)
 class TimezonesWithoutDatabaseTest {
     @Test
     fun system() {
@@ -109,8 +106,11 @@ class TimezonesWithoutDatabaseTest {
         val offsets = sameOffsetTZs.map { (it as FixedOffsetTimeZone).offset }
         val zoneIds = sameOffsetTZs.map { it.id }
 
-        assertTrue(offsets.distinct().size == 1, "Expected all offsets to be equal: $offsets")
-        assertTrue(offsets.map { it.toString() }.distinct().size == 1, "Expected all offsets to have the same string representation: $offsets")
+        assertEquals(1, offsets.distinct().size, "Expected all offsets to be equal: $offsets")
+        assertEquals(1,
+            offsets.map { it.toString() }.distinct().size,
+            "Expected all offsets to have the same string representation: $offsets"
+        )
 
         assertTrue(zoneIds.distinct().size > 1, "Expected some fixed offset zones to have different ids: $zoneIds")
     }

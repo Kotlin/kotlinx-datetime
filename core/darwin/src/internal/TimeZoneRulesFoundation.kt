@@ -20,7 +20,6 @@ import platform.Foundation.NSCalendarIdentifierISO8601
 import platform.Foundation.NSCalendarUnitYear
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
-import platform.Foundation.timeZoneWithName
 import kotlin.time.Instant
 
 internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : TimeZoneRules {
@@ -45,8 +44,7 @@ internal class TimeZoneRulesFoundation(private val nsTimeZone: NSTimeZone) : Tim
         var currentDate: NSDate = startOfTheYear
         var offset = infoAtNsDate(startOfTheYear)
         do {
-            val transitionDateTime = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(currentDate)
-            if (transitionDateTime == null) break
+            val transitionDateTime = nsTimeZone.nextDaylightSavingTimeTransitionAfterDate(currentDate) ?: break
 
             val yearOfNextDate = calendar.component(NSCalendarUnitYear.convert(), fromDate = transitionDateTime)
             val transitionDateTimeInstant = transitionDateTime.toKotlinInstant()

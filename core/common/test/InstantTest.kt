@@ -306,7 +306,7 @@ class InstantTest {
         val start = Instant.parse("2019-02-10T02:00:00-05:00")
         val expectedEnd = Instant.parse("2019-03-11T02:00:00-04:00")
         val end = start.plus(DateTimePeriod(months = 1, days = 1), zone)
-        // assertEquals(expectedEnd, end)
+        assertEquals(expectedEnd, end)
         val period = start.periodUntil(end, zone)
         assertEquals(end, start.plus(period, zone))
     }

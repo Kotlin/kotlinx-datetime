@@ -11,7 +11,6 @@ import kotlinx.serialization.json.*
 import kotlin.test.*
 import kotlin.time.*
 
-@OptIn(ExperimentalTime::class)
 class InstantSerializationTest {
     object Rfc1123InstantSerializer : FormattedInstantSerializer("RFC_1123", DateTimeComponents.Formats.RFC_1123)
 

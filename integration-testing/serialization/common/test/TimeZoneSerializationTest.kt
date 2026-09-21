@@ -9,7 +9,6 @@ import kotlinx.datetime.*
 import kotlinx.datetime.serializers.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
-import kotlinx.serialization.serializer
 import kotlin.test.*
 
 class TimeZoneSerializationTest {

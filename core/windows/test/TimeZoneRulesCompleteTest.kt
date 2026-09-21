@@ -40,7 +40,6 @@ class TimeZoneRulesCompleteTest {
     }
 
     /** Tests that all transitions that our system recognizes are actually there. */
-    @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbInRegistry()

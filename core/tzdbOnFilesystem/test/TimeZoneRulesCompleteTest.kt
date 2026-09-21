@@ -14,7 +14,6 @@ import kotlin.test.*
 import kotlin.time.Instant
 
 class TimeZoneRulesCompleteTest {
-    @OptIn(ExperimentalEncodingApi::class)
     @Test
     fun iterateOverAllTimezones() {
         val tzdb = TzdbOnFilesystem()
@@ -58,8 +57,8 @@ class TimeZoneRulesCompleteTest {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
-private inline fun runUnixCommand(command: String): Sequence<String> = sequence {
+@OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
+private fun runUnixCommand(command: String): Sequence<String> = sequence {
     val pipe = popen(command, "r") ?: error("Failed to run command: $command")
     try {
         memScoped {

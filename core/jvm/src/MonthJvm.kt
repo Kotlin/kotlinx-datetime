@@ -11,7 +11,7 @@ package kotlinx.datetime
  * @suppress
  */
 @Deprecated("Use kotlinx.datetime.Month", ReplaceWith("toKotlinMonth().number"))
-public val java.time.Month.number: Int get() = this.toKotlinMonth().number
+public val java.time.Month.number: Int get() = toKotlinMonth().number
 
 /**
  * @suppress
@@ -22,4 +22,4 @@ public val java.time.Month.number: Int get() = this.toKotlinMonth().number
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @kotlin.internal.LowPriorityInOverloadResolution
-public fun Month(number: Int): java.time.Month = kotlinx.datetime.Month(number).toJavaMonth()
+public fun Month(number: Int): java.time.Month = Month(number).toJavaMonth()
