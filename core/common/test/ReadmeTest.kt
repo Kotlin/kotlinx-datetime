@@ -72,19 +72,19 @@ class ReadmeTest {
 
     @Test
     fun testConvertingInstantToAndFromUnixTime() {
-        Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
+        val _ = Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
     }
 
     @Test
     fun testConvertingInstantAndLocalDateTimeToAndFromIso8601String() {
         val instantNow = Clock.System.now()
-        instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
+        val _ = instantNow.toString()  // returns something like 2015-12-31T12:30:00Z
         val instantBefore = Instant.parse("2010-06-01T22:19:44.475Z")
 
-        LocalDateTime.parse("2010-06-01T22:19:44")
-        LocalDate.parse("2010-06-01")
-        LocalTime.parse("12:01:03")
-        LocalTime.parse("12:00:03.999")
+        val _ = LocalDateTime.parse("2010-06-01T22:19:44")
+        val _ = LocalDate.parse("2010-06-01")
+        val _ = LocalTime.parse("12:01:03")
+        val _ = LocalTime.parse("12:00:03.999")
         assertFailsWith<IllegalArgumentException> { LocalTime.parse("12:0:03.999") }
     }
 
@@ -128,7 +128,7 @@ class ReadmeTest {
         val dateTimeFormat = LocalDateTime.Format {
             byUnicodePattern("yyyy-MM-dd'T'HH:mm:ss[.SSS]")
         }
-        dateTimeFormat.parse("2023-12-24T23:59:59")
+        val _ = dateTimeFormat.parse("2023-12-24T23:59:59")
     }
 
     @Test
@@ -169,9 +169,9 @@ class ReadmeTest {
 
             val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.UTC)
 
-            instantInThePast.yearsUntil(Clock.System.now(), TimeZone.UTC)
-            instantInThePast.monthsUntil(Clock.System.now(), TimeZone.UTC)
-            instantInThePast.daysUntil(Clock.System.now(), TimeZone.UTC)
+            val _ = instantInThePast.yearsUntil(Clock.System.now(), TimeZone.UTC)
+            val _ = instantInThePast.monthsUntil(Clock.System.now(), TimeZone.UTC)
+            val _ = instantInThePast.daysUntil(Clock.System.now(), TimeZone.UTC)
 
             val diffInMonths = instantInThePast.until(Clock.System.now(), DateTimeUnit.MONTH, TimeZone.UTC)
         }
@@ -188,13 +188,13 @@ class ReadmeTest {
     fun testDateArithmetic() {
         val date = LocalDate(2023, 1, 7)
         val date2 = date.plus(1, DateTimeUnit.DAY)
-        date.plus(DatePeriod(days = 1))
-        date.until(date2, DateTimeUnit.DAY)
-        date.yearsUntil(date2)
-        date.monthsUntil(date2)
-        date.daysUntil(date2)
-        date.periodUntil(date2)
-        date2 - date
+        val _ = date.plus(DatePeriod(days = 1))
+        val _ = date.until(date2, DateTimeUnit.DAY)
+        val _ = date.yearsUntil(date2)
+        val _ = date.monthsUntil(date2)
+        val _ = date.daysUntil(date2)
+        val _ = date.periodUntil(date2)
+        val _ = date2 - date
     }
 
     @Test

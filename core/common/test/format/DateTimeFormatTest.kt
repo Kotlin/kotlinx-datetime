@@ -124,7 +124,7 @@ class DateTimeFormatTest {
             "x"
         )
         for (format in formats) {
-            DateTimeComponents.Format { chars(format) }.parse(format)
+            val _ = DateTimeComponents.Format { chars(format) }.parse(format)
         }
     }
 
@@ -155,21 +155,21 @@ class DateTimeFormatTest {
         val formatWithFraction = DateTimeComponents.Format {
             secondFraction(3)
         }
-        formatWithFraction.parse("999")
+        formatWithFraction.parse("999").apply { assertEquals(999_000_000, nanosecond) }
         assertFailsWith<IllegalArgumentException> {
             formatWithFraction.parse("٩٩٩")
         }
         val formatWithArbitraryWidthNumber = DateTimeComponents.Format {
             year()
         }
-        formatWithArbitraryWidthNumber.parse("+99999")
+        formatWithArbitraryWidthNumber.parse("+99999").apply { assertEquals(99_999, year) }
         assertFailsWith<IllegalArgumentException> {
             formatWithArbitraryWidthNumber.parse("+٩٩٩٩٩")
         }
         val formatWithFixedWidthNumber = DateTimeComponents.Format {
             monthNumber()
         }
-        formatWithFixedWidthNumber.parse("99")
+        formatWithFixedWidthNumber.parse("99").apply { assertEquals(99, monthNumber) }
         assertFailsWith<IllegalArgumentException> {
             formatWithFixedWidthNumber.parse("٩٩")
         }
@@ -178,7 +178,7 @@ class DateTimeFormatTest {
             chars("٩٩")
             chars("99")
         }
-        formatWithNonAsciiNumberInString.parse("99٩٩99")
+        val _ = formatWithNonAsciiNumberInString.parse("99٩٩99")
     }
 }
 

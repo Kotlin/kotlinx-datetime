@@ -10,7 +10,7 @@ import kotlinx.datetime.*
  * To test the deprecation replacements, remove the `Suppress` annotation and try automatically replacing the deprecated
  * API usages with the new ones.
  */
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "RETURN_VALUE_NOT_USED", "RETURN_VALUE_NOT_USED_COERCION")
 class DeprecationReplacements {
     fun localTimeAtDate() {
         LocalTime(18, 43, 15, 100500000)

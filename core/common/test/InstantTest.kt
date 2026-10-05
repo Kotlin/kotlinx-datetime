@@ -146,7 +146,7 @@ class InstantTest {
         val endInstant = Instant.parse("2019-10-27T01:30:00+02:00")
         for (exception in predefinedExceptions) {
             val handler = MyHandler(exception)
-            fun test(block: () -> Unit) {
+            fun test(block: () -> Any?) {
                 assertSame(exception, assertFails { block() })
             }
             test { dayBeforeEndInstant.plus(DateTimePeriod(days = 1), timeZone, handler) }
@@ -224,7 +224,7 @@ class InstantTest {
         assertEquals(offset1, offset3)
 
         // without the minus, this test fails on JVM
-        (Instant.MAX - (2 * 365).days).offsetIn(zone)
+        val _ = (Instant.MAX - (2 * 365).days).offsetIn(zone)
     }
 
     @Test
@@ -593,8 +593,8 @@ class InstantRangeTest {
                 instant.minus(Int.MIN_VALUE, DateTimeUnit.SECOND, UTC).epochSeconds)
         }
         // Overflowing a LocalDateTime in input
-        maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC)
-        minValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC)
+        val _ = maxValidInstant.plus(DateTimePeriod(nanoseconds = -1), UTC)
+        val _ = minValidInstant.plus(DateTimePeriod(nanoseconds = 1), UTC)
         assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(DateTimePeriod(nanoseconds = -2), UTC) }
         assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(DateTimePeriod(nanoseconds = 2), UTC) }
         // Overflowing a LocalDateTime in result
@@ -625,8 +625,8 @@ class InstantRangeTest {
             roundTrip(2L * Int.MIN_VALUE, DateTimeUnit.MONTH)
         }
         // Overflowing a LocalDateTime in input
-        maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
-        minValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC)
+        val _ = maxValidInstant.plus(-1, DateTimeUnit.NANOSECOND, UTC)
+        val _ = minValidInstant.plus(1, DateTimeUnit.NANOSECOND, UTC)
         assertArithmeticFails { (maxValidInstant + 1.nanoseconds).plus(-2, DateTimeUnit.NANOSECOND, UTC) }
         assertArithmeticFails { (minValidInstant - 1.nanoseconds).plus(2, DateTimeUnit.NANOSECOND, UTC) }
         // Overflowing a LocalDateTime in result
@@ -655,7 +655,7 @@ class InstantRangeTest {
     @Test
     fun periodUntilOutOfRange() {
         // Instant.periodUntil
-        maxValidInstant.periodUntil(maxValidInstant, UTC)
+        val _ = maxValidInstant.periodUntil(maxValidInstant, UTC)
         assertArithmeticFails { (maxValidInstant + 1.nanoseconds).periodUntil(maxValidInstant, UTC) }
         assertArithmeticFails { minValidInstant.periodUntil(minValidInstant - 1.nanoseconds, UTC) }
     }
@@ -676,8 +676,8 @@ class InstantRangeTest {
         assertArithmeticFails { (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND, UTC) }
         assertArithmeticFails { maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND, UTC) }
         // Overloads without a TimeZone should not fail on overflowing a LocalDateTime
-        (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
-        maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
+        val _ = (maxValidInstant + 1.nanoseconds).until(maxValidInstant, DateTimeUnit.NANOSECOND)
+        val _ = maxValidInstant.until(maxValidInstant + 1.nanoseconds, DateTimeUnit.NANOSECOND)
     }
 
     // https://github.com/Kotlin/kotlinx-datetime/issues/263

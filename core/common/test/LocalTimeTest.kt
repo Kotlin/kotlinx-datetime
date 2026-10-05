@@ -80,7 +80,7 @@ class LocalTimeTest {
 
     @Test
     fun constructInvalidTime() {
-        LocalTime(23, 59)
+        val _ = LocalTime(23, 59)
         assertFailsWith<IllegalArgumentException> { LocalTime(-1, 0) }
         assertFailsWith<IllegalArgumentException> { LocalTime(24, 0) }
         assertFailsWith<IllegalArgumentException> { LocalTime(0, -1) }

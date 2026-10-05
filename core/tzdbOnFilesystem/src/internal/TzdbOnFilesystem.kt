@@ -35,7 +35,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): RuleBasedTimeZon
     }
 
     override fun availableZoneIds(): Set<String> = buildSet {
-        tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
+        val _ = tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 
     override fun toString(): String = "TzdbOnFilesystem(tzdbPath=$tzdbPath)"

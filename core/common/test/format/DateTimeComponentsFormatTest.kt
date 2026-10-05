@@ -254,7 +254,11 @@ class DateTimeComponentsFormatTest {
         val format = DateTimeComponents.Format {
             byUnicodePattern("uuuu-MM-dd'T'HH:mm[:ss[.SSS]]xxxxx'['VV']'")
         }
-        format.parse("2023-01-20T23:53:16.312+03:30[Asia/Tehran]")
+        format.parse("2023-01-20T23:53:16.312+03:30[Asia/Tehran]").apply {
+            assertEquals(LocalDateTime(2023, 1, 20, 23, 53, 16, 312_000_000), toLocalDateTime())
+            assertEquals(UtcOffset(hours = 3, minutes = 30), toUtcOffset())
+            assertEquals("Asia/Tehran", timeZoneId)
+        }
     }
 
     private fun test(strings: Map<DateTimeComponents, Pair<String, Set<String>>>, format: DateTimeFormat<DateTimeComponents>) {
@@ -454,7 +458,7 @@ class DateTimeComponentsFormatTest {
     }
 
     private fun assertParseableAsTimeZone(zoneId: String) {
-        TimeZoneContext.System.get(zoneId)
+        val _ = TimeZoneContext.System.get(zoneId)
         assertParseableAsNamedTimeZone(zoneId)
         assertParseableAsNamedTimeZoneWithDelimiters(zoneId)
     }

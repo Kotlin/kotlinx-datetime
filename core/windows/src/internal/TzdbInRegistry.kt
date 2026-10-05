@@ -359,7 +359,7 @@ private class PerYearZoneRulesDataWithTransitions(
 
 internal fun getLastWindowsError(): String = memScoped {
     val buf = alloc<CArrayPointerVar<WCHARVar>>()
-    FormatMessage!!(
+    val _ = FormatMessage!!(
             (FORMAT_MESSAGE_ALLOCATE_BUFFER or FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_IGNORE_INSERTS).toUInt(),
             null,
             GetLastError(),
