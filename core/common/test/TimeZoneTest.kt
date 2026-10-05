@@ -90,6 +90,19 @@ class TimeZoneTest {
         }
     }
 
+    @Test
+    fun contextParameterOverloadsInWith() {
+        // checking that this compiles
+        with(TimeZoneContext.System.get("Europe/Berlin")) {
+            val ldt = Clock.System.now().toLocalDateTime()
+            ldt.toInstant(TransitionHandler.USE_OFFSET_BEFORE)
+        }
+        with(TimeZone.UTC) {
+            val ldt = Clock.System.now().toLocalDateTime()
+            ldt.toInstant()
+        }
+    }
+
     // from 310bp
     @Test
     fun timeZoneEquals() {
