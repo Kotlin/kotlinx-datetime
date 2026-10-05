@@ -323,6 +323,15 @@ class DateTimeComponentsFormatTest {
     }
 
     @Test
+    fun testMultipleTimeZoneIds() {
+        val format = DateTimeComponents.Format {
+            char('['); timeZoneId(); char(']'); char('['); timeZoneId(); char(']')
+        }
+        format.parse("[A][A]").apply { assertEquals("A", timeZoneId) }
+        format.assertCanNotParse("[A][B]")
+    }
+
+    @Test
     fun testSpecialNamedTimeZones() {
         OffsetTimeZoneTestData.tzPrefixes.forEach(::assertParseableAsTimeZone)
     }

@@ -147,7 +147,6 @@ internal class TimeZoneParserOperation<Output>(
         val lastMatch = validateTimeZone(input, startIndex)
         return if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
-            ParseResult.Ok(lastMatch)
         } else {
             ParseResult.Error(startIndex) { "Invalid timezone format" }
         }
