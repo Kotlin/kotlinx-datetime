@@ -32,6 +32,7 @@ public sealed interface DateTimeFormat<T> {
      * @throws IllegalArgumentException if the value does not contain all the information required by the format.
      * @sample kotlinx.datetime.test.samples.format.DateTimeFormatSamples.formatTo
      */
+    @IgnorableReturnValue
     public fun <A : Appendable> formatTo(appendable: A, value: T): A
 
     /**
