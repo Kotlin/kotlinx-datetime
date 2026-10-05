@@ -168,6 +168,10 @@ kotlin {
         resources.srcDir("$targetName/${suffix?.let { it + "Resources" } ?: "resources"}")
     }
 
+    compilerOptions {
+        freeCompilerArgs.add("-Xreturn-value-checker=full")
+    }
+
     sourceSets {
         commonMain {
             dependencies {
