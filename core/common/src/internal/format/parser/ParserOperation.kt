@@ -147,7 +147,6 @@ internal class TimeZoneParserOperation<Output>(
         val lastMatch = validateTimeZone(input, startIndex)
         return if (lastMatch > startIndex) {
             setter.setWithoutReassigning(storage, input.substring(startIndex, lastMatch), startIndex, lastMatch)
-            ParseResult.Ok(lastMatch)
         } else {
             ParseResult.Error(startIndex) { "Invalid timezone format" }
         }
@@ -531,6 +530,7 @@ internal interface AssignableField<in Object, Type> {
      * There exist formats where the same data is repeated several times in the same object, for example,
      * "14:15 (02:15 PM)". In such cases, we want to ensure that the values are consistent.
      */
+    @IgnorableReturnValue
     fun trySetWithoutReassigning(container: Object, newValue: Type): Type?
 
     /**

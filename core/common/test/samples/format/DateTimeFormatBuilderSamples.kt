@@ -3,6 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
+@file:Suppress("RETURN_VALUE_NOT_USED") // TODO: remove when play.kotlinlang.org supports `val _ = /*...*/`
 package kotlinx.datetime.test.samples.format
 
 import kotlinx.datetime.*

@@ -73,6 +73,26 @@ class YearMonthFormatTest {
         }
     }
 
+    @Test
+    fun testParsingMonthNameTwice() {
+        YearMonth.Format { year(); monthNumber(); monthNumber() }.apply {
+            val _ = parse("20240101")
+            assertCanNotParse("20240102")
+        }
+        YearMonth.Format { year(); monthNumber(); monthName(MonthNames.ENGLISH_ABBREVIATED) }.apply {
+            val _ = parse("202401Jan")
+            assertCanNotParse("202401Feb")
+        }
+        YearMonth.Format {
+            year()
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }.apply {
+            val _ = parse("2024JanJan")
+            assertCanNotParse("2024JanFeb")
+        }
+    }
+
     private fun test(strings: Map<YearMonth, Pair<String, Set<String>>>, format: DateTimeFormat<YearMonth>) {
         for ((yearMonth, stringsForYearMonth) in strings) {
             val (canonicalString, otherStrings) = stringsForYearMonth

@@ -654,8 +654,9 @@ private fun Instant.toLocalDateTimeFailing(timeZone: TimeZone): LocalDateTime =
 /** Check that [Instant] fits in [LocalDateTime].
  * This is done on the results of computations for consistency with other platforms.
  */
+@IgnorableReturnValue
 private fun Instant.check(zone: TimeZone): Instant = this@check.also {
-    toLocalDateTimeFailing(zone)
+    val _ = toLocalDateTimeFailing(zone)
 }
 
 private fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.DateBased) =

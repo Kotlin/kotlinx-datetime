@@ -168,8 +168,8 @@ class YearMonthTest {
 
     @Test
     fun unitArithmeticOutOfRange() {
-        maxYearMonth.plus(-1, DateTimeUnit.MONTH)
-        minYearMonth.plus(1, DateTimeUnit.MONTH)
+        val _ = maxYearMonth.plus(-1, DateTimeUnit.MONTH)
+        val _ = minYearMonth.plus(1, DateTimeUnit.MONTH)
         // Arithmetic overflow
         assertArithmeticFails { maxYearMonth.plus(Long.MAX_VALUE, DateTimeUnit.YEAR) }
         assertArithmeticFails { maxYearMonth.plus(Long.MAX_VALUE - 2, DateTimeUnit.YEAR) }

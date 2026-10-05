@@ -62,8 +62,10 @@ class TimeZoneTest {
                 continue
             }
             availableZones.add(zoneName)
-            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
-            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
+            val _ = Instant.DISTANT_FUTURE
+                .toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
+            val _ = Instant.DISTANT_PAST
+                .toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
         }
         if (nonAvailableZones.isNotEmpty()) {
             println("Available zones: $availableZones")

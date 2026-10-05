@@ -37,7 +37,7 @@ internal fun TzdbBionic(): RuleBasedTimeZoneDatabase = TzdbBionic(buildMap {
             val name = reader.readNullTerminatedUtf8String(40)
             val start = reader.readInt()
             val length = reader.readInt()
-            reader.readInt() // unused
+            val _ = reader.readInt()
             // intentionally overwrite the older entries
             put(name, TzdbBionic.Entry(content, header.data_offset + start, length))
         }

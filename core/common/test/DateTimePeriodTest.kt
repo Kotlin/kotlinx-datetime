@@ -76,6 +76,7 @@ class DateTimePeriodTest {
         assertEquals("P1DT-0.999999999S", DateTimePeriod(days = 1, seconds = -1, nanoseconds = 1L).toString())
     }
 
+    @IgnorableReturnValue
     private inline fun <reified T : IllegalArgumentException> assertFailsToParse(text: String): T {
         assertNull(DateTimePeriod.parseOrNull(text))
         return assertFailsWith<T> { DateTimePeriod.parse(text) }
@@ -145,7 +146,7 @@ class DateTimePeriodTest {
 
         // non-zero time components when parsing DatePeriod
         assertFailsWith<IllegalArgumentException> { DatePeriod.parse("P1DT1H") }
-        DatePeriod.parse("P1DT0H")
+        assertEquals(DatePeriod(days = 1), DatePeriod.parse("P1DT0H"))
     }
 
     @Test

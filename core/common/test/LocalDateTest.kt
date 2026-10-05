@@ -205,8 +205,8 @@ class LocalDateTest {
     @Test
     fun unitArithmeticOutOfRange() {
         // LocalDate.plus(Long, DateTimeUnit)
-        LocalDate.MAX.plus(-1, DateTimeUnit.DAY)
-        LocalDate.MIN.plus(1, DateTimeUnit.DAY)
+        val _ = LocalDate.MAX.plus(-1, DateTimeUnit.DAY)
+        val _ = LocalDate.MIN.plus(1, DateTimeUnit.DAY)
         // Arithmetic overflow
         assertArithmeticFails { LocalDate.MAX.plus(Long.MAX_VALUE, DateTimeUnit.YEAR) }
         assertArithmeticFails { LocalDate.MAX.plus(Long.MAX_VALUE - 2, DateTimeUnit.YEAR) }
@@ -221,7 +221,7 @@ class LocalDateTest {
     @Test
     fun periodArithmeticOutOfRange() {
         // LocalDate.plus(DatePeriod)
-        LocalDate.MAX.plus(DatePeriod(years = -2, months = 12, days = 31))
+        val _ = LocalDate.MAX.plus(DatePeriod(years = -2, months = 12, days = 31))
         // Exceeding the boundaries in result
         assertArithmeticFails {
             LocalDate.MAX.plus(DatePeriod(years = -2, months = 24, days = 1))

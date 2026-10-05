@@ -15,7 +15,7 @@ import kotlin.time.Instant
 class BundledTimeZoneContextTest {
     @Test
     fun testTimeZoneResourceExists() {
-        BundledTimeZoneContext.get("Europe/London")
+        val _ = BundledTimeZoneContext.get("Europe/London")
     }
 
     @Test
@@ -56,8 +56,10 @@ class BundledTimeZoneContextTest {
                 continue
             }
             availableZones.add(zoneName)
-            Instant.DISTANT_FUTURE.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
-            Instant.DISTANT_PAST.toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
+            val _ = Instant.DISTANT_FUTURE
+                .toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
+            val _ = Instant.DISTANT_PAST
+                .toLocalDateTime(timezone).toInstant(timezone, TransitionHandler.USE_OFFSET_BEFORE)
         }
         if (nonAvailableZones.isNotEmpty()) {
             println("Available zones: $availableZones")

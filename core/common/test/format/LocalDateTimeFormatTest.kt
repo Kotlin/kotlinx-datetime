@@ -177,7 +177,7 @@ class LocalDateTimeFormatTest {
             second(Padding.SPACE)
         }.apply {
             test(dateTimes, this)
-            parse(" 008- 7- 5  0: 0: 0")
+            val _ = parse(" 008- 7- 5  0: 0: 0")
             assertCanNotParse("  008- 7- 5  0: 0: 0")
             assertCanNotParse("  8- 7- 5  0: 0: 0")
             assertCanNotParse(" 008-  7- 5  0: 0: 0")

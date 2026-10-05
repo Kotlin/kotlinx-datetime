@@ -110,8 +110,8 @@ internal fun readTzFile(data: ByteArray): TzFile {
         }
         // The following fields are not used in practice. See https://datatracker.ietf.org/doc/html/rfc8536#section-3.2,
         // near the end of the section, `A given pair of standard/wall and UT/local indicators...`
-        repeat(header.ttisstdcnt) { readByte() }
-        repeat(header.ttisutcnt) { readByte() }
+        repeat(header.ttisstdcnt) { val _ = readByte() }
+        repeat(header.ttisutcnt) { val _ = readByte() }
         return TzFileData(
             leapSecondRules,
             transitionTimes.zip(transitionTypes) { time, type -> TzFileData.Transition(time, type.toInt()) },
@@ -159,7 +159,7 @@ internal fun readTzFile(data: ByteArray): TzFile {
             TzFile(reader.read32BitData(header), null)
         }
         else -> {
-            reader.read32BitData(header) // skipped
+            val _ = reader.read32BitData(header)
             val newHeader = readHeader()
             val parsedData = reader.read64BitData(newHeader)
             val footer = reader.readFooter()
