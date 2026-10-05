@@ -32,5 +32,7 @@ include(":integration-testing/js-with-timezones")
 project(":integration-testing/js-with-timezones").name = "kotlinx-datetime-js-test-with-timezones"
 include(":integration-testing/jpms-test")
 project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
+include(":integration-testing/jpms-zoneinfo-test")
+project(":integration-testing/jpms-zoneinfo-test").name = "kotlinx-datetime-zoneinfo-test-with-jpms"
 include(":benchmarks")
 include(":test-utils")
