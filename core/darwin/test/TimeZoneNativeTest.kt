@@ -349,12 +349,12 @@ class TimeZoneNativeTest {
     @Test
     fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularRules = tzdb.rulesForId(zoneId)
-            val foundationRules = TimeZoneRulesFoundation(NSTimeZone.timeZoneWithName(zoneId)!!)
+            val regularRules = tzdb.get(zoneId)
+            val foundationRules = DarwinTimeZone(NSTimeZone.timeZoneWithName(zoneId)!!, zoneId)
 
             for ((localDateTime, expectedType) in localDateTimes) {
-                val regularInfo = regularRules.infoAtDatetime(localDateTime)
-                val foundationInfo = foundationRules.infoAtDatetime(localDateTime)
+                val regularInfo = regularRules.offsetInfoFor(localDateTime)
+                val foundationInfo = foundationRules.offsetInfoFor(localDateTime)
 
                 assertOffsetInfoType(foundationInfo, expectedType)
 
