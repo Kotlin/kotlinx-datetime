@@ -74,3 +74,5 @@ class TimeZoneNativeTest {
         }
     }
 }
+
+actual val KNOWLEDGE_CUTOFF_AT_INT32: Boolean = false

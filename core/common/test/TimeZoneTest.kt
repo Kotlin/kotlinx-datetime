@@ -227,35 +227,25 @@ class TimeZoneTest {
 
     @Test
     fun checkKnownTimezoneDatabaseRecords() {
-        with(TimeZoneContext.System.get("America/New_York")) {
-            checkRegular(this, LocalDateTime(2019, 3, 8, 23, 0), UtcOffset(hours = -5))
-            checkGap(this, LocalDateTime(2019, 3, 10, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 6, 2, 23, 0), UtcOffset(hours = -4))
-            checkOverlap(this, LocalDateTime(2019, 11, 3, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = -5))
-        }
-        with(TimeZoneContext.System.get("Europe/Berlin")) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
-            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
-            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
-        }
+        checkKnownHistory(TimeZoneContext.System.get("America/New_York"), americaNewYorkTransitionHistory.limit())
+        checkKnownHistory(TimeZoneContext.System.get("Europe/Berlin"), europeBerlinTransitionHistory.limit())
+        checkKnownHistory(TimeZoneContext.System.get("Australia/Sydney"), australiaSydneyTransitionHistory.limit())
         with(TimeZoneContext.System.get("Europe/Moscow")) {
             checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 3))
             checkRegular(this, LocalDateTime(2011, 1, 31, 1, 0), UtcOffset(hours = 3))
             checkGap(this, LocalDateTime(2011, 3, 27, 2, 0))
             checkRegular(this, LocalDateTime(2011, 5, 3, 1, 0), UtcOffset(hours = 4))
         }
-        with(TimeZoneContext.System.get("Australia/Sydney")) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 11))
-            checkOverlap(this, LocalDateTime(2019, 4, 7, 3, 0))
-            checkRegular(this, LocalDateTime(2019, 10, 6, 1, 0), UtcOffset(hours = 10))
-            checkGap(this, LocalDateTime(2019, 10, 6, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 11))
-        }
     }
 
     private fun LocalDateTime(year: Int, month: Int, day: Int) = LocalDateTime(year, month, day, 0, 0)
-
 }
+
+private fun List<LocalDateTimeOffsetInfo.Transition>.limit(): List<LocalDateTimeOffsetInfo.Transition> =
+    if (KNOWLEDGE_CUTOFF_AT_INT32) {
+        takeWhile { it.transitionInstant.epochSeconds < Int.MAX_VALUE }
+    } else {
+        this
+    }
+
+expect val KNOWLEDGE_CUTOFF_AT_INT32: Boolean

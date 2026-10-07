@@ -257,3 +257,5 @@ private data class Mismatch(
     val windowsGuess: LocalDateTime,
     val instant: Instant,
 )
+
+actual val KNOWLEDGE_CUTOFF_AT_INT32: Boolean = false
