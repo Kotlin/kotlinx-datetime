@@ -28,7 +28,10 @@ fun KotlinJsTargetDsl.configureTestWithTheLatestJsTarget() {
 
     val latestJsCompilation = compilations.create("latestJsTest") {
         associateWith(mainCompilation)
-        defaultSourceSet.dependsOn(testCompilation.defaultSourceSet)
+        defaultSourceSet {
+            testCompilation.defaultSourceSet.dependsOn.forEach(::dependsOn)
+            kotlin.srcDirs(testCompilation.defaultSourceSet.kotlin)
+        }
         binaries.executable(this)
         binaries.configureEach {
             linkTask.configure {
