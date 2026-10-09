@@ -205,10 +205,11 @@ public fun Instant.until(
 ): Long =
     when (unit) {
         is DateTimeUnit.DateBased -> {
-            val start = toLocalDateTimeFailing(timeZone)
+            val initialOffset = offsetIn(timeZone)
+            val start = toLocalDateTimeFailing(initialOffset)
             val end = other.toLocalDateTimeFailing(timeZone)
             val timeAfterAddingDate = localDateTimeToInstantLenient(
-                end.date.atTime(start.time), timeZone, onTransition, preferred = this.offsetIn(timeZone)
+                end.date.atTime(start.time), timeZone, onTransition, preferred = initialOffset
             )
             val delta = when {
                 other > this && timeAfterAddingDate > other -> -1 // addition won't throw: end date - date >= 1
