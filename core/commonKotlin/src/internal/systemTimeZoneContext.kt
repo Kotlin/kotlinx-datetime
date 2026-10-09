@@ -8,22 +8,24 @@ package kotlinx.datetime.internal
 import kotlinx.datetime.*
 import kotlin.time.Instant
 
-internal class RuleBasedTimeZone(private val calculations: RuleBasedTimeZoneCalculations): TimeZone() {
-    override val id: String get() = calculations.id
-
-    override fun offsetAt(instant: Instant): UtcOffset = calculations.offsetAt(instant)
+internal class RuleBasedTimeZone(
+    private val tzid: TimeZoneRules, override val id: String, val origin: Any?, overloadResolver: Unit
+): TimeZone() {
+    override fun offsetAt(instant: Instant): UtcOffset = tzid.infoAtInstant(instant)
 
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        calculations.offsetInfoFor(dateTime)
+        tzid.infoAtDatetime(dateTime)
 
     override fun equals(other: Any?): Boolean =
-        other is RuleBasedTimeZone && calculations == other.calculations
+        other is RuleBasedTimeZone && id == other.id && origin == other.origin
 
-    override fun hashCode(): Int = calculations.hashCode()
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = id
 }
 
-
-internal actual fun RuleBasedTimeZoneCalculations.asTimeZone(): TimeZone = RuleBasedTimeZone(this)
+internal actual fun RuleBasedTimeZone(tzid: TimeZoneRules, id: String, origin: Any?): TimeZone =
+    RuleBasedTimeZone(tzid, id, origin, Unit)
 
 internal actual fun FixedOffsetTimeZone.Companion.withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
     FixedOffsetTimeZone(offset, id)

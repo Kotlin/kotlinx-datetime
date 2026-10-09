@@ -206,8 +206,14 @@ public final class kotlinx/datetime/DayOfWeekKt {
 public final class kotlinx/datetime/FixedOffsetTimeZone : kotlinx/datetime/TimeZone {
 	public static final field Companion Lkotlinx/datetime/FixedOffsetTimeZone$Companion;
 	public fun <init> (Lkotlinx/datetime/UtcOffset;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getId ()Ljava/lang/String;
 	public final fun getOffset ()Lkotlinx/datetime/UtcOffset;
 	public final fun getTotalSeconds ()I
+	public fun hashCode ()I
+	public fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
+	public fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class kotlinx/datetime/FixedOffsetTimeZone$Companion {
@@ -730,10 +736,10 @@ public final class kotlinx/datetime/Ser$Companion {
 public class kotlinx/datetime/TimeZone {
 	public static final field Companion Lkotlinx/datetime/TimeZone$Companion;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getId ()Ljava/lang/String;
+	public fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
-	public final fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
-	public final fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
+	public fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/TransitionHandler;Lkotlinx/datetime/UtcOffset;)Lkotlin/time/Instant;
