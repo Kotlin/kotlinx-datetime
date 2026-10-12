@@ -31,4 +31,8 @@ may apply:
     - Origin: implementation accesses the internals of js-joda.
     - License: BSD ([license/thirdparty/js-joda_license.txt](thirdparty/js-joda_license.txt))
 
+- Path: `tzdata-compiler`
+    - Origin: https://github.com/eggert/tz
+    - License: public domain ([license/thirdparty/tzdb_license.txt](thirdparty/tzdb_license.txt))
+
 [threetenbp]: thirdparty/threetenbp_license.txt
