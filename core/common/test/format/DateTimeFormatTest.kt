@@ -76,6 +76,20 @@ class DateTimeFormatTest {
         """.trimIndent(), kotlinCode)
     }
 
+    @Test
+    fun testStringRepresentationWithEscapedLiterals() {
+        val literals = listOf(
+            "\\" to """char('\\')""",
+            " \$USD" to """chars(" \${'$'}USD")""",
+            " \${USD}" to """chars(" \${'$'}{USD}")""",
+            "\\\$USD" to """chars("\\\${'$'}USD")"""
+        )
+        for ((literal, expected) in literals) {
+            val format = DateTimeComponents.Format { chars(literal) }
+            assertEquals(expected, DateTimeFormat.formatAsKotlinBuilderDsl(format))
+        }
+    }
+
     /**
      * Tests printing of a format that embeds some constants.
      */
