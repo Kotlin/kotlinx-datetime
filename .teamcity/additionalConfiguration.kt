@@ -35,19 +35,11 @@ fun Project.additionalConfiguration() {
         }
 
         steps {
-            script {
+            gradle {
                 name = "Check if a new version of the timezone database is present"
                 id = "Check_if_a_new_version_of_the_timezone_database_is_present"
-                scriptContent = """
-                    set -efu
-                    git clone https://github.com/eggert/tz
-                    latest_tag=$(git -C tz/ describe --abbrev=0 --tags)
-                    current_tag=$(grep tzdbVersion gradle.properties | cut -d= -f2)
-                    if [ "${'$'}latest_tag" != "${'$'}current_tag" ]; then
-                      printf "A new version of the timezone database is available: %s\n" "${'$'}latest_tag" >&2
-                      exit 1
-                    fi
-                """.trimIndent()
+                tasks = "checkTzdbVersion"
+                jdkHome = "%env.JDK_17_0%"
             }
             gradle {
                 name = "Check if the Windows names need updating"
