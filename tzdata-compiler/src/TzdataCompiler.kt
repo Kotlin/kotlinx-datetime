@@ -2265,9 +2265,7 @@ fun outZone(
                     isDst = zone.isDst, save = save, doQuotes = false
                 )
                 val type = u.addtype(
-                    bloatConfig,
-                    zone.stdOff + save, abbr, isDst = zone.isDst,
-                    timeType = startTimeType
+                    bloatConfig, zone.stdOff + save, abbr, isDst = zone.isDst, timeType = startTimeType
                 )
                 if (useStart) {
                     u.addtt(startTime, type)
@@ -2325,13 +2323,9 @@ fun outZone(
                             ** Turn untiltime into UT
                             ** assuming the current stdoff and save values.
                             */
-                            untilTime = zone.untilTime!!.toInstant(TimeZone.UTC).epochSeconds
-                            if (!zone.untilRule!!.timeType.timeFromMidnightIsUt) {
-                                untilTime = safeAdd(untilTime, -zone.stdOff)
-                            }
-                            if (!zone.untilRule.timeType.timeFromMidnightIsStandardTime) {
-                                untilTime = safeAdd(untilTime, -save)
-                            }
+                            untilTime = zone.untilTime!!.toInstant(
+                                zone.untilRule!!.timeType, offset = zone.stdOff, save = save
+                            ).epochSeconds
                         }
                         /*
                         ** Find the rule (of those to do, if any)
@@ -2345,11 +2339,9 @@ fun outZone(
                                 zone.fileNum, zone.lineNum,
                                 rule.fileNum, rule.lineNum,
                             ) {
-                                var offset = if (rule.timeType.timeFromMidnightIsUt) 0 else zone.stdOff
-                                if (!rule.timeType.timeFromMidnightIsStandardTime) {
-                                    offset += save
-                                }
-                                val jtime = safeAdd(rule.temp!!.toInstant(TimeZone.UTC).epochSeconds, -offset)
+                                val jtime = rule.temp!!.toInstant(
+                                    rule.timeType, offset = zone.stdOff, save = save
+                                ).epochSeconds
                                 if (k < 0 || jtime < ktime) {
                                     k = j
                                     ktime = jtime
@@ -2405,11 +2397,7 @@ fun outZone(
                                 isDst = rule.isDst, save = rule.save, doQuotes = false,
                             )
                             val offset = zone.stdOff + rule.save
-                            val type = u.addtype(
-                                bloatConfig, offset, ab,
-                                isDst = rule.isDst,
-                                rule.timeType,
-                            )
+                            val type = u.addtype(bloatConfig, offset, ab, isDst = rule.isDst, rule.timeType)
                             if (defaultType == null && !rule.isDst)
                                 defaultType = type
                             u.addtt(ktime, type)
@@ -2448,11 +2436,9 @@ fun outZone(
             */
             if (useUntil) {
                 startTimeType = zone.untilRule!!.timeType
-                startTime = zone.untilTime!!.toInstant(TimeZone.UTC).epochSeconds
-                if (!zone.untilRule.timeType.timeFromMidnightIsUt)
-                    startTime = safeAdd(startTime, -stdOff)
-                if (!zone.untilRule.timeType.timeFromMidnightIsStandardTime)
-                    startTime = safeAdd(startTime, -save)
+                startTime = zone.untilTime!!.toInstant(
+                    zone.untilRule!!.timeType, save = save, offset = stdOff
+                ).epochSeconds
             }
         }
     }
@@ -2535,12 +2521,7 @@ fun U.addtype(
     check(utOff in (Int.MIN_VALUE + 1)..Int.MAX_VALUE) { "UT offset out of range" }
     var timeType = if (config.wantBloat()) timeType else Rule.TimeOfDayType.Wall
     checkabbr(abbr)
-    val newTypeDescr = U.TypeDescr(
-        utOff = utOff,
-        isDst = isDst,
-        timeType = timeType,
-        desig = abbr,
-    )
+    val newTypeDescr = U.TypeDescr(utOff = utOff, isDst = isDst, timeType = timeType, desig = abbr)
     /* If there's already an entry, return its index. */
     val index = typeDescrs.indexOf(newTypeDescr)
     if (index != -1)
@@ -2779,3 +2760,10 @@ fun addabbrQuery(chs: List<String>, abbr: String): Int {
     error("Not found")
 }
 
+fun LocalDateTime.toInstant(timeType: Rule.TimeOfDayType, offset: ZicType, save: ZicType): Instant = toInstant(
+    UtcOffset(seconds = when (timeType) {
+        Rule.TimeOfDayType.Wall -> offset + save
+        Rule.TimeOfDayType.Standard -> offset
+        Rule.TimeOfDayType.Universal -> 0
+    }.clampToInt())
+)
