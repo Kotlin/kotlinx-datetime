@@ -190,21 +190,20 @@ data class ZoneLine(
     val lineNum: Lineno,
     val stdOff: ZicType,
     val rule: String,
-    val format: String,
-    val formatSpecifier: Char?,
+    val format: AbbrFormat,
     val untilRule: Rule?,
     val untilTime: LocalDateTime?,
 ) {
+    sealed interface AbbrFormat {
+        class PlainString(val string: String): AbbrFormat
+        class StringWithOffset(val before: String, val after: String): AbbrFormat
+        class StringWithLetters(val before: String, val after: String): AbbrFormat
+        class StdAndDst(val std: String, val dst: String): AbbrFormat
+    }
 
-    data class AbbrData(
-        val stdOff: ZicType,
-        val format: String,
-        val formatSpecifier: Char?,
-    )
+    data class AbbrData(val stdOff: ZicType, val format: AbbrFormat)
 
-    fun abbrData(): AbbrData = AbbrData(
-        stdOff = stdOff, format = format, formatSpecifier = formatSpecifier
-    )
+    fun abbrData(): AbbrData = AbbrData(stdOff = stdOff, format = format)
 }
 
 /** Rules associated with a zone line. */
@@ -886,7 +885,7 @@ fun associate(
                 ** Note, though, that if there's no rule,
                 ** a '%s' in the format is a bad thing.
                 */
-                if (line.formatSpecifier == 's')
+                if (line.format is ZoneLine.AbbrFormat.StringWithLetters)
                     error("%s in ruleless zone")
                 ZoneLineRules.StaticRule(save = save.save, isDst = save.isDst)
             }
@@ -1149,18 +1148,26 @@ fun inzsub(
     fields: Map<ZoneContinuationLineFields, String>, name: String?,
     fileNum: OpenFile, lineNum: Lineno,
 ): ZoneLine {
-    val format = fields[ZoneContinuationLineFields.FORMAT]!!
-    val percentInFormat = format.indexOf('%')
-    val formatSpecifier = if (percentInFormat != -1) {
-        val specifier = format.getOrNull(percentInFormat + 1)
-        check(
-            (specifier != null && (specifier == 's' || specifier == 'z'))
-            && format.indexOf('%', percentInFormat + 1) == -1
-            && format.indexOf('/') == -1
-        ) { "invalid abbreviation format" }
-        specifier
+    val formatStr = fields[ZoneContinuationLineFields.FORMAT]!!
+    val percentInFormat = formatStr.indexOf('%')
+    val format = if (percentInFormat != -1) {
+        val before = formatStr.substring(0, percentInFormat)
+        val after = formatStr.substring(percentInFormat + 2, formatStr.length)
+        check(after.indexOf('%') == -1 && formatStr.indexOf('/') == -1) {
+            "invalid abbreviation format"
+        }
+        when (val specifier = formatStr.getOrNull(percentInFormat + 1)) {
+            's' -> ZoneLine.AbbrFormat.StringWithLetters(before, after)
+            'z' -> ZoneLine.AbbrFormat.StringWithOffset(before, after)
+            else -> error("invalid abbreviation format")
+        }
     } else {
-        null
+        val slashp = formatStr.split('/')
+        when (slashp.size) {
+            1 -> ZoneLine.AbbrFormat.PlainString(formatStr)
+            2 -> ZoneLine.AbbrFormat.StdAndDst(slashp[0], slashp[1])
+            else -> error("More than one slash in the abbreviation format")
+        }
     }
     val hasUntil = fields[ZoneContinuationLineFields.TILYEAR] != null
     val untilRule: Rule?
@@ -1198,9 +1205,8 @@ fun inzsub(
         lineNum = lineNum,
         stdOff = gethms(fields[ZoneContinuationLineFields.STDOFF]!!)
             ?: error("invalid UT offset"),
-        formatSpecifier = formatSpecifier,
         rule = fields[ZoneContinuationLineFields.RULE]!!,
-        format = format.replace("%z", "%s"),
+        format = format,
         untilRule = untilRule,
         untilTime = untilRule?.let {
             rpytime(it.dateRule, it.lowYear.toInt()).atTimeExtended(it.timeFromMidnight)
@@ -1895,21 +1901,19 @@ fun doabbr(
     abbrData: ZoneLine.AbbrData, letters: Letters?,
     isDst: Boolean, save: ZicType, doQuotes: Boolean
 ): String {
-    val format = abbrData.format
-    val slashp = format.split('/')
-    val abbr = when (slashp.size) {
-        1 -> {
-            val letters = if (abbrData.formatSpecifier == 'z') {
-                abbroffset((abbrData.stdOff + save).seconds)
-            } else when (letters) {
+    val abbr = when (val fmt = abbrData.format) {
+        is ZoneLine.AbbrFormat.PlainString -> fmt.string
+        is ZoneLine.AbbrFormat.StringWithOffset ->
+            fmt.before + abbroffset((abbrData.stdOff + save).seconds) + fmt.after
+        is ZoneLine.AbbrFormat.StdAndDst -> if (isDst) fmt.dst else fmt.std
+        is ZoneLine.AbbrFormat.StringWithLetters -> {
+            val s = when (letters) {
                 null -> "%s"
                 is Letters.DisablePercentS -> return ""
                 is Letters.Actual -> letters.value
             }
-            format.format(letters) // TODO: Java isn't fully compatible with C
+            fmt.before + s + fmt.after
         }
-        2 -> slashp[if (isDst) 1 else 0]
-        else -> error("More than one slash in the abbreviation format")
     }
     return if (!doQuotes || abbr.all { it.isAsciiAlpha() }) abbr else "<${abbr}>"
 }
@@ -2073,14 +2077,9 @@ fun stringZone(config: TimeBoundConfig, lineAndRules: Pair<ZoneLine, ZoneLineRul
             val stdOff = line.stdOff + 2 * save
             stdZone = ZoneLine.AbbrData(
                 stdOff = stdOff,
-                format = "XXX",
-                formatSpecifier = null,
+                format = ZoneLine.AbbrFormat.PlainString("XXX"),
             )
-            dstZone = ZoneLine.AbbrData(
-                stdOff = stdOff,
-                format = line.format,
-                formatSpecifier = line.formatSpecifier,
-            )
+            dstZone = ZoneLine.AbbrData(stdOff = stdOff, format = line.format)
         } else {
             stdZone = line.abbrData()
             dstZone = line.abbrData()
@@ -2382,7 +2381,7 @@ fun outZone(
             }
             if (useStart) {
                 val isDst = startOff != line.stdOff
-                if (abbr == null && !line.format.isEmpty()) {
+                if (abbr == null && !line.format.let { it is ZoneLine.AbbrFormat.PlainString && it.string.isEmpty() }) {
                     abbr = doabbr(
                         line.abbrData(), Letters.DisablePercentS,
                         isDst = isDst, save = save, doQuotes = false
