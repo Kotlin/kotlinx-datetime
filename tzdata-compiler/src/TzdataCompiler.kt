@@ -137,7 +137,6 @@ data class Rule(
     val save: ZicType,
     val abbrVar: String,
 
-    var todo: Boolean,
     var temp: LocalDateTime?,
 ) {
     data class DateRule(
@@ -1116,7 +1115,6 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
             isDst = save.isDst,
             save = save.save,
             abbrVar = fields[RuleLineFields.ABBRVAR]!!,
-            todo = false,
             temp = null,
         )
     }
@@ -1206,7 +1204,6 @@ fun MutableList<Zone>.inzsub(
                 isDst = false,
                 save = 0,
                 abbrVar = "",
-                todo = false,
                 temp = null,
             )
         }
@@ -2312,11 +2309,11 @@ fun outZone(
                                     tryNextYear = true
                                 }
                             }
-                            if (year in rule.lowYear..rule.highYear) {
-                                rule.temp = rpytime(rule.dateRule, year.toInt()).atTimeExtended(rule.timeFromMidnight)
-                                rule.todo = (rule.temp!! < y2038Boundary || year <= maxYear0)
+                            rule.temp = if (year in rule.lowYear..rule.highYear) {
+                                rpytime(rule.dateRule, year.toInt()).atTimeExtended(rule.timeFromMidnight)
+                                    .takeIf { it < y2038Boundary || year <= maxYear0 }
                             } else {
-                                rule.todo = false
+                                null
                             }
                         }
                     }
@@ -2343,7 +2340,7 @@ fun outZone(
                         var k = -1
                         for (j in zone.rules?.indices ?: emptyList()) {
                             val rule = zone.rules!![j]
-                            if (!rule.todo) continue
+                            if (rule.temp == null) continue
                             reporting(
                                 zone.fileNum, zone.lineNum,
                                 rule.fileNum, rule.lineNum,
@@ -2369,7 +2366,7 @@ fun outZone(
                         }
                         if (k < 0) break // go on to next year
                         val rule = zone.rules!![k]
-                        rule.todo = false
+                        rule.temp = null
                         if (useUntil && ktime >= untilTime) {
                             if (abbr == null && zone.stdOff + rule.save == startOff) {
                                 abbr = doabbr(
