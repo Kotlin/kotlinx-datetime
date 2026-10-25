@@ -113,12 +113,6 @@ const val ZIC_MAX_ABBR_LEN_NO_WARN = 6
 const val YEAR_32BIT_MIN = 1901
 const val YEAR_32BIT_MAX = 2038
 
-// An upper bound on how much a format might grow due to concatenation
-const val FORMAT_LEN_GROWTH_BOUND = 5
-
-// The name used for the file implementing the obsolete -p option
-const val TZDEFRULES = "posixrules"
-
 // The maximum length of a text line, including the trailing newline
 const val _POSIX2_LINE_MAX = 2048
 
@@ -209,25 +203,6 @@ data class Zone(
 fun Char.isAsciiDigit() = this in '0'..'9'
 
 val PERCENT_Z_LEN_BOUND = "+995959".length
-
-data class S(
-    var errors: Boolean = false,
-    var warnings: Boolean = false,
-    var file: OpenFile? = null,
-    var lineNum: Lineno = -1,
-    var maxAbbrVarLen: Int = PERCENT_Z_LEN_BOUND,
-    var maxFormatLen: Int = 0,
-    var minYear: ZicType = Long.MAX_VALUE,
-    var maxYear: ZicType = Long.MIN_VALUE,
-    var skipMkdir: Boolean = false,
-    var rFile: OpenFile? = null,
-    var rLineNum: Lineno = -1,
-    var progName: String = "zic",
-    var leapSec: String? = null,
-    @Deprecated("atTypes.size") var timeCnt: Int = 0,
-    @Deprecated("utOffs.size") var typeCnt: Int = 0,
-    var unspecifiedType: Int? = null,
-)
 
 data class LeapTracker(
     var leapSeen: Boolean = false,
@@ -640,13 +615,6 @@ fun TimeBoundConfig.redundantTimeOption(opt: String): TimeBoundConfig? {
 
 }
 
-data class O(
-    val psxrules: String?,
-    val lcltime: String?,
-    val directory: String?,
-    val tzdefault: String?,
-)
-
 data class BloatConfig(
     /* `false` if the TZif output file should be slim, `true` if the
     output should be fat for backward compatibility. ZIC_BLOAT_DEFAULT
@@ -666,7 +634,6 @@ fun main(args: Array<String>) {
     var timerangeGiven = false
 
     val progName = args.firstOrNull() ?: "zic"
-    val myS = S(progName = progName)
     for (k in 1..(args.size-1)) {
         when (args[k]) {
             "--version" -> {
@@ -681,10 +648,7 @@ fun main(args: Array<String>) {
         }
     }
     var currentOptionIndex = 1
-    var psxrules: String? = null
-    var lcltime: String? = null
     var directory: String? = null
-    var tzdefault: String? = null
     var bloatConfigStr: String? = null
     val freeArguments = mutableListOf<String>()
     var noise: Boolean = false
@@ -713,16 +677,6 @@ fun main(args: Array<String>) {
                 directory = readArg("-d")
             }
             "-D" -> { skipMkdir = true }
-            "-l" -> {
-                if (lcltime != null)
-                    duplicateOptions(progName, "-l")
-                lcltime = readArg("-l")
-            }
-            "-t" -> {
-                if (tzdefault != null)
-                    duplicateOptions(progName, "-t")
-                tzdefault = readArg("-t")
-            }
             "-L" -> {
                 if (leapSec != null)
                     duplicateOptions(progName, "-L")
@@ -745,6 +699,7 @@ fun main(args: Array<String>) {
             // -m is skipped: default permission bits are fine for us
             // -u is skipped: default user and group are fine for us, too
             // -g, -p, -y, -s are for compatibility, we don't need that
+            // -t and -l is skipped: we only create data, we don't add system symlinks
             else -> {
                 if (arg.startsWith("-")) {
                     error(usage())
@@ -773,12 +728,6 @@ fun main(args: Array<String>) {
         fileNameList = freeArguments,
         leapSecFileName = leapSec,
     )
-    val o = O(
-        psxrules = psxrules,
-        lcltime = lcltime,
-        directory = directory,
-        tzdefault = tzdefault,
-    )
     context(errorReportingConfig) {
         val rules = mutableListOf<Rule>()
         val links = mutableListOf<T.Link>()
@@ -788,7 +737,7 @@ fun main(args: Array<String>) {
         if (leapSec != null) {
             infile(
                 fileNum = BuiltInFiles.LEAPSEC,
-                o, leapTracker, timeBoundConfig,
+                leapTracker, timeBoundConfig,
                 rules, links, leaps, zones,
                 isLeapFile = true,
                 lines = Path(leapSec).readLines()
@@ -799,7 +748,7 @@ fun main(args: Array<String>) {
             val file = freeArguments[i]
             infile(
                 fileNum = ActualOpenFile(i),
-                o, leapTracker, timeBoundConfig,
+                leapTracker, timeBoundConfig,
                 rules, links, leaps, zones,
                 isLeapFile = false,
                 lines = Path(file).readLines()
@@ -959,7 +908,7 @@ fun associate(
 context (reporter: ErrorReportingConfig)
 fun infile(
     fileNum: OpenFile,
-    o: O, leapTracker: LeapTracker, timeBoundConfig: TimeBoundConfig,
+    leapTracker: LeapTracker, timeBoundConfig: TimeBoundConfig,
     rules: MutableList<Rule>,
     links: MutableList<T.Link>,
     leaps: MutableList<U.Leap>,
@@ -993,7 +942,7 @@ fun infile(
                     }
 
                     LineCodes.ZONE -> {
-                        wantCont = zones.inzone(o, fields, fileNum, lineNum)
+                        wantCont = zones.inzone(fields, fileNum, lineNum)
                     }
 
                     LineCodes.LINK -> {
@@ -1169,7 +1118,6 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
 
 context (reporter: ErrorReporter)
 fun MutableList<Zone>.inzone(
-    o: O,
     fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno,
 ): Boolean {
     val (fields, unmatchedKeys) = populateMapWithPrefixOfEnumKeys(
@@ -1179,12 +1127,6 @@ fun MutableList<Zone>.inzone(
         error("wrong number of fields on Zone line")
     }
     val name = fields[ZoneLineFields.NAME]!!
-    if (o.lcltime != null && o.tzdefault == name) {
-        error("\"Zone ${o.tzdefault}\" line and -l option are mutually exclusive")
-    }
-    if (name == TZDEFRULES && o.psxrules != null) {
-        error("\"Zone $TZDEFRULES\" line and -p option are mutually exclusive")
-    }
     forEach { zone ->
         if (zone.name == name) {
             error("duplicate zone name $name")
@@ -2007,11 +1949,6 @@ fun doabbr(
         else -> error("More than one slash in the abbreviation format")
     }
     return if (!doQuotes || abbr.all { it.isAsciiAlpha() }) abbr else "<${abbr}>"
-}
-
-fun S.updateminmax(x: ZicType) {
-    if (minYear > x) minYear = x
-    if (maxYear < x) maxYear = x
 }
 
 fun StringBuilder.stringOffset(offset: Duration) {
