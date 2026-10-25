@@ -440,7 +440,7 @@ data class U(
     data class TypeDescr(
         val utOff: ZicType,
         var isDst: Boolean?,
-        var desigIdx: Int,
+        var desig: String,
         val timeFromMidnightIsStandardTime: Boolean,
         val timeFromMidnightIsUt: Boolean,
     )
@@ -1591,7 +1591,6 @@ fun writeZone(
     timeBoundConfig: TimeBoundConfig,
     bloatConfig: BloatConfig,
     unspecifiedType: Int?,
-    chs: MutableList<String>,
 ) {
     /* Sort */
     u.atTypes.sortBy { it.at }
@@ -1620,7 +1619,7 @@ fun writeZone(
                     || fromType.dontMerge
                     || (u.typeDescrs[lastAdded.type.toInt()].utOff != u.typeDescrs[fromType.type.toInt()].utOff)
                     || (u.typeDescrs[lastAdded.type.toInt()].isDst != u.typeDescrs[fromType.type.toInt()].isDst)
-                    || (u.typeDescrs[lastAdded.type.toInt()].desigIdx != u.typeDescrs[fromType.type.toInt()].desigIdx))
+                    || (u.typeDescrs[lastAdded.type.toInt()].desig != u.typeDescrs[fromType.type.toInt()].desig))
                 {
                     add(fromType)
                 }
@@ -1816,10 +1815,9 @@ fun writeZone(
                     if (hidst != null && mrudst != null && hidst != mrudst && u.typeDescrs[hidst].utOff != u.typeDescrs[mrudst].utOff) {
                         u.typeDescrs[mrudst].isDst = null // trick to avoid `addtype` skipping the new type addition
                         val type = u.addtype(
-                            chs,
                             bloatConfig,
                             utOff = u.typeDescrs[mrudst].utOff,
-                            abbr = queryAbbrByPosition(chs, u.typeDescrs[mrudst].desigIdx)!!,
+                            abbr = u.typeDescrs[mrudst].desig,
                             isDst = true,
                             timeFromMidnightIsStandardTime = u.typeDescrs[mrudst].timeFromMidnightIsStandardTime,
                             timeFromMidnightIsUt = u.typeDescrs[mrudst].timeFromMidnightIsUt,
@@ -1830,10 +1828,9 @@ fun writeZone(
                     if (histd != null && mrustd != null && histd != mrustd && u.typeDescrs[histd].utOff != u.typeDescrs[mrustd].utOff) {
                         u.typeDescrs[mrustd].isDst = null // trick to avoid `addtype` skipping the new type addition
                         val type = u.addtype(
-                            chs,
                             bloatConfig,
                             utOff = u.typeDescrs[mrustd].utOff,
-                            abbr = queryAbbrByPosition(chs, u.typeDescrs[mrustd].desigIdx)!!,
+                            abbr = u.typeDescrs[mrustd].desig,
                             isDst = false,
                             timeFromMidnightIsStandardTime = u.typeDescrs[mrustd].timeFromMidnightIsStandardTime,
                             timeFromMidnightIsUt = u.typeDescrs[mrustd].timeFromMidnightIsUt,
@@ -1861,17 +1858,7 @@ fun writeZone(
                     stdCnt = thisTypeCnt
                 if (u.typeDescrs[i].timeFromMidnightIsUt)
                     utCnt = thisTypeCnt
-                addabbr(thisChars, queryAbbrByPosition(chs, u.typeDescrs[i].desigIdx)!!)
-            }
-            /* Now that all abbrevs have been added to [thisChars],
-            it is safe to set INDMAP without worrying about whether the abbrevs
-            might move later. */
-            val indMap = MutableList(TZ_MAX_CHARS) { -1 }
-            for (i in old0..<u.typeDescrs.size) {
-                if (!omitType[i] && indMap[u.typeDescrs[i].desigIdx] < 0)
-                    indMap[u.typeDescrs[i].desigIdx] = addabbrQuery(
-                        thisChars, queryAbbrByPosition(chs, u.typeDescrs[i].desigIdx)!!
-                    )
+                addabbr(thisChars, u.typeDescrs[i].desig)
             }
             if (pass == 1 && !bloatConfig.wantBloat()) {
                 hicut = false
@@ -1929,7 +1916,9 @@ fun writeZone(
                 if (!omitType[h]) {
                     write_(puttzcode(u.typeDescrs[h].utOff))
                     write_(if (u.typeDescrs[h].isDst!!) 1 else 0)
-                    write_(indMap[u.typeDescrs[h].desigIdx])
+                    write_(addabbrQuery(
+                        thisChars, u.typeDescrs[h].desig
+                    ))
                 }
             }
             if (thisCharCnt != 0) { // ??? can be zero?
@@ -2289,7 +2278,6 @@ fun outZone(
     ** Now. . .finally. . .generate some useful data!
     */
     val u = U().also { it.leaps.addAll(leaps) }
-    val chs = mutableListOf<String>()
     /*
     ** Thanks to Earl Chew
     ** for noting the need to unconditionally initialize startttisstd.
@@ -2346,7 +2334,7 @@ fun outZone(
         maxYear = maxOf(maxYear, YEAR_32BIT_MAX.toLong())
     }
     val unspecifiedType = if (MIN_TIME < timeBoundConfig.loTime || timeBoundConfig.hiTime < MAX_TIME) {
-        u.addtype(chs, bloatConfig, 0, "-00", false, false, false)
+        u.addtype(bloatConfig, 0, "-00", false, false, false)
     } else {
         null
     }
@@ -2367,7 +2355,7 @@ fun outZone(
                     isDst = zone.isDst, save = save, doQuotes = false
                 )
                 val type = u.addtype(
-                    chs, bloatConfig,
+                    bloatConfig,
                     zone.stdOff + save, abbr, isDst = zone.isDst,
                     timeFromMidnightIsStandardTime = startttisstd, timeFromMidnightIsUt = startttisut)
                 if (useStart) {
@@ -2508,7 +2496,7 @@ fun outZone(
                             )
                             val offset = zone.stdOff + rule.save
                             val type = u.addtype(
-                                chs, bloatConfig, offset, ab,
+                                bloatConfig, offset, ab,
                                 isDst = rule.isDst, timeFromMidnightIsStandardTime = rule.timeFromMidnightIsStandardTime,
                                 timeFromMidnightIsUt = rule.timeFromMidnightIsUt,
                             )
@@ -2538,7 +2526,7 @@ fun outZone(
                             "to use just after until time"
                     }
                     val type = u.addtype(
-                        chs, bloatConfig, startOff, abbr!!, isDst,
+                        bloatConfig, startOff, abbr!!, isDst,
                         startttisstd, startttisut
                     )
                     if (defaultType < 0 && !isDst)
@@ -2624,7 +2612,7 @@ fun outZone(
         directory = directory,
         name = firstZone.name!!, string = envvar ?: "", version = version, defaultType = defaultType,
         u, timeBoundConfig, bloatConfig,
-        unspecifiedType, chs
+        unspecifiedType
     )
 }
 
@@ -2634,7 +2622,6 @@ fun U.addtt(startTime: ZicType, type: UByte) {
 
 context (reporter: ErrorReporter)
 fun U.addtype(
-    chs: MutableList<String>,
     config: BloatConfig,
     utOff: ZicType, abbr: String, isDst: Boolean, timeFromMidnightIsStandardTime: Boolean, timeFromMidnightIsUt: Boolean
 ): Int {
@@ -2647,29 +2634,17 @@ fun U.addtype(
         timeFromMidnightIsUt = false
     }
     checkabbr(abbr)
-    val toShiftBy = addabbr(chs, abbr)
-    val abbrPosition = addabbrQuery(chs, abbr)
     val newTypeDescr = U.TypeDescr(
         utOff = utOff,
         isDst = isDst,
         timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
         timeFromMidnightIsUt = timeFromMidnightIsUt,
-        desigIdx = abbrPosition,
+        desig = abbr,
     )
-    if (toShiftBy != null) {
-        /* If an abbreviation was inserted, increment indexes no earlier than
-        the insert by the size of the insertion, so that they continue to point
-        to the same contents. */
-        for (typeDescr in typeDescrs) {
-            if (abbrPosition <= typeDescr.desigIdx)
-                typeDescr.desigIdx += toShiftBy
-        }
-    } else {
-        /* If there's already an entry, return its index. */
-        val index = typeDescrs.indexOf(newTypeDescr)
-        if (index != -1)
-            return index
-    }
+    /* If there's already an entry, return its index. */
+    val index = typeDescrs.indexOf(newTypeDescr)
+    if (index != -1)
+        return index
     /* There isn't one; add a new one, unless there are already too many. */
     check(typeDescrs.size < TZ_MAX_TYPES) { "too many local time types" }
     typeDescrs.add(newTypeDescr)
@@ -2861,31 +2836,31 @@ fun checkabbr(string: String) {
     warning?.let { warning("$it ($string)") }
 }
 
-/** Put into [chs], which currently contains [pnchs] bytes containing
- * `null`-terminated abbreviations none of which are suffixes of another,
- * the abbreviation [abbr] including its training `null`.
+/**
+ * Put into [chs], which currently contains strings containing
+ * abbreviations none of which are suffixes of another,
+ * the abbreviation [abbr].
  * If [abbr] does not already appear in [chs], possibly as a suffix of an
- * existing abbreviation, add [abbr] to [chs], remove from [chs] any
- * abbreviation that is a suffix of [abbr], and increment [pnchs] accordingly.
- * Return the index of [abbr] after any modifications to [chs] are made.
- *
- * If all abbreviations have already been added, this function lets the caller
- * look up the index of an existing abbreviation. */
-// If inserted, a non-null value of how many characters got added
-fun addabbr(chs: MutableList<String>, abbr: String): Int? {
+ * existing abbreviation, add [abbr] to [chs] and remove from [chs] any
+ * abbreviation that is a suffix of [abbr].
+ */
+fun addabbr(chs: MutableList<String>, abbr: String) {
     for (i in chs.indices) {
         val current = chs[i]
         if (current.endsWith(abbr))
-            return null
+            return
         if (abbr.endsWith(current)) {
             chs[i] = abbr
-            return abbr.length - current.length
+            return
         }
     }
     chs.add(abbr)
-    return abbr.length + 1
 }
 
+/**
+ * Finds the index of [abbr] + `'\0'` in a byte array resulting from
+ * putting `'\0'`-separated [chs] strings.
+ */
 fun addabbrQuery(chs: List<String>, abbr: String): Int {
     var runningTotal = 0
     for (current in chs) {
@@ -2894,18 +2869,6 @@ fun addabbrQuery(chs: List<String>, abbr: String): Int {
         runningTotal += current.length + 1
     }
     error("Not found")
-}
-
-fun queryAbbrByPosition(chs: List<String>, position: Int): String? {
-    var runningTotal = 0
-    for (current in chs) {
-        val nextRunningTotal = runningTotal + current.length + 1
-        if (position < nextRunningTotal) {
-            return current.substring(position - runningTotal, current.length)
-        }
-        runningTotal = nextRunningTotal
-    }
-    return null
 }
 
 /** Ensure that the directories of [argname] exist, by making any missing ones.
