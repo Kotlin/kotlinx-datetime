@@ -148,9 +148,8 @@ data class Rule(
     data class Computation(
         val month: Month,
 
-        val dayCode: Dc?, // see below
+        val dayOfWeek: DayOfWeekRule?, // see below
         val dayOfMonth: Int, // one-based
-        val dayOfWeek: DayOfWeek,
 
         val timeFromMidnight: ZicType,
     )
@@ -172,12 +171,9 @@ data class Rule(
     )
 }
 
-
-/* dayCode      dayOfMonth    weekDay
- */
-enum class Dc {
-    DOWGEQ,     /* 1..31 */   /* 0..6 = Sun..Sat */
-    DOWLEQ,     /* 1..31 */   /* 0..6 = Sun..Sat */
+sealed interface DayOfWeekRule {
+    data class NextOrSame(val dayOfWeek: DayOfWeek): DayOfWeekRule
+    data class PreviousOrSame(val dayOfWeek: DayOfWeek): DayOfWeekRule
 }
 
 data class Zone(
@@ -1315,9 +1311,8 @@ fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String
     check(timeOfDay != null) { "invalid time of day ${fields[LeapLineFields.TIME]!!}" }
     val r = Rule.Computation(
         month = monthPair.second,
-        dayCode = null,
+        dayOfWeek = null,
         dayOfMonth = dayOfMonth,
-        dayOfWeek = DayOfWeek.SUNDAY, // unused
         timeFromMidnight = timeOfDay,
     )
     return rpytime(r, year).also {
@@ -1457,21 +1452,21 @@ inline fun <T> rulesub(
     **      Sun<=20
     **      Sun>=7
     */
-    val dayCode: Dc?
-    val weekDay: DayOfWeek
+    val dayOfWeek: DayOfWeekRule?
     val dayOfMonth: Int
     run {
         when (val entry = byWord(dayString, lasts)) {
             null -> {
+                val dayCode: ((DayOfWeek) -> DayOfWeekRule)?
                 val numberStart: Int = run {
                     val ltIx = dayString.indexOf('<')
                     if (ltIx != -1) {
-                        dayCode = Dc.DOWLEQ
+                        dayCode = DayOfWeekRule::PreviousOrSame
                         ltIx + 2
                     } else {
                         val gtIx = dayString.indexOf('>')
                         if (gtIx != -1) {
-                            dayCode = Dc.DOWGEQ
+                            dayCode = DayOfWeekRule::NextOrSame
                             gtIx + 2
                         } else {
                             dayCode = null
@@ -1485,9 +1480,9 @@ inline fun <T> rulesub(
                         "invalid day of month ${dayString}"
                     }
                     val entry = byWord(dowNameString, weekDayNames) ?: error("invalid weekday name")
-                    weekDay = entry.second
+                    dayOfWeek = dayCode(entry.second)
                 } else {
-                    weekDay = DayOfWeek.SUNDAY // unused
+                    dayOfWeek = null
                 }
                 dayString.substring(numberStart, dayString.length).toLongOrNull().let {
                     check(it != null && it > 0 && it <= monthLengthsPerYear[1][month.ordinal]) {
@@ -1497,8 +1492,7 @@ inline fun <T> rulesub(
                 }
             }
             else -> {
-                dayCode = Dc.DOWLEQ
-                weekDay = entry.second
+                dayOfWeek = DayOfWeekRule.PreviousOrSame(entry.second)
                 dayOfMonth = monthLengthsPerYear[1][month.ordinal]
             }
         }
@@ -1506,9 +1500,8 @@ inline fun <T> rulesub(
     return action(
         Rule.Computation(
             month = month,
-            dayCode = dayCode,
+            dayOfWeek = dayOfWeek,
             dayOfMonth = dayOfMonth,
-            dayOfWeek = weekDay,
             timeFromMidnight = timeOfDay,
         ),
         todIsStd,
@@ -2052,7 +2045,7 @@ const val SECSPERMINUTE = 60
 fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
     var timeFromMidnight: ZicType = rp.computation.timeFromMidnight
     var compat = 0
-    when (rp.computation.dayCode) {
+    when (val dow = rp.computation.dayOfWeek) {
         null -> {
             if (rp.computation.dayOfMonth == 29 && rp.computation.month == Month.FEBRUARY)
                 return null
@@ -2067,29 +2060,29 @@ fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
                 append(dayOfYear)
             }
         }
-        Dc.DOWGEQ -> {
+        is DayOfWeekRule.NextOrSame -> {
             val wdayOff = (rp.computation.dayOfMonth - 1) % DAYSPERWEEK
             if (wdayOff != 0) {
                 compat = 2013
             }
-            var wday = rp.computation.dayOfWeek.tzdbNumber - wdayOff
+            var wday = dow.dayOfWeek.tzdbNumber - wdayOff
             timeFromMidnight += wdayOff * SECSPERDAY
             val week = 1 + (rp.computation.dayOfMonth - 1) / DAYSPERWEEK
             if (wday < 0) wday += DAYSPERWEEK
             append("M${rp.computation.month.number}.$week.$wday")
         }
-        Dc.DOWLEQ -> {
+        is DayOfWeekRule.PreviousOrSame -> {
             var wday: Int
             val week: Int
             if (rp.computation.dayOfMonth == monthLengthsPerYear[1][rp.computation.month.ordinal]) {
-                wday = rp.computation.dayOfWeek.tzdbNumber
+                wday = dow.dayOfWeek.tzdbNumber
                 week = 5
             } else {
                 val wdayOff = rp.computation.dayOfMonth % DAYSPERWEEK
                 if (wdayOff != 0) {
                     compat = 2013
                 }
-                wday = rp.computation.dayOfWeek.tzdbNumber - wdayOff
+                wday = dow.dayOfWeek.tzdbNumber - wdayOff
                 timeFromMidnight += wdayOff * SECSPERDAY
                 week = rp.computation.dayOfMonth / DAYSPERWEEK
             }
@@ -2194,8 +2187,7 @@ fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
         dstRule = Rule.Format(
             computation = Rule.Computation(
                 month = Month.JANUARY,
-                dayCode = null,
-                dayOfWeek = DayOfWeek.SUNDAY, // unused
+                dayOfWeek = null,
                 dayOfMonth = 1,
                 timeFromMidnight = 0,
             ),
@@ -2207,8 +2199,7 @@ fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
         stdRule = Rule.Format(
             computation = Rule.Computation(
                 month = Month.DECEMBER,
-                dayCode = null,
-                dayOfWeek = DayOfWeek.SUNDAY, // unused
+                dayOfWeek = null,
                 dayOfMonth = 31,
                 timeFromMidnight = (1.days + dstRule.save.seconds).inWholeSeconds,
             ),
@@ -2584,10 +2575,9 @@ fun outZone(
         */
         val xr = Rule.Computation(
             month = Month.JANUARY,
-            dayCode = null,
+            dayOfWeek = null,
             dayOfMonth = 1,
             timeFromMidnight = 0,
-            dayOfWeek = DayOfWeek.SUNDAY, // Uninitialized
         )
         var lastAt = u.atTypes.maxByOrNull { it.at }
         if (lastAt == null || lastAt.at < rpytime(xr, (maxYear - 1).toInt()).toInstant(TimeZone.UTC).epochSeconds) {
@@ -2789,16 +2779,16 @@ context (reporter: ErrorReporter)
 fun rpytime(rule: Rule.Computation, wantedYear: Int): LocalDateTime {
     val i = rule.dayOfMonth
     val dayOfMonth = if (rule.month == Month.FEBRUARY && i == 29 && !isLeapYear(wantedYear)) {
-        check(rule.dayCode == Dc.DOWLEQ) { "Use of 2/29 in non leap-year" }
+        check(rule.dayOfWeek is DayOfWeekRule.PreviousOrSame) { "Use of 2/29 in non leap-year" }
         i - 1
     } else {
         i
     }
     val date = LocalDate(wantedYear, rule.month, dayOfMonth).let {
-        when (rule.dayCode) {
+        when (val dow = rule.dayOfWeek) {
             null -> it
-            Dc.DOWLEQ -> it.previousOrSame(rule.dayOfWeek)
-            Dc.DOWGEQ -> it.nextOrSame(rule.dayOfWeek)
+            is DayOfWeekRule.PreviousOrSame -> it.previousOrSame(dow.dayOfWeek)
+            is DayOfWeekRule.NextOrSame -> it.nextOrSame(dow.dayOfWeek)
         }
     }
     if (date.month != rule.month && reporter.noise) {
