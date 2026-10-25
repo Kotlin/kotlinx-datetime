@@ -127,10 +127,11 @@ data class Rule(
     val highYear: ZicType,
     val highWasNum: Boolean,
 
-    val computation: Computation,
+    val dateRule: DateRule,
 
-    val timeFromMidnightIsStandardTime: Boolean,
-    val timeFromMidnightIsUt: Boolean,
+    val timeFromMidnight: ZicType,
+    val timeType: TimeOfDayType,
+
     val isDst: Boolean,
 
     val save: ZicType,
@@ -139,30 +140,37 @@ data class Rule(
     var todo: Boolean,
     var temp: LocalDateTime?,
 ) {
-    data class Computation(
+    data class DateRule(
         val month: Month,
 
         val dayOfWeek: DayOfWeekRule?, // see below
         val dayOfMonth: Int, // one-based
-
-        val timeFromMidnight: ZicType,
     )
 
     data class Format(
-        val computation: Computation,
-        val timeFromMidnightIsStandardTime: Boolean,
-        val timeFromMidnightIsUt: Boolean,
+        val dateRule: DateRule,
+        val timeFromMidnight: ZicType,
+        val timeType: TimeOfDayType,
         val isDst: Boolean,
         val save: ZicType,
     )
 
     fun format(): Format = Format(
-        computation = computation,
+        dateRule = dateRule,
         isDst = isDst,
-        timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
-        timeFromMidnightIsUt = timeFromMidnightIsUt,
+        timeFromMidnight = timeFromMidnight,
+        timeType = timeType,
         save = save,
     )
+
+    enum class TimeOfDayType {
+        Wall,
+        Standard,
+        Universal;
+
+        val timeFromMidnightIsStandardTime get() = this == Standard || this == Universal
+        val timeFromMidnightIsUt get() = this == Universal
+    }
 }
 
 sealed interface DayOfWeekRule {
@@ -411,8 +419,7 @@ data class U(
         val utOff: ZicType,
         val isDst: Boolean,
         var desig: String,
-        val timeFromMidnightIsStandardTime: Boolean,
-        val timeFromMidnightIsUt: Boolean,
+        val timeType: Rule.TimeOfDayType,
     )
 }
 
@@ -1087,9 +1094,9 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
         dayString = fields[RuleLineFields.DAY]!!,
         timeString = fields[RuleLineFields.TOD]!!,
     ) {
-        computation,
-        timeFromMidnightIsStandardTime,
-        timeFromMidnightIsUt,
+        dateRule,
+        timeFromMidnight,
+        timeType,
         lowYear,
         highYear,
         highWasNum,
@@ -1102,10 +1109,10 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
             highYear = highYear,
             highWasNum = highWasNum,
 
-            computation = computation,
+            dateRule = dateRule,
 
-            timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
-            timeFromMidnightIsUt = timeFromMidnightIsUt,
+            timeFromMidnight = timeFromMidnight,
+            timeType = timeType,
             isDst = save.isDst,
             save = save.save,
             abbrVar = fields[RuleLineFields.ABBRVAR]!!,
@@ -1184,7 +1191,7 @@ fun MutableList<Zone>.inzsub(
             monthString = fields[ZoneContinuationLineFields.TILMONTH] ?: "Jan",
             dayString = fields[ZoneContinuationLineFields.TILDAY] ?: "1",
             timeString = fields[ZoneContinuationLineFields.TILTIME] ?: "0",
-        ) { computation, timeFromMidnightIsStandardTime, timeFromMidnightIsUt, lowYear, highYear, highWasNum ->
+        ) { dateRule, timeFromMidnight, timeType, lowYear, highYear, highWasNum ->
             Rule(
                 fileNum = fileNum,
                 lineNum = lineNum,
@@ -1192,9 +1199,9 @@ fun MutableList<Zone>.inzsub(
                 lowYear = lowYear,
                 highYear = highYear,
                 highWasNum = highWasNum,
-                computation = computation,
-                timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
-                timeFromMidnightIsUt = timeFromMidnightIsUt,
+                dateRule = dateRule,
+                timeFromMidnight = timeFromMidnight,
+                timeType = timeType,
                 // Uninitialized:
                 isDst = false,
                 save = 0,
@@ -1203,7 +1210,7 @@ fun MutableList<Zone>.inzsub(
                 temp = null,
             )
         }
-        untilTime = rpytime(untilRule.computation, untilRule.lowYear.toInt())
+        untilTime = rpytime(untilRule.dateRule, untilRule.timeFromMidnight, untilRule.lowYear.toInt())
         if (name == null && (lastOrNull()?.untilTime ?: LocalDateTime(1970, 1, 1, 0, 0)) >= untilTime) {
             error("Zone continuation line end time is not after end time of the previous line")
         }
@@ -1251,13 +1258,12 @@ fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String
     LocalDate(year, monthPair.second, dayOfMonth) // check validity
     val timeOfDay = gethms(fields[LeapLineFields.TIME]!!)
     check(timeOfDay != null) { "invalid time of day ${fields[LeapLineFields.TIME]!!}" }
-    val r = Rule.Computation(
+    val r = Rule.DateRule(
         month = monthPair.second,
         dayOfWeek = null,
         dayOfMonth = dayOfMonth,
-        timeFromMidnight = timeOfDay,
     )
-    return rpytime(r, year).also {
+    return rpytime(r, timeOfDay, year).also {
         check(it >= LocalDateTime(1970, 1, 1, 0, 0)) {
             "leap second precedes Epoch"
         }
@@ -1315,9 +1321,9 @@ inline fun <T> rulesub(
     dayString: String,
     timeString: String,
     action: (
-        computation: Rule.Computation,
-        timeFromMidnightIsStandardTime: Boolean,
-        timeFromMidnightIsUt: Boolean,
+        dateRule: Rule.DateRule,
+        timeFromMidnight: ZicType,
+        timeType: Rule.TimeOfDayType,
         lowYear: ZicType,
         highYear: ZicType,
         highWasNum: Boolean,
@@ -1328,27 +1334,22 @@ inline fun <T> rulesub(
     }
     val monthEntry = byWord(monthString, monthNames) ?: error("invalid month name")
     val month = monthEntry.second
-    val todIsStd: Boolean
-    val todIsUt: Boolean
+    val timeType: Rule.TimeOfDayType
     val hmsString = when (timeString.lastOrNull()) {
         's' -> /* Standard */ {
-            todIsStd = true
-            todIsUt = false
+            timeType = Rule.TimeOfDayType.Standard
             timeString.dropLast(1)
         }
         'w'-> /* Wall */ {
-            todIsStd = false
-            todIsUt = false
+            timeType = Rule.TimeOfDayType.Wall
             timeString.dropLast(1)
         }
         'g' /* Greenwich */, 'u' /* Universal */, 'z' /* Zulu */ -> {
-            todIsStd = true
-            todIsUt = true
+            timeType = Rule.TimeOfDayType.Universal
             timeString.dropLast(1)
         }
         else -> {
-            todIsStd = false
-            todIsUt = false
+            timeType = Rule.TimeOfDayType.Wall
             timeString
         }
     }
@@ -1440,14 +1441,13 @@ inline fun <T> rulesub(
         }
     }
     return action(
-        Rule.Computation(
+        Rule.DateRule(
             month = month,
             dayOfWeek = dayOfWeek,
             dayOfMonth = dayOfMonth,
-            timeFromMidnight = timeOfDay,
         ),
-        todIsStd,
-        todIsUt,
+        timeOfDay,
+        timeType,
         lowYear,
         highYear,
         highWasNum
@@ -1775,9 +1775,9 @@ fun writeZone(
                 if (omitType[i.toInt()])
                     continue
                 val descr = u.typeDescrs[i.toInt()]
-                if (descr.timeFromMidnightIsStandardTime)
+                if (descr.timeType.timeFromMidnightIsStandardTime)
                     stdCnt = thisTypeCnt
-                if (descr.timeFromMidnightIsUt)
+                if (descr.timeType.timeFromMidnightIsUt)
                     utCnt = thisTypeCnt
                 addabbr(thisChars, descr.desig)
             }
@@ -1880,7 +1880,7 @@ fun writeZone(
                 for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
                     val i = i.toInt().toUByteFailing()
                     if (!omitType[i.toInt()]) {
-                        write_(if (u.typeDescrs[i.toInt()].timeFromMidnightIsStandardTime) 1 else 0)
+                        write_(if (u.typeDescrs[i.toInt()].timeType.timeFromMidnightIsStandardTime) 1 else 0)
                     }
                 }
             }
@@ -1888,7 +1888,7 @@ fun writeZone(
                 for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
                     val i = i.toInt().toUByteFailing()
                     if (!omitType[i.toInt()]) {
-                        write_(if (u.typeDescrs[i.toInt()].timeFromMidnightIsUt) 1 else 0)
+                        write_(if (u.typeDescrs[i.toInt()].timeType.timeFromMidnightIsUt) 1 else 0)
                     }
                 }
             }
@@ -1980,17 +1980,17 @@ const val SECSPERHOUR = 60 * 60
 const val SECSPERMINUTE = 60
 
 fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
-    var timeFromMidnight: ZicType = rp.computation.timeFromMidnight
+    var timeFromMidnight: ZicType = rp.timeFromMidnight
     var compat = 0
-    when (val dow = rp.computation.dayOfWeek) {
+    when (val dow = rp.dateRule.dayOfWeek) {
         null -> {
-            if (rp.computation.dayOfMonth == 29 && rp.computation.month == Month.FEBRUARY)
+            if (rp.dateRule.dayOfMonth == 29 && rp.dateRule.month == Month.FEBRUARY)
                 return null
-            val dayOfYear = (1..<rp.computation.month.number).sumOf { month ->
+            val dayOfYear = (1..<rp.dateRule.month.number).sumOf { month ->
                 monthLengthsPerYear[0][month - 1]
             }
             /* Omit the "J" in Jan an dFeb, as that's shorter. */
-            if (rp.computation.month <= Month.FEBRUARY) {
+            if (rp.dateRule.month <= Month.FEBRUARY) {
                 append(dayOfYear - 1)
             } else {
                 append('J')
@@ -1998,38 +1998,38 @@ fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
             }
         }
         is DayOfWeekRule.NextOrSame -> {
-            val wdayOff = (rp.computation.dayOfMonth - 1) % DAYSPERWEEK
+            val wdayOff = (rp.dateRule.dayOfMonth - 1) % DAYSPERWEEK
             if (wdayOff != 0) {
                 compat = 2013
             }
             var wday = dow.dayOfWeek.tzdbNumber - wdayOff
             timeFromMidnight += wdayOff * SECSPERDAY
-            val week = 1 + (rp.computation.dayOfMonth - 1) / DAYSPERWEEK
+            val week = 1 + (rp.dateRule.dayOfMonth - 1) / DAYSPERWEEK
             if (wday < 0) wday += DAYSPERWEEK
-            append("M${rp.computation.month.number}.$week.$wday")
+            append("M${rp.dateRule.month.number}.$week.$wday")
         }
         is DayOfWeekRule.PreviousOrSame -> {
             var wday: Int
             val week: Int
-            if (rp.computation.dayOfMonth == monthLengthsPerYear[1][rp.computation.month.ordinal]) {
+            if (rp.dateRule.dayOfMonth == monthLengthsPerYear[1][rp.dateRule.month.ordinal]) {
                 wday = dow.dayOfWeek.tzdbNumber
                 week = 5
             } else {
-                val wdayOff = rp.computation.dayOfMonth % DAYSPERWEEK
+                val wdayOff = rp.dateRule.dayOfMonth % DAYSPERWEEK
                 if (wdayOff != 0) {
                     compat = 2013
                 }
                 wday = dow.dayOfWeek.tzdbNumber - wdayOff
                 timeFromMidnight += wdayOff * SECSPERDAY
-                week = rp.computation.dayOfMonth / DAYSPERWEEK
+                week = rp.dateRule.dayOfMonth / DAYSPERWEEK
             }
             if (wday < 0) wday += DAYSPERWEEK
-            append("M${rp.computation.month.number}.$week.$wday")
+            append("M${rp.dateRule.month.number}.$week.$wday")
         }
     }
-    if (rp.timeFromMidnightIsUt)
+    if (rp.timeType.timeFromMidnightIsUt)
         timeFromMidnight += stdOff
-    if (rp.timeFromMidnightIsStandardTime && !rp.isDst)
+    if (rp.timeType.timeFromMidnightIsStandardTime && !rp.isDst)
         timeFromMidnight += rp.save
     val timeFromMidnightDur = timeFromMidnight.seconds
     if (timeFromMidnightDur != 2.hours) {
@@ -2049,10 +2049,10 @@ fun ruleCmp(a: Rule?, b: Rule?): Int {
     if (b == null) { return 1 }
     if (a.highYear != b.highYear) { return if (a.highYear < b.highYear) -1 else 1 }
     if (a.highYear == ZicType.MAX_VALUE) { return 0 } // ???
-    if (a.computation.month.number - b.computation.month.number != 0) {
-        return a.computation.month.number - b.computation.month.number
+    if (a.dateRule.month.number - b.dateRule.month.number != 0) {
+        return a.dateRule.month.number - b.dateRule.month.number
     }
-    return a.computation.dayOfMonth - b.computation.dayOfMonth
+    return a.dateRule.dayOfMonth - b.dateRule.dayOfMonth
 }
 
 /** Return a pair of a proleptic TZ string that represents the future predictions
@@ -2122,26 +2122,24 @@ fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
             dstZone = zone.abbrData()
         }
         dstRule = Rule.Format(
-            computation = Rule.Computation(
+            dateRule = Rule.DateRule(
                 month = Month.JANUARY,
                 dayOfWeek = null,
                 dayOfMonth = 1,
-                timeFromMidnight = 0,
             ),
-            timeFromMidnightIsStandardTime = false,
-            timeFromMidnightIsUt = false,
+            timeFromMidnight = 0,
+            timeType = Rule.TimeOfDayType.Wall,
             isDst = true,
             save = -save.absoluteValue, // unused
         )
         stdRule = Rule.Format(
-            computation = Rule.Computation(
+            dateRule = Rule.DateRule(
                 month = Month.DECEMBER,
                 dayOfWeek = null,
                 dayOfMonth = 31,
-                timeFromMidnight = (1.days + dstRule.save.seconds).inWholeSeconds,
             ),
-            timeFromMidnightIsStandardTime = false,
-            timeFromMidnightIsUt = false,
+            timeFromMidnight = (1.days + dstRule.save.seconds).inWholeSeconds,
+            timeType = Rule.TimeOfDayType.Wall,
             isDst = false,
             save = 0, // unused
         )
@@ -2196,10 +2194,9 @@ fun outZone(
     val u = U().also { it.leaps.addAll(leaps) }
     /*
     ** Thanks to Earl Chew
-    ** for noting the need to unconditionally initialize startttisstd.
+    ** for noting the need to unconditionally initialize startTimeType.
     */
-    var startttisstd = false
-    var startttisut = false
+    var startTimeType = Rule.TimeOfDayType.Wall
     var minYear = 0L
     var maxYear = 0L
     fun updateMinMax(x: ZicType) {
@@ -2250,7 +2247,7 @@ fun outZone(
         maxYear = maxOf(maxYear, YEAR_32BIT_MAX.toLong())
     }
     val unspecifiedType = if (MIN_TIME < timeBoundConfig.loTime || timeBoundConfig.hiTime < MAX_TIME) {
-        u.addtype(bloatConfig, 0, "-00", false, false, false)
+        u.addtype(bloatConfig, 0, "-00", false, Rule.TimeOfDayType.Wall)
     } else {
         null
     }
@@ -2273,7 +2270,8 @@ fun outZone(
                 val type = u.addtype(
                     bloatConfig,
                     zone.stdOff + save, abbr, isDst = zone.isDst,
-                    timeFromMidnightIsStandardTime = startttisstd, timeFromMidnightIsUt = startttisut)
+                    timeType = startTimeType
+                )
                 if (useStart) {
                     u.addtt(startTime, type)
                     if (nonTZlimtime < startTime) {
@@ -2295,7 +2293,7 @@ fun outZone(
                     nextYear = maxYear
                     /*
                     ** Mark which rules to do in the current year.
-                    ** For those to do, calculate rpytime(rp, year);
+                    ** For those to do, calculate rpytime(rp, tod, year);
                     ** The former TYPE field was also considered here.
                     */
                     for (rule in zone.rules ?: emptyList()) {
@@ -2315,7 +2313,7 @@ fun outZone(
                                 }
                             }
                             if (year in rule.lowYear..rule.highYear) {
-                                rule.temp = rpytime(rule.computation, year.toInt())
+                                rule.temp = rpytime(rule.dateRule, rule.timeFromMidnight, year.toInt())
                                 rule.todo = (rule.temp!! < y2038Boundary || year <= maxYear0)
                             } else {
                                 rule.todo = false
@@ -2331,10 +2329,10 @@ fun outZone(
                             ** assuming the current stdoff and save values.
                             */
                             untilTime = zone.untilTime!!.toInstant(TimeZone.UTC).epochSeconds
-                            if (!zone.untilRule!!.timeFromMidnightIsUt) {
+                            if (!zone.untilRule!!.timeType.timeFromMidnightIsUt) {
                                 untilTime = safeAdd(untilTime, -zone.stdOff)
                             }
-                            if (!zone.untilRule.timeFromMidnightIsStandardTime) {
+                            if (!zone.untilRule.timeType.timeFromMidnightIsStandardTime) {
                                 untilTime = safeAdd(untilTime, -save)
                             }
                         }
@@ -2350,8 +2348,8 @@ fun outZone(
                                 zone.fileNum, zone.lineNum,
                                 rule.fileNum, rule.lineNum,
                             ) {
-                                var offset = if (rule.timeFromMidnightIsUt) 0 else zone.stdOff
-                                if (!rule.timeFromMidnightIsStandardTime) {
+                                var offset = if (rule.timeType.timeFromMidnightIsUt) 0 else zone.stdOff
+                                if (!rule.timeType.timeFromMidnightIsStandardTime) {
                                     offset += save
                                 }
                                 var jtime = rule.temp!!.toInstant(TimeZone.UTC).epochSeconds
@@ -2413,8 +2411,8 @@ fun outZone(
                             val offset = zone.stdOff + rule.save
                             val type = u.addtype(
                                 bloatConfig, offset, ab,
-                                isDst = rule.isDst, timeFromMidnightIsStandardTime = rule.timeFromMidnightIsStandardTime,
-                                timeFromMidnightIsUt = rule.timeFromMidnightIsUt,
+                                isDst = rule.isDst,
+                                rule.timeType,
                             )
                             if (defaultType == null && !rule.isDst)
                                 defaultType = type
@@ -2442,8 +2440,7 @@ fun outZone(
                             "to use just after until time"
                     }
                     val type = u.addtype(
-                        bloatConfig, startOff, abbr!!, isDst,
-                        startttisstd, startttisut
+                        bloatConfig, startOff, abbr!!, isDst, startTimeType
                     )
                     if (defaultType == null && !isDst)
                         defaultType = type
@@ -2454,13 +2451,12 @@ fun outZone(
             ** Now we may get to set starttime for the next zone line.
             */
             if (useUntil) {
-                startttisstd = zone.untilRule!!.timeFromMidnightIsStandardTime
-                startttisut = zone.untilRule.timeFromMidnightIsUt
+                startTimeType = zone.untilRule!!.timeType
                 startTime = zone.untilTime!!.toInstant(TimeZone.UTC).epochSeconds
-                if (!startttisstd)
-                    startTime = safeAdd(startTime, -save)
-                if (!startttisut)
+                if (!zone.untilRule.timeType.timeFromMidnightIsUt)
                     startTime = safeAdd(startTime, -stdOff)
+                if (!zone.untilRule.timeType.timeFromMidnightIsStandardTime)
+                    startTime = safeAdd(startTime, -save)
             }
         }
     }
@@ -2510,15 +2506,14 @@ fun outZone(
         ** that we are claiming to have definite knowledge of
         ** the lack of transitions up to that point.
         */
-        val xr = Rule.Computation(
+        val xr = Rule.DateRule(
             month = Month.JANUARY,
             dayOfWeek = null,
             dayOfMonth = 1,
-            timeFromMidnight = 0,
         )
         var lastAt = u.atTypes.maxByOrNull { it.at }
-        if (lastAt == null || lastAt.at < rpytime(xr, (maxYear - 1).toInt()).toInstant(TimeZone.UTC).epochSeconds) {
-            val startTime = rpytime(xr, (maxYear + 1).toInt()).toInstant(TimeZone.UTC).epochSeconds
+        if (lastAt == null || lastAt.at < rpytime(xr, 0, (maxYear - 1).toInt()).toInstant(TimeZone.UTC).epochSeconds) {
+            val startTime = rpytime(xr, 0, (maxYear + 1).toInt()).toInstant(TimeZone.UTC).epochSeconds
             u.addtt(startTime, if (lastAt == null) defaultType else lastAt.type)
             u.atTypes.last().dontMerge = true
         }
@@ -2538,22 +2533,16 @@ fun U.addtt(startTime: ZicType, type: UByte) {
 context (reporter: ErrorReporter)
 fun U.addtype(
     config: BloatConfig,
-    utOff: ZicType, abbr: String, isDst: Boolean, timeFromMidnightIsStandardTime: Boolean, timeFromMidnightIsUt: Boolean
+    utOff: ZicType, abbr: String, isDst: Boolean, timeType: Rule.TimeOfDayType
 ): UByte {
     /* RFC 9636 section 3.2 specifies this range for utOff. */
     check(utOff in (Int.MIN_VALUE + 1)..Int.MAX_VALUE) { "UT offset out of range" }
-    var timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime
-    var timeFromMidnightIsUt = timeFromMidnightIsUt
-    if (!config.wantBloat()) {
-        timeFromMidnightIsStandardTime = false
-        timeFromMidnightIsUt = false
-    }
+    var timeType = if (config.wantBloat()) timeType else Rule.TimeOfDayType.Wall
     checkabbr(abbr)
     val newTypeDescr = U.TypeDescr(
         utOff = utOff,
         isDst = isDst,
-        timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
-        timeFromMidnightIsUt = timeFromMidnightIsUt,
+        timeType = timeType,
         desig = abbr,
     )
     /* If there's already an entry, return its index. */
@@ -2713,7 +2702,7 @@ private fun Int.toUByteFailing(): UByte {
  * Do not count leap seconds. On error, diagnose and exit.
  */
 context (reporter: ErrorReporter)
-fun rpytime(rule: Rule.Computation, wantedYear: Int): LocalDateTime {
+fun rpytime(rule: Rule.DateRule, timeFromMidnight: ZicType, wantedYear: Int): LocalDateTime {
     val i = rule.dayOfMonth
     val dayOfMonth = if (rule.month == Month.FEBRUARY && i == 29 && !isLeapYear(wantedYear)) {
         check(rule.dayOfWeek is DayOfWeekRule.PreviousOrSame) { "Use of 2/29 in non leap-year" }
@@ -2735,7 +2724,7 @@ fun rpytime(rule: Rule.Computation, wantedYear: Int): LocalDateTime {
         )
     }
     return date.atTime(0, 0).toInstant(TimeZone.UTC)
-        .plus(rule.timeFromMidnight, DateTimeUnit.SECOND)
+        .plus(timeFromMidnight, DateTimeUnit.SECOND)
         .toLocalDateTime(TimeZone.UTC)
 }
 
