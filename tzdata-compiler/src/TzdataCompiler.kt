@@ -41,7 +41,6 @@ struct tzhead {
 */
 
 const val TZ_MAX_TIMES: Int = 2000
-const val TZ_MAX_TYPES: Int = 256
 const val TZ_MAX_CHARS: Int = 256
 const val TZ_MAX_LEAPS: Int = 27 + 1
 
@@ -439,7 +438,7 @@ data class U(
 
     data class TypeDescr(
         val utOff: ZicType,
-        var isDst: Boolean?,
+        val isDst: Boolean,
         var desig: String,
         val timeFromMidnightIsStandardTime: Boolean,
         val timeFromMidnightIsUt: Boolean,
@@ -1537,7 +1536,7 @@ fun puttzcodepass(value: ZicType, pass: Int): ByteArray = if (pass == 1) {
 }
 
 data class TimeRange(
-    var defaultType: Int, /* index in utOffs */
+    var defaultType: UByte, /* index in utOffs */
     var base: Int,       /* index in atTypes */
     var count: Int,
     var leapbase: Int,   /* index in leaps */
@@ -1552,7 +1551,7 @@ fun limitrange(
     val r = r.copy()
     /* Omit ordinary transitions < LO. */
     while (0 < r.count && ats[r.base] < lo) {
-        r.defaultType = types[r.base].toInt()
+        r.defaultType = types[r.base]
         --r.count
         ++r.base
     }
@@ -1586,11 +1585,11 @@ fun limitrange(
 context (reporter: ErrorReporter)
 fun writeZone(
     directory: String,
-    name: String, string: String, version: Char, defaultType: Int,
+    name: String, string: String, version: Char, defaultType: UByte,
     u: U,
     timeBoundConfig: TimeBoundConfig,
     bloatConfig: BloatConfig,
-    unspecifiedType: Int?,
+    unspecifiedType: UByte?,
 ) {
     /* Sort */
     u.atTypes.sortBy { it.at }
@@ -1693,6 +1692,7 @@ fun writeZone(
             fp.write(byte)
             /* val b = fp.read(); check(b == byte) { "Expected '$b', got '$byte'" } */
         }
+        fun write_(byte: UByte) { write_(byte.toInt()) }
         fun write_(array: ByteArray) {
             fp.write(array)
             /*
@@ -1702,7 +1702,7 @@ fun writeZone(
             */
         }
         for (pass in 1..2) {
-            var thisDefaultType: Int
+            var thisDefaultType: UByte
             val thisTimeI: Int
             var thisTimeCnt: Int
             val tooManyTimes: Boolean
@@ -1711,7 +1711,7 @@ fun writeZone(
             val thisMin: Long
             val thisMax: Long
 
-            var preTransType = -1
+            var preTransType: UByte? = null
 
             if (pass == 1) {
                 thisDefaultType = range32.defaultType
@@ -1738,7 +1738,7 @@ fun writeZone(
             val locut: Boolean = timeBoundConfig.loTime in (thisMin + 1)..thisMax
             var hicut: Boolean = timeBoundConfig.hiTime in thisMin..<thisMax
             val thisTimeLim = thisTimeI + thisTimeCnt
-            val omitType = MutableList(TZ_MAX_TYPES) { it < u.typeDescrs.size }
+            val omitType = MutableList(u.typeDescrs.size + 2) { it < u.typeDescrs.size }
             /* Determine whether to output a transition before the first transition
             in range. This is needed when the output is truncated at the start, and
             is also useful when catering to buggy 32-bit clients that do not use
@@ -1747,7 +1747,7 @@ fun writeZone(
                 && ! (thisTimeCnt > 0 && ats[thisTimeI] == timeBoundConfig.loTime))
             {
                 preTransType = thisDefaultType
-                omitType[preTransType] = false
+                omitType[preTransType.toInt()] = false
             }
             /* Arguably the default time type in the 32-bit data should be
             range32.defaulttype, which is suited for timestamps just before
@@ -1762,17 +1762,17 @@ fun writeZone(
             }
             if (locut)
                 thisDefaultType = unspecifiedType!!
-            omitType[thisDefaultType] = false
+            omitType[thisDefaultType.toInt()] = false
             for (i in thisTimeI..<thisTimeLim) {
                 omitType[types[i].toInt()] = false
             }
             if (hicut)
-                omitType[unspecifiedType!!] = false
+                omitType[unspecifiedType!!.toInt()] = false
             /* Reorder types to make THISDEFAULTTYPE type 0.
                Use TYPEMAP to swap OLD0 and THISDEFAULTTYPE so that
                THISDEFAULTTYPE appears as type 0 in the output instead of
                OLD0. TYPEMAP also omits unused types. */
-            val old0 = omitType.takeWhile { it }.size
+            val old0 = omitType.takeWhile { it }.size.toUByteFailing()
             run doNotLeaveSomePre2011SystemsInTheLurch@{
                 /* For some pre-2011 systems: if the last-to-be-written
                 standard (or daylight) type has an offset different from the
@@ -1780,89 +1780,75 @@ fun writeZone(
                 most recently used type (to help get global `altzone` and
                 `timezone` variables set correctly). */
                 if (bloatConfig.wantBloat()) {
-                    var hidst: Int? = null
-                    var histd: Int? = null
-                    var mrudst: Int? = null
-                    var mrustd: Int? = null
-                    if (0 <= preTransType) {
-                        if (u.typeDescrs[preTransType].isDst!!) {
+                    var hidst: UByte? = null
+                    var histd: UByte? = null
+                    var mrudst: UByte? = null
+                    var mrustd: UByte? = null
+                    if (preTransType != null) {
+                        if (u.typeDescrs[preTransType.toInt()].isDst) {
                             mrudst = preTransType
                         } else {
                             mrustd = preTransType
                         }
                     }
                     for (i in thisTimeI..<thisTimeLim) {
-                        if (u.typeDescrs[types[i].toInt()].isDst!!) {
-                            mrudst = types[i].toInt()
+                        if (u.typeDescrs[types[i].toInt()].isDst) {
+                            mrudst = types[i]
                         } else {
-                            mrustd = types[i].toInt()
+                            mrustd = types[i]
                         }
                     }
-                    for (i in old0..<u.typeDescrs.size) {
-                        val h = when (i) {
+                    for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                        val i = i.toInt().toUByteFailing()
+                        val h: UByte = when (i) {
                             old0 -> thisDefaultType
                             thisDefaultType -> old0
                             else -> i
                         }
-                        if (!omitType[h]) {
-                            if (u.typeDescrs[h].isDst!!) {
+                        if (!omitType[h.toInt()]) {
+                            if (u.typeDescrs[h.toInt()].isDst) {
                                 hidst = i
                             } else {
                                 histd = i
                             }
                         }
                     }
-                    if (hidst != null && mrudst != null && hidst != mrudst && u.typeDescrs[hidst].utOff != u.typeDescrs[mrudst].utOff) {
-                        u.typeDescrs[mrudst].isDst = null // trick to avoid `addtype` skipping the new type addition
-                        val type = u.addtype(
-                            bloatConfig,
-                            utOff = u.typeDescrs[mrudst].utOff,
-                            abbr = u.typeDescrs[mrudst].desig,
-                            isDst = true,
-                            timeFromMidnightIsStandardTime = u.typeDescrs[mrudst].timeFromMidnightIsStandardTime,
-                            timeFromMidnightIsUt = u.typeDescrs[mrudst].timeFromMidnightIsUt,
-                        )
-                        u.typeDescrs[mrudst].isDst = true
-                        omitType[type] = false
+                    if (hidst != null && mrudst != null && hidst != mrudst && u.typeDescrs[hidst.toInt()].utOff != u.typeDescrs[mrudst.toInt()].utOff) {
+                        u.typeDescrs.add(u.typeDescrs[mrudst.toInt()])
+                        omitType[u.typeDescrs.size - 1] = false
                     }
-                    if (histd != null && mrustd != null && histd != mrustd && u.typeDescrs[histd].utOff != u.typeDescrs[mrustd].utOff) {
-                        u.typeDescrs[mrustd].isDst = null // trick to avoid `addtype` skipping the new type addition
-                        val type = u.addtype(
-                            bloatConfig,
-                            utOff = u.typeDescrs[mrustd].utOff,
-                            abbr = u.typeDescrs[mrustd].desig,
-                            isDst = false,
-                            timeFromMidnightIsStandardTime = u.typeDescrs[mrustd].timeFromMidnightIsStandardTime,
-                            timeFromMidnightIsUt = u.typeDescrs[mrustd].timeFromMidnightIsUt,
-                        )
-                        u.typeDescrs[mrustd].isDst = false
-                        omitType[type] = false
+                    if (histd != null && mrustd != null && histd != mrustd && u.typeDescrs[histd.toInt()].utOff != u.typeDescrs[mrustd.toInt()].utOff) {
+                        u.typeDescrs.add(u.typeDescrs[mrustd.toInt()])
+                        omitType[u.typeDescrs.size - 1] = false
                     }
                 }
             }
-            val typeMap = MutableList(TZ_MAX_TYPES) { 0 }
+            val typeMap = MutableList<UByte>(u.typeDescrs.size) { 0u }
             var thisTypeCnt = 0
-            for (i in old0..<u.typeDescrs.size) {
-                if (!omitType[i]) {
-                    typeMap[if (i == old0) { thisDefaultType }
-                    else if (i == thisDefaultType) { old0 } else { i }] = thisTypeCnt++
+            for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                val i = i.toInt().toUByteFailing()
+                if (!omitType[i.toInt()]) {
+                    typeMap[(if (i == old0) { thisDefaultType }
+                    else if (i == thisDefaultType) { old0 } else { i }).toInt()] = thisTypeCnt++.toUByteFailing()
                 }
             }
             var stdCnt = 0
             var utCnt = 0
             val thisChars = mutableListOf<String>()
-            for (i in old0..<u.typeDescrs.size) {
-                if (omitType[i])
+            for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                val i = i.toInt().toUByteFailing()
+                if (omitType[i.toInt()])
                     continue
-                if (u.typeDescrs[i].timeFromMidnightIsStandardTime)
+                val descr = u.typeDescrs[i.toInt()]
+                if (descr.timeFromMidnightIsStandardTime)
                     stdCnt = thisTypeCnt
-                if (u.typeDescrs[i].timeFromMidnightIsUt)
+                if (descr.timeFromMidnightIsUt)
                     utCnt = thisTypeCnt
-                addabbr(thisChars, u.typeDescrs[i].desig)
+                addabbr(thisChars, descr.desig)
             }
             if (pass == 1 && !bloatConfig.wantBloat()) {
                 hicut = false
-                preTransType = -1
+                preTransType = null
                 thisTimeCnt = 0
                 thisLeapCnt = 0
                 thisTypeCnt = 1
@@ -1877,7 +1863,7 @@ fun writeZone(
             write_(convert(stdCnt)) // ttisstdcnt[4]
             write_(convert(thisLeapCnt)) // leapcnt[4]
             write_(convert(
-                (if (0 <= preTransType) 1 else 0) + thisTimeCnt + (if (hicut) 1 else 0)
+                (if (preTransType != null) 1 else 0) + thisTimeCnt + (if (hicut) 1 else 0)
             )) // timecnt[4]
             write_(convert(thisTypeCnt)) // typecnt[4]
             write_(convert(thisCharCnt)) // charcnt[4]
@@ -1896,29 +1882,29 @@ fun writeZone(
             But do not go below the minimum representable value for this pass. */
             val lo = if (pass == 1) maxOf(timeBoundConfig.loTime, ZIC32_MIN.toLong())
             else timeBoundConfig.loTime
-            if (0 <= preTransType)
+            if (preTransType != null)
                 write_(puttzcodepass(lo, pass))
             for (i in thisTimeI..<thisTimeLim) {
                 write_(puttzcodepass(ats[i], pass))
             }
             if (hicut)
                 write_(puttzcodepass(timeBoundConfig.hiTime + 1, pass))
-            if (0 <= preTransType)
-                write_(typeMap[preTransType])
+            if (preTransType != null)
+                write_(typeMap[preTransType.toInt()])
             for (i in thisTimeI..<thisTimeLim) {
                 write_(typeMap[types[i].toInt()])
             }
             if (hicut)
-                write_(typeMap[unspecifiedType!!])
-            for (i in old0..<u.typeDescrs.size) {
+                write_(typeMap[unspecifiedType!!.toInt()])
+            for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                val i = i.toInt().toUByteFailing()
                 val h = if (i == old0) thisDefaultType
                 else if (i == thisDefaultType) old0 else i
-                if (!omitType[h]) {
-                    write_(puttzcode(u.typeDescrs[h].utOff))
-                    write_(if (u.typeDescrs[h].isDst!!) 1 else 0)
-                    write_(addabbrQuery(
-                        thisChars, u.typeDescrs[h].desig
-                    ))
+                if (!omitType[h.toInt()]) {
+                    val descr = u.typeDescrs[h.toInt()]
+                    write_(puttzcode(descr.utOff))
+                    write_(if (descr.isDst) 1 else 0)
+                    write_(addabbrQuery(thisChars, descr.desig))
                 }
             }
             if (thisCharCnt != 0) { // ??? can be zero?
@@ -1935,7 +1921,7 @@ fun writeZone(
                     var j: Int
                     if (u.atTypes.isEmpty() || u.leaps[i].trans < ats[0]) {
                         j = 0
-                        while (u.typeDescrs[j].isDst!!) {
+                        while (u.typeDescrs[j].isDst) {
                             if (++j >= u.typeDescrs.size) {
                                 j = 0
                                 break
@@ -1956,16 +1942,18 @@ fun writeZone(
                 write_(puttzcode(u.leaps[i].corr))
             }
             if (stdCnt != 0) {
-                for (i in old0..<u.typeDescrs.size) {
-                    if (!omitType[i]) {
-                        write_(if (u.typeDescrs[i].timeFromMidnightIsStandardTime) 1 else 0)
+                for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                    val i = i.toInt().toUByteFailing()
+                    if (!omitType[i.toInt()]) {
+                        write_(if (u.typeDescrs[i.toInt()].timeFromMidnightIsStandardTime) 1 else 0)
                     }
                 }
             }
             if (utCnt != 0) {
-                for (i in old0..<u.typeDescrs.size) {
-                    if (!omitType[i]) {
-                        write_(if (u.typeDescrs[i].timeFromMidnightIsUt) 1 else 0)
+                for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
+                    val i = i.toInt().toUByteFailing()
+                    if (!omitType[i.toInt()]) {
+                        write_(if (u.typeDescrs[i.toInt()].timeFromMidnightIsUt) 1 else 0)
                     }
                 }
             }
@@ -2270,8 +2258,8 @@ fun outZone(
     remainingZones: List<Zone>
 ) {
     var nonTZlimtime = Long.MIN_VALUE
-    var nonTZlimtype = -1
-    var defaultType = -1
+    var nonTZlimtype: UByte? = null
+    var defaultType: UByte? = null
 
     var startTime = 0L
     /*
@@ -2359,7 +2347,7 @@ fun outZone(
                     zone.stdOff + save, abbr, isDst = zone.isDst,
                     timeFromMidnightIsStandardTime = startttisstd, timeFromMidnightIsUt = startttisut)
                 if (useStart) {
-                    u.addtt(startTime, type.toUByte())
+                    u.addtt(startTime, type)
                     if (nonTZlimtime < startTime) {
                         nonTZlimtime = startTime
                         nonTZlimtype = type
@@ -2500,9 +2488,9 @@ fun outZone(
                                 isDst = rule.isDst, timeFromMidnightIsStandardTime = rule.timeFromMidnightIsStandardTime,
                                 timeFromMidnightIsUt = rule.timeFromMidnightIsUt,
                             )
-                            if (defaultType < 0 && !rule.isDst)
+                            if (defaultType == null && !rule.isDst)
                                 defaultType = type
-                            u.addtt(ktime, type.toUByte())
+                            u.addtt(ktime, type)
                             if (nonTZlimtime < ktime && (useUntil || rule.highYear != Long.MAX_VALUE)) {
                                 nonTZlimtime = ktime
                                 nonTZlimtype = type
@@ -2529,9 +2517,9 @@ fun outZone(
                         bloatConfig, startOff, abbr!!, isDst,
                         startttisstd, startttisut
                     )
-                    if (defaultType < 0 && !isDst)
+                    if (defaultType == null && !isDst)
                         defaultType = type
-                    u.addtt(startTime, type.toUByte())
+                    u.addtt(startTime, type)
                 }
             }
             /*
@@ -2548,8 +2536,8 @@ fun outZone(
             }
         }
     }
-    if (defaultType < 0)
-        defaultType = 0
+    if (defaultType == null)
+        defaultType = 0u
     if (!doExtend && !bloatConfig.wantBloat()) {
         /* Keep trailing transitions that are no greater than this. */
        var keepAtMax = 0L
@@ -2573,7 +2561,7 @@ fun outZone(
                         at = atType.at,
                         dontMerge = (
                             atType.at == TZstartTime
-                            && (nonTZlimtype != atType.type.toInt() || ',' in (envvar ?: ""))
+                            && (nonTZlimtype != atType.type || ',' in (envvar ?: ""))
                         ),
                         type = atType.type
                    ))
@@ -2604,7 +2592,7 @@ fun outZone(
         var lastAt = u.atTypes.maxByOrNull { it.at }
         if (lastAt == null || lastAt.at < rpytime(xr, (maxYear - 1).toInt()).toInstant(TimeZone.UTC).epochSeconds) {
             val startTime = rpytime(xr, (maxYear + 1).toInt()).toInstant(TimeZone.UTC).epochSeconds
-            u.addtt(startTime, if (lastAt == null) defaultType.toUByte() else lastAt.type)
+            u.addtt(startTime, if (lastAt == null) defaultType else lastAt.type)
             u.atTypes.last().dontMerge = true
         }
     }
@@ -2624,7 +2612,7 @@ context (reporter: ErrorReporter)
 fun U.addtype(
     config: BloatConfig,
     utOff: ZicType, abbr: String, isDst: Boolean, timeFromMidnightIsStandardTime: Boolean, timeFromMidnightIsUt: Boolean
-): Int {
+): UByte {
     /* RFC 9636 section 3.2 specifies this range for utOff. */
     check(utOff in (Int.MIN_VALUE + 1)..Int.MAX_VALUE) { "UT offset out of range" }
     var timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime
@@ -2644,11 +2632,11 @@ fun U.addtype(
     /* If there's already an entry, return its index. */
     val index = typeDescrs.indexOf(newTypeDescr)
     if (index != -1)
-        return index
-    /* There isn't one; add a new one, unless there are already too many. */
-    check(typeDescrs.size < TZ_MAX_TYPES) { "too many local time types" }
+        return index.toUByteFailing()
+    /* There isn't one; add a new one. */
+    check(typeDescrs.size < 256) { "too many local time types" }
     typeDescrs.add(newTypeDescr)
-    return typeDescrs.size - 1
+    return (typeDescrs.size - 1).toUByte()
 }
 
 fun MutableList<U.Leap>.leapadd(
@@ -2785,6 +2773,11 @@ private fun safeMultiply(a: Long, b: Long): Long {
         throw ArithmeticException("Multiplication overflows a long: $a * $b")
     }
     return total
+}
+
+private fun Int.toUByteFailing(): UByte {
+    if (this in 0..255) return toUByte()
+    else error("Int $this exceeds the bounds of UByte")
 }
 
 /**
