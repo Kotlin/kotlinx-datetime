@@ -178,19 +178,24 @@ sealed interface DayOfWeekRule {
 }
 
 data class Zone(
+    val name: String,
     val fileNum: OpenFile,
+    val lines: List<ZoneLine>
+)
+
+data class ZoneLine(
     val lineNum: Lineno,
 
-    val name: String?,
     val stdOff: ZicType,
     val rule: String,
     val format: String,
     val formatSpecifier: Char?,
 
+    // Either this is non-null...
+    var rules: List<Rule>?,
+    // or these two are set:
     var isDst: Boolean,
     var save: ZicType,
-
-    var rules: List<Rule>?,
 
     val untilRule: Rule?,
     val untilTime: LocalDateTime?,
@@ -761,17 +766,13 @@ fun main(args: Array<String>) {
             )
         }
         associate(zones, rules, noise = noise)
-        var remainingZones = zones.toList()
-        while (!remainingZones.isEmpty()) {
-            val toTake = 1 + remainingZones.drop(1).takeWhile { it.name == null }.size
-            reporting(remainingZones.first().fileNum, remainingZones.first().lineNum) {
+        for (zone in zones) {
+            reporting(zone.fileNum, zone.lines.first().lineNum) {
                 outZone(
                     directory ?: error("-d is mandatory in this version"),
-                    timeBoundConfig, bloatConfig, leapTracker, leaps,
-                    remainingZones.take(toTake),
+                    timeBoundConfig, bloatConfig, leapTracker, leaps, zone,
                 )
             }
-            remainingZones = remainingZones.drop(toTake)
         }
         makeLinks(directory!!, links)
     }
@@ -874,7 +875,7 @@ fun associate(
             i = j
         }
     }
-    zones.forEach { zone -> zone.rules = null }
+    zones.forEach { zone -> zone.lines.forEach { line -> line.rules = null } }
     var out: Int
     var base = 0
     while (base < rules.size) {
@@ -887,26 +888,29 @@ fun associate(
         }
         val ruleWithName = rules.subList(base, out).toList()
         for (zone in zones) {
-            if (zone.rule != rule.name)
-                continue
-            zone.rules = ruleWithName
+            for (line in zone.lines) {
+                if (line.rule == rule.name)
+                    line.rules = ruleWithName
+            }
         }
         base = out
     }
     zones.forEach { zone ->
-        if (zone.rules == null) {
-            ////WARN: zone.fileNum, zone.lineNum
-            val save = reporting(zone.fileNum, zone.lineNum) {
-                getsave(zone.rule)
+        zone.lines.forEach { line ->
+            if (line.rules == null) {
+                ////WARN: zone.fileNum, zone.lineNum
+                val save = reporting(zone.fileNum, line.lineNum) {
+                    getsave(line.rule)
+                }
+                line.save = save.save
+                line.isDst = save.isDst
+                /*
+                ** Note, though, that if there's no rule,
+                ** a '%s' in the format is a bad thing.
+                */
+                if (line.formatSpecifier == 's')
+                    error("%s in ruleless zone")
             }
-            zone.save = save.save
-            zone.isDst = save.isDst
-            /*
-            ** Note, though, that if there's no rule,
-            ** a '%s' in the format is a bad thing.
-            */
-            if (zone.formatSpecifier == 's')
-                error("%s in ruleless zone")
         }
     }
 }
@@ -922,55 +926,55 @@ fun infile(
     isLeapFile: Boolean,
     lines: List<String>,
 ) {
-    var wantCont = false
-    for ((lineIndex, line) in lines.withIndex()) {
+    val linesIter = lines.withIndex().iterator()
+    while (linesIter.hasNext()) {
+        val (lineIndex, line) = linesIter.next()
         val lineNum = lineIndex + 1
-        reporting(fileNum, lineNum) {
-            val fields = getfields(line)
-            if (fields.isEmpty()) {
-                // nothing to do
-            } else if (wantCont) {
-                wantCont = zones.inzcont(fields, fileNum, lineNum)
+        val fields = getfields(line)
+        if (fields.isEmpty()) {
+            // nothing to do
+        } else {
+            val lineCodes = if (isLeapFile) {
+                LineCodes.leapLineCodes
             } else {
-                val lineCodes = if (isLeapFile) {
-                    LineCodes.leapLineCodes
-                } else {
-                    LineCodes.zoneInfoLineCodes
-                }
+                LineCodes.zoneInfoLineCodes
+            }
+            reporting(fileNum, lineNum) {
                 val entry = byWord(fields.first(), lineCodes)
                     ?: error("input line of unknown type")
                 val fields = fields.drop(1)
                 when (entry.second) {
                     // ZoneInfo:
-                    LineCodes.RULE -> {
-                        rules.inrule(fields, fileNum, lineNum)
-                        wantCont = false
-                    }
-
+                    LineCodes.RULE -> rules.inrule(fields, fileNum, lineNum)
                     LineCodes.ZONE -> {
-                        wantCont = zones.inzone(fields, fileNum, lineNum)
+                        val name: String
+                        val lines = buildList {
+                            name = inzone(fields, fileNum, lineNum)
+                            while (last().untilTime != null) {
+                                if (!linesIter.hasNext()) {
+                                    error("expected continuation line not found")
+                                }
+                                val (lineIndex, line) = linesIter.next()
+                                val fields = getfields(line)
+                                if (!fields.isEmpty()) {
+                                    inzcont(fields, fileNum, lineIndex + 1)
+                                }
+                            }
+                        }
+                        zones.forEach { zone ->
+                            if (zone.name == name) {
+                                error("duplicate zone name $name")
+                            }
+                        }
+                        zones.add(Zone(name, fileNum, lines))
                     }
-
-                    LineCodes.LINK -> {
-                        links.inlink(fields, fileNum, lineNum)
-                        wantCont = false
-                    }
+                    LineCodes.LINK -> links.inlink(fields, fileNum, lineNum)
                     // Leap:
-                    LineCodes.LEAP -> {
-                        leaps.inleap(leapTracker, timeBoundConfig, fields)
-                        wantCont = false
-                    }
-
-                    LineCodes.EXPIRES -> {
-                        warning("Expires line ignored")
-                        wantCont = false
-                    }
+                    LineCodes.LEAP -> leaps.inleap(leapTracker, timeBoundConfig, fields)
+                    LineCodes.EXPIRES -> warning("Expires line ignored")
                 }
             }
         }
-    }
-    if (wantCont) {
-        error("expected continuation line not found")
     }
 }
 
@@ -1122,9 +1126,9 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<Zone>.inzone(
+fun MutableList<ZoneLine>.inzone(
     fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno,
-): Boolean {
+): String {
     val (fields, unmatchedKeys) = populateMapWithPrefixOfEnumKeys(
         ZoneLineFields.entries, fieldsList
     ) ?: error("wrong number of fields on Zone line")
@@ -1132,39 +1136,40 @@ fun MutableList<Zone>.inzone(
         error("wrong number of fields on Zone line")
     }
     val name = fields[ZoneLineFields.NAME]!!
-    forEach { zone ->
-        if (zone.name == name) {
-            error("duplicate zone name $name")
-        }
-    }
     namecheck(name)
     val fieldsAsContinuation = fields.filter { (key, _) ->
         key != ZoneLineFields.NAME
     }.mapKeys { (key, _) ->
         key.toContinuationLineField()
     }
-    return inzsub(fieldsAsContinuation, name, fileNum, lineNum)
+    add(inzsub(fieldsAsContinuation, name, fileNum, lineNum))
+    return name
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<Zone>.inzcont(
-    fieldsList: List<String>,
-    fileNum: OpenFile, lineNum: Lineno,
-): Boolean {
+fun MutableList<ZoneLine>.inzcont(
+    fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno
+) {
     val (fields, unmatchedKeys) = populateMapWithPrefixOfEnumKeys(
         ZoneContinuationLineFields.entries, fieldsList
     ) ?: error("wrong number of fields on Zone line")
     if (unmatchedKeys.size > 4 /* TILYEAR, TILMONTH, TILDAY, TILTIME */) {
         error("wrong number of fields on Zone line")
     }
-    return inzsub(fields, name = null, fileNum, lineNum)
+    val line = inzsub(fields, name = null, fileNum, lineNum)
+    line.untilTime?.let {
+        if (last().untilTime!! >= it) {
+            error("Zone continuation line end time is not after end time of the previous line")
+        }
+    }
+    add(line)
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<Zone>.inzsub(
+fun inzsub(
     fields: Map<ZoneContinuationLineFields, String>, name: String?,
     fileNum: OpenFile, lineNum: Lineno,
-): Boolean {
+): ZoneLine {
     val format = fields[ZoneContinuationLineFields.FORMAT]!!
     val percentInFormat = format.indexOf('%')
     val formatSpecifier = if (percentInFormat != -1) {
@@ -1208,17 +1213,12 @@ fun MutableList<Zone>.inzsub(
             )
         }
         untilTime = rpytime(untilRule.dateRule, untilRule.lowYear.toInt()).atTimeExtended(untilRule.timeFromMidnight)
-        if (name == null && (lastOrNull()?.untilTime ?: LocalDateTime(1970, 1, 1, 0, 0)) >= untilTime) {
-            error("Zone continuation line end time is not after end time of the previous line")
-        }
     } else {
         untilRule = null
         untilTime = null
     }
-    val zone = Zone(
-        fileNum = fileNum,
+    return ZoneLine(
         lineNum = lineNum,
-        name = name,
         stdOff = gethms(fields[ZoneContinuationLineFields.STDOFF]!!)
             ?: error("invalid UT offset"),
         formatSpecifier = formatSpecifier,
@@ -1233,8 +1233,6 @@ fun MutableList<Zone>.inzsub(
         save = 0,
         rules = null,
     )
-    add(zone)
-    return hasUntil
 }
 
 context (reporter: ErrorReporter)
@@ -1921,7 +1919,7 @@ sealed interface Letters {
 }
 
 fun doabbr(
-    abbrData: Zone.AbbrData, letters: Letters?,
+    abbrData: ZoneLine.AbbrData, letters: Letters?,
     isDst: Boolean, save: ZicType, doQuotes: Boolean
 ): String {
     val format = abbrData.format
@@ -2050,7 +2048,7 @@ fun ruleCmp(a: Rule?, b: Rule?): Int {
 /** Return a pair of a proleptic TZ string that represents the future predictions
    for the zone [zone], as well as the compatibility indicator (a TZDB release year)
    if successful, a `null` if no such TZ string exists. */
-fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
+fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
     /* Internet RFC 9636 section 6.1 says to use an empty TZ string if future
     timestamps are truncated. */
     if (config.hiTime < MAX_TIME) {
@@ -2085,8 +2083,8 @@ fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
         /* Standard time all year. */
         lastDstRule = null
     }
-    val stdZone: Zone.AbbrData?
-    val dstZone: Zone.AbbrData?
+    val stdZone: ZoneLine.AbbrData?
+    val dstZone: ZoneLine.AbbrData?
     val stdRule: Rule.Format?
     val dstRule: Rule.Format?
     val stdLetters: String?
@@ -2099,12 +2097,12 @@ fun stringZone(config: TimeBoundConfig, zone: Zone): Pair<String, Int>? {
             /* Positive DST, the typical case for all-year DST.
             Fake a timezone with negative DST. */
             val stdOff = zone.stdOff + 2 * save
-            stdZone = Zone.AbbrData(
+            stdZone = ZoneLine.AbbrData(
                 stdOff = stdOff,
                 format = "XXX",
                 formatSpecifier = null,
             )
-            dstZone = Zone.AbbrData(
+            dstZone = ZoneLine.AbbrData(
                 stdOff = stdOff,
                 format = zone.format,
                 formatSpecifier = zone.formatSpecifier,
@@ -2173,7 +2171,7 @@ fun outZone(
     bloatConfig: BloatConfig,
     leapTracker: LeapTracker,
     leaps: List<U.Leap>,
-    remainingZones: List<Zone>
+    zone: Zone,
 ) {
     var nonTZlimtime = Long.MIN_VALUE
     var nonTZlimtype: UByte? = null
@@ -2201,11 +2199,11 @@ fun outZone(
         updateMinMax(leapTracker.leapMinYear)
         updateMinMax(leapTracker.leapMaxYear.let { it + if (it < Long.MAX_VALUE) 1 else 0 })
     }
-    for (i in remainingZones.indices) {
-        val zone = remainingZones[i]
-        if (i < remainingZones.size - 1)
-            updateMinMax(zone.untilRule!!.lowYear)
-        for (rule in zone.rules ?: emptyList()) {
+    for (i in zone.lines.indices) {
+        val line = zone.lines[i]
+        if (i < zone.lines.size - 1)
+            updateMinMax(line.untilRule!!.lowYear)
+        for (rule in line.rules ?: emptyList()) {
             updateMinMax(rule.lowYear)
             if (rule.highWasNum)
                 updateMinMax(rule.highYear)
@@ -2214,17 +2212,17 @@ fun outZone(
     /*
     ** Generate lots of data if a rule can't cover all future times.
     */
-    val firstZone = remainingZones.first()
-    val (envvar, compat) = stringZone(timeBoundConfig, remainingZones.last()) ?: (null to -1)
+    val firstZone = zone.lines.first()
+    val (envvar, compat) = stringZone(timeBoundConfig, zone.lines.last()) ?: (null to -1)
     val version = if (compat < 2013) '2' else '3'
     val doExtend = compat < 0
     if (reporter.noise) {
         if (envvar == null) {
-            warning("no proleptic TZ string for firstZone ${firstZone.name}")
+            warning("no proleptic TZ string for firstZone ${zone.name}")
         } else if (compat != 0) {
             /* Circa-COMPAT clients, and earlier clients, might not work for this
-            zone when given dates before 1970 or after 2038. */
-            warning("${firstZone.name}: pre-$compat clients may mishandle distant timestamps")
+            line when given dates before 1970 or after 2038. */
+            warning("${zone.name}: pre-$compat clients may mishandle distant timestamps")
         }
     }
     if (doExtend) {
@@ -2243,24 +2241,24 @@ fun outZone(
     } else {
         null
     }
-    for (i in remainingZones.indices) {
+    for (i in zone.lines.indices) {
         /* A guess that may well be corrected later. */
         var save = 0L
-        val zone = remainingZones[i]
+        val line = zone.lines[i]
         var useStart = i > 0
-        val useUntil = i < remainingZones.size - 1
-        val stdOff = zone.stdOff
-        var startOff = zone.stdOff
-        reporting(zone.fileNum, zone.lineNum) {
+        val useUntil = i < zone.lines.size - 1
+        val stdOff = line.stdOff
+        var startOff = line.stdOff
+        reporting(zone.fileNum, line.lineNum) {
             var abbr: String? = null
-            if (zone.rules == null) {
-                save = zone.save
+            if (line.rules == null) {
+                save = line.save
                 abbr = doabbr(
-                    zone.abbrData(), letters = null,
-                    isDst = zone.isDst, save = save, doQuotes = false
+                    line.abbrData(), letters = null,
+                    isDst = line.isDst, save = save, doQuotes = false
                 )
                 val type = u.addtype(
-                    bloatConfig, zone.stdOff + save, abbr, isDst = zone.isDst, timeType = startTimeType
+                    bloatConfig, line.stdOff + save, abbr, isDst = line.isDst, timeType = startTimeType
                 )
                 if (useStart) {
                     u.addtt(startTime, type)
@@ -2277,7 +2275,7 @@ fun outZone(
                 var tryNextYear = true
                 var year = minYear
                 while (tryNextYear) {
-                    if (useUntil && year > zone.untilRule!!.highYear)
+                    if (useUntil && year > line.untilRule!!.highYear)
                         break
                     tryNextYear = false
                     nextYear = maxYear
@@ -2286,10 +2284,10 @@ fun outZone(
                     ** For those to do, calculate rpytime(rp, year);
                     ** The former TYPE field was also considered here.
                     */
-                    for (rule in zone.rules ?: emptyList()) {
+                    for (rule in line.rules ?: emptyList()) {
                         val y2038Boundary = Instant.fromEpochSeconds(1L shl 31).toLocalDateTime(TimeZone.UTC)
                         reporting(
-                            zone.fileNum, zone.lineNum,
+                            zone.fileNum, line.lineNum,
                             rule.fileNum, rule.lineNum,
                         ) {
                             /* Keep track of the earliest year after YEAR
@@ -2318,8 +2316,8 @@ fun outZone(
                             ** Turn untiltime into UT
                             ** assuming the current stdoff and save values.
                             */
-                            untilTime = zone.untilTime!!.toInstant(
-                                zone.untilRule!!.timeType, offset = zone.stdOff, save = save
+                            untilTime = line.untilTime!!.toInstant(
+                                line.untilRule!!.timeType, offset = line.stdOff, save = save
                             ).epochSeconds
                         }
                         /*
@@ -2327,15 +2325,15 @@ fun outZone(
                         ** that takes effect earliest in the year.
                         */
                         var k = -1
-                        for (j in zone.rules?.indices ?: emptyList()) {
-                            val rule = zone.rules!![j]
+                        for (j in line.rules?.indices ?: emptyList()) {
+                            val rule = line.rules!![j]
                             if (rule.temp == null) continue
                             reporting(
-                                zone.fileNum, zone.lineNum,
+                                zone.fileNum, line.lineNum,
                                 rule.fileNum, rule.lineNum,
                             ) {
                                 val jtime = rule.temp!!.toInstant(
-                                    rule.timeType, offset = zone.stdOff, save = save
+                                    rule.timeType, offset = line.stdOff, save = save
                                 ).epochSeconds
                                 if (k < 0 || jtime < ktime) {
                                     k = j
@@ -2343,8 +2341,8 @@ fun outZone(
                                 } else if (jtime == ktime) {
                                     warning("two rules for same instant")
                                     reporting(
-                                        zone.fileNum, zone.lineNum,
-                                        zone.rules!![k].fileNum, zone.rules!![k].lineNum,
+                                        zone.fileNum, line.lineNum,
+                                        line.rules!![k].fileNum, line.rules!![k].lineNum,
                                     ) {
                                         error("two rules for same instant")
                                     }
@@ -2352,13 +2350,13 @@ fun outZone(
                             }
                         }
                         if (k < 0) break // go on to next year
-                        val rule = zone.rules!![k]
+                        val rule = line.rules!![k]
                         rule.temp = null
                         if (useUntil && ktime >= untilTime) {
-                            if (abbr == null && zone.stdOff + rule.save == startOff) {
+                            if (abbr == null && line.stdOff + rule.save == startOff) {
                                 abbr = doabbr(
-                                    zone.abbrData(), letters = Letters.Actual(rule.abbrVar),
-                                    isDst = zone.isDst, save = save, doQuotes = false
+                                    line.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                    isDst = line.isDst, save = save, doQuotes = false
                                 )
                             }
                             break
@@ -2369,29 +2367,29 @@ fun outZone(
                         }
                         if (useStart) {
                             if (ktime < startTime) {
-                                startOff = zone.stdOff + save
+                                startOff = line.stdOff + save
                                 abbr = doabbr(
-                                    zone.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                    line.abbrData(), letters = Letters.Actual(rule.abbrVar),
                                     isDst = rule.isDst, save = rule.save, doQuotes = false
                                 )
                                 continue
                             }
-                            if (abbr == null && startOff == (zone.stdOff + save)) {
+                            if (abbr == null && startOff == (line.stdOff + save)) {
                                 abbr = doabbr(
-                                    zone.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                    line.abbrData(), letters = Letters.Actual(rule.abbrVar),
                                     isDst = rule.isDst, save = rule.save, doQuotes = false
                                 )
                             }
                         }
                         reporting(
-                            zone.fileNum, zone.lineNum,
+                            zone.fileNum, line.lineNum,
                             rule.fileNum, rule.lineNum,
                         ) {
                             val ab = doabbr(
-                                zone.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                line.abbrData(), letters = Letters.Actual(rule.abbrVar),
                                 isDst = rule.isDst, save = rule.save, doQuotes = false,
                             )
-                            val offset = zone.stdOff + rule.save
+                            val offset = line.stdOff + rule.save
                             val type = u.addtype(bloatConfig, offset, ab, isDst = rule.isDst, rule.timeType)
                             if (defaultType == null && !rule.isDst)
                                 defaultType = type
@@ -2406,16 +2404,16 @@ fun outZone(
                 }
             }
             if (useStart) {
-                val isDst = startOff != zone.stdOff
-                if (abbr == null && !zone.format.isEmpty()) {
+                val isDst = startOff != line.stdOff
+                if (abbr == null && !line.format.isEmpty()) {
                     abbr = doabbr(
-                        zone.abbrData(), Letters.DisablePercentS,
+                        line.abbrData(), Letters.DisablePercentS,
                         isDst = isDst, save = save, doQuotes = false
                     )
                 }
-                reporting(zone.fileNum, zone.lineNum) {
+                reporting(zone.fileNum, line.lineNum) {
                     check(abbr != "") {
-                        "can't determine time zone abbreviation " +
+                        "can't determine time line abbreviation " +
                             "to use just after until time"
                     }
                     val type = u.addtype(
@@ -2427,12 +2425,12 @@ fun outZone(
                 }
             }
             /*
-            ** Now we may get to set starttime for the next zone line.
+            ** Now we may get to set starttime for the next line line.
             */
             if (useUntil) {
-                startTimeType = zone.untilRule!!.timeType
-                startTime = zone.untilTime!!.toInstant(
-                    zone.untilRule!!.timeType, save = save, offset = stdOff
+                startTimeType = line.untilRule!!.timeType
+                startTime = line.untilTime!!.toInstant(
+                    line.untilRule.timeType, save = save, offset = stdOff
                 ).epochSeconds
             }
         }
@@ -2493,7 +2491,7 @@ fun outZone(
     }
     writeZone(
         directory = directory,
-        name = firstZone.name!!, string = envvar ?: "", version = version, defaultType = defaultType,
+        name = zone.name, string = envvar ?: "", version = version, defaultType = defaultType,
         u, timeBoundConfig, bloatConfig,
         unspecifiedType
     )
