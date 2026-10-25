@@ -421,14 +421,7 @@ val yearLengths = listOf(
 
 data class U(
     val atTypes: MutableList<AtType> = mutableListOf(),
-
-    // These five fields represent one structure:
-    val utOffs: MutableList<ZicType> = mutableListOf(),
-    val isDsts: MutableList<Boolean?> = mutableListOf(),
-    val desigIdx: MutableList<Int> = mutableListOf(),
-    val ttisstds: MutableList<Boolean> = mutableListOf(),
-    val ttisuts: MutableList<Boolean> = mutableListOf(),
-
+    val typeDescrs: MutableList<TypeDescr> = mutableListOf(),
     val leaps: MutableList<Leap> = mutableListOf(),
 
 ) {
@@ -442,6 +435,14 @@ data class U(
         var trans: ZicType,
         var corr: ZicType,
         val roll: Boolean,
+    )
+
+    data class TypeDescr(
+        val utOff: ZicType,
+        var isDst: Boolean?,
+        var desigIdx: Int,
+        val timeFromMidnightIsStandardTime: Boolean,
+        val timeFromMidnightIsUt: Boolean,
     )
 }
 
@@ -1604,8 +1605,8 @@ fun writeZone(
                     local time is not earlier. The UT offset additions can't overflow
                     because of how the times were calculated. */
                     val type2 = if (size == 1) 0u else get(size - 2).type
-                    if ((fromType.at + u.utOffs[lastAdded.type.toInt()])
-                        <= (lastAdded.at + u.utOffs[type2.toInt()]))
+                    if ((fromType.at + u.typeDescrs[lastAdded.type.toInt()].utOff)
+                        <= (lastAdded.at + u.typeDescrs[type2.toInt()].utOff))
                     {
                         if (fromType.type == type2) removeLast()
                         else lastAdded.type = fromType.type
@@ -1617,9 +1618,9 @@ fun writeZone(
                 or if it transitions to different timekeeping. */
                 if (lastAdded == null
                     || fromType.dontMerge
-                    || (u.utOffs[lastAdded.type.toInt()] != u.utOffs[fromType.type.toInt()])
-                    || (u.isDsts[lastAdded.type.toInt()] != u.isDsts[fromType.type.toInt()])
-                    || (u.desigIdx[lastAdded.type.toInt()] != u.desigIdx[fromType.type.toInt()]))
+                    || (u.typeDescrs[lastAdded.type.toInt()].utOff != u.typeDescrs[fromType.type.toInt()].utOff)
+                    || (u.typeDescrs[lastAdded.type.toInt()].isDst != u.typeDescrs[fromType.type.toInt()].isDst)
+                    || (u.typeDescrs[lastAdded.type.toInt()].desigIdx != u.typeDescrs[fromType.type.toInt()].desigIdx))
                 {
                     add(fromType)
                 }
@@ -1738,7 +1739,7 @@ fun writeZone(
             val locut: Boolean = timeBoundConfig.loTime in (thisMin + 1)..thisMax
             var hicut: Boolean = timeBoundConfig.hiTime in thisMin..<thisMax
             val thisTimeLim = thisTimeI + thisTimeCnt
-            val omitType = MutableList(TZ_MAX_TYPES) { it < u.utOffs.size }
+            val omitType = MutableList(TZ_MAX_TYPES) { it < u.typeDescrs.size }
             /* Determine whether to output a transition before the first transition
             in range. This is needed when the output is truncated at the start, and
             is also useful when catering to buggy 32-bit clients that do not use
@@ -1785,66 +1786,66 @@ fun writeZone(
                     var mrudst: Int? = null
                     var mrustd: Int? = null
                     if (0 <= preTransType) {
-                        if (u.isDsts[preTransType]!!) {
+                        if (u.typeDescrs[preTransType].isDst!!) {
                             mrudst = preTransType
                         } else {
                             mrustd = preTransType
                         }
                     }
                     for (i in thisTimeI..<thisTimeLim) {
-                        if (u.isDsts[types[i].toInt()]!!) {
+                        if (u.typeDescrs[types[i].toInt()].isDst!!) {
                             mrudst = types[i].toInt()
                         } else {
                             mrustd = types[i].toInt()
                         }
                     }
-                    for (i in old0..<u.utOffs.size) {
+                    for (i in old0..<u.typeDescrs.size) {
                         val h = when (i) {
                             old0 -> thisDefaultType
                             thisDefaultType -> old0
                             else -> i
                         }
                         if (!omitType[h]) {
-                            if (u.isDsts[h]!!) {
+                            if (u.typeDescrs[h].isDst!!) {
                                 hidst = i
                             } else {
                                 histd = i
                             }
                         }
                     }
-                    if (hidst != null && mrudst != null && hidst != mrudst && u.utOffs[hidst] != u.utOffs[mrudst]) {
-                        u.isDsts[mrudst] = null // trick to avoid `addtype` skipping the new type addition
+                    if (hidst != null && mrudst != null && hidst != mrudst && u.typeDescrs[hidst].utOff != u.typeDescrs[mrudst].utOff) {
+                        u.typeDescrs[mrudst].isDst = null // trick to avoid `addtype` skipping the new type addition
                         val type = u.addtype(
                             chs,
                             bloatConfig,
-                            utOff = u.utOffs[mrudst],
-                            abbr = queryAbbrByPosition(chs, u.desigIdx[mrudst])!!,
+                            utOff = u.typeDescrs[mrudst].utOff,
+                            abbr = queryAbbrByPosition(chs, u.typeDescrs[mrudst].desigIdx)!!,
                             isDst = true,
-                            ttisstd = u.ttisstds[mrudst],
-                            ttisut = u.ttisuts[mrudst],
+                            timeFromMidnightIsStandardTime = u.typeDescrs[mrudst].timeFromMidnightIsStandardTime,
+                            timeFromMidnightIsUt = u.typeDescrs[mrudst].timeFromMidnightIsUt,
                         )
-                        u.isDsts[mrudst] = true
+                        u.typeDescrs[mrudst].isDst = true
                         omitType[type] = false
                     }
-                    if (histd != null && mrustd != null && histd != mrustd && u.utOffs[histd] != u.utOffs[mrustd]) {
-                        u.isDsts[mrustd] = null // trick to avoid `addtype` skipping the new type addition
+                    if (histd != null && mrustd != null && histd != mrustd && u.typeDescrs[histd].utOff != u.typeDescrs[mrustd].utOff) {
+                        u.typeDescrs[mrustd].isDst = null // trick to avoid `addtype` skipping the new type addition
                         val type = u.addtype(
                             chs,
                             bloatConfig,
-                            utOff = u.utOffs[mrustd],
-                            abbr = queryAbbrByPosition(chs, u.desigIdx[mrustd])!!,
+                            utOff = u.typeDescrs[mrustd].utOff,
+                            abbr = queryAbbrByPosition(chs, u.typeDescrs[mrustd].desigIdx)!!,
                             isDst = false,
-                            ttisstd = u.ttisstds[mrustd],
-                            ttisut = u.ttisuts[mrustd],
+                            timeFromMidnightIsStandardTime = u.typeDescrs[mrustd].timeFromMidnightIsStandardTime,
+                            timeFromMidnightIsUt = u.typeDescrs[mrustd].timeFromMidnightIsUt,
                         )
-                        u.isDsts[mrustd] = false
+                        u.typeDescrs[mrustd].isDst = false
                         omitType[type] = false
                     }
                 }
             }
             val typeMap = MutableList(TZ_MAX_TYPES) { 0 }
             var thisTypeCnt = 0
-            for (i in old0..<u.utOffs.size) {
+            for (i in old0..<u.typeDescrs.size) {
                 if (!omitType[i]) {
                     typeMap[if (i == old0) { thisDefaultType }
                     else if (i == thisDefaultType) { old0 } else { i }] = thisTypeCnt++
@@ -1853,23 +1854,23 @@ fun writeZone(
             var stdCnt = 0
             var utCnt = 0
             val thisChars = mutableListOf<String>()
-            for (i in old0..<u.utOffs.size) {
+            for (i in old0..<u.typeDescrs.size) {
                 if (omitType[i])
                     continue
-                if (u.ttisstds[i])
+                if (u.typeDescrs[i].timeFromMidnightIsStandardTime)
                     stdCnt = thisTypeCnt
-                if (u.ttisuts[i])
+                if (u.typeDescrs[i].timeFromMidnightIsUt)
                     utCnt = thisTypeCnt
-                addabbr(thisChars, queryAbbrByPosition(chs, u.desigIdx[i])!!)
+                addabbr(thisChars, queryAbbrByPosition(chs, u.typeDescrs[i].desigIdx)!!)
             }
             /* Now that all abbrevs have been added to [thisChars],
             it is safe to set INDMAP without worrying about whether the abbrevs
             might move later. */
             val indMap = MutableList(TZ_MAX_CHARS) { -1 }
-            for (i in old0..<u.utOffs.size) {
-                if (!omitType[i] && indMap[u.desigIdx[i]] < 0)
-                    indMap[u.desigIdx[i]] = addabbrQuery(
-                        thisChars, queryAbbrByPosition(chs, u.desigIdx[i])!!
+            for (i in old0..<u.typeDescrs.size) {
+                if (!omitType[i] && indMap[u.typeDescrs[i].desigIdx] < 0)
+                    indMap[u.typeDescrs[i].desigIdx] = addabbrQuery(
+                        thisChars, queryAbbrByPosition(chs, u.typeDescrs[i].desigIdx)!!
                     )
             }
             if (pass == 1 && !bloatConfig.wantBloat()) {
@@ -1922,13 +1923,13 @@ fun writeZone(
             }
             if (hicut)
                 write_(typeMap[unspecifiedType!!])
-            for (i in old0..<u.utOffs.size) {
+            for (i in old0..<u.typeDescrs.size) {
                 val h = if (i == old0) thisDefaultType
                 else if (i == thisDefaultType) old0 else i
                 if (!omitType[h]) {
-                    write_(puttzcode(u.utOffs[h]))
-                    write_(if (u.isDsts[h]!!) 1 else 0)
-                    write_(indMap[u.desigIdx[h]])
+                    write_(puttzcode(u.typeDescrs[h].utOff))
+                    write_(if (u.typeDescrs[h].isDst!!) 1 else 0)
+                    write_(indMap[u.typeDescrs[h].desigIdx])
                 }
             }
             if (thisCharCnt != 0) { // ??? can be zero?
@@ -1945,8 +1946,8 @@ fun writeZone(
                     var j: Int
                     if (u.atTypes.isEmpty() || u.leaps[i].trans < ats[0]) {
                         j = 0
-                        while (u.isDsts[j]!!) {
-                            if (++j >= u.utOffs.size) {
+                        while (u.typeDescrs[j].isDst!!) {
+                            if (++j >= u.typeDescrs.size) {
                                 j = 0
                                 break
                             }
@@ -1958,7 +1959,7 @@ fun writeZone(
                         }
                         j = types[j - 1].toInt()
                     }
-                    safeAdd(u.leaps[i].trans, -u.utOffs[j])
+                    safeAdd(u.leaps[i].trans, -u.typeDescrs[j].utOff)
                 } else {
                     u.leaps[i].trans
                 }
@@ -1966,16 +1967,16 @@ fun writeZone(
                 write_(puttzcode(u.leaps[i].corr))
             }
             if (stdCnt != 0) {
-                for (i in old0..<u.utOffs.size) {
+                for (i in old0..<u.typeDescrs.size) {
                     if (!omitType[i]) {
-                        write_(if (u.ttisstds[i]) 1 else 0)
+                        write_(if (u.typeDescrs[i].timeFromMidnightIsStandardTime) 1 else 0)
                     }
                 }
             }
             if (utCnt != 0) {
-                for (i in old0..<u.utOffs.size) {
+                for (i in old0..<u.typeDescrs.size) {
                     if (!omitType[i]) {
-                        write_(if (u.ttisuts[i]) 1 else 0)
+                        write_(if (u.typeDescrs[i].timeFromMidnightIsUt) 1 else 0)
                     }
                 }
             }
@@ -2368,7 +2369,7 @@ fun outZone(
                 val type = u.addtype(
                     chs, bloatConfig,
                     zone.stdOff + save, abbr, isDst = zone.isDst,
-                    ttisstd = startttisstd, ttisut = startttisut)
+                    timeFromMidnightIsStandardTime = startttisstd, timeFromMidnightIsUt = startttisut)
                 if (useStart) {
                     u.addtt(startTime, type.toUByte())
                     if (nonTZlimtime < startTime) {
@@ -2508,8 +2509,8 @@ fun outZone(
                             val offset = zone.stdOff + rule.save
                             val type = u.addtype(
                                 chs, bloatConfig, offset, ab,
-                                isDst = rule.isDst, ttisstd = rule.timeFromMidnightIsStandardTime,
-                                ttisut = rule.timeFromMidnightIsUt,
+                                isDst = rule.isDst, timeFromMidnightIsStandardTime = rule.timeFromMidnightIsStandardTime,
+                                timeFromMidnightIsUt = rule.timeFromMidnightIsUt,
                             )
                             if (defaultType < 0 && !rule.isDst)
                                 defaultType = type
@@ -2635,45 +2636,44 @@ context (reporter: ErrorReporter)
 fun U.addtype(
     chs: MutableList<String>,
     config: BloatConfig,
-    utOff: ZicType, abbr: String, isDst: Boolean, ttisstd: Boolean, ttisut: Boolean
+    utOff: ZicType, abbr: String, isDst: Boolean, timeFromMidnightIsStandardTime: Boolean, timeFromMidnightIsUt: Boolean
 ): Int {
     /* RFC 9636 section 3.2 specifies this range for utOff. */
     check(utOff in (Int.MIN_VALUE + 1)..Int.MAX_VALUE) { "UT offset out of range" }
-    var ttisstd = ttisstd
-    var ttisut = ttisut
+    var timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime
+    var timeFromMidnightIsUt = timeFromMidnightIsUt
     if (!config.wantBloat()) {
-        ttisstd = false
-        ttisut = false
+        timeFromMidnightIsStandardTime = false
+        timeFromMidnightIsUt = false
     }
     checkabbr(abbr)
     val toShiftBy = addabbr(chs, abbr)
     val abbrPosition = addabbrQuery(chs, abbr)
+    val newTypeDescr = U.TypeDescr(
+        utOff = utOff,
+        isDst = isDst,
+        timeFromMidnightIsStandardTime = timeFromMidnightIsStandardTime,
+        timeFromMidnightIsUt = timeFromMidnightIsUt,
+        desigIdx = abbrPosition,
+    )
     if (toShiftBy != null) {
         /* If an abbreviation was inserted, increment indexes no earlier than
         the insert by the size of the insertion, so that they continue to point
         to the same contents. */
-        for (i in utOffs.indices) {
-            if (abbrPosition <= desigIdx[i])
-                desigIdx[i] += toShiftBy
+        for (typeDescr in typeDescrs) {
+            if (abbrPosition <= typeDescr.desigIdx)
+                typeDescr.desigIdx += toShiftBy
         }
     } else {
         /* If there's already an entry, return its index. */
-        for (i in utOffs.indices) {
-            if (utOff == utOffs[i] && isDst == isDsts[i] && abbrPosition == desigIdx[i]
-                && ttisstd == ttisstds[i] && ttisut == ttisuts[i])
-            {
-                return i
-            }
-        }
+        val index = typeDescrs.indexOf(newTypeDescr)
+        if (index != -1)
+            return index
     }
     /* There isn't one; add a new one, unless there are already too many. */
-    check(utOffs.size < TZ_MAX_TYPES) { "too many local time types" }
-    utOffs.add(utOff)
-    isDsts.add(isDst)
-    ttisstds.add(ttisstd)
-    ttisuts.add(ttisut)
-    desigIdx.add(abbrPosition)
-    return utOffs.size - 1
+    check(typeDescrs.size < TZ_MAX_TYPES) { "too many local time types" }
+    typeDescrs.add(newTypeDescr)
+    return typeDescrs.size - 1
 }
 
 fun MutableList<U.Leap>.leapadd(
