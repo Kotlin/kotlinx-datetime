@@ -1210,7 +1210,7 @@ fun MutableList<Zone>.inzsub(
                 temp = null,
             )
         }
-        untilTime = rpytime(untilRule.dateRule, untilRule.timeFromMidnight, untilRule.lowYear.toInt())
+        untilTime = rpytime(untilRule.dateRule, untilRule.lowYear.toInt()).atTimeExtended(untilRule.timeFromMidnight)
         if (name == null && (lastOrNull()?.untilTime ?: LocalDateTime(1970, 1, 1, 0, 0)) >= untilTime) {
             error("Zone continuation line end time is not after end time of the previous line")
         }
@@ -1263,7 +1263,7 @@ fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String
         dayOfWeek = null,
         dayOfMonth = dayOfMonth,
     )
-    return rpytime(r, timeOfDay, year).also {
+    return rpytime(r, year).atTimeExtended(timeOfDay).also {
         check(it >= LocalDateTime(1970, 1, 1, 0, 0)) {
             "leap second precedes Epoch"
         }
@@ -2293,7 +2293,7 @@ fun outZone(
                     nextYear = maxYear
                     /*
                     ** Mark which rules to do in the current year.
-                    ** For those to do, calculate rpytime(rp, tod, year);
+                    ** For those to do, calculate rpytime(rp, year);
                     ** The former TYPE field was also considered here.
                     */
                     for (rule in zone.rules ?: emptyList()) {
@@ -2313,7 +2313,7 @@ fun outZone(
                                 }
                             }
                             if (year in rule.lowYear..rule.highYear) {
-                                rule.temp = rpytime(rule.dateRule, rule.timeFromMidnight, year.toInt())
+                                rule.temp = rpytime(rule.dateRule, year.toInt()).atTimeExtended(rule.timeFromMidnight)
                                 rule.todo = (rule.temp!! < y2038Boundary || year <= maxYear0)
                             } else {
                                 rule.todo = false
@@ -2352,8 +2352,7 @@ fun outZone(
                                 if (!rule.timeType.timeFromMidnightIsStandardTime) {
                                     offset += save
                                 }
-                                var jtime = rule.temp!!.toInstant(TimeZone.UTC).epochSeconds
-                                jtime = safeAdd(jtime, -offset)
+                                val jtime = safeAdd(rule.temp!!.toInstant(TimeZone.UTC).epochSeconds, -offset)
                                 if (k < 0 || jtime < ktime) {
                                     k = j
                                     ktime = jtime
@@ -2512,8 +2511,8 @@ fun outZone(
             dayOfMonth = 1,
         )
         var lastAt = u.atTypes.maxByOrNull { it.at }
-        if (lastAt == null || lastAt.at < rpytime(xr, 0, (maxYear - 1).toInt()).toInstant(TimeZone.UTC).epochSeconds) {
-            val startTime = rpytime(xr, 0, (maxYear + 1).toInt()).toInstant(TimeZone.UTC).epochSeconds
+        if (lastAt == null || lastAt.at < rpytime(xr, (maxYear - 1).toInt()).atTime(0, 0).toInstant(TimeZone.UTC).epochSeconds) {
+            val startTime = rpytime(xr, (maxYear + 1).toInt()).atTime(0, 0).toInstant(TimeZone.UTC).epochSeconds
             u.addtt(startTime, if (lastAt == null) defaultType else lastAt.type)
             u.atTypes.last().dontMerge = true
         }
@@ -2702,7 +2701,7 @@ private fun Int.toUByteFailing(): UByte {
  * Do not count leap seconds. On error, diagnose and exit.
  */
 context (reporter: ErrorReporter)
-fun rpytime(rule: Rule.DateRule, timeFromMidnight: ZicType, wantedYear: Int): LocalDateTime {
+fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
     val i = rule.dayOfMonth
     val dayOfMonth = if (rule.month == Month.FEBRUARY && i == 29 && !isLeapYear(wantedYear)) {
         check(rule.dayOfWeek is DayOfWeekRule.PreviousOrSame) { "Use of 2/29 in non leap-year" }
@@ -2723,10 +2722,13 @@ fun rpytime(rule: Rule.DateRule, timeFromMidnight: ZicType, wantedYear: Int): Lo
             "will not work with pre-2004 versions of zic"
         )
     }
-    return date.atTime(0, 0).toInstant(TimeZone.UTC)
+    return date
+}
+
+fun LocalDate.atTimeExtended(timeFromMidnight: ZicType): LocalDateTime =
+    atTime(0, 0).toInstant(TimeZone.UTC)
         .plus(timeFromMidnight, DateTimeUnit.SECOND)
         .toLocalDateTime(TimeZone.UTC)
-}
 
 context (reporter: ErrorReporter)
 fun checkabbr(string: String) {
