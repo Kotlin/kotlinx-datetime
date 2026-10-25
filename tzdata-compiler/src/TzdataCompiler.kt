@@ -177,29 +177,25 @@ sealed interface DayOfWeekRule {
     data class PreviousOrSame(val dayOfWeek: DayOfWeek): DayOfWeekRule
 }
 
-data class Zone(
+data class ZoneAbstract<T>(
     val name: String,
     val fileNum: OpenFile,
-    val lines: List<ZoneLine>
+    val lines: List<T>
 )
+
+typealias Zone = ZoneAbstract<ZoneLine>
+typealias ZoneWithRules = ZoneAbstract<Pair<ZoneLine, ZoneLineRules>>
 
 data class ZoneLine(
     val lineNum: Lineno,
-
     val stdOff: ZicType,
     val rule: String,
     val format: String,
     val formatSpecifier: Char?,
-
-    // Either this is non-null...
-    var rules: List<Rule>?,
-    // or these two are set:
-    var isDst: Boolean,
-    var save: ZicType,
-
     val untilRule: Rule?,
     val untilTime: LocalDateTime?,
 ) {
+
     data class AbbrData(
         val stdOff: ZicType,
         val format: String,
@@ -211,6 +207,13 @@ data class ZoneLine(
     )
 }
 
+/** Rules associated with a zone line. */
+sealed interface ZoneLineRules {
+    data class RuleList(val rules: List<Rule>): ZoneLineRules
+    data class StaticRule(val isDst: Boolean, val save: ZicType): ZoneLineRules
+
+    fun asList(): List<Rule> = (this as? RuleList)?.rules ?: emptyList()
+}
 
 fun Char.isAsciiDigit() = this in '0'..'9'
 
@@ -338,18 +341,12 @@ enum class YearSynonyms {
     }
 }
 
-data class T(
-    val rules: MutableList<Rule> = mutableListOf(),
-    val zones: MutableList<Zone> = mutableListOf(),
-    val links: MutableList<Link> = mutableListOf(),
-) {
-    data class Link(
-        val fileNum: OpenFile,
-        val lineNum: Lineno,
-        val target: String,
-        val linkName: String,
-    )
-}
+data class Link(
+    val fileNum: OpenFile,
+    val lineNum: Lineno,
+    val target: String,
+    val linkName: String,
+)
 
 val monthNames = listOf(
     "January" to Month.JANUARY,
@@ -533,7 +530,7 @@ usage is [ --version ] [ --help ] [ -v ]
 \t[ filename ... ]
 """
 
-fun qsortLinkCmp(a: T.Link, b: T.Link): Int {
+fun qsortLinkCmp(a: Link, b: Link): Int {
     var cmp = a.linkName.compareTo(b.linkName)
     if (cmp != 0) return cmp
     /* The link names are the same. Make the sort stable by comparing
@@ -546,15 +543,15 @@ fun qsortLinkCmp(a: T.Link, b: T.Link): Int {
 
 /* Make the links specified by the Link lines. */
 context (_: ErrorReportingConfig)
-fun makeLinks(directory: String, links: List<T.Link>) {
-    var pendingLinks: List<T.Link> = links
+fun makeLinks(directory: String, links: List<Link>) {
+    var pendingLinks: List<Link> = links
         .sortedWith(::qsortLinkCmp)
         /* Ignore each link superseded by a later link with the same name. */
         .reversed().distinctBy { it.linkName }.reversed()
 
     while (!pendingLinks.isEmpty()) {
         val lastPendingLinksSize = pendingLinks.size
-        val nextPendingLinks = mutableListOf<T.Link>()
+        val nextPendingLinks = mutableListOf<Link>()
         for (link in pendingLinks) {
             val linkPath = Path(directory + "/" + link.linkName)
             val targetPath = Path(directory + "/" + link.target)
@@ -741,7 +738,7 @@ fun main(args: Array<String>) {
     )
     context(errorReportingConfig) {
         val rules = mutableListOf<Rule>()
-        val links = mutableListOf<T.Link>()
+        val links = mutableListOf<Link>()
         val leaps = mutableListOf<U.Leap>()
         val zones = mutableListOf<Zone>()
         val leapTracker = LeapTracker()
@@ -765,9 +762,10 @@ fun main(args: Array<String>) {
                 lines = Path(file).readLines()
             )
         }
-        associate(zones, rules, noise = noise)
-        for (zone in zones) {
-            reporting(zone.fileNum, zone.lines.first().lineNum) {
+        rules.sortBy { it.name }
+        val zonesWithRules = associate(zones, rules, noise = noise)
+        for (zone in zonesWithRules) {
+            reporting(zone.fileNum, zone.lines.first().first.lineNum) {
                 outZone(
                     directory ?: error("-d is mandatory in this version"),
                     timeBoundConfig, bloatConfig, leapTracker, leaps, zone,
@@ -844,12 +842,11 @@ fun namecheck(name: String) {
  */
 context (_: ErrorReportingConfig)
 fun associate(
-    zones: MutableList<Zone>,
-    rules: MutableList<Rule>,
+    zones: List<Zone>,
+    rules: List<Rule>,
     noise: Boolean,
-) {
+): List<ZoneWithRules> {
     if (1 < rules.size) {
-        rules.sortBy { it.name }
         var i = 0
         while (i < rules.size - 1) {
             if (rules[i].name != rules[i+1].name) {
@@ -875,43 +872,25 @@ fun associate(
             i = j
         }
     }
-    zones.forEach { zone -> zone.lines.forEach { line -> line.rules = null } }
-    var out: Int
-    var base = 0
-    while (base < rules.size) {
-        val rule = rules[base]
-        out = base + 1
-        while (out < rules.size) {
-            if (rule.name != rules[out].name)
-                break
-            ++out
-        }
-        val ruleWithName = rules.subList(base, out).toList()
-        for (zone in zones) {
-            for (line in zone.lines) {
-                if (line.rule == rule.name)
-                    line.rules = ruleWithName
-            }
-        }
-        base = out
-    }
-    zones.forEach { zone ->
-        zone.lines.forEach { line ->
-            if (line.rules == null) {
-                ////WARN: zone.fileNum, zone.lineNum
+    val rulesByName = rules.groupBy { it.name }
+    return zones.map { zone ->
+        ZoneAbstract(name = zone.name, fileNum = zone.fileNum, lines = zone.lines.map { line ->
+            val rules = rulesByName[line.rule]
+            line to if (rules != null) {
+                ZoneLineRules.RuleList(rules)
+            } else {
                 val save = reporting(zone.fileNum, line.lineNum) {
                     getsave(line.rule)
                 }
-                line.save = save.save
-                line.isDst = save.isDst
                 /*
                 ** Note, though, that if there's no rule,
                 ** a '%s' in the format is a bad thing.
                 */
                 if (line.formatSpecifier == 's')
                     error("%s in ruleless zone")
+                ZoneLineRules.StaticRule(save = save.save, isDst = save.isDst)
             }
-        }
+        })
     }
 }
 
@@ -920,7 +899,7 @@ fun infile(
     fileNum: OpenFile,
     leapTracker: LeapTracker, timeBoundConfig: TimeBoundConfig,
     rules: MutableList<Rule>,
-    links: MutableList<T.Link>,
+    links: MutableList<Link>,
     leaps: MutableList<U.Leap>,
     zones: MutableList<Zone>,
     isLeapFile: Boolean,
@@ -966,7 +945,7 @@ fun infile(
                                 error("duplicate zone name $name")
                             }
                         }
-                        zones.add(Zone(name, fileNum, lines))
+                        zones.add(ZoneAbstract(name, fileNum, lines))
                     }
                     LineCodes.LINK -> links.inlink(fields, fileNum, lineNum)
                     // Leap:
@@ -1212,26 +1191,20 @@ fun inzsub(
                 temp = null,
             )
         }
-        untilTime = rpytime(untilRule.dateRule, untilRule.lowYear.toInt()).atTimeExtended(untilRule.timeFromMidnight)
     } else {
         untilRule = null
-        untilTime = null
     }
     return ZoneLine(
         lineNum = lineNum,
         stdOff = gethms(fields[ZoneContinuationLineFields.STDOFF]!!)
             ?: error("invalid UT offset"),
         formatSpecifier = formatSpecifier,
-
         rule = fields[ZoneContinuationLineFields.RULE]!!,
         format = format.replace("%z", "%s"),
         untilRule = untilRule,
-        untilTime = untilTime,
-
-        // Uninitialized:
-        isDst = false,
-        save = 0,
-        rules = null,
+        untilTime = untilRule?.let {
+            rpytime(it.dateRule, it.lowYear.toInt()).atTimeExtended(it.timeFromMidnight)
+        }
     )
 }
 
@@ -1280,7 +1253,7 @@ fun MutableList<U.Leap>.inleap(
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<T.Link>.inlink(
+fun MutableList<Link>.inlink(
     fieldsList: List<String>,
     fileNum: OpenFile,
     lineNum: Int,
@@ -1293,7 +1266,7 @@ fun MutableList<T.Link>.inlink(
     namecheck(fields[LinkLineFields.TARGET]!!)
     namecheck(fields[LinkLineFields.LINKNAME]!!)
     add(
-        T.Link(
+        Link(
             fileNum = fileNum,
             lineNum = lineNum,
             target = fields[LinkLineFields.TARGET]!!,
@@ -2048,7 +2021,7 @@ fun ruleCmp(a: Rule?, b: Rule?): Int {
 /** Return a pair of a proleptic TZ string that represents the future predictions
    for the zone [zone], as well as the compatibility indicator (a TZDB release year)
    if successful, a `null` if no such TZ string exists. */
-fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
+fun stringZone(config: TimeBoundConfig, lineAndRules: Pair<ZoneLine, ZoneLineRules>): Pair<String, Int>? {
     /* Internet RFC 9636 section 6.1 says to use an empty TZ string if future
     timestamps are truncated. */
     if (config.hiTime < MAX_TIME) {
@@ -2056,7 +2029,8 @@ fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
     }
     var lastStdRule: Rule? = null
     var lastDstRule: Rule? = null
-    for (rule in zone.rules ?: emptyList()) {
+    val (line, rules) = lineAndRules
+    for (rule in rules.asList()) {
         if (rule.isDst) {
             val cmp = ruleCmp(lastDstRule, rule)
             if (cmp < 0) {
@@ -2074,8 +2048,8 @@ fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
         }
     }
     var compat = 0
-    val dstcmp = if (zone.rules.isNullOrEmpty()) {
-        if (zone.isDst) 1 else -1
+    val dstcmp = if (rules is ZoneLineRules.StaticRule) {
+        if (rules.isDst) 1 else -1
     } else {
         ruleCmp(lastDstRule, lastStdRule)
     }
@@ -2092,11 +2066,11 @@ fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
     if (dstcmp > 0) {
         /* DST all year. Use an abbreviation like
         "XXX3EDT4,0/0,J365/23" for EDT (-04) all year. */
-        val save = lastDstRule?.save ?: zone.save
+        val save = lastDstRule?.save ?: (rules as ZoneLineRules.StaticRule).save
         if (save >= 0) {
             /* Positive DST, the typical case for all-year DST.
             Fake a timezone with negative DST. */
-            val stdOff = zone.stdOff + 2 * save
+            val stdOff = line.stdOff + 2 * save
             stdZone = ZoneLine.AbbrData(
                 stdOff = stdOff,
                 format = "XXX",
@@ -2104,12 +2078,12 @@ fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
             )
             dstZone = ZoneLine.AbbrData(
                 stdOff = stdOff,
-                format = zone.format,
-                formatSpecifier = zone.formatSpecifier,
+                format = line.format,
+                formatSpecifier = line.formatSpecifier,
             )
         } else {
-            stdZone = zone.abbrData()
-            dstZone = zone.abbrData()
+            stdZone = line.abbrData()
+            dstZone = line.abbrData()
         }
         dstRule = Rule.Format(
             dateRule = Rule.DateRule(
@@ -2136,8 +2110,8 @@ fun stringZone(config: TimeBoundConfig, zone: ZoneLine): Pair<String, Int>? {
         stdLetters = if (save < 0) lastStdRule?.abbrVar else null
         dstLetters = lastDstRule?.abbrVar
     } else {
-        stdZone = zone.abbrData()
-        dstZone = zone.abbrData()
+        stdZone = line.abbrData()
+        dstZone = line.abbrData()
         stdRule = lastStdRule?.format()
         dstRule = lastDstRule?.format()
         stdLetters = lastStdRule?.abbrVar
@@ -2171,7 +2145,7 @@ fun outZone(
     bloatConfig: BloatConfig,
     leapTracker: LeapTracker,
     leaps: List<U.Leap>,
-    zone: Zone,
+    zone: ZoneWithRules,
 ) {
     var nonTZlimtime = Long.MIN_VALUE
     var nonTZlimtype: UByte? = null
@@ -2200,10 +2174,10 @@ fun outZone(
         updateMinMax(leapTracker.leapMaxYear.let { it + if (it < Long.MAX_VALUE) 1 else 0 })
     }
     for (i in zone.lines.indices) {
-        val line = zone.lines[i]
+        val (line, rules) = zone.lines[i]
         if (i < zone.lines.size - 1)
             updateMinMax(line.untilRule!!.lowYear)
-        for (rule in line.rules ?: emptyList()) {
+        for (rule in rules.asList()) {
             updateMinMax(rule.lowYear)
             if (rule.highWasNum)
                 updateMinMax(rule.highYear)
@@ -2244,163 +2218,166 @@ fun outZone(
     for (i in zone.lines.indices) {
         /* A guess that may well be corrected later. */
         var save = 0L
-        val line = zone.lines[i]
+        val (line, lineRules) = zone.lines[i]
         var useStart = i > 0
         val useUntil = i < zone.lines.size - 1
         val stdOff = line.stdOff
         var startOff = line.stdOff
         reporting(zone.fileNum, line.lineNum) {
             var abbr: String? = null
-            if (line.rules == null) {
-                save = line.save
-                abbr = doabbr(
-                    line.abbrData(), letters = null,
-                    isDst = line.isDst, save = save, doQuotes = false
-                )
-                val type = u.addtype(
-                    bloatConfig, line.stdOff + save, abbr, isDst = line.isDst, timeType = startTimeType
-                )
-                if (useStart) {
-                    u.addtt(startTime, type)
-                    if (nonTZlimtime < startTime) {
-                        nonTZlimtime = startTime
-                        nonTZlimtype = type
+            when (lineRules) {
+                is ZoneLineRules.StaticRule -> {
+                    save = lineRules.save
+                    abbr = doabbr(
+                        line.abbrData(), letters = null,
+                        isDst = lineRules.isDst, save = save, doQuotes = false
+                    )
+                    val type = u.addtype(
+                        bloatConfig, line.stdOff + save, abbr, isDst = lineRules.isDst, timeType = startTimeType
+                    )
+                    if (useStart) {
+                        u.addtt(startTime, type)
+                        if (nonTZlimtime < startTime) {
+                            nonTZlimtime = startTime
+                            nonTZlimtype = type
+                        }
+                        useStart = false
+                    } else {
+                        defaultType = type
                     }
-                    useStart = false
-                } else {
-                    defaultType = type
                 }
-            } else {
-                var nextYear = 0L
-                var tryNextYear = true
-                var year = minYear
-                while (tryNextYear) {
-                    if (useUntil && year > line.untilRule!!.highYear)
-                        break
-                    tryNextYear = false
-                    nextYear = maxYear
-                    /*
-                    ** Mark which rules to do in the current year.
-                    ** For those to do, calculate rpytime(rp, year);
-                    ** The former TYPE field was also considered here.
-                    */
-                    for (rule in line.rules ?: emptyList()) {
-                        val y2038Boundary = Instant.fromEpochSeconds(1L shl 31).toLocalDateTime(TimeZone.UTC)
-                        reporting(
-                            zone.fileNum, line.lineNum,
-                            rule.fileNum, rule.lineNum,
-                        ) {
-                            /* Keep track of the earliest year after YEAR
-                            in which some rule earlier than the current one
-                            applies. */
-                            if (year < rule.highYear) {
-                                val next = maxOf(year + 1, rule.lowYear)
-                                if (next <= nextYear) {
-                                    nextYear = next
-                                    tryNextYear = true
-                                }
-                            }
-                            rule.temp = if (year in rule.lowYear..rule.highYear) {
-                                rpytime(rule.dateRule, year.toInt()).atTimeExtended(rule.timeFromMidnight)
-                                    .takeIf { it < y2038Boundary || year <= maxYear0 }
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                    while (true) {
-                        var ktime = 0L
-                        var untilTime = 0L
-                        if (useUntil) {
-                            /*
-                            ** Turn untiltime into UT
-                            ** assuming the current stdoff and save values.
-                            */
-                            untilTime = line.untilTime!!.toInstant(
-                                line.untilRule!!.timeType, offset = line.stdOff, save = save
-                            ).epochSeconds
-                        }
+                is ZoneLineRules.RuleList -> {
+                    var nextYear = 0L
+                    var tryNextYear = true
+                    var year = minYear
+                    while (tryNextYear) {
+                        if (useUntil && year > line.untilRule!!.highYear)
+                            break
+                        tryNextYear = false
+                        nextYear = maxYear
                         /*
-                        ** Find the rule (of those to do, if any)
-                        ** that takes effect earliest in the year.
+                        ** Mark which rules to do in the current year.
+                        ** For those to do, calculate rpytime(rp, year);
+                        ** The former TYPE field was also considered here.
                         */
-                        var k = -1
-                        for (j in line.rules?.indices ?: emptyList()) {
-                            val rule = line.rules!![j]
-                            if (rule.temp == null) continue
+                        for (rule in lineRules.rules) {
+                            val y2038Boundary = Instant.fromEpochSeconds(1L shl 31).toLocalDateTime(TimeZone.UTC)
                             reporting(
                                 zone.fileNum, line.lineNum,
                                 rule.fileNum, rule.lineNum,
                             ) {
-                                val jtime = rule.temp!!.toInstant(
-                                    rule.timeType, offset = line.stdOff, save = save
-                                ).epochSeconds
-                                if (k < 0 || jtime < ktime) {
-                                    k = j
-                                    ktime = jtime
-                                } else if (jtime == ktime) {
-                                    warning("two rules for same instant")
-                                    reporting(
-                                        zone.fileNum, line.lineNum,
-                                        line.rules!![k].fileNum, line.rules!![k].lineNum,
-                                    ) {
-                                        error("two rules for same instant")
+                                /* Keep track of the earliest year after YEAR
+                                in which some rule earlier than the current one
+                                applies. */
+                                if (year < rule.highYear) {
+                                    val next = maxOf(year + 1, rule.lowYear)
+                                    if (next <= nextYear) {
+                                        nextYear = next
+                                        tryNextYear = true
                                     }
+                                }
+                                rule.temp = if (year in rule.lowYear..rule.highYear) {
+                                    rpytime(rule.dateRule, year.toInt()).atTimeExtended(rule.timeFromMidnight)
+                                        .takeIf { it < y2038Boundary || year <= maxYear0 }
+                                } else {
+                                    null
                                 }
                             }
                         }
-                        if (k < 0) break // go on to next year
-                        val rule = line.rules!![k]
-                        rule.temp = null
-                        if (useUntil && ktime >= untilTime) {
-                            if (abbr == null && line.stdOff + rule.save == startOff) {
-                                abbr = doabbr(
+                        while (true) {
+                            var ktime = 0L
+                            var untilTime = 0L
+                            if (useUntil) {
+                                /*
+                                ** Turn untiltime into UT
+                                ** assuming the current stdoff and save values.
+                                */
+                                untilTime = line.untilTime!!.toInstant(
+                                    line.untilRule!!.timeType, offset = line.stdOff, save = save
+                                ).epochSeconds
+                            }
+                            /*
+                            ** Find the rule (of those to do, if any)
+                            ** that takes effect earliest in the year.
+                            */
+                            var k = -1
+                            for (j in lineRules.rules.indices) {
+                                val rule = lineRules.rules[j]
+                                if (rule.temp == null) continue
+                                reporting(
+                                    zone.fileNum, line.lineNum,
+                                    rule.fileNum, rule.lineNum,
+                                ) {
+                                    val jtime = rule.temp!!.toInstant(
+                                        rule.timeType, offset = line.stdOff, save = save
+                                    ).epochSeconds
+                                    if (k < 0 || jtime < ktime) {
+                                        k = j
+                                        ktime = jtime
+                                    } else if (jtime == ktime) {
+                                        warning("two rules for same instant")
+                                        reporting(
+                                            zone.fileNum, line.lineNum,
+                                            lineRules.rules[k].fileNum, lineRules.rules[k].lineNum,
+                                        ) {
+                                            error("two rules for same instant")
+                                        }
+                                    }
+                                }
+                            }
+                            if (k < 0) break // go on to next year
+                            val rule = lineRules.rules[k]
+                            rule.temp = null
+                            if (useUntil && ktime >= untilTime) {
+                                if (abbr == null && line.stdOff + rule.save == startOff) {
+                                    abbr = doabbr(
+                                        line.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                        isDst = rule.isDst, save = save, doQuotes = false
+                                    )
+                                }
+                                break
+                            }
+                            save = rule.save
+                            if (useStart && ktime == startTime) {
+                                useStart = false
+                            }
+                            if (useStart) {
+                                if (ktime < startTime) {
+                                    startOff = line.stdOff + save
+                                    abbr = doabbr(
+                                        line.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                        isDst = rule.isDst, save = rule.save, doQuotes = false
+                                    )
+                                    continue
+                                }
+                                if (abbr == null && startOff == (line.stdOff + save)) {
+                                    abbr = doabbr(
+                                        line.abbrData(), letters = Letters.Actual(rule.abbrVar),
+                                        isDst = rule.isDst, save = rule.save, doQuotes = false
+                                    )
+                                }
+                            }
+                            reporting(
+                                zone.fileNum, line.lineNum,
+                                rule.fileNum, rule.lineNum,
+                            ) {
+                                val ab = doabbr(
                                     line.abbrData(), letters = Letters.Actual(rule.abbrVar),
-                                    isDst = line.isDst, save = save, doQuotes = false
+                                    isDst = rule.isDst, save = rule.save, doQuotes = false,
                                 )
-                            }
-                            break
-                        }
-                        save = rule.save
-                        if (useStart && ktime == startTime) {
-                            useStart = false
-                        }
-                        if (useStart) {
-                            if (ktime < startTime) {
-                                startOff = line.stdOff + save
-                                abbr = doabbr(
-                                    line.abbrData(), letters = Letters.Actual(rule.abbrVar),
-                                    isDst = rule.isDst, save = rule.save, doQuotes = false
-                                )
-                                continue
-                            }
-                            if (abbr == null && startOff == (line.stdOff + save)) {
-                                abbr = doabbr(
-                                    line.abbrData(), letters = Letters.Actual(rule.abbrVar),
-                                    isDst = rule.isDst, save = rule.save, doQuotes = false
-                                )
+                                val offset = line.stdOff + rule.save
+                                val type = u.addtype(bloatConfig, offset, ab, isDst = rule.isDst, rule.timeType)
+                                if (defaultType == null && !rule.isDst)
+                                    defaultType = type
+                                u.addtt(ktime, type)
+                                if (nonTZlimtime < ktime && (useUntil || rule.highYear != Long.MAX_VALUE)) {
+                                    nonTZlimtime = ktime
+                                    nonTZlimtype = type
+                                }
                             }
                         }
-                        reporting(
-                            zone.fileNum, line.lineNum,
-                            rule.fileNum, rule.lineNum,
-                        ) {
-                            val ab = doabbr(
-                                line.abbrData(), letters = Letters.Actual(rule.abbrVar),
-                                isDst = rule.isDst, save = rule.save, doQuotes = false,
-                            )
-                            val offset = line.stdOff + rule.save
-                            val type = u.addtype(bloatConfig, offset, ab, isDst = rule.isDst, rule.timeType)
-                            if (defaultType == null && !rule.isDst)
-                                defaultType = type
-                            u.addtt(ktime, type)
-                            if (nonTZlimtime < ktime && (useUntil || rule.highYear != Long.MAX_VALUE)) {
-                                nonTZlimtime = ktime
-                                nonTZlimtype = type
-                            }
-                        }
+                        year = nextYear
                     }
-                    year = nextYear
                 }
             }
             if (useStart) {
