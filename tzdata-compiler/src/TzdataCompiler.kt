@@ -1255,12 +1255,7 @@ fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String
     LocalDate(year, monthPair.second, dayOfMonth) // check validity
     val timeOfDay = gethms(fields[LeapLineFields.TIME]!!)
     check(timeOfDay != null) { "invalid time of day ${fields[LeapLineFields.TIME]!!}" }
-    val r = Rule.DateRule(
-        month = monthPair.second,
-        dayOfWeek = null,
-        dayOfMonth = dayOfMonth,
-    )
-    return rpytime(r, year).atTimeExtended(timeOfDay).also {
+    return LocalDate(year, monthPair.second, dayOfMonth).atTimeExtended(timeOfDay).also {
         check(it >= LocalDateTime(1970, 1, 1, 0, 0)) {
             "leap second precedes Epoch"
         }
@@ -2488,14 +2483,10 @@ fun outZone(
         ** that we are claiming to have definite knowledge of
         ** the lack of transitions up to that point.
         */
-        val xr = Rule.DateRule(
-            month = Month.JANUARY,
-            dayOfWeek = null,
-            dayOfMonth = 1,
-        )
         var lastAt = u.atTypes.maxByOrNull { it.at }
-        if (lastAt == null || lastAt.at < rpytime(xr, (maxYear - 1).toInt()).atTime(0, 0).toInstant(TimeZone.UTC).epochSeconds) {
-            val startTime = rpytime(xr, (maxYear + 1).toInt()).atTime(0, 0).toInstant(TimeZone.UTC).epochSeconds
+        val bound = LocalDateTime((maxYear - 1).toInt(), 1, 1, 0, 0).toInstant(TimeZone.UTC).epochSeconds
+        if (lastAt == null || lastAt.at < bound) {
+            val startTime = LocalDateTime((maxYear + 1).toInt(), 1, 1, 0, 0).toInstant(TimeZone.UTC).epochSeconds
             u.addtt(startTime, if (lastAt == null) defaultType else lastAt.type)
             u.atTypes.last().dontMerge = true
         }
