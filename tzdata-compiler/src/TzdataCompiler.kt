@@ -329,7 +329,7 @@ enum class ExpiresLineFields {
 fun openOutFile(outName: String): FileOutputStream = try {
     FileOutputStream(outName)
 } catch (_: FileNotFoundException) {
-    mkdirs(outName, ancestors = true)
+    Path(outName).createParentDirectories()
     FileOutputStream(outName)
 }
 
@@ -2871,15 +2871,3 @@ fun addabbrQuery(chs: List<String>, abbr: String): Int {
     error("Not found")
 }
 
-/** Ensure that the directories of [argname] exist, by making any missing ones.
- * If [ancestors], do this only for [argname]'s ancestors; otherwise, do it for
- * [argname] too. Exit with failure if there is trouble. Do not consider an
- * existing file to be trouble. */
-fun mkdirs(argname: String, ancestors: Boolean) {
-    val path = Paths.get(argname)
-    if (ancestors) {
-        path.createParentDirectories()
-    } else {
-        path.createDirectories()
-    }
-}
