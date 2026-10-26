@@ -439,7 +439,6 @@ fun OpenFile.toNumber(): Int = when (this) {
 }
 
 open class ErrorReportingConfig(
-    val noise: Boolean,
     val fileNameList: List<String>,
     val leapSecFileName: String?,
 ) {
@@ -456,10 +455,9 @@ class ErrorReporter(
     val lineNum: Int,
     val rFileNum: OpenFile?,
     val rLineNum: Int,
-    noise: Boolean,
     fileNameList: List<String>,
     leapSecFileName: String?,
-) : ErrorReportingConfig(noise, fileNameList, leapSecFileName) {
+) : ErrorReportingConfig(fileNameList, leapSecFileName) {
     fun verror(message: String) = buildString {
         if (fileNum != null) {
             append('"'); append(fileName(fileNum)); append('"')
@@ -485,7 +483,7 @@ context (config: ErrorReportingConfig) fun <T> reporting(
 ): T {
     val reporter = ErrorReporter(
         fileNum, lineNum, rFileNum, rLineNum,
-        config.noise, config.fileNameList, config.leapSecFileName,
+        config.fileNameList, config.leapSecFileName,
     )
     try {
         context(reporter) {
@@ -505,18 +503,12 @@ fun warning(message: String) {
     println("warning: ${reporter.verror(message)}")
 }
 
-//
-//
-// SKIP
-//
-//
-
 fun duplicateOptions(progName: String, opt: String): Nothing {
     error("$progName: More than one $opt option specified")
 }
 
 fun usage(): String = """
-usage is [ --version ] [ --help ] [ -v ]
+usage is [ --version ] [ --help ]
 \t[ -b {slim|fat} ] -d directory
 \t[ -L leapseconds ]
 \t[ -r '[@lo][/@hi]' ] [ -R @hi ]
@@ -647,7 +639,6 @@ fun main(args: Array<String>) {
     var directory: String? = null
     var bloatConfigStr: String? = null
     val freeArguments = mutableListOf<String>()
-    var noise = false
     var leapSec: String? = null
     var timeBoundConfig = TimeBoundConfig()
     while (currentOptionIndex < args.size) {
@@ -676,7 +667,6 @@ fun main(args: Array<String>) {
                     duplicateOptions(progName, "-L")
                 leapSec = readArg("-L")
             }
-            "-v" -> { noise = true }
             "-r" -> {
                 val optarg = readArg("-r")
                 if (timerangeGiven)
@@ -695,6 +685,7 @@ fun main(args: Array<String>) {
             // -g, -p, -y, -s are for compatibility, we don't need that
             // -t and -l is skipped: we only create data, we don't add system symlinks
             // -D is skipped, because it's meaningless for us
+            // -v is skipped, because we don't intend to validate the input timezone data
             else -> {
                 if (arg.startsWith("-")) {
                     error(usage())
@@ -719,7 +710,6 @@ fun main(args: Array<String>) {
         else -> error("")
     })
     val errorReportingConfig = ErrorReportingConfig(
-        noise = noise,
         fileNameList = freeArguments,
         leapSecFileName = leapSec,
     )
@@ -750,7 +740,7 @@ fun main(args: Array<String>) {
             )
         }
         rules.sortBy { it.name }
-        val zonesWithRules = associate(zones, rules, noise = noise)
+        val zonesWithRules = associate(zones, rules)
         for (zone in zonesWithRules) {
             reporting(zone.fileNum, zone.lines.first().first.lineNum) {
                 outZone(
@@ -765,7 +755,6 @@ fun main(args: Array<String>) {
 
 const val component_len_max = 14
 
-context(reporter: ErrorReporter)
 fun componentcheck(
     name: String, componentStart: Int, componentEnd: Int
 ) {
@@ -783,17 +772,8 @@ fun componentcheck(
     {
         error("file name '$name' contains '${name.substring(componentStart, componentEnd)}'")
     }
-    if (reporter.noise) {
-        if (name.getOrNull(componentStart) == '-') {
-            warning("file name '$name' component contains leading '-'")
-        }
-        if (component_len_max < componentLen) {
-            warning("file name '$name' contains overlength component '${name.substring(componentStart, componentEnd)}'")
-        }
-    }
 }
 
-context(reporter: ErrorReporter)
 fun namecheck(name: String) {
     /* Benign characers in a portable file name. */
     fun Char.isBenign(): Boolean =
@@ -807,13 +787,6 @@ fun namecheck(name: String) {
     for (ci in name.indices) {
         val c = name[ci]
         check(c !in ":\\") { "file name $name contains $c" }
-        if (reporter.noise && !c.isBenign()) {
-            if (c.isPrintableAndNotBenign()) {
-                warning("file name '$name' contains byte '$c'")
-            } else {
-                warning("file name '$name' contains byte ${c.code}")
-            }
-        }
         if (c == '/') {
             componentcheck(name, lastComponentStart, ci)
             lastComponentStart = ci + 1
@@ -831,7 +804,6 @@ context (_: ErrorReportingConfig)
 fun associate(
     zones: List<Zone>,
     rules: List<Rule>,
-    noise: Boolean,
 ): List<ZoneWithRules> {
     if (1 < rules.size) {
         var i = 0
@@ -950,7 +922,6 @@ fun infile(
 ** into a number of seconds.
 ** A null string maps to zero.
 */
-context (reporter: ErrorReporter)
 fun gethms(string: String): ZicType? {
     if (string == "") return 0
     val sign: Int
@@ -984,9 +955,6 @@ fun gethms(string: String): ZicType? {
         when (splitByDot.size) {
             1 -> wholeSeconds
             2 -> {
-                if (reporter.noise) {
-                    warning("fractional seconds rejected by pre-2018 versions of zic")
-                }
                 if (splitByDot[1].isEmpty()) {
                     wholeSeconds
                 } else {
@@ -1004,9 +972,6 @@ fun gethms(string: String): ZicType? {
             else -> return null
         }
     } else { 0 }
-    if (reporter.noise && (hour > 24 || hour == 24L && (minute != 0 || second != 0))) {
-        warning("values over 24 hours not handled by pre-2007 versions of zic")
-    }
     val r = safeAdd(
         safeMultiply(hour, sign * SECSPERHOUR.toLong()),
         sign * (minute.minutes + second.seconds).inWholeSeconds
@@ -1024,7 +989,6 @@ fun gethms(string: String): ZicType? {
 
 data class Save(val isDst: Boolean, val save: ZicType, val updatedField: String)
 
-context (reporter: ErrorReporter)
 fun getsave(fld: String): Save {
     val dst: Boolean?
     val updatedField: String
@@ -1473,7 +1437,6 @@ fun limitrange(
     return r
 }
 
-context (reporter: ErrorReporter)
 fun writeZone(
     directory: String,
     name: String, string: String, version: Char, defaultType: UByte,
@@ -1518,18 +1481,6 @@ fun writeZone(
         u.atTypes.clear()
         u.atTypes.addAll(newAtTypes)
     }
-    if (reporter.noise) {
-        if (u.atTypes.size > 1200) {
-            if (u.atTypes.size > TZ_MAX_TIMES) {
-                warning("reference clients mishandle more than $TZ_MAX_TIMES transition times")
-            } else {
-                warning("pre-2014 clients may mishandle more than 1200 transition times")
-            }
-        }
-        if (u.leaps.size > TZ_MAX_LEAPS) {
-            warning("reference clients mishandle more than $TZ_MAX_LEAPS leap seconds")
-        }
-    }
     val ats = u.atTypes.map {
         /* Correct for leap seconds. */
         var j = u.leaps.size
@@ -1569,9 +1520,6 @@ fun writeZone(
     a +1 or -1 correction. */
     for (r in if (bloatConfig.wantBloat()) listOf(range32, range64) else listOf(range64)) {
         if (0 < r.leapcount && u.leaps[r.leapbase].corr !in listOf(1, -1L)) {
-            if (reporter.noise) {
-                warning("$name: pre-2021b clients may mishandle leap second table truncation")
-            }
             version = '4'
         }
         if (version == '4') break
@@ -1767,9 +1715,6 @@ fun writeZone(
                 write_(0) /* index of abbreviation */
                 write_(0) /* empty-string abbreviation */
                 continue
-            }
-            if (pass == 2 && reporter.noise && 50 < thisCharCnt) {
-                warning("$name: pre-2026 reference clients mishandle more than 50 bytes of abbreviations")
             }
             /* Output a LO_TIME transition if needed; see limitrange.
             But do not go below the minimum representable value for this pass. */
@@ -2180,15 +2125,6 @@ fun outZone(
     val (envvar, compat) = stringZone(timeBoundConfig, zone.lines.last()) ?: (null to -1)
     val version = if (compat < 2013) '2' else '3'
     val doExtend = compat < 0
-    if (reporter.noise) {
-        if (envvar == null) {
-            warning("no proleptic TZ string for firstZone ${zone.name}")
-        } else if (compat != 0) {
-            /* Circa-COMPAT clients, and earlier clients, might not work for this
-            line when given dates before 1970 or after 2038. */
-            warning("${zone.name}: pre-$compat clients may mishandle distant timestamps")
-        }
-    }
     if (doExtend) {
         minYear = clampingAdd(minYear, -YEARS_OF_OBSERVATIONS.toLong())
         maxYear = clampingAdd(maxYear, YEARS_OF_OBSERVATIONS.toLong())
@@ -2521,19 +2457,6 @@ fun Char.isAsciiSpace() = this in listOf(
 /** Is `this` alphabetic character in the C locale? */
 fun Char.isAsciiAlpha() = (this in 'A'..'Z') || (this in 'a'..'z')
 
-fun itsabbr(abbr: String, word: String): Boolean {
-    if (abbr.firstOrNull()?.lowercase() != word.firstOrNull()?.lowercase())
-        return false
-    var wordIndex = 0
-    for (abbrLetter in abbr) {
-        wordIndex = word.indexOf(abbrLetter, startIndex = wordIndex, ignoreCase = true).let {
-            if (it == -1) return false
-            it + 1
-        }
-    }
-    return true
-}
-
 /** Return true if [abbr] is an initial prefix of [word], ignoring ASCII case. */ 
 fun ciprefix(abbr: String, word: String): Boolean = word.lowercase().startsWith(abbr.lowercase())
 
@@ -2560,19 +2483,7 @@ fun <T> byWord(word: String, table: List<Pair<String, T>>): Pair<String, T>? {
         }
     }
     /* Look for inexact match */
-    val match = updatedTable.singleOrNull { ciprefix(updatedWord, it.first) }
-    if (match != null && reporter.noise) {
-        var pre2017cMatch = false
-        for ((first, _) in updatedTable) {
-            if (itsabbr(updatedWord, first)) {
-                if (pre2017cMatch) {
-                    warning("\"${updatedWord}\" is ambiguous in pre-2017c zic")
-                }
-                pre2017cMatch = true
-            }
-        }
-    }
-    return match
+    return updatedTable.singleOrNull { ciprefix(updatedWord, it.first) }
 }
 
 fun getfields(cpStr: String): List<String> = buildList {
@@ -2632,7 +2543,6 @@ private fun Int.toUByteFailing(): UByte {
  * January 1, 1970, 00:00 LOCAL time) in that year that the rule refers to.
  * Do not count leap seconds. On error, diagnose and exit.
  */
-context (reporter: ErrorReporter)
 fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
     val i = rule.dayOfMonth
     val dayOfMonth = if (rule.month == Month.FEBRUARY && i == 29 && !isLeapYear(wantedYear)) {
@@ -2641,20 +2551,13 @@ fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
     } else {
         i
     }
-    val date = LocalDate(wantedYear, rule.month, dayOfMonth).let {
+    return LocalDate(wantedYear, rule.month, dayOfMonth).let {
         when (val dow = rule.dayOfWeek) {
             null -> it
             is DayOfWeekRule.PreviousOrSame -> it.previousOrSame(dow.dayOfWeek)
             is DayOfWeekRule.NextOrSame -> it.nextOrSame(dow.dayOfWeek)
         }
     }
-    if (date.month != rule.month && reporter.noise) {
-        warning(
-            "rule goes past start/end of month; " +
-            "will not work with pre-2004 versions of zic"
-        )
-    }
-    return date
 }
 
 fun LocalDate.atTimeExtended(timeFromMidnight: ZicType): LocalDateTime =
