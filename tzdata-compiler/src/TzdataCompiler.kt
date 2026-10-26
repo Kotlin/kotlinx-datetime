@@ -6,12 +6,10 @@ import kotlinx.datetime.*
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.format
 import kotlinx.datetime.format.optional
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.FileInputStream
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.file.*
+import java.nio.file.Path
 import kotlin.contracts.*
 import kotlin.io.path.*
 import kotlin.math.absoluteValue
@@ -102,7 +100,7 @@ const val EPOCH_YEAR = 1970
 
 typealias ZicType = Long
 
-const val populateMapWithPrefixOfEnumKeys = ZicType.MIN_VALUE
+const val ZIC_MIN = ZicType.MIN_VALUE
 const val ZIC_MAX = ZicType.MAX_VALUE
 const val ZIC32_MIN = Int.MIN_VALUE
 const val ZIC32_MAX = Int.MAX_VALUE
@@ -112,9 +110,6 @@ const val ZIC_MAX_ABBR_LEN_NO_WARN = 6
 // Minimum and maximum year that fit in a 32-bit number of seconds since epoch
 const val YEAR_32BIT_MIN = 1901
 const val YEAR_32BIT_MAX = 2038
-
-// The maximum length of a text line, including the trailing newline
-const val _POSIX2_LINE_MAX = 2048
 
 typealias Lineno = Int
 
@@ -141,8 +136,7 @@ data class Rule(
 ) {
     data class DateRule(
         val month: Month,
-
-        val dayOfWeek: DayOfWeekRule?, // see below
+        val dayOfWeek: DayOfWeekRule?,
         val dayOfMonth: Int, // one-based
     )
 
@@ -310,11 +304,11 @@ enum class ExpiresLineFields {
 }
 
 /** Prepare to write to the file [outName]. */
-fun openOutFile(outName: String): FileOutputStream = try {
-    FileOutputStream(outName)
+fun openOutFile(outName: Path): FileOutputStream = try {
+    FileOutputStream(outName.toFile())
 } catch (_: FileNotFoundException) {
-    Path(outName).createParentDirectories()
-    FileOutputStream(outName)
+    outName.createParentDirectories()
+    FileOutputStream(outName.toFile())
 }
 
 /* The maximum number of fields on any of the above lines. */
@@ -548,7 +542,7 @@ fun makeLinks(directory: String, links: List<Link>) {
         /* Ignore each link superseded by a later link with the same name. */
         .reversed().distinctBy { it.linkName }.reversed()
 
-    while (!pendingLinks.isEmpty()) {
+    while (pendingLinks.isNotEmpty()) {
         val lastPendingLinksSize = pendingLinks.size
         val nextPendingLinks = mutableListOf<Link>()
         for (link in pendingLinks) {
@@ -599,14 +593,13 @@ fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig? {
         loTime = MIN_TIME
         0
     }
-    val hiTime: Long
-    if (timerange.getOrNull(hiStart) == '/' && timerange.getOrNull(hiStart + 1) == '@') {
-        hiTime = (timerange.substring(hiStart + 2, timerange.length).toIntOrNull() ?: return null)
+    val hiTime: Long = if (timerange.getOrNull(hiStart) == '/' && timerange.getOrNull(hiStart + 1) == '@') {
+        (timerange.substring(hiStart + 2, timerange.length).toIntOrNull() ?: return null)
             .let { if (it != Int.MAX_VALUE) it - 1 else it }.toLong()
     } else if (timerange.length > hiStart) {
         return null
     } else {
-        hiTime = MAX_TIME
+        MAX_TIME
     }
     return copy(loTime = maxOf(this.loTime, loTime), hiTime = minOf(this.hiTime, hiTime))
 }
@@ -634,14 +627,10 @@ fun BloatConfig.wantBloat(): Boolean = bloat
 const val ZIC_BLOAT_DEFAULT: String = "slim"
 
 fun main(args: Array<String>) {
-    var c: Int = 0
-    var k: Int = 0
-    var i: Long = 0
-    var j: Long = 0
     var timerangeGiven = false
 
     val progName = args.firstOrNull() ?: "zic"
-    for (k in 1..(args.size-1)) {
+    for (k in 1..<args.size) {
         when (args[k]) {
             "--version" -> {
                 println("our store-brand zic imitation\n")
@@ -658,8 +647,7 @@ fun main(args: Array<String>) {
     var directory: String? = null
     var bloatConfigStr: String? = null
     val freeArguments = mutableListOf<String>()
-    var noise: Boolean = false
-    var skipMkdir: Boolean = false
+    var noise = false
     var leapSec: String? = null
     var timeBoundConfig = TimeBoundConfig()
     while (currentOptionIndex < args.size) {
@@ -683,7 +671,6 @@ fun main(args: Array<String>) {
                     duplicateOptions(progName, "-d")
                 directory = readArg("-d")
             }
-            "-D" -> { skipMkdir = true }
             "-L" -> {
                 if (leapSec != null)
                     duplicateOptions(progName, "-L")
@@ -707,6 +694,7 @@ fun main(args: Array<String>) {
             // -u is skipped: default user and group are fine for us, too
             // -g, -p, -y, -s are for compatibility, we don't need that
             // -t and -l is skipped: we only create data, we don't add system symlinks
+            // -D is skipped, because it's meaningless for us
             else -> {
                 if (arg.startsWith("-")) {
                     error(usage())
@@ -814,7 +802,7 @@ fun namecheck(name: String) {
     /* Non-control chars in the POSIX portable character set,
        excluding the benign characters. */
     fun Char.isPrintableAndNotBenign(): Boolean =
-        this in $$" !\"#$%&'()*+,.0123456789:;<=>?@[\\]^`{|}~"
+        this in " !\"#$%&'()*+,.0123456789:;<=>?@[\\]^`{|}~"
     var lastComponentStart = 0
     for (ci in name.indices) {
         val c = name[ci]
@@ -934,7 +922,7 @@ fun infile(
                                 }
                                 val (lineIndex, line) = linesIter.next()
                                 val fields = getfields(line)
-                                if (!fields.isEmpty()) {
+                                if (fields.isNotEmpty()) {
                                     inzcont(fields, fileNum, lineIndex + 1)
                                 }
                             }
@@ -1171,7 +1159,6 @@ fun inzsub(
     }
     val hasUntil = fields[ZoneContinuationLineFields.TILYEAR] != null
     val untilRule: Rule?
-    val untilTime: LocalDateTime?
     if (hasUntil) {
         untilRule = rulesub(
             lowYearString = fields[ZoneContinuationLineFields.TILYEAR]!!,
@@ -1389,7 +1376,7 @@ inline fun <T> rulesub(
                 if (dayCode != null) {
                     val dowNameString = dayString.substring(0, numberStart - 2)
                     check(dayString.getOrNull(numberStart - 1) == '=') {
-                        "invalid day of month ${dayString}"
+                        "invalid day of month $dayString"
                     }
                     val entry = byWord(dowNameString, weekDayNames) ?: error("invalid weekday name")
                     dayOfWeek = dayCode(entry.second)
@@ -1398,7 +1385,7 @@ inline fun <T> rulesub(
                 }
                 dayString.substring(numberStart, dayString.length).toLongOrNull().let {
                     check(it != null && it > 0 && it <= monthLengthsPerYear[1][month.ordinal]) {
-                        "invalid day of month ${dayString}"
+                        "invalid day of month $dayString"
                     }
                     dayOfMonth = it.toInt()
                 }
@@ -1590,8 +1577,7 @@ fun writeZone(
         if (version == '4') break
     }
     /* FileInputStream(directory + "/" + name).use { fp -> */
-    openOutFile(directory + "/" + name).use { fp ->
-        val writtenBytes = mutableListOf<Int>()
+    openOutFile(Path(directory).resolve(name)).use { fp ->
         fun write_(byte: Int) {
             fp.write(byte)
             /* val b = fp.read(); check(b == byte) { "Expected '$b', got '$byte'" } */
@@ -1732,8 +1718,11 @@ fun writeZone(
             for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
                 val i = i.toInt().toUByteFailing()
                 if (!omitType[i.toInt()]) {
-                    typeMap[(if (i == old0) { thisDefaultType }
-                    else if (i == thisDefaultType) { old0 } else { i }).toInt()] = thisTypeCnt++.toUByteFailing()
+                    typeMap[when (i) {
+                        old0 -> thisDefaultType
+                        thisDefaultType -> old0
+                        else -> i
+                    }.toInt()] = thisTypeCnt++.toUByteFailing()
                 }
             }
             var stdCnt = 0
@@ -1802,8 +1791,11 @@ fun writeZone(
                 write_(typeMap[unspecifiedType!!.toInt()])
             for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
                 val i = i.toInt().toUByteFailing()
-                val h = if (i == old0) thisDefaultType
-                else if (i == thisDefaultType) old0 else i
+                val h = when (i) {
+                    old0 -> thisDefaultType
+                    thisDefaultType -> old0
+                    else -> i
+                }
                 if (!omitType[h.toInt()]) {
                     val descr = u.typeDescrs[h.toInt()]
                     write_(puttzcode(descr.utOff))
@@ -2185,7 +2177,6 @@ fun outZone(
     /*
     ** Generate lots of data if a rule can't cover all future times.
     */
-    val firstZone = zone.lines.first()
     val (envvar, compat) = stringZone(timeBoundConfig, zone.lines.last()) ?: (null to -1)
     val version = if (compat < 2013) '2' else '3'
     val doExtend = compat < 0
@@ -2246,7 +2237,7 @@ fun outZone(
                     }
                 }
                 is ZoneLineRules.RuleList -> {
-                    var nextYear = 0L
+                    var nextYear: Long
                     var tryNextYear = true
                     var year = minYear
                     while (tryNextYear) {
@@ -2285,47 +2276,47 @@ fun outZone(
                         }
                         while (true) {
                             var ktime = 0L
-                            var untilTime = 0L
-                            if (useUntil) {
+                            val untilTime = if (useUntil) {
                                 /*
                                 ** Turn untiltime into UT
                                 ** assuming the current stdoff and save values.
                                 */
-                                untilTime = line.untilTime!!.toInstant(
+                                line.untilTime!!.toInstant(
                                     line.untilRule!!.timeType, offset = line.stdOff, save = save
                                 ).epochSeconds
+                            } else {
+                                0
                             }
                             /*
                             ** Find the rule (of those to do, if any)
                             ** that takes effect earliest in the year.
                             */
-                            var k = -1
-                            for (j in lineRules.rules.indices) {
-                                val rule = lineRules.rules[j]
+                            var krule: Rule? = null
+                            for (rule in lineRules.rules) {
                                 if (rule.temp == null) continue
                                 reporting(
                                     zone.fileNum, line.lineNum,
                                     rule.fileNum, rule.lineNum,
                                 ) {
-                                    val jtime = rule.temp!!.toInstant(
+                                    val time = rule.temp!!.toInstant(
                                         rule.timeType, offset = line.stdOff, save = save
                                     ).epochSeconds
-                                    if (k < 0 || jtime < ktime) {
-                                        k = j
-                                        ktime = jtime
-                                    } else if (jtime == ktime) {
+                                    if (krule == null || time < ktime) {
+                                        krule = rule
+                                        ktime = time
+                                    } else if (time == ktime) {
                                         warning("two rules for same instant")
                                         reporting(
                                             zone.fileNum, line.lineNum,
-                                            lineRules.rules[k].fileNum, lineRules.rules[k].lineNum,
+                                            krule.fileNum, krule.lineNum,
                                         ) {
                                             error("two rules for same instant")
                                         }
                                     }
                                 }
                             }
-                            if (k < 0) break // go on to next year
-                            val rule = lineRules.rules[k]
+                            if (krule == null) break // go on to next year
+                            val rule: Rule = krule
                             rule.temp = null
                             if (useUntil && ktime >= untilTime) {
                                 if (abbr == null && line.stdOff + rule.save == startOff) {
@@ -2381,24 +2372,22 @@ fun outZone(
             }
             if (useStart) {
                 val isDst = startOff != line.stdOff
-                if (abbr == null && !line.format.let { it is ZoneLine.AbbrFormat.PlainString && it.string.isEmpty() }) {
+                if (abbr == null) {
                     abbr = doabbr(
                         line.abbrData(), Letters.DisablePercentS,
                         isDst = isDst, save = save, doQuotes = false
                     )
                 }
-                reporting(zone.fileNum, line.lineNum) {
-                    check(abbr != "") {
-                        "can't determine time line abbreviation " +
-                            "to use just after until time"
-                    }
-                    val type = u.addtype(
-                        bloatConfig, startOff, abbr!!, isDst, startTimeType
-                    )
-                    if (defaultType == null && !isDst)
-                        defaultType = type
-                    u.addtt(startTime, type)
+                check(abbr != "") {
+                    "can't determine time line abbreviation " +
+                        "to use just after until time"
                 }
+                val type = u.addtype(
+                    bloatConfig, startOff, abbr, isDst, startTimeType
+                )
+                if (defaultType == null && !isDst)
+                    defaultType = type
+                u.addtt(startTime, type)
             }
             /*
             ** Now we may get to set starttime for the next line line.
@@ -2415,8 +2404,8 @@ fun outZone(
         defaultType = 0u
     if (!doExtend && !bloatConfig.wantBloat()) {
         /* Keep trailing transitions that are no greater than this. */
-       var keepAtMax = 0L
-       /* The earliest transition into a time governed by the TZ string. */
+       val keepAtMax: Long
+        /* The earliest transition into a time governed by the TZ string. */
        var TZstartTime = Long.MAX_VALUE
        for (atType in u.atTypes) {
            val at = atType.at
@@ -2457,11 +2446,11 @@ fun outZone(
         ** that we are claiming to have definite knowledge of
         ** the lack of transitions up to that point.
         */
-        var lastAt = u.atTypes.maxByOrNull { it.at }
+        val lastAt = u.atTypes.maxByOrNull { it.at }
         val bound = LocalDateTime((maxYear - 1).toInt(), 1, 1, 0, 0).toInstant(TimeZone.UTC).epochSeconds
         if (lastAt == null || lastAt.at < bound) {
             val startTime = LocalDateTime((maxYear + 1).toInt(), 1, 1, 0, 0).toInstant(TimeZone.UTC).epochSeconds
-            u.addtt(startTime, if (lastAt == null) defaultType else lastAt.type)
+            u.addtt(startTime, lastAt?.type ?: defaultType)
             u.atTypes.last().dontMerge = true
         }
     }
@@ -2484,7 +2473,7 @@ fun U.addtype(
 ): UByte {
     /* RFC 9636 section 3.2 specifies this range for utOff. */
     check(utOff in (Int.MIN_VALUE + 1)..Int.MAX_VALUE) { "UT offset out of range" }
-    var timeType = if (config.wantBloat()) timeType else Rule.TimeOfDayType.Wall
+    val timeType = if (config.wantBloat()) timeType else Rule.TimeOfDayType.Wall
     checkabbr(abbr)
     val newTypeDescr = U.TypeDescr(utOff = utOff, isDst = isDst, timeType = timeType, desig = abbr)
     /* If there's already an entry, return its index. */
@@ -2518,7 +2507,7 @@ fun MutableList<U.Leap>.adjleap() {
     forEach { cur ->
         check((cur.trans - prevTrans).seconds >= 28.days) { "Leap seconds too close together" }
         prevTrans = cur.trans
-        cur.trans = safeAdd(prevTrans, last)
+        cur.trans = safeAdd(cur.trans, last)
         cur.corr += last
         last = cur.corr
     }
