@@ -329,6 +329,7 @@ tasks.register("downloadWindowsZonesMapping") {
     description = "Updates the mapping between Windows-specific and usual names for timezones"
     val output = "$projectDir/windows/src/internal/WindowsZoneNames.kt"
     outputs.file(output)
+    outputs.upToDateWhen { false } // never up-to-date
     doLast {
         val initialFileContents = try { File(output).readBytes() } catch(_: Throwable) { ByteArray(0) }
         val documentBuilderFactory = DocumentBuilderFactory.newInstance()
