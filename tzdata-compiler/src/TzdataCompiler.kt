@@ -22,7 +22,7 @@ import kotlin.time.Instant
 
 // tzfile.h
 
-const val TZ_MAGIC = "TZif"
+private const val TZ_MAGIC = "TZif"
 
 /*
 struct tzhead {
@@ -38,23 +38,23 @@ struct tzhead {
 };
 */
 
-const val TZ_MAX_TIMES: Int = 2000
-const val TZ_MAX_CHARS: Int = 256
-const val TZ_MAX_LEAPS: Int = 27 + 1
+private const val TZ_MAX_TIMES: Int = 2000
+private const val TZ_MAX_CHARS: Int = 256
+private const val TZ_MAX_LEAPS: Int = 27 + 1
 
 // org.threeten.bp.chrono.IsoChronology#isLeapYear
-internal fun isLeapYear(year: Int): Boolean {
+private fun isLeapYear(year: Int): Boolean {
     val prolepticYear: Long = year.toLong()
     return prolepticYear and 3 == 0L && (prolepticYear % 100 != 0L || prolepticYear % 400 == 0L)
 }
 
-internal fun Long.clampToInt(): Int = when {
+private fun Long.clampToInt(): Int = when {
     this > Int.MAX_VALUE -> Int.MAX_VALUE
     this < Int.MIN_VALUE -> Int.MIN_VALUE
     else -> toInt()
 }
 
-internal fun clampingAdd(a: Long, b: Long): Long {
+private fun clampingAdd(a: Long, b: Long): Long {
     val sum = a + b
     if ((a xor sum) < 0 && (a xor b) >= 0) {
         return if (a < 0) Long.MIN_VALUE
@@ -63,14 +63,14 @@ internal fun clampingAdd(a: Long, b: Long): Long {
     return sum
 }
 
-fun <Key, Value> populateMapWithAllEnumKeys(keys: List<Key>, fields: List<Value>): Map<Key, Value>? =
+private fun <Key, Value> populateMapWithAllEnumKeys(keys: List<Key>, fields: List<Value>): Map<Key, Value>? =
     if (keys.size != fields.size) {
         null
     } else {
         keys.indices.associateBy(keys::get, fields::get)
     }
 
-fun <Key, Value> populateMapWithPrefixOfEnumKeys(
+private fun <Key, Value> populateMapWithPrefixOfEnumKeys(
     keys: List<Key>, fields: List<Value>
 ): Pair<Map<Key, Value>, Set<Key>>? = if (keys.size < fields.size) {
         null
@@ -80,7 +80,7 @@ fun <Key, Value> populateMapWithPrefixOfEnumKeys(
 
 // private.h
 
-const val YEARS_PER_REPEAT = 400 /* years before a Gregorian repeat */
+private const val YEARS_PER_REPEAT = 400 /* years before a Gregorian repeat */
 /* How many years to generate (in zic.c).
    This is two years larger than the obvious 400, to avoid edge cases.
    E.g., suppose a rule applies from 2012 on with transitions in March and
@@ -90,30 +90,30 @@ const val YEARS_PER_REPEAT = 400 /* years before a Gregorian repeat */
    with the intent that the 400 years 2014 through 2413 will be repeated.
    The last transition listed in the tzfile would be in 2413-09, less than
    400 years after the last one-off transition in 2013-11. */
-const val YEARS_OF_OBSERVATIONS = YEARS_PER_REPEAT + 2
+private const val YEARS_OF_OBSERVATIONS = YEARS_PER_REPEAT + 2
 
-const val DAYSPERNYEAR = 365
+private const val DAYSPERNYEAR = 365
 
-const val EPOCH_YEAR = 1970
+private const val EPOCH_YEAR = 1970
 
 // zic.c:
 
-typealias ZicType = Long
+private typealias ZicType = Long
 
-const val ZIC_MIN = ZicType.MIN_VALUE
-const val ZIC_MAX = ZicType.MAX_VALUE
-const val ZIC32_MIN = Int.MIN_VALUE
-const val ZIC32_MAX = Int.MAX_VALUE
+private const val ZIC_MIN = ZicType.MIN_VALUE
+private const val ZIC_MAX = ZicType.MAX_VALUE
+private const val ZIC32_MIN = Int.MIN_VALUE
+private const val ZIC32_MAX = Int.MAX_VALUE
 
-const val ZIC_MAX_ABBR_LEN_NO_WARN = 6
+private const val ZIC_MAX_ABBR_LEN_NO_WARN = 6
 
 // Minimum and maximum year that fit in a 32-bit number of seconds since epoch
-const val YEAR_32BIT_MIN = 1901
-const val YEAR_32BIT_MAX = 2038
+private const val YEAR_32BIT_MIN = 1901
+private const val YEAR_32BIT_MAX = 2038
 
-typealias Lineno = Int
+private typealias Lineno = Int
 
-data class Rule(
+private data class Rule(
     val fileNum: OpenFile,
     val lineNum: Lineno,
     val name: String?,
@@ -166,21 +166,21 @@ data class Rule(
     }
 }
 
-sealed interface DayOfWeekRule {
+private sealed interface DayOfWeekRule {
     data class NextOrSame(val dayOfWeek: DayOfWeek): DayOfWeekRule
     data class PreviousOrSame(val dayOfWeek: DayOfWeek): DayOfWeekRule
 }
 
-data class ZoneAbstract<T>(
+private data class ZoneAbstract<T>(
     val name: String,
     val fileNum: OpenFile,
     val lines: List<T>
 )
 
-typealias Zone = ZoneAbstract<ZoneLine>
-typealias ZoneWithRules = ZoneAbstract<Pair<ZoneLine, ZoneLineRules>>
+private typealias Zone = ZoneAbstract<ZoneLine>
+private typealias ZoneWithRules = ZoneAbstract<Pair<ZoneLine, ZoneLineRules>>
 
-data class ZoneLine(
+private data class ZoneLine(
     val lineNum: Lineno,
     val stdOff: ZicType,
     val rule: String,
@@ -201,24 +201,24 @@ data class ZoneLine(
 }
 
 /** Rules associated with a zone line. */
-sealed interface ZoneLineRules {
+private sealed interface ZoneLineRules {
     data class RuleList(val rules: List<Rule>): ZoneLineRules
     data class StaticRule(val isDst: Boolean, val save: ZicType): ZoneLineRules
 
     fun asList(): List<Rule> = (this as? RuleList)?.rules ?: emptyList()
 }
 
-fun Char.isAsciiDigit() = this in '0'..'9'
+private fun Char.isAsciiDigit() = this in '0'..'9'
 
-val PERCENT_Z_LEN_BOUND = "+995959".length
+private const val PERCENT_Z_LEN_BOUND = "+995959".length
 
-data class LeapTracker(
+private data class LeapTracker(
     var leapSeen: Boolean = false,
     var leapMinYear: ZicType = Long.MAX_VALUE,
     var leapMaxYear: ZicType = Long.MIN_VALUE,
 )
 
-enum class LineCodes {
+private enum class LineCodes {
     RULE,
     ZONE,
     LINK,
@@ -238,7 +238,7 @@ enum class LineCodes {
     }
 }
 
-enum class ZoneLineFields {
+private enum class ZoneLineFields {
     NAME,
     STDOFF,
     RULE,
@@ -260,7 +260,7 @@ enum class ZoneLineFields {
     }
 }
 
-enum class ZoneContinuationLineFields {
+private enum class ZoneContinuationLineFields {
     STDOFF,
     RULE,
     FORMAT,
@@ -270,7 +270,7 @@ enum class ZoneContinuationLineFields {
     TILTIME,
 }
 
-enum class RuleLineFields {
+private enum class RuleLineFields {
     NAME,
     LOYEAR,
     HIYEAR,
@@ -282,12 +282,12 @@ enum class RuleLineFields {
     ABBRVAR,
 }
 
-enum class LinkLineFields {
+private enum class LinkLineFields {
     TARGET,
     LINKNAME,
 }
 
-enum class LeapLineFields {
+private enum class LeapLineFields {
     YEAR,
     MONTH,
     DAY,
@@ -296,7 +296,7 @@ enum class LeapLineFields {
     ROLL,
 }
 
-enum class ExpiresLineFields {
+private enum class ExpiresLineFields {
     YEAR,
     MONTH,
     DAY,
@@ -304,20 +304,14 @@ enum class ExpiresLineFields {
 }
 
 /** Prepare to write to the file [outName]. */
-fun openOutFile(outName: Path): FileOutputStream = try {
+private fun openOutFile(outName: Path): FileOutputStream = try {
     FileOutputStream(outName.toFile())
 } catch (_: FileNotFoundException) {
     outName.createParentDirectories()
     FileOutputStream(outName.toFile())
 }
 
-/* The maximum number of fields on any of the above lines. */
-val MAX_FIELDS = maxOf(
-    RuleLineFields.entries.size, LinkLineFields.entries.size,
-    LeapLineFields.entries.size, ExpiresLineFields.entries.size,
-)
-
-enum class YearSynonyms {
+private enum class YearSynonyms {
     MINIMUM,
     MAXIMUM,
     ONLY;
@@ -334,14 +328,14 @@ enum class YearSynonyms {
     }
 }
 
-data class Link(
+private data class Link(
     val fileNum: OpenFile,
     val lineNum: Lineno,
     val target: String,
     val linkName: String,
 )
 
-val monthNames = listOf(
+private val monthNames = listOf(
     "January" to Month.JANUARY,
     "February" to Month.FEBRUARY,
     "March" to Month.MARCH,
@@ -356,7 +350,7 @@ val monthNames = listOf(
     "December" to Month.DECEMBER,
 )
 
-val weekDayNames = listOf(
+private val weekDayNames = listOf(
     "Monday" to DayOfWeek.MONDAY,
     "Tuesday" to DayOfWeek.TUESDAY,
     "Wednesday" to DayOfWeek.WEDNESDAY,
@@ -366,7 +360,7 @@ val weekDayNames = listOf(
     "Sunday" to DayOfWeek.SUNDAY,
 )
 
-val lasts = listOf(
+private val lasts = listOf(
     "last-Monday" to DayOfWeek.MONDAY,
     "last-Tuesday" to DayOfWeek.TUESDAY,
     "last-Wednesday" to DayOfWeek.WEDNESDAY,
@@ -376,22 +370,22 @@ val lasts = listOf(
     "last-Sunday" to DayOfWeek.SUNDAY,
 )
 
-val leapTypes = listOf(
+private val leapTypes = listOf(
     "Rolling" to true,
     "Stationary" to false,
 )
 
-val monthLengthsPerYear = listOf(
+private val monthLengthsPerYear = listOf(
     listOf(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
     listOf(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
 )
 
-val yearLengths = listOf(
+private val yearLengths = listOf(
     365,
     366,
 )
 
-data class U(
+private data class U(
     val atTypes: MutableList<AtType> = mutableListOf(),
     val typeDescrs: MutableList<TypeDescr> = mutableListOf(),
     val leaps: MutableList<Leap> = mutableListOf(),
@@ -417,28 +411,28 @@ data class U(
     )
 }
 
-const val NO_MODE = -1
+private const val NO_MODE = -1
 
 /*
 ** Error handling
 */
 
-sealed interface OpenFile
+private sealed interface OpenFile
 
-enum class BuiltInFiles: OpenFile {
+private enum class BuiltInFiles: OpenFile {
     LEAPSEC,
     COMMAND_LINE,
 }
 
-class ActualOpenFile(val index: Int): OpenFile
+private class ActualOpenFile(val index: Int): OpenFile
 
-fun OpenFile.toNumber(): Int = when (this) {
+private fun OpenFile.toNumber(): Int = when (this) {
     BuiltInFiles.LEAPSEC -> -1
     BuiltInFiles.COMMAND_LINE -> -2
     is ActualOpenFile -> index
 }
 
-open class ErrorReportingConfig(
+private open class ErrorReportingConfig(
     val fileNameList: List<String>,
     val leapSecFileName: String?,
 ) {
@@ -450,7 +444,7 @@ open class ErrorReportingConfig(
     }
 }
 
-class ErrorReporter(
+private class ErrorReporter(
     val fileNum: OpenFile?,
     val lineNum: Int,
     val rFileNum: OpenFile?,
@@ -474,7 +468,8 @@ class ErrorReporter(
 }
 
 
-context (config: ErrorReportingConfig) fun <T> reporting(
+context (config: ErrorReportingConfig)
+private fun <T> reporting(
     fileNum: OpenFile,
     lineNum: Lineno,
     rFileNum: OpenFile?,
@@ -494,20 +489,21 @@ context (config: ErrorReportingConfig) fun <T> reporting(
     }
 }
 
-context (config: ErrorReportingConfig) fun <T> reporting(
+context (config: ErrorReportingConfig)
+private fun <T> reporting(
     fileNum: OpenFile, lineNum: Lineno, action: context(ErrorReporter) () -> T
 ): T = reporting(fileNum, lineNum, null, -1, action)
 
 context (reporter: ErrorReporter)
-fun warning(message: String) {
+private fun warning(message: String) {
     println("warning: ${reporter.verror(message)}")
 }
 
-fun duplicateOptions(progName: String, opt: String): Nothing {
+private fun duplicateOptions(progName: String, opt: String): Nothing {
     error("$progName: More than one $opt option specified")
 }
 
-fun usage(): String = """
+private fun usage(): String = """
 usage is [ --version ] [ --help ]
 \t[ -b {slim|fat} ] -d directory
 \t[ -L leapseconds ]
@@ -515,7 +511,7 @@ usage is [ --version ] [ --help ]
 \t[ filename ... ]
 """
 
-fun qsortLinkCmp(a: Link, b: Link): Int {
+private fun qsortLinkCmp(a: Link, b: Link): Int {
     var cmp = a.linkName.compareTo(b.linkName)
     if (cmp != 0) return cmp
     /* The link names are the same. Make the sort stable by comparing
@@ -528,7 +524,7 @@ fun qsortLinkCmp(a: Link, b: Link): Int {
 
 /* Make the links specified by the Link lines. */
 context (_: ErrorReportingConfig)
-fun makeLinks(directory: String, links: List<Link>) {
+private fun makeLinks(directory: String, links: List<Link>) {
     var pendingLinks: List<Link> = links
         .sortedWith(::qsortLinkCmp)
         /* Ignore each link superseded by a later link with the same name. */
@@ -560,10 +556,10 @@ fun makeLinks(directory: String, links: List<Link>) {
 }
 
 /* The minimum and maximum values representable in a TZif file. */
-const val MIN_TIME: ZicType = Long.MIN_VALUE
-const val MAX_TIME: ZicType = Long.MAX_VALUE
+private const val MIN_TIME: ZicType = Long.MIN_VALUE
+private const val MAX_TIME: ZicType = Long.MAX_VALUE
 
-data class TimeBoundConfig(
+private data class TimeBoundConfig(
     /* The minimum, and one less than the maximum, values specified by the -r option.
     These default to MIN_TIME and MAX_TIME. */
     var loTime: ZicType = MIN_TIME,
@@ -575,7 +571,7 @@ data class TimeBoundConfig(
 
 /* Set the time range of the output to TIMERANGE.
    Return true if successful. */
-fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig? {
+private fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig? {
     val loTime: Long
     val hiStart = if (timerange.firstOrNull() == '@') {
         val numberLen = timerange.drop(1).takeWhile { it.isAsciiDigit() || it == '-' }.length
@@ -597,7 +593,7 @@ fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig? {
 }
 
 /* Generate redundant time stamps up to OPT. Return true if successful. */
-fun TimeBoundConfig.redundantTimeOption(opt: String): TimeBoundConfig? {
+private fun TimeBoundConfig.redundantTimeOption(opt: String): TimeBoundConfig? {
     if (opt.firstOrNull() == '@') {
         opt.drop(1).toLongOrNull()?.let {
             return copy(redundantTime = maxOf(redundantTime, it))
@@ -607,16 +603,16 @@ fun TimeBoundConfig.redundantTimeOption(opt: String): TimeBoundConfig? {
 
 }
 
-data class BloatConfig(
+private data class BloatConfig(
     /* `false` if the TZif output file should be slim, `true` if the
     output should be fat for backward compatibility. ZIC_BLOAT_DEFAULT
     determines the default. */
     val bloat: Boolean
 )
 
-fun BloatConfig.wantBloat(): Boolean = bloat
+private fun BloatConfig.wantBloat(): Boolean = bloat
 
-const val ZIC_BLOAT_DEFAULT: String = "slim"
+private const val ZIC_BLOAT_DEFAULT: String = "slim"
 
 fun main(args: Array<String>) {
     var timerangeGiven = false
@@ -753,9 +749,9 @@ fun main(args: Array<String>) {
     }
 }
 
-const val component_len_max = 14
+private const val component_len_max = 14
 
-fun componentcheck(
+private fun componentcheck(
     name: String, componentStart: Int, componentEnd: Int
 ) {
     val componentLen = componentEnd - componentStart
@@ -774,7 +770,7 @@ fun componentcheck(
     }
 }
 
-fun namecheck(name: String) {
+private fun namecheck(name: String) {
     /* Benign characers in a portable file name. */
     fun Char.isBenign(): Boolean =
         this == '-' || this == '/' || this == '_' ||
@@ -801,7 +797,7 @@ fun namecheck(name: String) {
  * Associate sets of rules with zones.
  */
 context (_: ErrorReportingConfig)
-fun associate(
+private fun associate(
     zones: List<Zone>,
     rules: List<Rule>,
 ): List<ZoneWithRules> {
@@ -854,7 +850,7 @@ fun associate(
 }
 
 context (reporter: ErrorReportingConfig)
-fun infile(
+private fun infile(
     fileNum: OpenFile,
     leapTracker: LeapTracker, timeBoundConfig: TimeBoundConfig,
     rules: MutableList<Rule>,
@@ -922,7 +918,7 @@ fun infile(
 ** into a number of seconds.
 ** A null string maps to zero.
 */
-fun gethms(string: String): ZicType? {
+private fun gethms(string: String): ZicType? {
     if (string == "") return 0
     val sign: Int
     val abs = if (string.firstOrNull() == '-') {
@@ -987,9 +983,9 @@ fun gethms(string: String): ZicType? {
     return r
 }
 
-data class Save(val isDst: Boolean, val save: ZicType, val updatedField: String)
+private data class Save(val isDst: Boolean, val save: ZicType, val updatedField: String)
 
-fun getsave(fld: String): Save {
+private fun getsave(fld: String): Save {
     val dst: Boolean?
     val updatedField: String
     when (fld.lastOrNull()) {
@@ -1006,7 +1002,7 @@ fun getsave(fld: String): Save {
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno) {
+private fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno) {
     val fields = populateMapWithAllEnumKeys(RuleLineFields.entries, fieldsList)
         ?: error("wrong number of fields on Rule line")
     val name = fields[RuleLineFields.NAME]!!
@@ -1056,7 +1052,7 @@ fun MutableList<Rule>.inrule(fieldsList: List<String>, fileNum: OpenFile, lineNu
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<ZoneLine>.inzone(
+private fun MutableList<ZoneLine>.inzone(
     fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno,
 ): String {
     val (fields, unmatchedKeys) = populateMapWithPrefixOfEnumKeys(
@@ -1077,7 +1073,7 @@ fun MutableList<ZoneLine>.inzone(
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<ZoneLine>.inzcont(
+private fun MutableList<ZoneLine>.inzcont(
     fieldsList: List<String>, fileNum: OpenFile, lineNum: Lineno
 ) {
     val (fields, unmatchedKeys) = populateMapWithPrefixOfEnumKeys(
@@ -1096,7 +1092,7 @@ fun MutableList<ZoneLine>.inzcont(
 }
 
 context (reporter: ErrorReporter)
-fun inzsub(
+private fun inzsub(
     fields: Map<ZoneContinuationLineFields, String>, name: String?,
     fileNum: OpenFile, lineNum: Lineno,
 ): ZoneLine {
@@ -1166,7 +1162,7 @@ fun inzsub(
 }
 
 context (reporter: ErrorReporter)
-fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String>): LocalDateTime {
+private fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String>): LocalDateTime {
     val year = fields[LeapLineFields.YEAR]!!.toIntOrNull()
     check(year != null) {
         /*
@@ -1191,7 +1187,7 @@ fun getleapdatetime(leapTracker: LeapTracker, fields: Map<LeapLineFields, String
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<U.Leap>.inleap(
+private fun MutableList<U.Leap>.inleap(
     leapTracker: LeapTracker,
     config: TimeBoundConfig, 
     fieldsList: List<String>,
@@ -1210,7 +1206,7 @@ fun MutableList<U.Leap>.inleap(
 }
 
 context (reporter: ErrorReporter)
-fun MutableList<Link>.inlink(
+private fun MutableList<Link>.inlink(
     fieldsList: List<String>,
     fileNum: OpenFile,
     lineNum: Int,
@@ -1233,7 +1229,7 @@ fun MutableList<Link>.inlink(
 }
 
 context (reporter: ErrorReporter)
-inline fun <T> rulesub(
+private inline fun <T> rulesub(
     lowYearString: String,
     highYearString: String,
     typeString: String,
@@ -1375,22 +1371,22 @@ inline fun <T> rulesub(
 }
 
 /* BE: 0x11223344 -> [0x11, 0x22, 0x33, 0x44] */
-fun convert(value: Int): ByteArray =
+private fun convert(value: Int): ByteArray =
     ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(value).array()
 
 /* BE: 0x1122334455667788 -> [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88] */
-fun convert64(value: Long): ByteArray =
+private fun convert64(value: Long): ByteArray =
     ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).putLong(value).array()
 
-fun puttzcode(value: ZicType): ByteArray = convert(value.toInt())
+private fun puttzcode(value: ZicType): ByteArray = convert(value.toInt())
 
-fun puttzcodepass(value: ZicType, pass: Int): ByteArray = if (pass == 1) {
+private fun puttzcodepass(value: ZicType, pass: Int): ByteArray = if (pass == 1) {
     puttzcode(value)
 } else {
     convert64(value)
 }
 
-data class TimeRange(
+private data class TimeRange(
     var defaultType: UByte, /* index in utOffs */
     var base: Int,       /* index in atTypes */
     var count: Int,
@@ -1398,7 +1394,7 @@ data class TimeRange(
     var leapcount: Int,
 )
 
-fun limitrange(
+private fun limitrange(
     r: TimeRange, lo: ZicType, hi: ZicType,
     ats: List<ZicType>, types: List<UByte>,
     leaps: List<U.Leap>,
@@ -1437,7 +1433,7 @@ fun limitrange(
     return r
 }
 
-fun writeZone(
+private fun writeZone(
     directory: String,
     name: String, string: String, version: Char, defaultType: UByte,
     u: U,
@@ -1735,8 +1731,7 @@ fun writeZone(
             if (hicut)
                 write_(typeMap[unspecifiedType!!.toInt()])
             for (i in old0..<u.typeDescrs.size.toUByteFailing()) {
-                val i = i.toInt().toUByteFailing()
-                val h = when (i) {
+                val h = when (val i = i.toInt().toUByteFailing()) {
                     old0 -> thisDefaultType
                     thisDefaultType -> old0
                     else -> i
@@ -1803,7 +1798,7 @@ fun writeZone(
     }
 }
 
-fun abbroffset(offset: Duration): String {
+private fun abbroffset(offset: Duration): String {
     val offsetLim = 100.hours
     check(offset > -offsetLim && offset < offsetLim) {
         "%z UT offset magnitude exceeds 99:59:59 in $offset"
@@ -1819,7 +1814,7 @@ fun abbroffset(offset: Duration): String {
     }
 }
 
-val abbroffsetFormat = DateTimeComponents.Format {
+private val abbroffsetFormat = DateTimeComponents.Format {
     offsetHours()
     optional {
         offsetMinutesOfHour()
@@ -1829,12 +1824,12 @@ val abbroffsetFormat = DateTimeComponents.Format {
     }
 }
 
-sealed interface Letters {
+private sealed interface Letters {
     object DisablePercentS: Letters
     class Actual(val value: String): Letters
 }
 
-fun doabbr(
+private fun doabbr(
     abbrData: ZoneLine.AbbrData, letters: Letters?,
     isDst: Boolean, save: ZicType, doQuotes: Boolean
 ): String {
@@ -1883,7 +1878,7 @@ const val SECSPERDAY = 24 * 60 * 60
 const val SECSPERHOUR = 60 * 60
 const val SECSPERMINUTE = 60
 
-fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
+private fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
     var timeFromMidnight: ZicType = rp.timeFromMidnight
     var compat = 0
     when (val dow = rp.dateRule.dayOfWeek) {
@@ -1948,7 +1943,7 @@ fun StringBuilder.stringRule(rp: Rule.Format, stdOff: ZicType): Int? {
     return compat
 }
 
-fun ruleCmp(a: Rule?, b: Rule?): Int {
+private fun ruleCmp(a: Rule?, b: Rule?): Int {
     if (a == null) { return if (b == null) 0 else -1 }
     if (b == null) { return 1 }
     if (a.highYear != b.highYear) { return if (a.highYear < b.highYear) -1 else 1 }
@@ -1962,7 +1957,7 @@ fun ruleCmp(a: Rule?, b: Rule?): Int {
 /** Return a pair of a proleptic TZ string that represents the future predictions
    for the zone [zone], as well as the compatibility indicator (a TZDB release year)
    if successful, a `null` if no such TZ string exists. */
-fun stringZone(config: TimeBoundConfig, lineAndRules: Pair<ZoneLine, ZoneLineRules>): Pair<String, Int>? {
+private fun stringZone(config: TimeBoundConfig, lineAndRules: Pair<ZoneLine, ZoneLineRules>): Pair<String, Int>? {
     /* Internet RFC 9636 section 6.1 says to use an empty TZ string if future
     timestamps are truncated. */
     if (config.hiTime < MAX_TIME) {
@@ -2075,7 +2070,7 @@ fun stringZone(config: TimeBoundConfig, lineAndRules: Pair<ZoneLine, ZoneLineRul
 }
 
 context (reporter: ErrorReporter)
-fun outZone(
+private fun outZone(
     directory: String,
     timeBoundConfig: TimeBoundConfig,
     bloatConfig: BloatConfig,
@@ -2398,12 +2393,12 @@ fun outZone(
     )
 }
 
-fun U.addtt(startTime: ZicType, type: UByte) {
+private fun U.addtt(startTime: ZicType, type: UByte) {
     atTypes.add(U.AtType(at = startTime, dontMerge = false, type = type))
 }
 
 context (reporter: ErrorReporter)
-fun U.addtype(
+private fun U.addtype(
     config: BloatConfig,
     utOff: ZicType, abbr: String, isDst: Boolean, timeType: Rule.TimeOfDayType
 ): UByte {
@@ -2422,7 +2417,7 @@ fun U.addtype(
     return (typeDescrs.size - 1).toUByte()
 }
 
-fun MutableList<U.Leap>.leapadd(
+private fun MutableList<U.Leap>.leapadd(
     config: TimeBoundConfig, t: ZicType, correction: Int, rolling: Boolean
 ) {
     var i = 0
@@ -2437,7 +2432,7 @@ fun MutableList<U.Leap>.leapadd(
     add(i, U.Leap(trans = t, corr = correction.toLong(), roll = rolling))
 }
 
-fun MutableList<U.Leap>.adjleap() {
+private fun MutableList<U.Leap>.adjleap() {
     var last: ZicType = 0
     var prevTrans: ZicType = 0
     forEach { cur ->
@@ -2450,7 +2445,7 @@ fun MutableList<U.Leap>.adjleap() {
 }
 
 /** Is `this` a space character in the C locale? */
-fun Char.isAsciiSpace() = this in listOf(
+private fun Char.isAsciiSpace() = this in listOf(
     ' ', 0x0C.toChar() /* \f */, '\n', '\r', '\t', 0x0B.toChar() /* '\v' */
 )
 
@@ -2458,10 +2453,10 @@ fun Char.isAsciiSpace() = this in listOf(
 fun Char.isAsciiAlpha() = (this in 'A'..'Z') || (this in 'a'..'z')
 
 /** Return true if [abbr] is an initial prefix of [word], ignoring ASCII case. */ 
-fun ciprefix(abbr: String, word: String): Boolean = word.lowercase().startsWith(abbr.lowercase())
+private fun ciprefix(abbr: String, word: String): Boolean = word.lowercase().startsWith(abbr.lowercase())
 
 context (reporter: ErrorReporter)
-fun <T> byWord(word: String, table: List<Pair<String, T>>): Pair<String, T>? {
+private fun <T> byWord(word: String, table: List<Pair<String, T>>): Pair<String, T>? {
     /* If `table` is LASTS and the word starts with `last`
     followed by a non-`-`, skip the "last" and look in `weekDayNames` instead.
     Warn about any usage of the undocumented prefix "last-". */
@@ -2486,7 +2481,7 @@ fun <T> byWord(word: String, table: List<Pair<String, T>>): Pair<String, T>? {
     return updatedTable.singleOrNull { ciprefix(updatedWord, it.first) }
 }
 
-fun getfields(cpStr: String): List<String> = buildList {
+private fun getfields(cpStr: String): List<String> = buildList {
     var cIx = 0
     while (true) {
         while (cIx < cpStr.length && cpStr[cIx].isAsciiSpace())
@@ -2543,7 +2538,7 @@ private fun Int.toUByteFailing(): UByte {
  * January 1, 1970, 00:00 LOCAL time) in that year that the rule refers to.
  * Do not count leap seconds. On error, diagnose and exit.
  */
-fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
+private fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
     val i = rule.dayOfMonth
     val dayOfMonth = if (rule.month == Month.FEBRUARY && i == 29 && !isLeapYear(wantedYear)) {
         check(rule.dayOfWeek is DayOfWeekRule.PreviousOrSame) { "Use of 2/29 in non leap-year" }
@@ -2560,13 +2555,13 @@ fun rpytime(rule: Rule.DateRule, wantedYear: Int): LocalDate {
     }
 }
 
-fun LocalDate.atTimeExtended(timeFromMidnight: ZicType): LocalDateTime =
+private fun LocalDate.atTimeExtended(timeFromMidnight: ZicType): LocalDateTime =
     atTime(0, 0).toInstant(TimeZone.UTC)
         .plus(timeFromMidnight, DateTimeUnit.SECOND)
         .toLocalDateTime(TimeZone.UTC)
 
 context (reporter: ErrorReporter)
-fun checkabbr(string: String) {
+private fun checkabbr(string: String) {
     var warning: String? = null
     if (string.length < 3) {
         warning = "time zone abbreviation has fewer than 3 characters ($string)"
@@ -2590,7 +2585,7 @@ fun checkabbr(string: String) {
  * existing abbreviation, add [abbr] to [chs] and remove from [chs] any
  * abbreviation that is a suffix of [abbr].
  */
-fun addabbr(chs: MutableList<String>, abbr: String) {
+private fun addabbr(chs: MutableList<String>, abbr: String) {
     for (i in chs.indices) {
         val current = chs[i]
         if (current.endsWith(abbr))
@@ -2607,7 +2602,7 @@ fun addabbr(chs: MutableList<String>, abbr: String) {
  * Finds the index of [abbr] + `'\0'` in a byte array resulting from
  * putting `'\0'`-separated [chs] strings.
  */
-fun addabbrQuery(chs: List<String>, abbr: String): Int {
+private fun addabbrQuery(chs: List<String>, abbr: String): Int {
     var runningTotal = 0
     for (current in chs) {
         if (current.endsWith(abbr))
@@ -2617,7 +2612,7 @@ fun addabbrQuery(chs: List<String>, abbr: String): Int {
     error("Not found")
 }
 
-fun LocalDateTime.toInstant(timeType: Rule.TimeOfDayType, offset: ZicType, save: ZicType): Instant = toInstant(
+private fun LocalDateTime.toInstant(timeType: Rule.TimeOfDayType, offset: ZicType, save: ZicType): Instant = toInstant(
     UtcOffset(seconds = when (timeType) {
         Rule.TimeOfDayType.Wall -> offset + save
         Rule.TimeOfDayType.Standard -> offset
