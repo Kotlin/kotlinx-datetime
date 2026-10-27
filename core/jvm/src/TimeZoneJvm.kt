@@ -19,7 +19,7 @@ internal fun TimeZone.Companion.ofZone(zoneId: ZoneId): TimeZone = when {
     zoneId is jtZoneOffset ->
         FixedOffsetTimeZone(UtcOffset(zoneId))
     zoneId.isFixedOffset ->
-        FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId.toString())
+        FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId.toString(), lazyOf(zoneId))
     else ->
         JvmTimeZone(zoneId)
 }

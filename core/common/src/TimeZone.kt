@@ -230,36 +230,36 @@ public open class TimeZone internal constructor() {
  *
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.casting
  */
-public class FixedOffsetTimeZone internal constructor(
+public expect class FixedOffsetTimeZone internal constructor(
+    offset: UtcOffset,
+    id: String
+) : TimeZone {
     /**
      * The constant offset from UTC that this time zone has.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.offset
      */
-    public val offset: UtcOffset,
-    override val id: String
-): TimeZone() {
+    public val offset: UtcOffset
+    public override val id: String
     /**
      * Constructs a time zone with the fixed [offset] from UTC.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.FixedOffsetTimeZoneSamples.constructorFunction
      */
-    public constructor(offset: UtcOffset) : this(offset, offset.toString())
+    public constructor(offset: UtcOffset)
 
     @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
-    public val totalSeconds: Int get() = offset.totalSeconds
+    public val totalSeconds: Int
 
-    override fun offsetAt(instant: Instant): UtcOffset = offset
+    public override fun offsetAt(instant: Instant): UtcOffset
 
-    override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
-        LocalDateTimeOffsetInfo.Regular(offset)
+    public override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
-    override fun toString(): String = id
+    public override fun toString(): String
 
-    override fun equals(other: Any?): Boolean =
-        this === other || other is FixedOffsetTimeZone && this.id == other.id
+    public override fun equals(other: Any?): Boolean
 
-    override fun hashCode(): Int = id.hashCode()
+    public override fun hashCode(): Int
 
     /** @suppress */
     public companion object {
@@ -271,17 +271,11 @@ public class FixedOffsetTimeZone internal constructor(
             level = DeprecationLevel.WARNING,
         )
         @Suppress("DEPRECATION")
-        public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone> =
-            FixedOffsetTimeZoneSerializer
+        public fun serializer(): kotlinx.serialization.KSerializer<FixedOffsetTimeZone>
 
-        internal fun withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone =
-            FixedOffsetTimeZone(offset, id)
+        internal fun withSpecificName(offset: UtcOffset, id: String): FixedOffsetTimeZone
 
-        internal fun withSpecificPrefix(offset: UtcOffset, prefix: String): FixedOffsetTimeZone =
-            when (offset.totalSeconds) {
-                0 -> withSpecificName(offset, prefix)
-                else -> withSpecificName(offset, "$prefix$offset")
-            }
+        internal fun withSpecificPrefix(offset: UtcOffset, prefix: String): FixedOffsetTimeZone
     }
 }
 

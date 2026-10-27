@@ -76,6 +76,7 @@ public fun java.time.Period.toKotlinDatePeriod(): DatePeriod = DatePeriod(this.y
  */
 public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this) {
     is JvmTimeZone -> actualZoneId
+    is FixedOffsetTimeZone -> actualZoneId.value
     else -> java.time.ZoneId.of(this.id)
 }
 
