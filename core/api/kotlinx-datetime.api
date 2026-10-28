@@ -749,19 +749,19 @@ public final class kotlinx/datetime/Ser : java/io/Externalizable {
 public final class kotlinx/datetime/Ser$Companion {
 }
 
-public class kotlinx/datetime/TimeZone {
+public abstract class kotlinx/datetime/TimeZone {
 	public static final field Companion Lkotlinx/datetime/TimeZone$Companion;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getId ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
-	public fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public abstract fun equals (Ljava/lang/Object;)Z
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun hashCode ()I
+	public abstract fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
+	public abstract fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
 	public final synthetic fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public static synthetic fun toInstant$default (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
 	public final synthetic fun toLocalDateTime (Lkotlin/time/Instant;)Lkotlinx/datetime/LocalDateTime;
 	public final fun toLocalDateTime (Lkotlinx/datetime/Instant;)Lkotlinx/datetime/LocalDateTime;
-	public fun toString ()Ljava/lang/String;
+	public abstract fun toString ()Ljava/lang/String;
 }
 
 public final class kotlinx/datetime/TimeZone$Companion {
