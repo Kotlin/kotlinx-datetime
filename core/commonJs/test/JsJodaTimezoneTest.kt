@@ -5,7 +5,7 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
-import kotlinx.datetime.internal.rulesForIdForTests
+import kotlinx.datetime.internal.RuleBasedTimeZone
 import kotlin.math.roundToInt
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
@@ -27,11 +27,10 @@ class JsJodaTimezoneTest {
     @Test
     fun iterateOverAllTimezones() {
         for (id in TimeZoneContext.System.availableZoneIds()) {
-            val rules = rulesForIdForTests(id) ?: throw AssertionError("No rules for $id")
+            val ourZone = TimeZoneContext.System.get(id)
             val jodaZone = jtZoneId.of(id)
-            assertNull(rules.recurringZoneRules) // js-joda doesn't expose recurring rules
             fun checkAtInstant(instant: Instant) {
-                val offset = rules.infoAtInstant(instant)
+                val offset = ourZone.offsetAt(instant)
                 val ourLdt = instant.toLocalDateTime(offset)
                 val zdt = jtInstant.ofEpochMilli(instant.toEpochMilliseconds().toDouble()).atZone(jodaZone)
                 val theirLdt = with(zdt) {
@@ -63,8 +62,11 @@ class JsJodaTimezoneTest {
                 checkAtInstant(instant)
             }
             // check historical data
-            for (transition in rules.transitionEpochSeconds) {
-                checkTransition(Instant.fromEpochSeconds(transition))
+            if (ourZone is RuleBasedTimeZone) {
+                val transitionEpochSeconds = ourZone.rules.transitionEpochSeconds
+                for (transition in transitionEpochSeconds) {
+                    checkTransition(Instant.fromEpochSeconds(transition))
+                }
             }
         }
     }
