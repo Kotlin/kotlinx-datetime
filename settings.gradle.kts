@@ -34,5 +34,7 @@ include(":integration-testing/jpms-test")
 project(":integration-testing/jpms-test").name = "kotlinx-datetime-test-with-jpms"
 include(":integration-testing/jpms-zoneinfo-test")
 project(":integration-testing/jpms-zoneinfo-test").name = "kotlinx-datetime-zoneinfo-test-with-jpms"
+include(":tzdata-compiler")
+project(":tzdata-compiler").name = "kotlinx-datetime-tzdata-compiler"
 include(":benchmarks")
 include(":test-utils")

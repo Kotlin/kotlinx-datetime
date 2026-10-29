@@ -3,8 +3,6 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-import com.github.gradle.node.npm.task.NpmTask
-import com.github.gradle.node.npm.task.NpxTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -12,14 +10,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     id("maven-publish")
-    id("com.github.node-gradle.node") version "7.0.2"
     id("org.jetbrains.kotlinx.kover")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
-}
-
-node {
-    download.set(true)
-    nodeProjectDir.set(layout.buildDirectory.dir("node"))
 }
 
 val tzdbVersion = rootProject.property("tzdbVersion") as String
@@ -31,21 +23,10 @@ val tzdataAsKotlinFilesDir =
     project.layout.buildDirectory.dir("convertedTimesZones-full/src/internal/tzdataAsKotlinFiles")
 val tzdbDirectory = File(project.projectDir, "tzdb")
 
-val timeTzdbInstall = tasks.register<NpmTask>("timeTzdbInstall") {
-    args.addAll(
-        "install",
-        "@tubular/time-tzdb",
-    )
-}
-
-tasks.register<NpxTask>("tzdbDownloadAndCompile") {
-    dependsOn(timeTzdbInstall)
-    command.set("@tubular/time-tzdb")
-    args.addAll("-b", "--large")
-    if (tzdbVersion.isNotEmpty()) {
-        args.addAll("-u", tzdbVersion)
-    }
-    args.add(tzdbDirectory.toString())
+tasks.register<Copy>("tzdbDownloadAndCompile") {
+    doFirst { delete(tzdbDirectory) }
+    from(project(":kotlinx-datetime-tzdata-compiler").tasks.named("compileLatestTzdb"))
+    into(tzdbDirectory)
 }
 
 val generateTzdataAsKotlinFiles = tasks.register("generateTzdataAsKotlinFiles") {
