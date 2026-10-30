@@ -2092,8 +2092,8 @@ private fun outZone(
     ** for noting the need to unconditionally initialize startTimeType.
     */
     var startTimeType = Rule.TimeOfDayType.Wall
-    var minYear = 0L
-    var maxYear = 0L
+    var minYear = EPOCH_YEAR.toLong()
+    var maxYear = EPOCH_YEAR.toLong()
     fun updateMinMax(x: ZicType) {
         if (minYear > x)
             minYear = x
