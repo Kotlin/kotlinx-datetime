@@ -575,15 +575,14 @@ private fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig?
     val loTime: Long
     val hiStart = if (timerange.firstOrNull() == '@') {
         val numberLen = timerange.drop(1).takeWhile { it.isAsciiDigit() || it == '-' }.length
-        loTime = (timerange.substring(1, 1 + numberLen).toIntOrNull() ?: return null).toLong()
+        loTime = (timerange.substring(1, 1 + numberLen).toLongOrNull() ?: return null)
         1 + numberLen
     } else {
         loTime = MIN_TIME
         0
     }
     val hiTime: Long = if (timerange.getOrNull(hiStart) == '/' && timerange.getOrNull(hiStart + 1) == '@') {
-        (timerange.substring(hiStart + 2, timerange.length).toIntOrNull() ?: return null)
-            .let { if (it != Int.MAX_VALUE) it - 1 else it }.toLong()
+        (timerange.substring(hiStart + 2, timerange.length).toLongOrNull() ?: return null) - 1
     } else if (timerange.length > hiStart) {
         return null
     } else {
