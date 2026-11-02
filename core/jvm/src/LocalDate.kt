@@ -94,10 +94,10 @@ public actual class LocalDate internal constructor(
             this(year, month.toKotlinMonth(), dayOfMonth)
 
     public actual val year: Int get() = value.year
-    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.ERROR)
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month.toKotlinMonth()
-    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.ERROR)
     public actual val dayOfMonth: Int get() = value.dayOfMonth
     public actual val day: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()

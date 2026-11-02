@@ -341,7 +341,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public val year: Int
 
     /** @suppress */
-    @Deprecated("Use the 'month' property instead", ReplaceWith("month.number"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'month' property instead", ReplaceWith("month.number"), level = DeprecationLevel.ERROR)
     public val monthNumber: Int
 
     /**
@@ -359,7 +359,7 @@ public expect class LocalDateTime : Comparable<LocalDateTime> {
     public val day: Int
 
     /** @suppress */
-    @Deprecated("Use the 'day' property instead", ReplaceWith("day"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'day' property instead", ReplaceWith("day"), level = DeprecationLevel.ERROR)
     public val dayOfMonth: Int
 
     /**
@@ -488,7 +488,7 @@ public expect fun LocalDateTime.Companion.parseOrNull(
 @Deprecated(
     "Use the constructor that accepts a 'month' and a 'day'",
     ReplaceWith("LocalDateTime(year = year, month = monthNumber, day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution
@@ -511,7 +511,7 @@ public fun LocalDateTime(
 @Deprecated(
     "Use the constructor that accepts a 'day'",
     ReplaceWith("LocalDateTime(year = year, month = month, day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution

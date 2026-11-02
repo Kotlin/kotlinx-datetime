@@ -99,7 +99,7 @@ public sealed interface DateTimeFormatBuilder {
         public fun day(padding: Padding = Padding.ZERO)
 
         /** @suppress */
-        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
+        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"), level = DeprecationLevel.ERROR)
         public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
 
         /**
