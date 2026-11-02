@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.native.concurrent.ThreadLocal
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset private constructor(public actual val totalSeconds: Int) {
 

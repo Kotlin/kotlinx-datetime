@@ -58,7 +58,7 @@ import kotlinx.serialization.Serializable
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.simpleParsingAndFormatting
  * @sample kotlinx.datetime.test.samples.UtcOffsetSamples.customFormat
  */
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @Serializable(with = UtcOffsetSerializer::class)
 public expect class UtcOffset {
     /**

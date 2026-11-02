@@ -14,7 +14,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.*
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(
     internal val zoneOffset: ZoneOffset
