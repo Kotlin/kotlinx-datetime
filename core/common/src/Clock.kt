@@ -111,5 +111,5 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
 @Deprecated("Use kotlin.time.asClock instead", level = DeprecationLevel.ERROR)
 public fun TimeSource.asClock(origin: Instant): Clock = stdlibAsClock(origin)
 
-@Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
+@Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.ERROR)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)
