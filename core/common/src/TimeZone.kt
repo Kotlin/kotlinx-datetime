@@ -234,7 +234,7 @@ public class FixedOffsetTimeZone internal constructor(
      */
     public constructor(offset: UtcOffset) : this(offset, offset.toString())
 
-    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"))
+    @Deprecated("Use offset.totalSeconds", ReplaceWith("offset.totalSeconds"), level = DeprecationLevel.ERROR)
     public val totalSeconds: Int get() = offset.totalSeconds
 
     override fun offsetAt(instant: Instant): UtcOffset = offset
