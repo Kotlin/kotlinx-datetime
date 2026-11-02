@@ -2,7 +2,10 @@
  * Copyright 2019-2020 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-@file:JvmName("LocalDateJvmKt")
+
+@file:JvmMultifileClass
+@file:JvmName("LocalDateKt")
+
 package kotlinx.datetime
 
 import kotlinx.datetime.LocalDate.Formats
@@ -142,34 +145,6 @@ public actual fun LocalDate.Companion.parseOrNull(
         format.parseOrNull(input)
     }
 
-
-/**
- * @suppress
- */
-@Deprecated(
-    "Use the constructor that accepts a 'day'",
-    ReplaceWith("LocalDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)"),
-    level = DeprecationLevel.ERROR
-)
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@LowPriorityInOverloadResolution
-public fun LocalDate(year: Int, month: java.time.Month, dayOfMonth: Int): LocalDate =
-    LocalDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)
-
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
-public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
-        plus(1L, unit)
-
-@PublishedApi
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@LowPriorityInOverloadResolution
-internal fun LocalDate.plus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(value.toLong(), unit)
-
-@PublishedApi
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@LowPriorityInOverloadResolution
-internal fun LocalDate.minus(value: Int, unit: DateTimeUnit.DateBased): LocalDate = plus(-value.toLong(), unit)
-
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate =
         try {
             when (unit) {
@@ -219,11 +194,6 @@ public actual fun LocalDate.until(other: LocalDate, unit: DateTimeUnit.DateBased
     is DateTimeUnit.MonthBased -> (this.value.until(other.value, ChronoUnit.MONTHS) / unit.months)
     is DateTimeUnit.DayBased -> (this.value.until(other.value, ChronoUnit.DAYS) / unit.days)
 }
-
-@PublishedApi
-@JvmName("until")
-internal fun LocalDate.untilJvm(other: LocalDate, unit: DateTimeUnit.DateBased): Int =
-    until(other, unit).clampToInt()
 
 public actual fun LocalDate.daysUntil(other: LocalDate): Int =
         this.value.until(other.value, ChronoUnit.DAYS).clampToInt()
