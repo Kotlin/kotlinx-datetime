@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 @file:JvmMultifileClass
 @file:JvmName("InstantJvmKt")
 package kotlinx.datetime
@@ -23,25 +23,25 @@ import kotlin.time.Duration.Companion.seconds
 @Deprecated(
     "Use kotlin.time.Instant instead",
     ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Serializable(with = InstantSerializer::class)
 public actual class Instant internal constructor(internal val value: java.time.Instant) : Comparable<Instant> {
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().epochSeconds")
     )
     public actual val epochSeconds: Long
         get() = value.epochSecond
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
     )
     public actual val nanosecondsOfSecond: Int
         get() = value.nano
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     public actual fun toEpochMilliseconds(): Long = try {
@@ -51,7 +51,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
     }
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() + duration).toDeprecatedInstant()")
     )
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
@@ -64,13 +64,13 @@ public actual class Instant internal constructor(internal val value: java.time.I
     }
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() - duration).toDeprecatedInstant()")
     )
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant() - other.toStdlibInstant()")
     )
     public actual operator fun minus(other: Instant): Duration =
@@ -78,7 +78,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
                 (this.value.nano - other.value.nano).nanoseconds
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().compareTo(other.toStdlibInstant())")
     )
     public actual override operator fun compareTo(other: Instant): Int = this.value.compareTo(other.value)
@@ -90,7 +90,7 @@ public actual class Instant internal constructor(internal val value: java.time.I
 
     @Suppress("POTENTIALLY_NON_REPORTED_ANNOTATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toString()")
     )
     actual override fun toString(): String = value.toString()

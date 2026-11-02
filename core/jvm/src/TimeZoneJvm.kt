@@ -52,8 +52,7 @@ internal actual fun Instant.toLocalDateTime(offset: UtcOffset): LocalDateTime = 
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)
 
-@Suppress("DEPRECATION_ERROR")
-public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
+public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
     Instant.fromEpochSeconds(this.value.toEpochSecond(offset.zoneOffset), this.nanosecond)
 
 internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {

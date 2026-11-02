@@ -27,7 +27,7 @@ public fun Instant.toNSDate(): NSDate {
 }
 
 @PublishedApi
-@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+@Suppress("DEPRECATION_ERROR")
 internal fun kotlinx.datetime.Instant.toNSDate(): NSDate = toStdlibInstant().toNSDate()
 
 /**
@@ -38,8 +38,7 @@ internal fun kotlinx.datetime.Instant.toNSDate(): NSDate = toStdlibInstant().toN
  * For example, if the [NSDate] only has millisecond or microsecond precision logically,
  * due to conversion artifacts in [Double] values, the result may include non-zero nanoseconds.
  */
-@Suppress("DEPRECATION_ERROR")
-public fun NSDate.toKotlinInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant {
+public fun NSDate.toKotlinInstant(): Instant {
     val secs = timeIntervalSince1970()
     val fullSeconds = secs.toLong()
     val nanos = (secs - fullSeconds) * NANOS_PER_ONE
@@ -47,10 +46,10 @@ public fun NSDate.toKotlinInstant(youShallNotPass: OverloadMarker = OverloadMark
 }
 
 @PublishedApi
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION_ERROR")
 @kotlin.internal.LowPriorityInOverloadResolution
-internal fun NSDate.toKotlinInstant(): kotlinx.datetime.Instant =
-    toKotlinInstant().toDeprecatedInstant()
+internal fun NSDate.toKotlinInstant(youShallNotPass: OverloadMarker = OverloadMarker.INSTANCE): Instant =
+    toKotlinInstant()
 
 /**
  * Converts the [TimeZone] to [NSTimeZone].

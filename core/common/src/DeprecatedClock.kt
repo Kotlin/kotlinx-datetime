@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 @file:JvmMultifileClass
 @file:JvmName("ClockKt")
 package kotlinx.datetime
@@ -50,7 +50,7 @@ private class StdlibClock(val clock: Clock): kotlin.time.Clock {
 @Deprecated(
     "Use kotlin.time.Clock instead",
     ReplaceWith("kotlin.time.Clock", "kotlin.time.Clock"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 public interface Clock {
     /**
@@ -103,7 +103,7 @@ public interface Clock {
  * @sample kotlinx.datetime.test.samples.ClockSamples.todayIn
  */
 @Deprecated("kotlin.datetime.Clock is superseded by kotlin.time.Clock",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibClock().todayIn(timeZone)")
 )
 public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
@@ -118,18 +118,19 @@ public fun Clock.todayIn(timeZone: TimeZone): LocalDate =
  */
 @ExperimentalTime
 @Deprecated("kotlin.datetime.Clock is superseded by kotlin.time.Clock",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibClock().asTimeSource()")
 )
+@Suppress("DEPRECATION")
 public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = toStdlibClock().asTimeSource()
 
-@Deprecated("Use Clock.todayIn instead", ReplaceWith("this.toStdlibClock().todayIn(timeZone)"), DeprecationLevel.WARNING)
+@Deprecated("Use Clock.todayIn instead", ReplaceWith("this.toStdlibClock().todayIn(timeZone)"), DeprecationLevel.ERROR)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)
 
 @Deprecated(
     "kotlin.datetime.Clock is superseded by kotlin.time.Clock",
     ReplaceWith("this.asClock(origin.toStdlibInstant()).toDeprecatedClock()"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 public fun TimeSource.asClock(origin: kotlinx.datetime.Instant): kotlinx.datetime.Clock = object : Clock {
     private val startMark: TimeMark = markNow()
