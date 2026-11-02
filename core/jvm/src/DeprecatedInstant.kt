@@ -116,9 +116,6 @@ public actual class Instant internal constructor(internal val value: java.time.I
             throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
         }
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): Instant = parse(input = isoString)
-
         public actual fun fromEpochSeconds(epochSeconds: Long, nanosecondAdjustment: Long): Instant = try {
             Instant(java.time.Instant.ofEpochSecond(epochSeconds, nanosecondAdjustment))
         } catch (e: Exception) {

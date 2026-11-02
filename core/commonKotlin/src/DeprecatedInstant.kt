@@ -195,9 +195,6 @@ public actual class Instant internal constructor(
             throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
         }
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): Instant = parse(input = isoString)
-
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 
         public actual val DISTANT_FUTURE: Instant = fromEpochSeconds(DISTANT_FUTURE_SECONDS, 0)

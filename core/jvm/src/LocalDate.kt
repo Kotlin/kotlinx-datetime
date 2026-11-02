@@ -49,9 +49,6 @@ public actual class LocalDate internal constructor(
                 format.parse(input)
             }
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): LocalDate = parse(input = isoString)
-
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 

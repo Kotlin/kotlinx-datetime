@@ -35,9 +35,6 @@ public actual class UtcOffset private constructor(public actual val totalSeconds
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<UtcOffset>): UtcOffset = format.parse(input)
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(offsetString: String): UtcOffset = parse(input = offsetString)
-
         private fun totalSecondsValid(totalSeconds: Int): Boolean =
             totalSeconds in -18 * SECONDS_PER_HOUR..18 * SECONDS_PER_HOUR
 
