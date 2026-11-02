@@ -88,7 +88,6 @@ public sealed interface DateTimeFormatBuilder {
     /**
      * Functions specific to the datetime format builders containing the local-date fields.
      */
-    @MyJvmDefaultWithoutCompatibility
     public sealed interface WithDate : WithYearMonth {
         /**
          * A day-of-month number, from 1 to 31.
