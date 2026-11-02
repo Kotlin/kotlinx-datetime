@@ -8,6 +8,7 @@
 package kotlinx.datetime
 
 import kotlin.time.*
+import kotlin.time.asClock as stdlibAsClock
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.time.isDistantFuture
@@ -107,14 +108,8 @@ private class InstantTimeMark(private val instant: Instant, private val clock: C
  *
  * @sample kotlinx.datetime.test.samples.ClockSamples.timeSourceAsClock
  */
-@Deprecated(
-    "Use kotlin.time.asClock instead",
-    level = DeprecationLevel.WARNING
-)
-public fun TimeSource.asClock(origin: Instant): Clock = object : Clock {
-    private val startMark: TimeMark = markNow()
-    override fun now() = origin + startMark.elapsedNow()
-}
+@Deprecated("Use kotlin.time.asClock instead", level = DeprecationLevel.ERROR)
+public fun TimeSource.asClock(origin: Instant): Clock = stdlibAsClock(origin)
 
 @Deprecated("Use Clock.todayIn instead", ReplaceWith("this.todayIn(timeZone)"), DeprecationLevel.WARNING)
 public fun Clock.todayAt(timeZone: TimeZone): LocalDate = todayIn(timeZone)
