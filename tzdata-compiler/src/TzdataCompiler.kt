@@ -507,7 +507,7 @@ private fun usage(): String = """
 usage is [ --version ] [ --help ]
 \t[ -b {slim|fat} ] -d directory
 \t[ -L leapseconds ]
-\t[ -r '[@lo][/@hi]' ] [ -R @hi ]
+\t[ -r '[@lo][/@hi]' ]
 \t[ filename ... ]
 """
 
@@ -564,9 +564,6 @@ private data class TimeBoundConfig(
     These default to MIN_TIME and MAX_TIME. */
     var loTime: ZicType = MIN_TIME,
     var hiTime: ZicType = MAX_TIME,
-    /* The time specified by the -R option, defaulting to MIN_TIME;
-    or LO_TIME, whichever is greater. */
-    var redundantTime: ZicType = MIN_TIME,
 )
 
 /* Set the time range of the output to TIMERANGE.
@@ -589,17 +586,6 @@ private fun TimeBoundConfig.timerangeOption(timerange: String): TimeBoundConfig?
         MAX_TIME
     }
     return copy(loTime = maxOf(this.loTime, loTime), hiTime = minOf(this.hiTime, hiTime))
-}
-
-/* Generate redundant time stamps up to OPT. Return true if successful. */
-private fun TimeBoundConfig.redundantTimeOption(opt: String): TimeBoundConfig? {
-    if (opt.firstOrNull() == '@') {
-        opt.drop(1).toLongOrNull()?.let {
-            return copy(redundantTime = maxOf(redundantTime, it))
-        }
-    }
-    return null
-
 }
 
 private data class BloatConfig(
@@ -670,17 +656,13 @@ fun main(args: Array<String>) {
                     ?: error("invalid time range: $optarg")
                 timerangeGiven = true
             }
-            "-R" -> {
-                val optarg = readArg("-R")
-                timeBoundConfig = timeBoundConfig.redundantTimeOption(optarg)
-                    ?: error("invalid time: $optarg")
-            }
             // -m is skipped: default permission bits are fine for us
             // -u is skipped: default user and group are fine for us, too
             // -g, -p, -y, -s are for compatibility, we don't need that
             // -t and -l is skipped: we only create data, we don't add system symlinks
             // -D is skipped, because it's meaningless for us
             // -v is skipped, because we don't intend to validate the input timezone data
+            // -R is skipped, because our readers can parse timezone rule strings
             else -> {
                 if (arg.startsWith("-")) {
                     error(usage())
@@ -689,14 +671,6 @@ fun main(args: Array<String>) {
             }
         }
         ++currentOptionIndex
-    }
-    with (timeBoundConfig) {
-        check(hiTime + (if (hiTime < Long.MAX_VALUE) 1 else 0) >= redundantTime) {
-            "$progName: -R time exceeds -r cutoff"
-        }
-    }
-    if (timeBoundConfig.redundantTime < timeBoundConfig.loTime) {
-        timeBoundConfig = timeBoundConfig.copy(redundantTime = timeBoundConfig.loTime)
     }
     bloatConfigStr = bloatConfigStr ?: ZIC_BLOAT_DEFAULT
     val bloatConfig = BloatConfig(when (bloatConfigStr) {
@@ -1497,12 +1471,7 @@ private fun writeZone(
     val range64 = limitrange(
         rangeAll,
         timeBoundConfig.loTime,
-        maxOf(
-            timeBoundConfig.hiTime,
-            if (Long.MIN_VALUE < timeBoundConfig.redundantTime)
-                timeBoundConfig.redundantTime - 1
-            else timeBoundConfig.redundantTime
-        ),
+        timeBoundConfig.hiTime,
         ats, types, u.leaps
     )
     val range32 = limitrange(
@@ -2123,7 +2092,7 @@ private fun outZone(
         minYear = clampingAdd(minYear, -YEARS_OF_OBSERVATIONS.toLong())
         maxYear = clampingAdd(maxYear, YEARS_OF_OBSERVATIONS.toLong())
     }
-    maxYear = maxOf(maxYear, (timeBoundConfig.redundantTime / (SECSPERDAY * DAYSPERNYEAR)) + EPOCH_YEAR + 1)
+    maxYear = maxOf(maxYear, (timeBoundConfig.loTime / (SECSPERDAY * DAYSPERNYEAR)) + EPOCH_YEAR + 1)
     val maxYear0 = maxYear
     if (bloatConfig.wantBloat()) {
         /* For the benefit of older systems, generate data from 1900 through 2038. */
@@ -2345,9 +2314,8 @@ private fun outZone(
        }
        if (TZstartTime == Long.MAX_VALUE)
            TZstartTime = nonTZlimtime
-       /* Omit trailing transitions deduible from the TZ string,
-          and not needed for -r or -R. */
-       keepAtMax = maxOf(TZstartTime, timeBoundConfig.redundantTime)
+       /* Omit trailing transitions deduible from the TZ string, and not needed for -r. */
+       keepAtMax = maxOf(TZstartTime, timeBoundConfig.loTime)
        val newAtTypes = buildList {
            for (atType in u.atTypes) {
                if (atType.at <= keepAtMax) {
