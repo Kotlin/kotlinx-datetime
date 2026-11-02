@@ -33,7 +33,10 @@ class ThreeTenBpTimeZoneTest {
         val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
         val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
         val tz = TimeZoneContext.System.get("Europe/Berlin")
-        assertEquals(t1.toInstant(tz), t2.toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE))
+        assertEquals(
+            t1.toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE),
+            t2.toInstant(tz, TransitionHandler.USE_OFFSET_BEFORE)
+        )
     }
 
     @Test

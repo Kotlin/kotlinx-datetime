@@ -32,6 +32,10 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
 }
 
 @Suppress("DEPRECATION_ERROR")
+@Deprecated(
+    "Explicitly pass a TransitionHandler to `toInstant` calls",
+    replaceWith = ReplaceWith("this.toInstant(timeZone, TransitionHandler.USE_OFFSET_BEFORE)")
+)
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     localDateTimeToInstantLenient(this, timeZone, TransitionHandler.USE_OFFSET_BEFORE, null)
 

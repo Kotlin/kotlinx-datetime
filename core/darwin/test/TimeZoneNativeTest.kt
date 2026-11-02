@@ -74,8 +74,8 @@ class TimeZoneNativeTest {
         val regularTz = TimeZoneContext.System.get(zoneId)
         val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
-        val instantBefore = timeJustBeforeTransition.toInstant(regularTz)
-        val instantAfter = timeJustBeforeTransition.plusSeconds(1).toInstant(regularTz)
+        val instantBefore = timeJustBeforeTransition.toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
+        val instantAfter = timeJustBeforeTransition.plusSeconds(1).toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
 
         val offsetBefore = regularTz.offsetAt(instantBefore)
         val offsetAfter = regularTz.offsetAt(instantAfter)
@@ -105,7 +105,7 @@ class TimeZoneNativeTest {
         val zoneId = "America/New_York"
         val regularTz = TimeZoneContext.System.get(zoneId)
         val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
-        val summerTimeInstant = summerTime.toInstant(regularTz)
+        val summerTimeInstant = summerTime.toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
         val firstOffset = regularTz.offsetAt(summerTimeInstant)
         for (period in listOf(
             DateTimePeriod(),
@@ -138,8 +138,8 @@ class TimeZoneNativeTest {
             val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
 
             for ((localDateTime, _) in localDateTimes) {
-                val regularOffset = regularTz.offsetAt(localDateTime.toInstant(regularTz))
-                val foundationOffset = foundationTz.offsetAt(localDateTime.toInstant(foundationTz))
+                val regularOffset = regularTz.offsetAt(localDateTime.toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE))
+                val foundationOffset = foundationTz.offsetAt(localDateTime.toInstant(foundationTz, TransitionHandler.USE_OFFSET_BEFORE))
 
                 assertEquals(regularOffset, foundationOffset)
             }
