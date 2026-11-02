@@ -393,7 +393,7 @@ public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDate.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDate.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 /**

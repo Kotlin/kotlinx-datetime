@@ -401,7 +401,7 @@ public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalTime.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalTime.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
 
 /**

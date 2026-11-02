@@ -474,7 +474,7 @@ public sealed class DateTimePeriod {
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DateTimePeriod.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DateTimePeriod.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
 /**
@@ -574,7 +574,7 @@ public class DatePeriod internal constructor(
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DatePeriod.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DatePeriod.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(
