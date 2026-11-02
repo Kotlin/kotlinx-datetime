@@ -35,7 +35,8 @@ public actual class LocalDateTime internal constructor(
 
     @Deprecated(
         "Use kotlinx.datetime.Month",
-        ReplaceWith("LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)")
+        ReplaceWith("LocalDateTime(year, month.toKotlinMonth(), dayOfMonth, hour, minute, second, nanosecond)"),
+        level = DeprecationLevel.ERROR,
     )
     public constructor(
         year: Int,
@@ -59,12 +60,10 @@ public actual class LocalDateTime internal constructor(
     @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month.toKotlinMonth()
-    @PublishedApi internal fun getMonth(): java.time.Month = value.month
     @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
     public actual val dayOfMonth: Int get() = value.dayOfMonth
     public actual val day: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
-    @PublishedApi internal fun getDayOfWeek(): java.time.DayOfWeek = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
 
     public actual val hour: Int get() = value.hour
@@ -169,7 +168,7 @@ public actual fun LocalDateTime.Companion.parseOrNull(
 @Deprecated(
     "Use the constructor that accepts a 'day'",
     ReplaceWith("LocalDateTime(year = year, month = month.toKotlinMonth(), day = dayOfMonth, hour = hour, minute = minute, second = second, nanosecond = nanosecond)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @kotlin.internal.LowPriorityInOverloadResolution
