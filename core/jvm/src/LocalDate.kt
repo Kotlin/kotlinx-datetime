@@ -156,7 +156,7 @@ public actual fun LocalDate.Companion.parseOrNull(
 public fun LocalDate(year: Int, month: java.time.Month, dayOfMonth: Int): LocalDate =
     LocalDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)
 
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1L, unit)
 

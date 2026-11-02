@@ -229,7 +229,7 @@ public actual fun LocalDate.Companion.parseOrNull(
     input: CharSequence, format: DateTimeFormat<LocalDate>
 ): LocalDate? = format.parseOrNull(input)
 
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plus(1, unit)
 
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = try {
