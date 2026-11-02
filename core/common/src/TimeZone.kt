@@ -273,7 +273,7 @@ public class FixedOffsetTimeZone internal constructor(
     }
 }
 
-@Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"))
+@Deprecated("Use FixedOffsetTimeZone or UtcOffset instead", ReplaceWith("FixedOffsetTimeZone"), level = DeprecationLevel.ERROR)
 public typealias ZoneOffset = FixedOffsetTimeZone
 
 /**

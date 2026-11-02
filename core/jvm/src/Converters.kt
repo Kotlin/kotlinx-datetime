@@ -86,7 +86,7 @@ public fun FixedOffsetTimeZone.toJavaZoneOffset(): java.time.ZoneOffset = this.o
  */
 public fun java.time.ZoneOffset.toKotlinFixedOffsetTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset(this))
 
-@Deprecated("Use toKotlinFixedOffsetTimeZone() instead.", ReplaceWith("this.toKotlinFixedOffsetTimeZone()"))
+@Deprecated("Use toKotlinFixedOffsetTimeZone() instead.", ReplaceWith("this.toKotlinFixedOffsetTimeZone()"), level = DeprecationLevel.ERROR)
 public fun java.time.ZoneOffset.toKotlinZoneOffset(): FixedOffsetTimeZone = toKotlinFixedOffsetTimeZone()
 
 /**
