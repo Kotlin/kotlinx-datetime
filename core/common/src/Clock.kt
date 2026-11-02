@@ -49,7 +49,7 @@ public fun Clock.today(): LocalDate = todayIn(timeZone)
 @ExperimentalTime
 @Deprecated("This function is deprecated because Clock.System.asTimeSource " +
         "can be confused with TimeSource.Monotonic, which are very different. " +
-        "See https://github.com/Kotlin/kotlinx-datetime/issues/372", level = DeprecationLevel.WARNING)
+        "See https://github.com/Kotlin/kotlinx-datetime/issues/372", level = DeprecationLevel.ERROR)
 public fun Clock.asTimeSource(): TimeSource.WithComparableMarks = object : TimeSource.WithComparableMarks {
     @ExperimentalTime
     override fun markNow(): ComparableTimeMark = InstantTimeMark(now(), this@asTimeSource)
