@@ -1439,7 +1439,7 @@ final fun (kotlinx.datetime/TimeZone).kotlinx.datetime/toNSTimeZone(): platform.
 final fun (kotlinx.datetime/YearMonth).kotlinx.datetime/toNSDateComponents(): platform.Foundation/NSDateComponents // kotlinx.datetime/toNSDateComponents|toNSDateComponents@kotlinx.datetime.YearMonth(){}[0]
 
 // Targets: [apple]
-final fun (platform.Foundation/NSDate).kotlinx.datetime/toKotlinInstant(): kotlinx.datetime/Instant // kotlinx.datetime/toKotlinInstant|toKotlinInstant@platform.Foundation.NSDate(){}[0]
+final fun (platform.Foundation/NSDate).kotlinx.datetime/toKotlinInstant(): kotlin.time/Instant // kotlinx.datetime/toKotlinInstant|toKotlinInstant@platform.Foundation.NSDate(){}[0]
 
 // Targets: [apple]
 final fun (platform.Foundation/NSDate).kotlinx.datetime/toKotlinInstant(kotlinx.datetime/OverloadMarker = ...): kotlin.time/Instant // kotlinx.datetime/toKotlinInstant|toKotlinInstant@platform.Foundation.NSDate(kotlinx.datetime.OverloadMarker){}[0]
