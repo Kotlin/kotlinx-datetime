@@ -19,6 +19,10 @@ internal class RuleBasedTimeZone(
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         rules.infoAtDatetime(dateTime)
 
+    override fun transitionsAfter(instant: Instant) = rules.transitionsAfter(instant)
+
+    override fun transitionsBefore(instant: Instant) = rules.transitionsBefore(instant)
+
     override fun equals(other: Any?): Boolean =
         other is RuleBasedTimeZone && id == other.id && origin == other.origin
 

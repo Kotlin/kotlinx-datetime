@@ -9,8 +9,13 @@ import kotlinx.datetime.*
 import kotlinx.datetime.internal.JSJoda.ZoneId
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlin.js.*
+import kotlin.sequences.sequence
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.nanoseconds
 
 private val jodaTzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
@@ -109,17 +114,7 @@ private object SystemTimeZone: TimeZone() {
         // No transitions (assuming no wild irregularities)
         if (offsetBefore == offsetAfter) return LocalDateTimeOffsetInfo.Regular(offsetGuess)
         // Binary search for the transition
-        var l = -(24.hours.inWholeSeconds)
-        var r = 24.hours.inWholeSeconds
-        while (l != r) {
-            val current = (l + r) / 2 // small values, no need for tricks
-            if (offsetAt(instantGuess + current.seconds) == offsetBefore) {
-                l = current + 1
-            } else {
-                r = current
-            }
-        }
-        val transitionStart = instantGuess + l.seconds // first moment with `offsetAfter`
+        val transitionStart = binSearchTransition(offsetBefore, instantGuess, (-24).hours, 24.hours)
         return if (offsetBefore.totalSeconds < offsetAfter.totalSeconds) {
             // Gap
             when {
@@ -135,6 +130,71 @@ private object SystemTimeZone: TimeZone() {
                 else -> LocalDateTimeOffsetInfo.Overlap(transitionStart, offsetBefore, offsetAfter)
             }
         }
+    }
+
+    override fun transitionsAfter(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        /*
+         * The narrowest recorded span of time after which a UTC offset got repeated is just short of seven days:
+         * `America/Noronha: UTC-02 - 2000-10-08T02:00:00Z - UTC-01 - 2000-10-15T01:00:00Z - UTC-02`
+         * We can safely jump six days at a time, and if we don't find a transition, safely assume that there was none.
+         */
+        var currentInstant = instant
+        var currentOffset = offsetAt(currentInstant)
+        val step = 6.days
+        while (currentInstant < Instant.DISTANT_FUTURE) {
+            val nextInstant = currentInstant + step
+            val laterOffset = offsetAt(nextInstant)
+            if (laterOffset != currentOffset) {
+                val transitionInstant = binSearchTransition(currentOffset, currentInstant, Duration.ZERO, step)
+                yield(LocalDateTimeOffsetInfo.Transition(transitionInstant, currentOffset, laterOffset))
+                currentInstant = transitionInstant + step
+                currentOffset = laterOffset
+            } else {
+                currentInstant = nextInstant
+            }
+        }
+    }
+
+    override fun transitionsBefore(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        var currentInstant = instant
+        var currentOffset = offsetAt(currentInstant)
+        val step = 6.days
+        val jan01st1900 = Instant.fromEpochSeconds(-2208992400)
+        while (currentInstant > jan01st1900) {
+            val previousInstant = currentInstant - step
+            val earlierOffset = offsetAt(previousInstant)
+            if (earlierOffset != currentOffset) {
+                val transitionInstant = binSearchTransition(earlierOffset, previousInstant, Duration.ZERO, step)
+                yield(LocalDateTimeOffsetInfo.Transition(transitionInstant, earlierOffset, currentOffset))
+                currentInstant = transitionInstant - step
+                currentOffset = earlierOffset
+            } else {
+                currentInstant = previousInstant
+            }
+        }
+    }
+
+    /**
+     * Returns the first moment that has a different UTC offset than [offsetBefore].
+     */
+    private fun binSearchTransition(offsetBefore: UtcOffset, startingPoint: Instant, initialL: Duration, initialR: Duration): Instant {
+        // Zeroing out sub-millisecond values, as JS Date() can't handle them
+        val startingPoint = Instant.fromEpochSeconds(
+            startingPoint.epochSeconds,
+            startingPoint.nanosecondsOfSecond.let { it - (it % 1_000_000) }
+        )
+        // Binary search for the transition
+        var l = initialL.inWholeMilliseconds
+        var r = initialR.inWholeMilliseconds
+        while (l != r) {
+            val current = l + (r - l) / 2
+            if (offsetAt(startingPoint + current.milliseconds) == offsetBefore) {
+                l = current + 1
+            } else {
+                r = current
+            }
+        }
+        return startingPoint + l.milliseconds
     }
 
     override fun toString(): String = "SYSTEM"

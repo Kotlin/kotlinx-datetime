@@ -47,7 +47,6 @@ class TimezonesWithoutDatabaseTest {
         }
     }
 
-
     @Test
     fun utc() {
         val utc: FixedOffsetTimeZone = TimeZone.UTC
