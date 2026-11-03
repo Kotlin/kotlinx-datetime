@@ -257,3 +257,5 @@ private data class Mismatch(
     val windowsGuess: LocalDateTime,
     val instant: Instant,
 )
+
+actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE

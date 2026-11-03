@@ -218,33 +218,10 @@ class BundledTimeZoneContextTest {
 
     @Test
     fun checkKnownTimezoneDatabaseRecords() {
-        with(BundledTimeZoneContext.get("America/New_York")) {
-            checkRegular(this, LocalDateTime(2019, 3, 8, 23, 0), UtcOffset(hours = -5))
-            checkGap(this, LocalDateTime(2019, 3, 10, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 6, 2, 23, 0), UtcOffset(hours = -4))
-            checkOverlap(this, LocalDateTime(2019, 11, 3, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = -5))
-        }
-        with(BundledTimeZoneContext.get("Europe/Berlin")) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
-            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
-            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
-        }
-        with(BundledTimeZoneContext.get("Europe/Moscow")) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 3))
-            checkRegular(this, LocalDateTime(2011, 1, 31, 1, 0), UtcOffset(hours = 3))
-            checkGap(this, LocalDateTime(2011, 3, 27, 2, 0))
-            checkRegular(this, LocalDateTime(2011, 5, 3, 1, 0), UtcOffset(hours = 4))
-        }
-        with(BundledTimeZoneContext.get("Australia/Sydney")) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 11))
-            checkOverlap(this, LocalDateTime(2019, 4, 7, 3, 0))
-            checkRegular(this, LocalDateTime(2019, 10, 6, 1, 0), UtcOffset(hours = 10))
-            checkGap(this, LocalDateTime(2019, 10, 6, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 11))
-        }
+        assertTimeZoneHasBehavior(TimeZoneContext.Bundled.get("America/New_York"), americaNewYorkBehavior)
+        assertTimeZoneHasBehavior(TimeZoneContext.Bundled.get("Europe/Berlin"), europeBerlinBehavior)
+        assertTimeZoneHasBehavior(TimeZoneContext.Bundled.get("Australia/Sydney"), australiaSydneyBehavior)
+        assertTimeZoneHasBehavior(TimeZoneContext.Bundled.get("Europe/Moscow"), europeMoscowBehavior)
     }
 
     /** Tests that fixed-offset time zones are the same as in [TimeZoneContext.System], but region-based ones aren't. */
