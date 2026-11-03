@@ -1394,12 +1394,12 @@ private fun limitrange(
         ++r.leapcount
         --r.leapbase
     }
-    /* Omit ordinary and leap second transitions greater than HI + 1. */
+    /* Omit ordinary and leap second transitions greater than HI. */
     if (hi < MAX_TIME) {
-        while (0 < r.count && hi + 1 < ats[r.base + r.count - 1]) {
+        while (0 < r.count && hi < ats[r.base + r.count - 1]) {
             --r.count
         }
-        while (0 < r.leapcount && hi + 1 < leaps[r.leapbase + r.leapcount - 1].trans) {
+        while (0 < r.leapcount && hi < leaps[r.leapbase + r.leapcount - 1].trans) {
             --r.leapcount
         }
     }
