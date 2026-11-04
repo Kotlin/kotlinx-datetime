@@ -31,7 +31,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
     }
 
     override fun getOrNull(id: String): TimeZone? {
-        if (tzdbUnneededFiles.matches(id)) { return null }
+        if (id.length <= 1 || tzdbUnneededFiles.matches(id)) { return null }
         val idAsPath = Path.fromString(id)
         if (idAsPath.isAbsolute) { return null }
         if (idAsPath.components.any { it == ".." }) { return null }

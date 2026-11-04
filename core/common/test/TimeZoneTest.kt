@@ -90,6 +90,7 @@ class TimeZoneTest {
     fun ofFailsOnInvalidOffset() {
         for (v in UtcOffsetTest.invalidUtcOffsetStrings) {
             assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get(v) }
+            assertNull(TimeZoneContext.System.getOrNull(v))
         }
     }
 
