@@ -40,12 +40,26 @@ internal class TzFileData(
 
 private class TzFile(val data: TzFileData, val rules: PosixTzString?) {
     fun toTimeZoneRules(): TimeZoneRules {
-        val tzOffsets = buildList {
-            add(data.states[0].offset)
-            data.transitions.forEach { add(data.states[it.stateIndex].offset) }
+        val tzOffsets = List(1 + data.transitions.size) {
+            if (it == 0) {
+                data.states[0].offset
+            } else {
+                data.states[data.transitions[it - 1].stateIndex].offset
+            }
         }
-        val offsets = tzOffsets.map { it.toUtcOffset() }
-        return TimeZoneRules(data.transitions.map { it.time }, offsets, rules?.toRecurringZoneRules())
+        val isDsts = BooleanArray(1 + data.transitions.size) {
+            if (it == 0) {
+                data.states[0].isDst
+            } else {
+                data.states[data.transitions[it - 1].stateIndex].isDst
+            }
+        }
+        return TimeZoneRules(
+            transitionEpochSeconds = data.transitions.map { it.time },
+            offsets = tzOffsets.map { it.toUtcOffset() },
+            recurringZoneRules = rules?.toRecurringZoneRules(),
+            standardOffsetInformation = StandardOffsetInformation.StandardOrDaylightFlag(isDsts)
+        )
     }
 }
 
@@ -200,7 +214,7 @@ internal class PosixTzString(
         val (start, end) = rules
         val rule1 = RecurringZoneRules.Rule(start, standardTime.second, daylightTime.second)
         val rule2 = RecurringZoneRules.Rule(end, daylightTime.second, standardTime.second)
-        return RecurringZoneRules(listOf(rule1, rule2))
+        return RecurringZoneRules(listOf(rule1, rule2), standardTime.second)
     }
 }
 private fun BinaryDataReader.readPosixTzString(): PosixTzString? {

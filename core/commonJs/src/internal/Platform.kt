@@ -77,7 +77,8 @@ private val jodaTzdb: Result<TimeZoneDatabase?> = runCatching {
                 if (it.size == indices.size - 1) it else it.take(indices.size - 1)
             },
             offsets = indices.map { offsets[it] },
-            recurringZoneRules = null
+            recurringZoneRules = null,
+            standardOffsetInformation = StandardOffsetInformation.None,
         )
     }
     for (link in linksPacked) {
@@ -95,6 +96,10 @@ private val jodaTzdb: Result<TimeZoneDatabase?> = runCatching {
 
 private object SystemTimeZone: TimeZone() {
     override val id: String get() = "SYSTEM"
+
+    override fun standardOffsetAt(instant: Instant): Nothing = throw UnsupportedOperationException(
+        "Use TimeZoneContext.Bundled from kotlinx-datetime-zoneinfo to obtain standard offset information"
+    )
 
     /* https://github.com/js-joda/js-joda/blob/8c1a7448db92ca014417346049fb64b55f7b1ac1/packages/core/src/zone/SystemDefaultZoneRules.js#L21-L24 */
     override fun offsetAt(instant: Instant): UtcOffset =

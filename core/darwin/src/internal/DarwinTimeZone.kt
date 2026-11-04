@@ -9,6 +9,7 @@ import kotlinx.cinterop.*
 import kotlinx.datetime.*
 import platform.Foundation.*
 import kotlin.time.Instant
+import kotlin.math.roundToInt
 
 internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val id: String) : TimeZone() {
 
@@ -16,6 +17,15 @@ internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val i
         /* NSTimeZone operates with millisecond precision, so we want convert .123XXXXXX to .123000000,
         to avoid NSTimeZone rounding it up to S.124. */
         infoAtNsDate(instant.toNSDateRoundingDownToMillisecond())
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun standardOffsetAt(instant: Instant): UtcOffset {
+        val nsDate = instant.toNSDate()
+        val totalOffsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate) 
+        val dstOffsetContributionSeconds = nsTimeZone.daylightSavingTimeOffsetForDate(nsDate)
+        val standardOffsetSeconds = totalOffsetSeconds - dstOffsetContributionSeconds.roundToInt()
+        return UtcOffset(seconds = standardOffsetSeconds.convert())
+    }
 
     /**
      * IMPORTANT: mirrors the logic in [RecurringZoneRules.infoAtLocalDateTime].

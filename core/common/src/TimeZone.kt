@@ -81,6 +81,17 @@ public abstract class TimeZone internal constructor() {
     public abstract fun offsetAt(instant: Instant): UtcOffset
 
     /**
+     * Finds this time zone's offset from UTC *without accounting for daylight saving time* at the specified [instant].
+     *
+     * This is a function with a very narrow set of use cases, intended for interoperability with systems that require
+     * using exactly the "standard offset".
+     * To acquire the UTC offset that is actually in effect at a given [instant], use [offsetAt].
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.standardOffsetAt
+     */
+    public abstract fun standardOffsetAt(instant: Instant): UtcOffset
+
+    /**
      * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in this time zone.
      *
      * See the [LocalDateTimeOffsetInfo] documentation for a detailed description.
@@ -244,6 +255,11 @@ public class FixedOffsetTimeZone internal constructor(
     public val totalSeconds: Int get() = offset.totalSeconds
 
     override fun offsetAt(instant: Instant): UtcOffset = offset
+
+    // TODO: in theory, a fixed-offset time zone may have a different standard offset
+    // if it has both 1) a "permanent DST" and 2) historic changes to the rules rules stripped out.
+    // In practice, this never happens with the current implementations.
+    override fun standardOffsetAt(instant: Instant): UtcOffset = offset
 
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         LocalDateTimeOffsetInfo.Regular(offset)
