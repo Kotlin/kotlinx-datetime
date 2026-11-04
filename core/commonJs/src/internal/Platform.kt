@@ -7,6 +7,7 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Duration.Companion.milliseconds
@@ -133,15 +134,24 @@ private object SystemTimeZone: TimeZone() {
     }
 
     override fun transitionsAfter(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        var currentInstant = maxOf(instant, ASSUME_NO_TRANSITIONS_BEFORE)
+        var currentOffset = offsetAt(currentInstant)
+        var lastSeenTransition: Instant? = null
         /*
          * The narrowest recorded span of time after which a UTC offset got repeated is just short of seven days:
          * `America/Noronha: UTC-02 - 2000-10-08T02:00:00Z - UTC-01 - 2000-10-15T01:00:00Z - UTC-02`
          * We can safely jump six days at a time, and if we don't find a transition, safely assume that there was none.
          */
-        var currentInstant = instant
-        var currentOffset = offsetAt(currentInstant)
         val step = 6.days
-        while (currentInstant < Instant.DISTANT_FUTURE) {
+        while (
+            /** Stop at some point. We could have chosen `Instant.fromEpochSeconds(MAX_SAFE_INTEGER)`,
+             * but [Instant.DISTANT_FUTURE] comes even earlier. */
+            currentInstant < Instant.DISTANT_FUTURE
+            /** Also stop if there's a year without transitions after [ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER].
+             * See the docs for the latter for details. */
+            && (currentInstant < ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER
+                || (lastSeenTransition ?: instant) + 366.days > currentInstant)
+        ) {
             val nextInstant = currentInstant + step
             val laterOffset = offsetAt(nextInstant)
             if (laterOffset != currentOffset) {
@@ -149,6 +159,7 @@ private object SystemTimeZone: TimeZone() {
                 yield(LocalDateTimeOffsetInfo.Transition(transitionInstant, currentOffset, laterOffset))
                 currentInstant = transitionInstant + step
                 currentOffset = laterOffset
+                lastSeenTransition = transitionInstant
             } else {
                 currentInstant = nextInstant
             }
@@ -156,11 +167,21 @@ private object SystemTimeZone: TimeZone() {
     }
 
     override fun transitionsBefore(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
-        var currentInstant = instant
+        var currentInstant = if (instant < ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER) {
+            instant
+        } else run {
+            val startingOffset = offsetAt(instant)
+            // We are far into the future. First, figure out if DST/STD transitions stretch into infinity or are absent.
+            repeat(61 /* ceil(1 year / 6 days) */) {
+                if (offsetAt(instant + 6.days * (it + 1)) != startingOffset) {
+                    return@run instant // there are known transitions, don't skip anything
+                }
+            }
+            ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER
+        }
         var currentOffset = offsetAt(currentInstant)
         val step = 6.days
-        val jan01st1900 = Instant.fromEpochSeconds(-2208992400)
-        while (currentInstant > jan01st1900) {
+        while (currentInstant > ASSUME_NO_TRANSITIONS_BEFORE) {
             val previousInstant = currentInstant - step
             val earlierOffset = offsetAt(previousInstant)
             if (earlierOffset != currentOffset) {
@@ -203,6 +224,27 @@ private object SystemTimeZone: TimeZone() {
 
     override fun hashCode(): Int = id.hashCode()
 }
+
+/**
+ * In theory, it's possible to have this:
+ * - Year N: some transitions.
+ * - Year (N+1): no transitions for the entire year.
+ * - Year (N+1+k): suddenly, transitions again.
+ *
+ * In practice, such transitions are possible in the past or in the near future.
+ * Distant future is controlled by programmatic rules that are either 1) empty, or
+ * 2) switch to and from the daylight saving time, creating two transitions per year.
+ *
+ * We arbitrarily choose [ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER] to be in 2038 and,
+ * on encountering a year without any transitions after 2038, assume that the programmatic
+ * rules for the distant future require no transitions.
+ */
+private val ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER = Instant.fromEpochSeconds(Int.MAX_VALUE.toLong())
+
+/**
+ * The earliest transition in the timezone database is in 1835.
+ */
+private val ASSUME_NO_TRANSITIONS_BEFORE = Instant.fromEpochSeconds(-4260211200)
 
 internal external class Date() {
     constructor(milliseconds: Double)
