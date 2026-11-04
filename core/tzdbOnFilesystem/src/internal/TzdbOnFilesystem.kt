@@ -17,7 +17,9 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
 
 
     override fun get(id: String): TimeZone {
-        if (id.length <= 1) { throw IllegalTimeZoneException("Timezone ID '$id' is not valid") }
+        if (id.length <= 1 || tzdbUnneededFiles.matches(id)) {
+            throw IllegalTimeZoneException("Timezone ID '$id' is not valid")
+        }
         val idAsPath = Path.fromString(id)
         if (idAsPath.isAbsolute) { throw IllegalTimeZoneException("Timezone ID '$idAsPath' must not begin with a '/'") }
         if (idAsPath.components.any { it == ".." }) {
@@ -29,6 +31,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
     }
 
     override fun getOrNull(id: String): TimeZone? {
+        if (tzdbUnneededFiles.matches(id)) { return null }
         val idAsPath = Path.fromString(id)
         if (idAsPath.isAbsolute) { return null }
         if (idAsPath.components.any { it == ".." }) { return null }

@@ -81,8 +81,9 @@ class TimeZoneTest {
         assertEquals("Europe/Moscow", tzm.id)
         // TODO: Check known offsets from UTC for particular moments
 
-        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("Mars/Standard") }
-        assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get("UTC+X") }
+        for (id in listOf("Mars/Standard", "UTC+X", "posixrules", "localtime", "posix", "right", "Factory")) {
+            assertFailsWith<IllegalTimeZoneException> { TimeZoneContext.System.get(id) }
+        }
     }
 
     @Test
