@@ -27,8 +27,8 @@ private class TzdbBionic(private val rules: Map<String, Entry>) : TimeZoneDataba
 // see https://android.googlesource.com/platform/bionic/+/master/libc/tzcode/bionic.cpp for the format
 internal fun TzdbBionic(): TimeZoneDatabase = TzdbBionic(buildMap {
     for (path in listOf(
-        Path.fromString("/system/usr/share/zoneinfo/tzdata"), // immutable fallback tzdb
-        Path.fromString("/apex/com.android.tzdata/etc/tz/tzdata"), // an up-to-date tzdb, may not exist
+        "/system/usr/share/zoneinfo/tzdata", // immutable fallback tzdb
+        "/apex/com.android.tzdata/etc/tz/tzdata", // an up-to-date tzdb, may not exist
     )) {
         // be careful to only read each file a single time and keep many references to the same ByteArray in memory.
         val content = path.readBytes() ?: continue // this file does not exist

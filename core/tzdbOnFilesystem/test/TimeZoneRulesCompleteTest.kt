@@ -49,7 +49,7 @@ class TimeZoneRulesCompleteTest {
                 } catch (e: Throwable) {
                     println(beforeTransition)
                     println(afterTransition)
-                    println(Base64.encode(Path.fromString("${tzdb.tzdbPath}/$id").readBytes()!!))
+                    println(Base64.encode("${tzdb.tzdbPath}/$id".readBytes()!!))
                     throw e
                 }
             }

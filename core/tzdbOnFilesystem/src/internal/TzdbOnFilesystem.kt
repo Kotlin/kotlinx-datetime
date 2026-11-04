@@ -24,7 +24,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
             throw IllegalTimeZoneException("'$idAsPath' must not contain '..' as a component")
         }
         val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
-        val contents = file.readBytes() ?: throw IllegalTimeZoneException("File '$file' not found")
+        val contents = file.toString().readBytes() ?: throw IllegalTimeZoneException("File '$file' not found")
         return RuleBasedTimeZone(readTzFileToRules(contents), id, this)
     }
 
@@ -33,7 +33,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
         if (idAsPath.isAbsolute) { return null }
         if (idAsPath.components.any { it == ".." }) { return null }
         val file = Path(tzdbPath.isAbsolute, tzdbPath.components + idAsPath.components)
-        val contents = file.readBytes() ?: return null
+        val contents = file.toString().readBytes() ?: return null
         return RuleBasedTimeZone(readTzFileToRules(contents), id, this)
     }
 
