@@ -49,5 +49,6 @@ kover {
 
 dependencies {
     kover(project(":kotlinx-datetime"))
+    kover(project(":kotlinx-datetime-zoneinfo"))
     kover(project(":kotlinx-datetime-serialization"))
 }
