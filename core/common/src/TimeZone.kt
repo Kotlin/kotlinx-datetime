@@ -284,7 +284,7 @@ public typealias ZoneOffset = FixedOffsetTimeZone
 
 /**
  * Finds the offset from UTC the [time zone][timeZone] specified in the context parameter
- * has at the specified [instant] of physical time.
+ * has at the specified [instant][this] of physical time.
  *
  * Equivalent to the non-context-parameter-based function [TimeZone.offsetAt].
  *
@@ -536,7 +536,7 @@ context(timeZone: FixedOffsetTimeZone)
 public fun LocalDateTime.toInstant(): Instant = toInstant(timeZone.offset)
 
 /**
- * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime] in
+ * Returns the [offset information][LocalDateTimeOffsetInfo] corresponding to the given [dateTime][this] in
  * the [time zone][timeZone] specified in the context parameter.
  *
  * Equivalent to the non-context-parameter-based function [TimeZone.offsetInfoFor].
@@ -546,7 +546,7 @@ public fun LocalDateTime.toInstant(): Instant = toInstant(timeZone.offset)
  * See [LocalDateTime.toInstant] together with [TransitionHandler] for a more streamlined way
  * to handle a subset of this function's use cases.
  *
- * @see offsetInfoFor
+ * @see TimeZone.offsetInfoFor
  * @sample kotlinx.datetime.test.samples.TimeZoneSamples.offsetInfoWithContextParameter
  */
 context(timeZone: TimeZone)

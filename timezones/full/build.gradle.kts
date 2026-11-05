@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     id("maven-publish")
+    id("org.jetbrains.dokka")
     id("com.github.node-gradle.node") version "7.0.2"
     id("org.jetbrains.kotlinx.kover")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
@@ -284,3 +285,26 @@ apiValidation {
         enabled = true
     }
 }
+
+dokka {
+    pluginsConfiguration.html {
+        templatesDir.set(rootDir.resolve("dokka-templates"))
+    }
+
+    dokkaPublications.html {
+        failOnWarning.set(true)
+        // Enum members and undocumented toString()
+        suppressInheritedMembers.set(true)
+    }
+
+    dokkaSourceSets.configureEach {
+        reportUndocumented.set(true)
+        skipDeprecated.set(true)
+        sourceLink {
+            localDirectory.set(rootDir)
+            remoteUrl("https://github.com/kotlin/kotlinx-datetime/tree/latest-release")
+            remoteLineSuffix.set("#L")
+        }
+    }
+}
+

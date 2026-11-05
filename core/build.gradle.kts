@@ -388,7 +388,7 @@ tasks.register("downloadWindowsZonesMapping") {
 
 dokka {
     pluginsConfiguration.html {
-        templatesDir.set(projectDir.resolve("dokka-templates"))
+        templatesDir.set(rootDir.resolve("dokka-templates"))
     }
 
     dokkaPublications.html {
@@ -426,6 +426,4 @@ apiValidation {
 dependencies {
     // make samples runnable via Kotlin playground
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-playground-samples-plugin")
-
-    dokka(project)
 }

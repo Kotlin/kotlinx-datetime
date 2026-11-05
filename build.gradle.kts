@@ -4,6 +4,7 @@ plugins {
     id("kotlinx.team.infra") version "0.4.0-dev-88"
     kotlin("multiplatform") apply false
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
+    id("org.jetbrains.dokka")
 }
 
 infra {
@@ -49,6 +50,14 @@ kover {
 
 dependencies {
     kover(project(":kotlinx-datetime"))
+    dokka(project(":kotlinx-datetime"))
     kover(project(":kotlinx-datetime-zoneinfo"))
+    dokka(project(":kotlinx-datetime-zoneinfo"))
     kover(project(":kotlinx-datetime-serialization"))
+}
+
+dokka {
+    pluginsConfiguration.html {
+        templatesDir.set(rootDir.resolve("dokka-templates"))
+    }
 }
