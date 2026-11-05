@@ -58,6 +58,6 @@ dependencies {
 
 dokka {
     pluginsConfiguration.html {
-        templatesDir.set(project(":kotlinx-datetime").projectDir.resolve("dokka-templates"))
+        templatesDir.set(rootDir.resolve("dokka-templates"))
     }
 }

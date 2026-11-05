@@ -388,7 +388,7 @@ tasks.register("downloadWindowsZonesMapping") {
 
 dokka {
     pluginsConfiguration.html {
-        templatesDir.set(projectDir.resolve("dokka-templates"))
+        templatesDir.set(rootDir.resolve("dokka-templates"))
     }
 
     dokkaPublications.html {
