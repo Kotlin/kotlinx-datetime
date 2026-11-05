@@ -226,6 +226,10 @@ internal class RecurringZoneRules(
         override fun toString(): String = "transitioning from $offsetBefore to $offsetAfter on $transitionDateTime"
     }
 
+    init {
+        require(rules.isNotEmpty()) { "An empty set of recurring rules!" }
+    }
+
     // see `tzparse` in https://data.iana.org/time-zones/tzdb/localtime.c: looks like there's no guarantees about
     // a way to pre-sort the transitions, so we have to do it for each query separately.
     fun rulesForYear(year: Int): List<Rule<Instant>> {
