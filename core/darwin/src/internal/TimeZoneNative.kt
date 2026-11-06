@@ -16,8 +16,6 @@ internal fun timeZoneByIdFoundationOrNull(zoneId: String): TimeZone? = NSTimeZon
     DarwinTimeZone(it, zoneId)
 }
 
-private val foundationTimeZoneOrigin = Any()
-
 internal fun timeZoneByIdFoundation(zoneId: String): TimeZone =
     timeZoneByIdFoundationOrNull(zoneId) ?: throw IllegalTimeZoneException(
         "Time zone '$zoneId' not recognized by NSTimeZone.timeZoneWithName."
@@ -58,7 +56,7 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
 }
 
 internal actual fun currentSystemDefaultTimeZone(): TimeZone =
-    TimeZoneContext.System.get(TimeZoneContext.System.currentTimeZoneId())
+    systemTimezoneDatabase.get(systemTimeZoneIdProvider.currentTimeZoneId())
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {
     override fun currentTimeZoneId(): String {

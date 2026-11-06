@@ -5,7 +5,9 @@
 
 package kotlinx.datetime
 
+import kotlinx.datetime.internal.parseFixedOffsetTimeZone
 import java.time.ZoneId
+import java.time.ZoneOffset as jtZoneOffset
 
 /**
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
@@ -82,7 +84,14 @@ public fun TimeZone.toJavaZoneId(): java.time.ZoneId = when (this) {
 /**
  * Converts this [java.time.ZoneId][java.time.ZoneId] value to a [kotlinx.datetime.TimeZone][TimeZone] value.
  */
-public fun java.time.ZoneId.toKotlinTimeZone(): TimeZone = TimeZone.ofZone(this)
+public fun java.time.ZoneId.toKotlinTimeZone(): TimeZone = when {
+    this is jtZoneOffset -> FixedOffsetTimeZone(UtcOffset(this))
+    else -> parseFixedOffsetTimeZone(id, onParsed = {
+        it
+    }, onFailure = {
+        JvmTimeZone(this)
+    }) ?: JvmTimeZone(this)
+}
 
 
 /**

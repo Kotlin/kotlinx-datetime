@@ -29,7 +29,7 @@ internal class TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(val inner: TimeZo
 }
 
 // org.threeten.bp.ZoneId#of(java.lang.String)
-private fun <T> parseFixedOffsetTimeZone(
+internal fun <T> parseFixedOffsetTimeZone(
     id: String, onParsed: (TimeZone) -> T, onFailure: (String) -> T
 ): T? {
     fun parse(offset: String, prefix: String?): T = when (val parsedOffset = lenientOffsetFormat.parseOrNull(offset)) {

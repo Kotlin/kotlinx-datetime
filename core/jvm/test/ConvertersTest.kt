@@ -40,7 +40,6 @@ class ConvertersTest {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun randomDate(): LocalDate {
         val year = Random.nextInt(-20000, 20000)
         val month = Month.entries.random()
