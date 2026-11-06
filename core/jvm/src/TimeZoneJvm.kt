@@ -10,6 +10,7 @@ package kotlinx.datetime
 
 import java.time.DateTimeException
 import java.time.ZoneId
+import java.time.zone.ZoneRulesProvider
 import java.time.ZoneOffset as jtZoneOffset
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
@@ -84,5 +85,6 @@ internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
 
     override fun hashCode(): Int = actualZoneId.hashCode()
 
-    override fun toString(): String = actualZoneId.toString()
+    override fun toString(): String =
+        "$actualZoneId[JVM, version ${ZoneRulesProvider.getVersions(actualZoneId.id).keys.lastOrNull()}]"
 }

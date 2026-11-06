@@ -56,7 +56,7 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
 
     override fun availableZoneIds(): Set<String> = timeZonesProvider?.getTimeZones() ?: setOf("UTC")
 
-    override fun toString() = "TzdbWasi"
+    override fun toString() = "TimeZoneContext.Bundled"
 }
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {

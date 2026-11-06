@@ -98,6 +98,8 @@ private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZ
     }
 
     override fun availableZoneIds(): Set<String> = timeZones
+
+    override fun toString(): String = "TimeZoneContext.Bundled"
 })
 
 internal expect fun zoneDataByNameOrNull(name: String): ByteArray?

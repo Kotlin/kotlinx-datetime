@@ -33,10 +33,11 @@ class TimeZoneSamples {
 
     @Test
     fun toStringSample() {
-        // Converting a time zone to a string
+        // Obtaining a debug representation of a time zone
         val zone = TimeZoneContext.System.get("America/New_York")
-        check(zone.toString() == "America/New_York")
-        check(zone.toString() == zone.id)
+        check(zone.toString().contains("America/New_York"))
+        // Note that it's not exactly the identifier: use `TimeZone.id` for that!
+        check(zone.toString() != "America/New_York")
     }
 
     @Test

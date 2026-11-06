@@ -21,6 +21,7 @@ import platform.Foundation.NSCalendarIdentifierISO8601
 import platform.Foundation.NSCalendarUnitYear
 import platform.Foundation.NSDate
 import platform.Foundation.NSTimeZone
+import platform.Foundation.timeZoneDataVersion
 import kotlin.time.Instant
 
 internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val id: String) : TimeZone() {
@@ -78,7 +79,7 @@ internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val i
         return UtcOffset(seconds = offsetSeconds.convert())
     }
 
-    public override fun toString(): String = id
+    public override fun toString(): String = "$id[FoundationTimeZone, version ${NSTimeZone.timeZoneDataVersion}]"
 
     public override fun equals(other: Any?): Boolean =
         other === this || other is DarwinTimeZone && id == other.id
