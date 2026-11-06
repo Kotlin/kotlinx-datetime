@@ -79,6 +79,35 @@ internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
         )
     }
 
+    override fun transitionsAfter(instant: Instant) = sequence {
+        var current = instant.toJavaInstant()
+        val rules = actualZoneId.rules
+        while (true) {
+            val transition = rules.nextTransition(current) ?: break
+            yield(LocalDateTimeOffsetInfo.Transition(
+                transition.instant.toKotlinInstant(),
+                transition.offsetBefore.toKotlinUtcOffset(),
+                transition.offsetAfter.toKotlinUtcOffset(),
+            ))
+            current = transition.instant
+        }
+    }
+
+    override fun transitionsBefore(instant: Instant) = sequence {
+        var current = instant.toJavaInstant()
+            .plusNanos(1) // `previousTransition` skips the transition exactly at `current`
+        val rules = actualZoneId.rules
+        while (true) {
+            val transition = rules.previousTransition(current) ?: break
+            yield(LocalDateTimeOffsetInfo.Transition(
+                transition.instant.toKotlinInstant(),
+                transition.offsetBefore.toKotlinUtcOffset(),
+                transition.offsetAfter.toKotlinUtcOffset(),
+            ))
+            current = transition.instant
+        }
+    }
+
     override fun equals(other: Any?): Boolean =
         other is JvmTimeZone && actualZoneId == other.actualZoneId
 

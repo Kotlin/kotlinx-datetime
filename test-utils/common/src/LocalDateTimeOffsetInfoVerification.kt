@@ -1,6 +1,7 @@
 package kotlinx.datetime.testing
 
 import kotlinx.datetime.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.test.*
 import kotlinx.datetime.LocalDateTimeOffsetInfo.*
@@ -286,6 +287,59 @@ fun assertTimeZoneHasBehavior(
         repeat(steps) {
             checkRegular(timeZone, instant.toLocalDateTime(expectedOffset.asTimeZone()), expectedOffset)
             instant += delta
+        }
+    }
+    // Check various `transitionsAfter` subsequences:
+    run {
+        for (i in knownTransitions.indices) {
+            // Starting from exactly a transition instant or right after it:
+            for (start in listOf(Duration.ZERO, 1.nanoseconds, 500_000_000.nanoseconds)) {
+                val seq = timeZone.transitionsAfter(knownTransitions[i].transitionInstant + start)
+                val remainingKnownTransitions = knownTransitions.size - i - 1
+                val transitions = if (behavior.infoEndsAtLastTransition) {
+                    seq
+                } else {
+                    seq.take(remainingKnownTransitions)
+                }
+                assertEquals(knownTransitions.drop(i + 1), transitions.toList())
+            }
+            // Starting from right before a transition instant:
+            for (start in listOf(1.nanoseconds, 500_000_000.nanoseconds)) {
+                val seq = timeZone.transitionsAfter(knownTransitions[i].transitionInstant - start)
+                val remainingKnownTransitions = knownTransitions.size - i
+                val transitions = if (behavior.infoEndsAtLastTransition) {
+                    seq
+                } else {
+                    seq.take(remainingKnownTransitions)
+                }
+                assertEquals(knownTransitions.drop(i), transitions.toList())
+            }
+        }
+    }
+    // Check various `transitionsBefore` subsequences:
+    run {
+        for (i in knownTransitions.indices) {
+            // Starting from exactly a transition instant or right after it:
+            for (start in listOf(Duration.ZERO, 1.nanoseconds, 500_000_000.nanoseconds)) {
+                val seq = timeZone.transitionsBefore(knownTransitions[i].transitionInstant + start)
+                val transitions = if (behavior.infoStartsAtFirstTransition) {
+                    seq
+                } else {
+                    seq.take(i + 1)
+                }
+                assertEquals(knownTransitions.take(i + 1).asReversed(), transitions.toList())
+            }
+            // Starting from right before a transition instant:
+            for (start in listOf(1.nanoseconds, 500_000_000.nanoseconds)) {
+                val seq = timeZone.transitionsBefore(knownTransitions[i].transitionInstant - start)
+                val transitions = if (behavior.infoStartsAtFirstTransition) {
+                    seq
+                } else {
+                    seq.take(i)
+                }
+                val transitionsList = transitions.toList()
+                assertEquals(knownTransitions.take(i).asReversed(), transitions.toList())
+            }
         }
     }
 }

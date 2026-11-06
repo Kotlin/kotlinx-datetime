@@ -93,6 +93,47 @@ public abstract class TimeZone internal constructor() {
     public abstract fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
     /**
+     * Enumerates the [time transitions][LocalDateTimeOffsetInfo.Transition] taking place after
+     * the given [instant], according to the timezone rules currently in effect.
+     *
+     * This function returns a [Sequence] that yields the descriptions of moments when clocks are shifted
+     * backward or forward, known as transitions.
+     *
+     * The [moment][LocalDateTimeOffsetInfo.Transition.transitionInstant] when each transition happened
+     * is guaranteed to be strictly larger than [instant].
+     *
+     * Transitions are yielded in their chronological order.
+     *
+     * **Note**: if the currently established rules of this [TimeZone] define yearly transitions
+     * to and from daylight saving time, the resulting sequence may contain millions of elements.
+     * The sequence will only terminate after reaching the largest year representable by
+     * [LocalDate].
+     * Make sure to exit the iteration early at some point, to avoid processing irrelevant dates in the far future.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.transitionsAfter
+     */
+    public abstract fun transitionsAfter(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition>
+
+    /**
+     * Enumerates the [time transitions][LocalDateTimeOffsetInfo.Transition] taking place before or at
+     * the given [instant], according to the timezone rules currently in effect.
+     *
+     * This function returns a [Sequence] that yields the descriptions of moments when clocks are shifted
+     * backward or forward, known as transitions.
+     *
+     * The [moment][LocalDateTimeOffsetInfo.Transition.transitionInstant] when each transition happened
+     * is guaranteed to be less than *or equal to* [instant].
+     *
+     * Transitions are yielded in their reverse chronological order.
+     *
+     * The sequence will stop yielding new values after reaching the earliest transition
+     * recorded in the timezone database.
+     *
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.transitionsBefore
+     */
+    public abstract fun transitionsBefore(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition>
+
+    /**
      * Equivalent to [id].
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
@@ -247,6 +288,10 @@ public class FixedOffsetTimeZone internal constructor(
 
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         LocalDateTimeOffsetInfo.Regular(offset)
+
+    override fun transitionsAfter(instant: Instant): Sequence<Nothing> = emptySequence()
+
+    override fun transitionsBefore(instant: Instant): Sequence<Nothing> = emptySequence()
 
     override fun toString(): String = id
 

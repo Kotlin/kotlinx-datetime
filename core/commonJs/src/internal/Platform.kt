@@ -7,10 +7,16 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.*
 import kotlinx.datetime.internal.JSJoda.ZoneId
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlin.js.*
+import kotlin.sequences.sequence
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.nanoseconds
 
 private val jodaTzdb: Result<TimeZoneDatabase?> = runCatching {
     /**
@@ -109,17 +115,7 @@ private object SystemTimeZone: TimeZone() {
         // No transitions (assuming no wild irregularities)
         if (offsetBefore == offsetAfter) return LocalDateTimeOffsetInfo.Regular(offsetGuess)
         // Binary search for the transition
-        var l = -(24.hours.inWholeSeconds)
-        var r = 24.hours.inWholeSeconds
-        while (l != r) {
-            val current = (l + r) / 2 // small values, no need for tricks
-            if (offsetAt(instantGuess + current.seconds) == offsetBefore) {
-                l = current + 1
-            } else {
-                r = current
-            }
-        }
-        val transitionStart = instantGuess + l.seconds // first moment with `offsetAfter`
+        val transitionStart = binSearchTransition(offsetBefore, instantGuess, (-24).hours, 24.hours)
         return if (offsetBefore.totalSeconds < offsetAfter.totalSeconds) {
             // Gap
             when {
@@ -137,12 +133,118 @@ private object SystemTimeZone: TimeZone() {
         }
     }
 
+    override fun transitionsAfter(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        var currentInstant = maxOf(instant, ASSUME_NO_TRANSITIONS_BEFORE)
+        var currentOffset = offsetAt(currentInstant)
+        var lastSeenTransition: Instant? = null
+        /*
+         * The narrowest recorded span of time after which a UTC offset got repeated is just short of seven days:
+         * `America/Noronha: UTC-02 - 2000-10-08T02:00:00Z - UTC-01 - 2000-10-15T01:00:00Z - UTC-02`
+         * We can safely jump six days at a time, and if we don't find a transition, safely assume that there was none.
+         */
+        val step = 6.days
+        while (
+            /** Stop at some point. We could have chosen `Instant.fromEpochSeconds(MAX_SAFE_INTEGER)`,
+             * but [Instant.DISTANT_FUTURE] comes even earlier. */
+            currentInstant < Instant.DISTANT_FUTURE
+            /** Also stop if there's a year without transitions after [ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER].
+             * See the docs for the latter for details. */
+            && (currentInstant < ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER
+                || (lastSeenTransition ?: instant) + 366.days > currentInstant)
+        ) {
+            val nextInstant = currentInstant + step
+            val laterOffset = offsetAt(nextInstant)
+            if (laterOffset != currentOffset) {
+                val transitionInstant = binSearchTransition(currentOffset, currentInstant, Duration.ZERO, step)
+                yield(LocalDateTimeOffsetInfo.Transition(transitionInstant, currentOffset, laterOffset))
+                currentInstant = transitionInstant + step
+                currentOffset = laterOffset
+                lastSeenTransition = transitionInstant
+            } else {
+                currentInstant = nextInstant
+            }
+        }
+    }
+
+    override fun transitionsBefore(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        var currentInstant = if (instant < ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER) {
+            instant
+        } else run {
+            val startingOffset = offsetAt(instant)
+            // We are far into the future. First, figure out if DST/STD transitions stretch into infinity or are absent.
+            repeat(61 /* ceil(1 year / 6 days) */) {
+                if (offsetAt(instant + 6.days * (it + 1)) != startingOffset) {
+                    return@run instant // there are known transitions, don't skip anything
+                }
+            }
+            ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER
+        }
+        var currentOffset = offsetAt(currentInstant)
+        val step = 6.days
+        while (currentInstant > ASSUME_NO_TRANSITIONS_BEFORE) {
+            val previousInstant = currentInstant - step
+            val earlierOffset = offsetAt(previousInstant)
+            if (earlierOffset != currentOffset) {
+                val transitionInstant = binSearchTransition(earlierOffset, previousInstant, Duration.ZERO, step)
+                yield(LocalDateTimeOffsetInfo.Transition(transitionInstant, earlierOffset, currentOffset))
+                currentInstant = transitionInstant - step
+                currentOffset = earlierOffset
+            } else {
+                currentInstant = previousInstant
+            }
+        }
+    }
+
+    /**
+     * Returns the first moment that has a different UTC offset than [offsetBefore].
+     */
+    private fun binSearchTransition(offsetBefore: UtcOffset, startingPoint: Instant, initialL: Duration, initialR: Duration): Instant {
+        // Zeroing out sub-millisecond values, as JS Date() can't handle them
+        val startingPoint = Instant.fromEpochSeconds(
+            startingPoint.epochSeconds,
+            startingPoint.nanosecondsOfSecond.let { it - (it % 1_000_000) }
+        )
+        // Binary search for the transition
+        var l = initialL.inWholeMilliseconds
+        var r = initialR.inWholeMilliseconds
+        while (l != r) {
+            val current = l + (r - l) / 2
+            if (offsetAt(startingPoint + current.milliseconds) == offsetBefore) {
+                l = current + 1
+            } else {
+                r = current
+            }
+        }
+        return startingPoint + l.milliseconds
+    }
+
     override fun toString(): String = "SYSTEM"
 
     override fun equals(other: Any?): Boolean = other === this
 
     override fun hashCode(): Int = id.hashCode()
 }
+
+/**
+ * In theory, it's possible to have this:
+ * - Year N: some transitions.
+ * - Year (N+1): no transitions for the entire year.
+ * - Year (N+1+k): suddenly, transitions again.
+ *
+ * In practice, such transitions are possible in the past or in the near future.
+ * Distant future is controlled by programmatic rules that are either 1) empty, or
+ * 2) switch to and from the daylight saving time, creating two transitions per year.
+ *
+ * We arbitrarily choose [ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER] to be in 2038 and,
+ * on encountering a year without any transitions after 2038, assume that the programmatic
+ * rules for the distant future require no transitions.
+ */
+private val ASSUME_NO_EMPTY_YEARS_IN_BETWEEN_AFTER = Instant.fromEpochSeconds(Int.MAX_VALUE.toLong())
+
+/**
+ * The earliest transition in the timezone database is in 1835.
+ */
+private val ASSUME_NO_TRANSITIONS_BEFORE = Instant.fromEpochSeconds(-4260211200)
 
 internal external class Date() {
     constructor(milliseconds: Double)

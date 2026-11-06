@@ -305,6 +305,41 @@ class TimeZoneSamples {
         }
     }
 
+    @Test
+    fun transitionsAfter() {
+        // List all transitions that will happen tomorrow
+        val tomorrow = LocalDate(2026, 3, 29)
+        val timeZone = TimeZoneContext.System.get("Europe/Berlin")
+        val midnight = tomorrow.atStartOfDayIn(timeZone)
+        val tomorrowsTransitions = timeZone.transitionsAfter(midnight).takeWhile {
+            it.transitionInstant.toLocalDateTime(timeZone).date == tomorrow
+        }.toList()
+        check(tomorrowsTransitions == listOf(
+            LocalDateTimeOffsetInfo.Transition(
+                Instant.parse("2026-03-29T01:00:00Z"), UtcOffset(1), UtcOffset(2)
+            )
+        ))
+    }
+
+    @Test
+    fun transitionsBefore() {
+        // List the last three transitions before the current moment
+        val now = Instant.parse("2026-11-03T16:23:01Z")
+        val timeZone = TimeZoneContext.System.get("Europe/Berlin")
+        val lastThreeTransitions = timeZone.transitionsBefore(now).take(3).toList()
+        check(lastThreeTransitions == listOf(
+            LocalDateTimeOffsetInfo.Transition(
+                Instant.parse("2026-10-25T01:00:00Z"), UtcOffset(2), UtcOffset(1)
+            ),
+            LocalDateTimeOffsetInfo.Transition(
+                Instant.parse("2026-03-29T01:00:00Z"), UtcOffset(1), UtcOffset(2)
+            ),
+            LocalDateTimeOffsetInfo.Transition(
+                Instant.parse("2025-10-26T01:00:00Z"), UtcOffset(2), UtcOffset(1)
+            )
+        ))
+    }
+
     class FixedOffsetTimeZoneSamples {
         @Test
         fun casting() {

@@ -16,7 +16,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
     private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
-            val recurringRules = RecurringZoneRules(recurring.transitions)
+            val recurringRules = recurring.transitions?.let(::RecurringZoneRules)
             val rules = run {
                 val offsets = mutableListOf<UtcOffset>()
                 val transitionEpochSeconds = mutableListOf<Long>()
@@ -324,15 +324,15 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
 }
 
 private sealed interface PerYearZoneRulesData {
-    val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
+    val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>?
     fun offsetAtYearStart(): UtcOffset
 }
 
 private class PerYearZoneRulesDataWithoutTransitions(
     val standardOffset: UtcOffset
 ) : PerYearZoneRulesData {
-    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
-        get() = emptyList()
+    override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>?
+        get() = null
 
     override fun offsetAtYearStart(): UtcOffset = standardOffset
 

@@ -110,6 +110,85 @@ internal class TimeZoneRules(
         }
     }
 
+    fun transitionsAfter(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        val epochSeconds = instant.epochSeconds
+        val lastTransition = transitionEpochSeconds.lastOrNull()
+        // Are there historical values, and if so, do we even need to check them?
+        val firstInstantForRecurring = if (lastTransition != null && epochSeconds < lastTransition) {
+            val firstIndex = transitionEpochSeconds.binarySearch(epochSeconds).let {
+                (it + 1).absoluteValue
+            }
+            for (index in firstIndex..(transitionEpochSeconds.size - 1)) {
+                if (offsets[index] != offsets[index + 1]) {
+                    yield(LocalDateTimeOffsetInfo.Transition(
+                        Instant.fromEpochSeconds(transitionEpochSeconds[index]),
+                        offsets[index],
+                        offsets[index + 1],
+                    ))
+                }
+            }
+            Instant.fromEpochSeconds(lastTransition)
+        } else {
+            instant
+        }
+        if (recurringZoneRules != null) {
+            val offsetAtYearStart = offsets.last()
+            var currentYear = firstInstantForRecurring.toLocalDateTime(
+                recurringZoneRules.infoAtInstant(firstInstantForRecurring, offsetAtYearStart)
+            ).year
+            while (currentYear <= YEAR_MAX) {
+                for (rule in recurringZoneRules.rulesForYear(currentYear)) {
+                    if (rule.transitionDateTime > firstInstantForRecurring) {
+                        yield(LocalDateTimeOffsetInfo.Transition(
+                            rule.transitionDateTime,
+                            rule.offsetBefore,
+                            rule.offsetAfter
+                        ))
+                    }
+                }
+                ++currentYear
+            }
+        }
+    }
+
+    fun transitionsBefore(instant: Instant): Sequence<LocalDateTimeOffsetInfo.Transition> = sequence {
+        val epochSeconds = instant.epochSeconds
+        val lastTransition = transitionEpochSeconds.lastOrNull()
+        // Are there recurring rules, and if so, do we even need to check them?
+        var index = if (recurringZoneRules != null && (lastTransition == null || epochSeconds > lastTransition)) {
+            val offsetAtYearStart = offsets.last()
+            var currentYear = instant.toLocalDateTime(recurringZoneRules.infoAtInstant(instant, offsetAtYearStart)).year
+            outer@while (currentYear >= YEAR_MIN) {
+                for (rule in recurringZoneRules.rulesForYear(currentYear).asReversed()) {
+                    if (lastTransition != null && rule.transitionDateTime.epochSeconds <= lastTransition) {
+                        break@outer
+                    }
+                    if (rule.transitionDateTime <= instant) {
+                        yield(LocalDateTimeOffsetInfo.Transition(
+                            rule.transitionDateTime,
+                            rule.offsetBefore,
+                            rule.offsetAfter
+                        ))
+                    }
+                }
+                --currentYear
+            }
+            transitionEpochSeconds.size
+        } else {
+            transitionEpochSeconds.binarySearch(epochSeconds).let {
+                (it + 1).absoluteValue
+            }
+        }
+        while (index > 0) {
+            yield(LocalDateTimeOffsetInfo.Transition(
+                Instant.fromEpochSeconds(transitionEpochSeconds[index - 1]),
+                offsets[index - 1],
+                offsets[index],
+            ))
+            --index
+        }
+    }
+
     private fun offsetInfoForTransitionIndex(transitionIndex: Int): LocalDateTimeOffsetInfo {
         val transitionInstant = Instant.fromEpochSeconds(transitionEpochSeconds[transitionIndex])
         val offsetBefore = offsets[transitionIndex]
@@ -145,6 +224,10 @@ internal class RecurringZoneRules(
         val offsetAfter: UtcOffset,
     ) {
         override fun toString(): String = "transitioning from $offsetBefore to $offsetAfter on $transitionDateTime"
+    }
+
+    init {
+        require(rules.isNotEmpty()) { "An empty set of recurring rules!" }
     }
 
     // see `tzparse` in https://data.iana.org/time-zones/tzdb/localtime.c: looks like there's no guarantees about

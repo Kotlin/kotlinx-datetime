@@ -119,7 +119,7 @@ class TimeZoneRulesCompleteTest {
                             // check recurring rules
                             if (windowsName !in timeZonesWithBrokenRecurringRules) {
                                 for (year in 1970..currentYear + 1) {
-                                    val rulesForYear = rules.recurringZoneRules!!.rulesForYear(year)
+                                    val rulesForYear = rules.recurringZoneRules?.rulesForYear(year) ?: emptyList()
                                     if (rulesForYear.isEmpty()) {
                                         checkAtInstant(
                                             LocalDate(year, 6, 1).atStartOfDayIn(TimeZone.UTC)
