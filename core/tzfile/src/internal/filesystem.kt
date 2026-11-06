@@ -30,8 +30,8 @@ internal class Path(val isAbsolute: Boolean, val components: List<String>) {
     }
 }
 
-internal fun Path.readBytes(): ByteArray? {
-    val handler = fopen(this.toString(), "rb") ?: return null
+internal fun String.readBytes(): ByteArray? {
+    val handler = fopen(this, "rb") ?: return null
     try {
         var err = fseek(handler, 0, SEEK_END)
         if (err == -1) throw RuntimeException("Cannot jump to the end of $this: $errnoString")
