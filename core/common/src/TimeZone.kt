@@ -108,8 +108,16 @@ public abstract class TimeZone internal constructor() {
     /**
      * Compares this time zone to the other one.
      *
-     * Time zones are equal if their identifier is the same, and they were obtained from the same
+     * Time zones are always equal if they have the same [id] and were obtained from the same
      * [timezone database][TimeZoneDatabase].
+     * Time zones obtained from different timezone databases *may* be equal, too,
+     * as long as they have the same [id] and behave identically
+     * (that is, they always return equal results from [offsetAt], [offsetInfoFor], and other methods),
+     * but it is not guaranteed.
+     *
+     * Time zones with different [id] values are never equal.
+     * Note that sometimes, [id] values (and therefore, time zones) are not equal even if they behave identically.
+     * For example, `Etc/UTC` and `UTC` are treated as different time zones, despite referring to the same set of rules.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
      */

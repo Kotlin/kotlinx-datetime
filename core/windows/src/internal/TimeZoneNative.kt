@@ -19,7 +19,7 @@ internal actual fun currentSystemDefaultTimeZone(): TimeZone = with(currentSyste
         else -> {
             val ianaTzName = windowsToStandard[windowsName]
                 ?: throw IllegalStateException("Unknown time zone name '$windowsName'")
-            tzdbInRegistry.getOrThrow().get(ianaTzName)
+            systemTimezoneDatabase.get(ianaTzName)
         }
     }
 }

@@ -5,19 +5,9 @@
 
 package kotlinx.datetime.timezones
 
-import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.zoneinfo.RawBundledTimeZoneDatabase
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "UNUSED")
 @OptIn(ExperimentalStdlibApi::class)
 @EagerInitialization
-private val initializeTimeZones = run {
-    kotlinx.datetime.internal.initializeTimeZonesProvider(
-        object : kotlinx.datetime.internal.TimeZonesProvider {
-            override fun zoneDataByName(name: String): ByteArray =
-                kotlinx.datetime.timezones.tzData.zoneDataByNameOrNull(name)
-                    ?: throw IllegalTimeZoneException("Zone ID '$name' not recognized")
-            override fun getTimeZones(): Set<String> =
-                kotlinx.datetime.timezones.tzData.timeZones
-        }
-    )
-}
+private val initializeTimeZones = kotlinx.datetime.internal.initializeTimeZonesProvider(RawBundledTimeZoneDatabase)

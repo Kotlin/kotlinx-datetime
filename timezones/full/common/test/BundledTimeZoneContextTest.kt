@@ -249,24 +249,14 @@ class BundledTimeZoneContextTest {
         }
     }
 
-    /** Tests that fixed-offset time zones are the same as in [TimeZoneContext.System], but region-based ones aren't. */
+    /** Tests that fixed-offset time zones are the same as in [TimeZoneContext.System]. */
     @Test
-    fun testEqualityWithSystemTimezone() {
+    fun testFixedOffsetEqualityWithSystemTimezone() {
         val fixedOffsetTimeZones = listOf("UTC", "UTC+3", "GMT-08:00", "Z")
         for (zone in fixedOffsetTimeZones) {
             val systemTimeZone = TimeZoneContext.System.get(zone)
             val bundledTimeZone = BundledTimeZoneContext.get(zone)
             assertEquals(systemTimeZone, bundledTimeZone)
-        }
-        val regionBasedTimeZones = listOf("Europe/Berlin", "Europe/Moscow", "America/New_York")
-        for (zone in regionBasedTimeZones) {
-            val systemTimeZone = try {
-                TimeZoneContext.System.get(zone)
-            } catch (_: IllegalTimeZoneException) {
-                continue
-            }
-            val bundledTimeZone = BundledTimeZoneContext.get(zone)
-            assertNotEquals(systemTimeZone, bundledTimeZone)
         }
     }
 

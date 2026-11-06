@@ -1472,10 +1472,4 @@ open annotation class kotlinx.datetime.internal/JsNonModule : kotlin/Annotation 
 }
 
 // Targets: [wasmWasi]
-abstract interface kotlinx.datetime.internal/TimeZonesProvider { // kotlinx.datetime.internal/TimeZonesProvider|null[0]
-    abstract fun getTimeZones(): kotlin.collections/Set<kotlin/String> // kotlinx.datetime.internal/TimeZonesProvider.getTimeZones|getTimeZones(){}[0]
-    abstract fun zoneDataByName(kotlin/String): kotlin/ByteArray // kotlinx.datetime.internal/TimeZonesProvider.zoneDataByName|zoneDataByName(kotlin.String){}[0]
-}
-
-// Targets: [wasmWasi]
-final fun kotlinx.datetime.internal/initializeTimeZonesProvider(kotlinx.datetime.internal/TimeZonesProvider) // kotlinx.datetime.internal/initializeTimeZonesProvider|initializeTimeZonesProvider(kotlinx.datetime.internal.TimeZonesProvider){}[0]
+final fun kotlinx.datetime.internal/initializeTimeZonesProvider(kotlinx.datetime/TimeZoneDatabase) // kotlinx.datetime.internal/initializeTimeZonesProvider|initializeTimeZonesProvider(kotlinx.datetime.TimeZoneDatabase){}[0]
