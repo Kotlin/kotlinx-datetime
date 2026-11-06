@@ -11,17 +11,8 @@ import java.time.ZoneId
  * Converts this [kotlinx.datetime.Instant][Instant] value to a [java.time.Instant][java.time.Instant] value.
  */
 @PublishedApi
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 internal fun Instant.toJavaInstant(): java.time.Instant = this.value
-
-/**
- * Converts this [java.time.Instant][java.time.Instant] value to a [kotlinx.datetime.Instant][Instant] value.
- */
-@PublishedApi
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION")
-@kotlin.internal.LowPriorityInOverloadResolution
-internal fun java.time.Instant.toKotlinInstant(): Instant = Instant(this)
-
 
 /**
  * Converts this [kotlinx.datetime.LocalDateTime][LocalDateTime] value to a [java.time.LocalDateTime][java.time.LocalDateTime] value.
@@ -95,7 +86,7 @@ public fun FixedOffsetTimeZone.toJavaZoneOffset(): java.time.ZoneOffset = this.o
  */
 public fun java.time.ZoneOffset.toKotlinFixedOffsetTimeZone(): FixedOffsetTimeZone = FixedOffsetTimeZone(UtcOffset(this))
 
-@Deprecated("Use toKotlinFixedOffsetTimeZone() instead.", ReplaceWith("this.toKotlinFixedOffsetTimeZone()"))
+@Deprecated("Use toKotlinFixedOffsetTimeZone() instead.", ReplaceWith("this.toKotlinFixedOffsetTimeZone()"), level = DeprecationLevel.ERROR)
 public fun java.time.ZoneOffset.toKotlinZoneOffset(): FixedOffsetTimeZone = toKotlinFixedOffsetTimeZone()
 
 /**

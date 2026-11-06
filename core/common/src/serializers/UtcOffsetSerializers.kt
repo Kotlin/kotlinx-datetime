@@ -26,7 +26,7 @@ by UtcOffset.Formats.ISO.asKSerializer("kotlinx.datetime.UtcOffset/ISO")
  *
  * JSON example: `"+02:00"`
  */
-@Deprecated("Use UtcOffset.serializer() instead", ReplaceWith("UtcOffset.serializer()"))
+@Deprecated("Use UtcOffset.serializer() instead", ReplaceWith("UtcOffset.serializer()"), level = DeprecationLevel.ERROR)
 public object UtcOffsetSerializer: KSerializer<UtcOffset> {
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("kotlinx.datetime.UtcOffset", PrimitiveKind.STRING)
@@ -62,7 +62,7 @@ public object UtcOffsetSerializer: KSerializer<UtcOffset> {
  *
  * Note that [UtcOffset] is [kotlinx.serialization.Serializable] by default,
  * so it is not necessary to create custom serializers when the format is not important.
- * Additionally, [UtcOffsetSerializer] is provided for the ISO 8601 format.
+ * Additionally, [UtcOffsetIso8601Serializer] is provided for the ISO 8601 format.
  */
 public abstract class FormattedUtcOffsetSerializer(
     name: String, format: DateTimeFormat<UtcOffset>

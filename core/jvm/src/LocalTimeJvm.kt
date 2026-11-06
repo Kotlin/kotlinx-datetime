@@ -65,9 +65,6 @@ public actual class LocalTime internal constructor(
                 format.parse(input)
             }
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): LocalTime = parse(input = isoString)
-
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime = try {
             jtLocalTime.ofSecondOfDay(secondOfDay.toLong()).let(::LocalTime)
         } catch (e: DateTimeException) {
@@ -123,7 +120,8 @@ public actual fun LocalTime.Companion.parseOrNull(input: CharSequence, format: D
 
 @Deprecated(
     "Use kotlinx.datetime.Month",
-    ReplaceWith("atDate(year, month.toKotlinMonth(), dayOfMonth)")
+    ReplaceWith("atDate(year, month.toKotlinMonth(), dayOfMonth)"),
+    level = DeprecationLevel.ERROR,
 )
 public fun LocalTime.atDate(year: Int, month: java.time.Month, dayOfMonth: Int = 0): LocalDateTime =
     atDate(year, month.toKotlinMonth(), dayOfMonth)
@@ -132,7 +130,7 @@ public fun LocalTime.atDate(year: Int, month: java.time.Month, dayOfMonth: Int =
 @Deprecated(
     "Use the overload that accepts a 'month' and a 'day' instead",
     ReplaceWith("this.atDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)"),
-    DeprecationLevel.WARNING
+    DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @kotlin.internal.LowPriorityInOverloadResolution

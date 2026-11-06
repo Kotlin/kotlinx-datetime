@@ -88,7 +88,6 @@ public sealed interface DateTimeFormatBuilder {
     /**
      * Functions specific to the datetime format builders containing the local-date fields.
      */
-    @MyJvmDefaultWithoutCompatibility
     public sealed interface WithDate : WithYearMonth {
         /**
          * A day-of-month number, from 1 to 31.
@@ -100,7 +99,7 @@ public sealed interface DateTimeFormatBuilder {
         public fun day(padding: Padding = Padding.ZERO)
 
         /** @suppress */
-        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"))
+        @Deprecated("Use 'day' instead", ReplaceWith("day(padding = padding)"), level = DeprecationLevel.ERROR)
         public fun dayOfMonth(padding: Padding = Padding.ZERO) { day(padding) }
 
         /**

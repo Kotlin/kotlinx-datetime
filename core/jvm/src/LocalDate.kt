@@ -49,9 +49,6 @@ public actual class LocalDate internal constructor(
                 format.parse(input)
             }
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): LocalDate = parse(input = isoString)
-
         internal actual val MIN: LocalDate = LocalDate(jtLocalDate.MIN)
         internal actual val MAX: LocalDate = LocalDate(jtLocalDate.MAX)
 
@@ -90,21 +87,20 @@ public actual class LocalDate internal constructor(
 
     @Deprecated(
         "Use kotlinx.datetime.Month",
-        ReplaceWith("LocalDate(year, month.toKotlinMonth(), dayOfMonth)")
+        ReplaceWith("LocalDate(year, month.toKotlinMonth(), dayOfMonth)"),
+        level = DeprecationLevel.ERROR,
     )
     public constructor(year: Int, month: java.time.Month, dayOfMonth: Int) :
             this(year, month.toKotlinMonth(), dayOfMonth)
 
     public actual val year: Int get() = value.year
-    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.ERROR)
     public actual val monthNumber: Int get() = value.monthValue
     public actual val month: Month get() = value.month.toKotlinMonth()
-    @PublishedApi internal fun getMonth(): java.time.Month = value.month
-    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.ERROR)
     public actual val dayOfMonth: Int get() = value.dayOfMonth
     public actual val day: Int get() = value.dayOfMonth
     public actual val dayOfWeek: DayOfWeek get() = value.dayOfWeek.toKotlinDayOfWeek()
-    @PublishedApi internal fun getDayOfWeek(): java.time.DayOfWeek = value.dayOfWeek
     public actual val dayOfYear: Int get() = value.dayOfYear
 
     public actual operator fun rangeTo(that: LocalDate): LocalDateRange = LocalDateRange.fromRangeTo(this, that)
@@ -153,14 +149,14 @@ public actual fun LocalDate.Companion.parseOrNull(
 @Deprecated(
     "Use the constructor that accepts a 'day'",
     ReplaceWith("LocalDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution
 public fun LocalDate(year: Int, month: java.time.Month, dayOfMonth: Int): LocalDate =
     LocalDate(year = year, month = month.toKotlinMonth(), day = dayOfMonth)
 
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate =
         plus(1L, unit)
 

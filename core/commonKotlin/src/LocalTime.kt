@@ -45,9 +45,6 @@ public actual class LocalTime private constructor(
 
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalTime>): LocalTime = format.parse(input)
 
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): LocalTime = parse(input = isoString)
-
         public actual fun fromSecondOfDay(secondOfDay: Int): LocalTime =
             ofSecondOfDay(secondOfDay, 0)
 

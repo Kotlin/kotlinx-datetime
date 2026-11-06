@@ -401,7 +401,7 @@ public fun LocalTime.format(format: DateTimeFormat<LocalTime>): String = format.
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalTime.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalTime.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toLocalTime(): LocalTime = LocalTime.parse(this)
 
 /**
@@ -419,7 +419,7 @@ public fun LocalTime.atDate(year: Int, month: Int, day: Int): LocalDateTime =
 @Deprecated(
     "Use the overload that accepts a 'month' and a 'day' instead",
     ReplaceWith("this.atDate(year = year, month = monthNumber, day = dayOfMonth)"),
-    DeprecationLevel.WARNING
+    DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution
@@ -443,7 +443,7 @@ public fun LocalTime.atDate(year: Int, month: Month, day: Int): LocalDateTime =
 @Deprecated(
     "Use the overload that accepts a 'month' and a 'day' instead",
     ReplaceWith("this.atDate(year = year, month = month, day = dayOfMonth)"),
-    DeprecationLevel.WARNING
+    DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution

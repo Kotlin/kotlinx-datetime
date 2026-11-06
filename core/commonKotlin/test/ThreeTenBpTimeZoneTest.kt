@@ -29,6 +29,7 @@ class ThreeTenBpTimeZoneTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun nonExistentLocalTime() {
         val t1 = LocalDateTime(2020, 3, 29, 2, 14, 17, 201)
         val t2 = LocalDateTime(2020, 3, 29, 3, 14, 17, 201)
