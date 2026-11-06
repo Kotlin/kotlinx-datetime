@@ -18,6 +18,13 @@ import kotlin.time.Instant
 import kotlin.time.Clock
 
 class TimeZoneRulesCompleteTest {
+    @Test
+    fun systemEqualsSomeOther() {
+        assertEquals(
+            TimeZoneContext.System.currentTimeZone(),
+            TimeZoneContext.System.get(TimeZoneContext.System.currentTimeZone().id)
+        )
+    }
 
     @Test
     fun dynamicDaylightTimeDisabled() {

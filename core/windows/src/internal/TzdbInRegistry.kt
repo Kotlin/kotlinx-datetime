@@ -97,10 +97,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         val windowsName = dtzi.TimeZoneKeyName.toKStringFromUtf16()
         val ianaTzName = if (windowsName == "Coordinated Universal Time") "UTC" else windowsToStandard[windowsName]
                 ?: throw IllegalStateException("Unknown time zone name '$windowsName'")
-        val tz = windowsToRules[windowsName]
-        check(tz != null) { "The system time zone is set to a value rules for which are not known: '$windowsName'" }
+        val rules = windowsToRules[windowsName]
+        check(rules != null) { "The system time zone is set to a value rules for which are not known: '$windowsName'" }
         return ianaTzName to if (dtzi.DynamicDaylightTimeDisabled == 0.convert<BOOLEAN>())
-            RuleBasedTimeZone(tz, ianaTzName, REGISTRY)
+            RuleBasedTimeZone(rules, ianaTzName, this)
         else  // the user explicitly disabled DST transitions, so
             FixedOffsetTimeZone.withSpecificPrefix(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), "GMT")
     }
@@ -382,5 +382,3 @@ private val START_OF_YEAR = MonthDayTime(
     time = MonthDayTime.TransitionLocaltime(0),
     offset = MonthDayTime.OffsetResolver.WallClockOffset,
 )
-
-private val REGISTRY = Any()

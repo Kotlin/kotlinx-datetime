@@ -85,8 +85,11 @@ public object BundledTimeZoneContext : TimeZoneContext {
     override fun toString(): String = "TimeZoneContext.Bundled"
 }
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(object: TimeZoneDatabase {
+@Suppress("INVISIBLE_REFERENCE")
+private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZones(RawBundledTimeZoneDatabase)
+
+@Suppress("INVISIBLE_REFERENCE")
+internal object RawBundledTimeZoneDatabase: TimeZoneDatabase {
     override fun get(id: String): TimeZone = getOrNull(id)
         ?: throw IllegalTimeZoneException(
             "Zone ID '$id' was not recognized by the bundled timezone database (version $timeZoneDatabaseVersion)."
@@ -100,7 +103,7 @@ private val impl: TimeZoneDatabase = TimeZoneDatabaseWrapperWithFixedOffsetTimeZ
     override fun availableZoneIds(): Set<String> = timeZones
 
     override fun toString(): String = "TimeZoneContext.Bundled"
-})
+}
 
 internal expect fun zoneDataByNameOrNull(name: String): ByteArray?
 

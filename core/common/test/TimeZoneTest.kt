@@ -123,6 +123,17 @@ class TimeZoneTest {
         assertEquals(test2.hashCode(), test2b.hashCode())
     }
 
+    @Test
+    fun timeZoneEqualsSameRulesDifferentId() {
+        for ((id1, id2) in listOf(
+            "UTC" to "Etc/UTC", // fixed-offset + IANA
+            "Etc/UTC" to "Etc/GMT", // IANA + IANA
+            "UTC+01:00" to "GMT+1", // fixed-offset + fixed-offset
+        )) {
+            assertNotEquals(TimeZoneContext.System.get(id1), TimeZoneContext.System.get(id2))
+        }
+    }
+
     // from 310bp
     @Test
     fun timeZoneIdNormalization() {

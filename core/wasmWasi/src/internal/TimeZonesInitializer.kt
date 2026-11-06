@@ -17,44 +17,27 @@ internal annotation class InternalDateTimeApi
 This is internal API which is not intended to use on user-side.
  */
 @InternalDateTimeApi
-public interface TimeZonesProvider {
-    public fun zoneDataByName(name: String): ByteArray
-    public fun getTimeZones(): Set<String>
-}
-
-/*
-This is internal API which is not intended to use on user-side.
- */
-@InternalDateTimeApi
-public fun initializeTimeZonesProvider(provider: TimeZonesProvider) {
+public fun initializeTimeZonesProvider(provider: TimeZoneDatabase) {
     check(timeZonesProvider != provider) { "TimeZone database redeclaration" }
     timeZonesProvider = provider
 }
 
 @InternalDateTimeApi
-private var timeZonesProvider: TimeZonesProvider? = null
+private var timeZonesProvider: TimeZoneDatabase? = null
 
 internal actual fun currentSystemDefaultTimeZone(): TimeZone = TimeZone.UTC
 
 @OptIn(InternalDateTimeApi::class)
 internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDatabase {
     override fun get(id: String): TimeZone {
-        val data = timeZonesProvider?.zoneDataByName(id)
+        val provider = timeZonesProvider
             ?: throw IllegalTimeZoneException("The `kotlinx-datetime-zoneinfo` artifact is required but missing")
-        return RuleBasedTimeZone(readTzFileToRules(data), id, this)
+        return provider.get(id)
     }
 
-    override fun getOrNull(id: String): TimeZone? {
-        val provider = timeZonesProvider ?: return null
-        val data = try {
-            provider.zoneDataByName(id)
-        } catch (_: Throwable) {
-            return null
-        }
-        return RuleBasedTimeZone(readTzFileToRules(data), id, this)
-    }
+    override fun getOrNull(id: String): TimeZone? = timeZonesProvider?.getOrNull(id)
 
-    override fun availableZoneIds(): Set<String> = timeZonesProvider?.getTimeZones() ?: setOf("UTC")
+    override fun availableZoneIds(): Set<String> = timeZonesProvider?.availableZoneIds() ?: setOf("UTC")
 
     override fun toString() = "TimeZoneContext.Bundled"
 }
