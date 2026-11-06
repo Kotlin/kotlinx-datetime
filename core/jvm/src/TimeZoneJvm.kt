@@ -60,6 +60,9 @@ internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
     override val id: String
         get() = actualZoneId.id
 
+    override fun standardOffsetAt(instant: Instant): UtcOffset =
+        actualZoneId.rules.getStandardOffset(instant.toJavaInstant()).let(::UtcOffset)
+
     override fun offsetAt(instant: Instant): UtcOffset =
         actualZoneId.rules.getOffset(instant.toJavaInstant()).let(::UtcOffset)
 

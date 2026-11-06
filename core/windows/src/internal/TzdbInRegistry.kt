@@ -16,9 +16,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
     // When Kotlin/Native drops support for Windows 7, we should investigate moving to the ICU.
     private val windowsToRules: Map<String, TimeZoneRules> = buildMap {
         processTimeZonesInRegistry { name, recurring, historic ->
-            val recurringRules = RecurringZoneRules(recurring.transitions)
+            val recurringRules = RecurringZoneRules(recurring.transitions, recurring.standardOffset)
             val rules = run {
                 val offsets = mutableListOf<UtcOffset>()
+                val standardOffsets = mutableListOf<UtcOffset>()
                 val transitionEpochSeconds = mutableListOf<Long>()
                 for ((year, record) in historic) {
                     when (record) {
@@ -29,6 +30,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                                     transitionEpochSeconds.add(START_OF_YEAR.toInstant(year, it).epochSeconds)
                                 }
                                 offsets.add(record.standardOffset)
+                                standardOffsets.add(record.standardOffset)
                             }
                         }
                         is PerYearZoneRulesDataWithTransitions -> {
@@ -36,7 +38,10 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                             val toStdTime = record.standardTransitionTime.toLocalDateTime(year)
                             val initialOffset =
                                 if (toDstTime < toStdTime) record.standardOffset else record.daylightOffset
-                            if (offsets.isEmpty()) { offsets.add(initialOffset) }
+                            if (offsets.isEmpty()) {
+                                offsets.add(initialOffset)
+                                standardOffsets.add(record.standardOffset)
+                            }
                             val newYearTransition: RecurringZoneRules.Rule<MonthDayTime> =
                                 RecurringZoneRules.Rule(
                                     transitionDateTime = START_OF_YEAR,
@@ -55,6 +60,7 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                                 if (offsets.last() != transition.offsetAfter) {
                                     transitionEpochSeconds.add(time.toInstant(transition.offsetBefore).epochSeconds)
                                     offsets.add(transition.offsetAfter)
+                                    standardOffsets.add(record.standardOffset)
                                 }
                             }
                         }
@@ -70,7 +76,13 @@ internal class TzdbInRegistry: TimeZoneDatabase {
                     transitionEpochSeconds.add(newYearInLastOffset.epochSeconds)
                 }
                 offsets.add(recurring.offsetAtYearStart())
-                TimeZoneRules(transitionEpochSeconds, offsets, recurringRules)
+                standardOffsets.add(recurring.standardOffset)
+                TimeZoneRules(
+                    transitionEpochSeconds,
+                    offsets,
+                    recurringRules,
+                    StandardOffsetInformation.ExactStandardOffset(standardOffsets),
+                )
             }
             put(name, rules)
         }
@@ -326,10 +338,11 @@ private fun SYSTEMTIME.toMonthDayTime(): MonthDayTime {
 private sealed interface PerYearZoneRulesData {
     val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
     fun offsetAtYearStart(): UtcOffset
+    val standardOffset: UtcOffset
 }
 
 private class PerYearZoneRulesDataWithoutTransitions(
-    val standardOffset: UtcOffset
+    override val standardOffset: UtcOffset
 ) : PerYearZoneRulesData {
     override val transitions: List<RecurringZoneRules.Rule<MonthDayTime>>
         get() = emptyList()
@@ -340,7 +353,7 @@ private class PerYearZoneRulesDataWithoutTransitions(
 }
 
 private class PerYearZoneRulesDataWithTransitions(
-    val standardOffset: UtcOffset,
+    override val standardOffset: UtcOffset,
     val daylightOffset: UtcOffset,
     val daylightTransitionTime: MonthDayTime,
     val standardTransitionTime: MonthDayTime,

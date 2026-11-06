@@ -29,6 +29,10 @@ internal class TimeZoneRules(
      * [recurringZoneRules].
      */
     val recurringZoneRules: RecurringZoneRules?,
+    /**
+     * The set of data for determining the standard offset.
+     */
+    val standardOffsetInformation: StandardOffsetInformation
 ) {
     init {
         require(offsets.size == transitionEpochSeconds.size + 1) {
@@ -43,6 +47,7 @@ internal class TimeZoneRules(
         transitionEpochSeconds = emptyList(),
         offsets = listOf(initialOffset),
         recurringZoneRules = rules,
+        standardOffsetInformation = StandardOffsetInformation.None,
     )
 
     /**
@@ -110,6 +115,16 @@ internal class TimeZoneRules(
         }
     }
 
+    fun standardOffsetInfoAtInstant(instant: Instant): UtcOffset {
+        // See the explanation in `infoAtInstant`
+        val epochSeconds = instant.epochSeconds
+        if (recurringZoneRules != null && transitionEpochSeconds.lastOrNull()?.let { epochSeconds >= it } != false) {
+            return recurringZoneRules.standardOffsetInfo()
+        }
+        val index = transitionEpochSeconds.binarySearch(epochSeconds).let { (it + 1).absoluteValue }
+        return standardOffsetInformation.standardOffsetInfoAtOffsetIndex(index, offsets)
+    }
+
     private fun offsetInfoForTransitionIndex(transitionIndex: Int): LocalDateTimeOffsetInfo {
         val transitionInstant = Instant.fromEpochSeconds(transitionEpochSeconds[transitionIndex])
         val offsetBefore = offsets[transitionIndex]
@@ -137,7 +152,8 @@ internal class RecurringZoneRules(
     /**
      * The list of transitions that occur every year, in the order of occurrence.
      */
-    val rules: List<Rule<MonthDayTime>>
+    val rules: List<Rule<MonthDayTime>>,
+    val standardOffset: UtcOffset,
 ) {
     class Rule<T>(
         val transitionDateTime: T,
@@ -195,5 +211,65 @@ internal class RecurringZoneRules(
         return LocalDateTimeOffsetInfo.Regular(offset)
     }
 
+    fun standardOffsetInfo(): UtcOffset = standardOffset
+
     override fun toString(): String = rules.joinToString(", ")
 }
+
+internal interface StandardOffsetInformation {
+    /**
+     * The information about the standard offset is inferred from which offsets are themselves standard
+     * and which are DST.
+     */
+    class StandardOrDaylightFlag(val isDsts: BooleanArray): StandardOffsetInformation {
+        override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset = when {
+            // Is the *current* offset a standard offset?
+            !isDsts[offsetIndex] -> offsets[offsetIndex]
+            /* Patching up a common case: `DST(u1); |DST(u2)|; STD(u3)`
+            the previous transition happened during the DST and changed the standard offset.
+            The likely standard offset is `u3`. */
+            isDsts.getOrNull(offsetIndex - 1) != false && isDsts.getOrNull(offsetIndex + 1) == false ->
+                offsets[offsetIndex + 1]
+            /* Patching up a common case: `STD(u1) ; |DST(u1)| ; STD(u2)`
+            the previous standard offset becomes a DST offset, with no clocks moving.
+            The likely standard offset is `u2`. */
+            isDsts.getOrNull(offsetIndex - 1) == false && offsets[offsetIndex - 1] == offsets[offsetIndex] -> {
+                for (j in offsetIndex + 1..<offsets.size) {
+                    if (!isDsts[j]) {
+                        return offsets[j]
+                    }
+                }
+                offsets[offsetIndex - 1]
+            }
+            else -> {
+                /* The default implementation: recreating the `tz` behavior when the standard offset is requested:
+                <https://github.com/eggert/tz/blob/e29969d3f327f129ec4aebaa9c7aee96c46f8e3b/localtime.c#L771-L774>
+                rolling back until we find any non-DST offset. */
+                for (i in offsetIndex - 1 downTo 1) {
+                    if (!isDsts[i]) {
+                        return offsets[i]
+                    }
+                }
+                offsets[0]
+            }
+        }
+    }
+
+    /**
+     * The information about the standard offset is the standard offset corresponding to the given normal offset.
+     */
+    class ExactStandardOffset(val standardOffsets: List<UtcOffset>): StandardOffsetInformation {
+        override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset =
+            standardOffsets[offsetIndex]
+    }
+
+    object None: StandardOffsetInformation {
+        override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): Nothing =
+            throw UnsupportedOperationException(
+                "Use TimeZoneContext.Bundled from kotlinx-datetime-zoneinfo to obtain standard offset information"
+            )
+    }
+
+    fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset
+}
+

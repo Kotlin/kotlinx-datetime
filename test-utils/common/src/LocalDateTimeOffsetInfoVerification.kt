@@ -14,7 +14,7 @@ class TimeZoneObservableBehavior(
     /** Must be sorted by the Instant value */
     val transitions: List<Transition<Int /* index in `types` */>>
 ) {
-    data class Type(val offset: UtcOffset, val isDst: Boolean)
+    data class Type(val offset: UtcOffset, val standardOffset: UtcOffset)
     data class Transition<T>(val transitionInstant: Instant, val before: T, val after: T)
 
     fun limit(transitionRange: ClosedRange<Instant>): TimeZoneObservableBehavior {
@@ -40,8 +40,8 @@ val europeBerlinBehavior by lazy {
         infoStartsAtFirstTransition = false,
         infoEndsAtLastTransition = false,
         types = listOf(
-            TimeZoneObservableBehavior.Type(UtcOffset(1), isDst = false),
-            TimeZoneObservableBehavior.Type(UtcOffset(2), isDst = true),
+            TimeZoneObservableBehavior.Type(UtcOffset(1), standardOffset = UtcOffset(1)),
+            TimeZoneObservableBehavior.Type(UtcOffset(2), standardOffset = UtcOffset(1)),
         ),
         transitions = listOf(
             TimeZoneObservableBehavior.Transition(Instant.parse("2018-03-25T01:00:00Z"), 0, 1),
@@ -105,8 +105,8 @@ val americaNewYorkBehavior by lazy {
         infoStartsAtFirstTransition = false,
         infoEndsAtLastTransition = false,
         types = listOf(
-            TimeZoneObservableBehavior.Type(UtcOffset(-5), isDst = false),
-            TimeZoneObservableBehavior.Type(UtcOffset(-4), isDst = true)
+            TimeZoneObservableBehavior.Type(UtcOffset(-5), standardOffset = UtcOffset(-5)),
+            TimeZoneObservableBehavior.Type(UtcOffset(-4), standardOffset = UtcOffset(-5))
         ),
         transitions = listOf(
             TimeZoneObservableBehavior.Transition(Instant.parse("2017-03-12T07:00:00Z"), 0, 1),
@@ -172,8 +172,8 @@ val australiaSydneyBehavior by lazy {
         infoStartsAtFirstTransition = false,
         infoEndsAtLastTransition = false,
         types = listOf(
-            TimeZoneObservableBehavior.Type(UtcOffset(10), isDst = false),
-            TimeZoneObservableBehavior.Type(UtcOffset(11), isDst = true)
+            TimeZoneObservableBehavior.Type(UtcOffset(10), standardOffset = UtcOffset(10)),
+            TimeZoneObservableBehavior.Type(UtcOffset(11), standardOffset = UtcOffset(10))
         ),
         transitions = listOf(
             TimeZoneObservableBehavior.Transition(Instant.parse("2017-04-01T16:00:00Z"), 1, 0),
@@ -239,9 +239,9 @@ val europeMoscowBehavior by lazy {
         infoStartsAtFirstTransition = false,
         infoEndsAtLastTransition = true,
         types = listOf(
-            TimeZoneObservableBehavior.Type(UtcOffset(3), isDst = false),
-            TimeZoneObservableBehavior.Type(UtcOffset(4), isDst = true),
-            TimeZoneObservableBehavior.Type(UtcOffset(4), isDst = false),
+            TimeZoneObservableBehavior.Type(UtcOffset(3), standardOffset = UtcOffset(3)),
+            TimeZoneObservableBehavior.Type(UtcOffset(4), standardOffset = UtcOffset(3)),
+            TimeZoneObservableBehavior.Type(UtcOffset(4), standardOffset = UtcOffset(4)),
         ),
         transitions = listOf(
             TimeZoneObservableBehavior.Transition(Instant.parse("2010-03-27T23:00:00Z"), 0, 1),
@@ -255,6 +255,7 @@ val europeMoscowBehavior by lazy {
 fun assertTimeZoneHasBehavior(
     timeZone: TimeZone,
     behavior: TimeZoneObservableBehavior,
+    standardOffsetInfoPrecision: StandardOffsetInfoPrecision = StandardOffsetInfoPrecision.ACCURATE
 ) {
     val knownTransitions = behavior.transitions.map {
         Transition(it.transitionInstant, behavior.types[it.before].offset, behavior.types[it.after].offset)
@@ -273,7 +274,7 @@ fun assertTimeZoneHasBehavior(
             )
         }
     }
-    // Check regular times in between transitions:
+    // Check regular times and standard offsets in between transitions:
     for (index in 0..(knownTransitions.size - 2)) {
         val transitionBefore = knownTransitions[index]
         val transitionAfter = knownTransitions[index + 1]
@@ -288,6 +289,35 @@ fun assertTimeZoneHasBehavior(
             instant += delta
         }
     }
+    run {
+        if (standardOffsetInfoPrecision == StandardOffsetInfoPrecision.ABSENT) return@run
+        // Check standard offsets in between transitions:
+        for (index in 0..(behavior.transitions.size - 2)) {
+            val startInstant = behavior.transitions[index].transitionInstant
+            val endInstant = behavior.transitions[index + 1].transitionInstant
+            val steps = 5
+            val delta = (endInstant - startInstant) / (steps + 2)
+            var instant = startInstant + delta
+            if (standardOffsetInfoPrecision != StandardOffsetInfoPrecision.SPLIT_BY_YEAR_BOUNDARIES ||
+                behavior.types[behavior.transitions[index].after].standardOffset ==
+                behavior.types[behavior.transitions[index + 1].after].standardOffset
+            ) {
+                repeat(steps) {
+                    assertEquals(
+                        behavior.types[behavior.transitions[index].after].standardOffset,
+                        timeZone.standardOffsetAt(instant)
+                    )
+                    instant += delta
+                }
+            }
+        }
+    }
+}
+
+enum class StandardOffsetInfoPrecision {
+    ABSENT,
+    ACCURATE,
+    SPLIT_BY_YEAR_BOUNDARIES,
 }
 
 /**

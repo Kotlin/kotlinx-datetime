@@ -214,6 +214,7 @@ public final class kotlinx/datetime/FixedOffsetTimeZone : kotlinx/datetime/TimeZ
 	public fun hashCode ()I
 	public fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public fun standardOffsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -756,6 +757,7 @@ public abstract class kotlinx/datetime/TimeZone {
 	public abstract fun hashCode ()I
 	public abstract fun offsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public abstract fun offsetInfoFor (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/LocalDateTimeOffsetInfo;
+	public abstract fun standardOffsetAt (Lkotlin/time/Instant;)Lkotlinx/datetime/UtcOffset;
 	public final fun toInstant (Lkotlinx/datetime/LocalDateTime;)Lkotlinx/datetime/Instant;
 	public final synthetic fun toInstant (Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;)Lkotlin/time/Instant;
 	public static synthetic fun toInstant$default (Lkotlinx/datetime/TimeZone;Lkotlinx/datetime/LocalDateTime;Lkotlinx/datetime/OverloadMarker;ILjava/lang/Object;)Lkotlin/time/Instant;
