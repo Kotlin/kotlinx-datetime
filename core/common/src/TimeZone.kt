@@ -95,7 +95,7 @@ public abstract class TimeZone internal constructor() {
     /**
      * Equivalent to [id].
      *
-     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.equalsSample
+     * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toStringSample
      */
     public abstract override fun toString(): String
 
