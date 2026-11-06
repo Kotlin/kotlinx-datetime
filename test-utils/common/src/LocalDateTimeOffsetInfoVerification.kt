@@ -255,6 +255,7 @@ val europeMoscowBehavior by lazy {
 fun assertTimeZoneHasBehavior(
     timeZone: TimeZone,
     behavior: TimeZoneObservableBehavior,
+    standardOffsetInfoPrecision: StandardOffsetInfoPrecision = StandardOffsetInfoPrecision.ACCURATE
 ) {
     val knownTransitions = behavior.transitions.map {
         Transition(it.transitionInstant, behavior.types[it.before].offset, behavior.types[it.after].offset)
@@ -273,9 +274,8 @@ fun assertTimeZoneHasBehavior(
             )
         }
     }
-    var checkStandardOffsets = true
     // Check regular times and standard offsets in between transitions:
-    for (index in 0..(behavior.transitions.size - 2)) {
+    for (index in 0..(knownTransitions.size - 2)) {
         val transitionBefore = knownTransitions[index]
         val transitionAfter = knownTransitions[index + 1]
         val expectedOffset = transitionBefore.offsetAfter
@@ -286,20 +286,38 @@ fun assertTimeZoneHasBehavior(
         var instant = startInstant + delta
         repeat(steps) {
             checkRegular(timeZone, instant.toLocalDateTime(expectedOffset.asTimeZone()), expectedOffset)
-            if (checkStandardOffsets) {
-                try {
+            instant += delta
+        }
+    }
+    run {
+        if (standardOffsetInfoPrecision == StandardOffsetInfoPrecision.ABSENT) return@run
+        // Check standard offsets in between transitions:
+        for (index in 0..(behavior.transitions.size - 2)) {
+            val startInstant = behavior.transitions[index].transitionInstant
+            val endInstant = behavior.transitions[index + 1].transitionInstant
+            val steps = 5
+            val delta = (endInstant - startInstant) / (steps + 2)
+            var instant = startInstant + delta
+            if (standardOffsetInfoPrecision != StandardOffsetInfoPrecision.SPLIT_BY_YEAR_BOUNDARIES ||
+                behavior.types[behavior.transitions[index].after].standardOffset ==
+                behavior.types[behavior.transitions[index + 1].after].standardOffset
+            ) {
+                repeat(steps) {
                     assertEquals(
                         behavior.types[behavior.transitions[index].after].standardOffset,
                         timeZone.standardOffsetAt(instant)
                     )
-                } catch (_: UnsupportedOperationException) {
-                    // This time zone does not support querying standard offsets
-                    checkStandardOffsets = false
+                    instant += delta
                 }
             }
-            instant += delta
         }
     }
+}
+
+enum class StandardOffsetInfoPrecision {
+    ABSENT,
+    ACCURATE,
+    SPLIT_BY_YEAR_BOUNDARIES,
 }
 
 /**

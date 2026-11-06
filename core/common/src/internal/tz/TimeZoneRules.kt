@@ -119,7 +119,7 @@ internal class TimeZoneRules(
         // See the explanation in `infoAtInstant`
         val epochSeconds = instant.epochSeconds
         if (recurringZoneRules != null && transitionEpochSeconds.lastOrNull()?.let { epochSeconds >= it } != false) {
-            return recurringZoneRules.standardOffsetInfo(instant)
+            return recurringZoneRules.standardOffsetInfo()
         }
         val index = transitionEpochSeconds.binarySearch(epochSeconds).let { (it + 1).absoluteValue }
         return standardOffsetInformation.standardOffsetInfoAtOffsetIndex(index, offsets)
@@ -211,7 +211,7 @@ internal class RecurringZoneRules(
         return LocalDateTimeOffsetInfo.Regular(offset)
     }
 
-    fun standardOffsetInfo(instant: Instant): UtcOffset = standardOffset
+    fun standardOffsetInfo(): UtcOffset = standardOffset
 
     override fun toString(): String = rules.joinToString(", ")
 }
@@ -260,7 +260,7 @@ internal interface StandardOffsetInformation {
      */
     class ExactStandardOffset(val standardOffsets: List<UtcOffset>): StandardOffsetInformation {
         override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset =
-            return standardOffsets[offsetIndex]
+            standardOffsets[offsetIndex]
     }
 
     object None: StandardOffsetInformation {

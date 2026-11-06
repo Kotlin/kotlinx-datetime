@@ -9,6 +9,7 @@ import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.TimeZoneContext
 import kotlinx.datetime.internal.systemTimezoneSearchRoot
+import kotlinx.datetime.testing.StandardOffsetInfoPrecision
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -77,3 +78,4 @@ class TimeZoneNativeTest {
 }
 
 actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE
+actual val STANDARD_OFFSET_INFO_PRECISION = StandardOffsetInfoPrecision.ACCURATE

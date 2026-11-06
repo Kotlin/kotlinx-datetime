@@ -242,19 +242,23 @@ class TimeZoneTest {
     fun checkKnownTimezoneDatabaseRecords() {
         assertTimeZoneHasBehavior(
             TimeZoneContext.System.get("America/New_York"),
-            americaNewYorkBehavior.limit(RELIABLE_TRANSITIONS)
+            americaNewYorkBehavior.limit(RELIABLE_TRANSITIONS),
+            STANDARD_OFFSET_INFO_PRECISION
         )
         assertTimeZoneHasBehavior(
             TimeZoneContext.System.get("Europe/Berlin"),
-            europeBerlinBehavior.limit(RELIABLE_TRANSITIONS)
+            europeBerlinBehavior.limit(RELIABLE_TRANSITIONS),
+            STANDARD_OFFSET_INFO_PRECISION
         )
         assertTimeZoneHasBehavior(
             TimeZoneContext.System.get("Australia/Sydney"),
-            australiaSydneyBehavior.limit(RELIABLE_TRANSITIONS)
+            australiaSydneyBehavior.limit(RELIABLE_TRANSITIONS),
+            STANDARD_OFFSET_INFO_PRECISION
         )
         assertTimeZoneHasBehavior(
             TimeZoneContext.System.get("Europe/Moscow"),
-            europeMoscowBehavior.limit(RELIABLE_TRANSITIONS)
+            europeMoscowBehavior.limit(RELIABLE_TRANSITIONS),
+            STANDARD_OFFSET_INFO_PRECISION
         )
     }
 
@@ -265,3 +269,4 @@ private fun List<LocalDateTimeOffsetInfo.Transition>.limit(): List<LocalDateTime
     filter { it.transitionInstant in RELIABLE_TRANSITIONS }
 
 expect val RELIABLE_TRANSITIONS: ClosedRange<Instant>
+expect val STANDARD_OFFSET_INFO_PRECISION: StandardOffsetInfoPrecision

@@ -317,3 +317,4 @@ class TimeZoneNativeTest {
 }
 
 actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE
+actual val STANDARD_OFFSET_INFO_PRECISION = StandardOffsetInfoPrecision.ACCURATE

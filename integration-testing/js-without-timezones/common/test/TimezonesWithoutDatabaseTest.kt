@@ -40,7 +40,7 @@ class TimezonesWithoutDatabaseTest {
         }
         behavior?.let {
             try {
-                assertTimeZoneHasBehavior(zone, it)
+                assertTimeZoneHasBehavior(zone, it, StandardOffsetInfoPrecision.ABSENT)
             } catch (e: Throwable) {
                 throw AssertionError("Test failed for $name", e)
             }
