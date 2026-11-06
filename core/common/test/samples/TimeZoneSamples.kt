@@ -221,6 +221,21 @@ class TimeZoneSamples {
         check(instant == Instant.parse("2023-06-02T11:00:00Z"))
     }
 
+    @Ignore // JS and Wasm/JS crash with UnsupportedOperationException here
+    @Test
+    fun standardOffsetAt() {
+        // Obtain the standard UTC offset (not accounting for daylight savings)
+        val timeZone = TimeZoneContext.System.get("Europe/Amsterdam")
+        val standardOffset = UtcOffset(hours = 1)
+        val someTimeInSummer = Instant.parse("2020-06-01T00:00:00Z")
+        val someTimeInWinter = Instant.parse("2020-06-01T00:00:00Z")
+        // Summer or winter, the result is the same:
+        check(standardOffset == timeZone.standardOffsetAt(someTimeInSummer))
+        check(standardOffset == timeZone.standardOffsetAt(someTimeInWinter))
+        // During the daylight saving time, the effective offset is different from the standard one!
+        check(timeZone.offsetAt(someTimeInSummer) != timeZone.standardOffsetAt(someTimeInSummer))
+    }
+
     @Ignore // fails on Windows; TODO investigate
     @Test
     fun atStartOfDayIn() {
