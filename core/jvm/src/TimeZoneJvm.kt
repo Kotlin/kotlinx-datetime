@@ -16,24 +16,6 @@ import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 
-internal fun TimeZone.Companion.ofZone(zoneId: ZoneId): TimeZone = when {
-    zoneId is jtZoneOffset ->
-        FixedOffsetTimeZone(UtcOffset(zoneId))
-    zoneId.isFixedOffset ->
-        FixedOffsetTimeZone(UtcOffset(zoneId.normalized() as jtZoneOffset), zoneId.toString())
-    else ->
-        JvmTimeZone(zoneId)
-}
-
-// Workaround for https://issuetracker.google.com/issues/203956057
-private val ZoneId.isFixedOffset: Boolean
-    get() = try {
-        // On older Android versions, this can throw even though it shouldn't
-        rules.isFixedOffset
-    } catch (_: ArrayIndexOutOfBoundsException) {
-        false // Happens for America/Costa_Rica, Africa/Cairo, Egypt
-    }
-
 // compatibility with 0.8.0
 @PublishedApi
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
@@ -57,7 +39,7 @@ public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: O
 public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
     Instant.fromEpochSeconds(this.value.toEpochSecond(offset.zoneOffset), this.nanosecond)
 
-internal class JvmTimeZone(val actualZoneId: ZoneId) : TimeZone() {
+internal class JvmTimeZone(@JvmField val actualZoneId: ZoneId) : TimeZone() {
     override val id: String
         get() = actualZoneId.id
 

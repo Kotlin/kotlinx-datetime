@@ -7,27 +7,26 @@ package kotlinx.datetime.internal
 
 import kotlinx.datetime.TimeZoneIdProvider
 import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.JvmTimeZone
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.TimeZoneDatabase
-import kotlinx.datetime.ofZone
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZoneId.getAvailableZoneIds
-import java.time.ZoneId.systemDefault
 
 internal actual fun currentSystemDefaultTimeZone(): TimeZone =
-    TimeZone.ofZone(systemDefault())
+    systemTimezoneDatabase.get(systemTimeZoneIdProvider.currentTimeZoneId())
 
 internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDatabase {
     override fun get(id: String): TimeZone = try {
-        TimeZone.ofZone(ZoneId.of(if (id == "z") "Z" else id))
+        JvmTimeZone(ZoneId.of(id))
     } catch (e: Exception) {
         if (e is DateTimeException) throw IllegalTimeZoneException(e)
         throw e
     }
 
     override fun getOrNull(id: String): TimeZone? = try {
-        TimeZone.ofZone(ZoneId.of(if (id == "z") "Z" else id))
+        JvmTimeZone(ZoneId.of(id))
     } catch (e: Exception) {
         if (e is DateTimeException) null else throw e
     }
@@ -36,5 +35,5 @@ internal actual val timeZoneDatabaseImpl: TimeZoneDatabase = object: TimeZoneDat
 }
 
 internal actual val systemTimeZoneIdProvider: TimeZoneIdProvider = object: TimeZoneIdProvider {
-    override fun currentTimeZoneId(): String = systemDefault().id
+    override fun currentTimeZoneId(): String = java.util.TimeZone.getDefault().id
 }
