@@ -222,14 +222,36 @@ internal interface StandardOffsetInformation {
      * and which are DST.
      */
     class StandardOrDaylightFlag(val isDsts: BooleanArray): StandardOffsetInformation {
-        override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset {
-            // Recreating the `tz` behavior when the standard offset is requested:
-            // <https://github.com/eggert/tz/blob/e29969d3f327f129ec4aebaa9c7aee96c46f8e3b/localtime.c#L771-L774>
-            // rolling back until we find any non-DST offset.
-            for (i in offsetIndex downTo 1) {
-                if (!isDsts[i]) return offsets[i]
+        override fun standardOffsetInfoAtOffsetIndex(offsetIndex: Int, offsets: List<UtcOffset>): UtcOffset = when {
+            // Is the *current* offset a standard offset?
+            !isDsts[offsetIndex] -> offsets[offsetIndex]
+            /* Patching up a common case: `DST(u1); |DST(u2)|; STD(u3)`
+            the previous transition happened during the DST and changed the standard offset.
+            The likely standard offset is `u3`. */
+            isDsts.getOrNull(offsetIndex - 1) != false && isDsts.getOrNull(offsetIndex + 1) == false ->
+                offsets[offsetIndex + 1]
+            /* Patching up a common case: `STD(u1) ; |DST(u1)| ; STD(u2)`
+            the previous standard offset becomes a DST offset, with no clocks moving.
+            The likely standard offset is `u2`. */
+            isDsts.getOrNull(offsetIndex - 1) == false && offsets[offsetIndex - 1] == offsets[offsetIndex] -> {
+                for (j in offsetIndex + 1..<offsets.size) {
+                    if (!isDsts[j]) {
+                        return offsets[j]
+                    }
+                }
+                offsets[offsetIndex - 1]
             }
-            return offsets[0]
+            else -> {
+                /* The default implementation: recreating the `tz` behavior when the standard offset is requested:
+                <https://github.com/eggert/tz/blob/e29969d3f327f129ec4aebaa9c7aee96c46f8e3b/localtime.c#L771-L774>
+                rolling back until we find any non-DST offset. */
+                for (i in offsetIndex - 1 downTo 1) {
+                    if (!isDsts[i]) {
+                        return offsets[i]
+                    }
+                }
+                offsets[0]
+            }
         }
     }
 
