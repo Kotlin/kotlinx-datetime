@@ -12,7 +12,7 @@ import kotlinx.datetime.UtcOffset
 import kotlin.time.Instant
 
 internal class RuleBasedTimeZone(
-    val rules: TimeZoneRules, override val id: String, val origin: Any?
+    val rules: TimeZoneRules, override val id: String, val origin: Any
 ): TimeZone() {
     override fun offsetAt(instant: Instant): UtcOffset = rules.infoAtInstant(instant)
 
@@ -24,5 +24,5 @@ internal class RuleBasedTimeZone(
 
     override fun hashCode(): Int = id.hashCode()
 
-    override fun toString(): String = id
+    override fun toString(): String = "$id[$origin]"
 }

@@ -93,7 +93,13 @@ public abstract class TimeZone internal constructor() {
     public abstract fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo
 
     /**
-     * Equivalent to [id].
+     * Returns the debug representation of a time zone.
+     *
+     * The debug representation contains enough information to uniquely identify a timezone in a running program.
+     * Typically, that means including the timezone [id] and some reference to the [TimeZoneDatabase] that produced it.
+     *
+     * In `kotlinx-datetime` versions pre-0.9.0, [toString] used to return exactly the [id] string.
+     * Please replace your [toString] calls with [id] if your program relied on that.
      *
      * @sample kotlinx.datetime.test.samples.TimeZoneSamples.toStringSample
      */
@@ -248,7 +254,7 @@ public class FixedOffsetTimeZone internal constructor(
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo =
         LocalDateTimeOffsetInfo.Regular(offset)
 
-    override fun toString(): String = id
+    override fun toString(): String = "$id[FixedOffsetTimeZone]"
 
     override fun equals(other: Any?): Boolean =
         this === other || other is FixedOffsetTimeZone && this.id == other.id

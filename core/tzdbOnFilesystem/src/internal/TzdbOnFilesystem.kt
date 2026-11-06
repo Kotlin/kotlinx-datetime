@@ -5,9 +5,19 @@
 
 package kotlinx.datetime.internal
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.refTo
 import kotlinx.datetime.IllegalTimeZoneException
 import kotlinx.datetime.TimeZoneDatabase
 import kotlinx.datetime.TimeZone
+import platform.posix.SEEK_END
+import platform.posix.fclose
+import platform.posix.fopen
+import platform.posix.fread
+import platform.posix.fseek
+import platform.posix.size_t
 
 internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase {
 
@@ -15,6 +25,35 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
         tabPaths.any { path.containsFile(it) }
     } ?: throw IllegalStateException("Could not find the path to the timezone database")
 
+    /**
+     * The timezone database version, included in [toString] for debugging purposes.
+     *
+     * It's lazily computed, as it's only useful during debugging.
+     * We ignore any failures that happen while computing it, as it's merely a nice-to-have thing.
+     */
+    @OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
+    private val tzdataHeader = lazy {
+        runCatching {
+            // `tzdata.zi` contains a header of the form `# version SOMETHING`, which we want to show during debugging.
+            // MacOS also includes the `+VERSION` file with just `SOMETHING` as its contents, but it's less portable
+            val tzdata = Path(tzdbPath.isAbsolute, tzdbPath.components + "tzdata.zi")
+            val handler = fopen(tzdata.toString(), "rb") ?: return@runCatching null
+            try {
+                var err = fseek(handler, 0, SEEK_END)
+                if (err == -1) return@runCatching null
+                val size = 32 // more than enough to fit "# version 2026f-rearguard\n"
+                val buffer = ByteArray(size)
+                val readAmount = fread(buffer.refTo(0), size.convert<size_t>(), 1u, handler)
+                if (readAmount.convert<ULong>() == 1uL) {
+                    buffer.decodeToString().lineSequence().first()
+                } else {
+                    null
+                }
+            } finally {
+                fclose(handler)
+            }
+        }.getOrNull()
+    }
 
     override fun get(id: String): TimeZone {
         if (id.length <= 1) { throw IllegalTimeZoneException("Timezone ID '$id' is not valid") }
@@ -41,7 +80,7 @@ internal class TzdbOnFilesystem(defaultTzdbPath: Path? = null): TimeZoneDatabase
         val _ = tzdbPath.tryTraverseDirectory(exclude = tzdbUnneededFiles) { add(it.toString()) }
     }
 
-    override fun toString(): String = "TzdbOnFilesystem(tzdbPath=$tzdbPath)"
+    override fun toString(): String = "TzdbOnFilesystem(tzdbPath=$tzdbPath,tzdataHeader=$tzdataHeader)"
 }
 
 // taken from https://github.com/tzinfo/tzinfo/blob/9953fc092424d55deaea2dcdf6279943f3495724/lib/tzinfo/data_sources/zoneinfo_data_source.rb#L354
