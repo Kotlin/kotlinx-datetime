@@ -273,6 +273,7 @@ fun assertTimeZoneHasBehavior(
             )
         }
     }
+    var checkStandardOffsets = true
     // Check regular times and standard offsets in between transitions:
     for (index in 0..(behavior.transitions.size - 2)) {
         val transitionBefore = knownTransitions[index]
@@ -285,10 +286,17 @@ fun assertTimeZoneHasBehavior(
         var instant = startInstant + delta
         repeat(steps) {
             checkRegular(timeZone, instant.toLocalDateTime(expectedOffset.asTimeZone()), expectedOffset)
-            assertEquals(
-                behavior.types[behavior.transitions[index].after].standardOffset,
-                timeZone.standardOffsetAt(instant)
-            )
+            if (checkStandardOffsets) {
+                try {
+                    assertEquals(
+                        behavior.types[behavior.transitions[index].after].standardOffset,
+                        timeZone.standardOffsetAt(instant)
+                    )
+                } catch (_: UnsupportedOperationException) {
+                    // This time zone does not support querying standard offsets
+                    checkStandardOffsets = false
+                }
+            }
             instant += delta
         }
     }
