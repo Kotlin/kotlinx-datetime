@@ -4,4 +4,6 @@
  */
 package kotlinx.datetime.test
 
+import kotlin.time.Instant
+
 actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE
