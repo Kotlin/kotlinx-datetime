@@ -3,14 +3,14 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-package kotlinx.datetime.test
+package kotlinx.datetime.testing
 
 // od --format=x1 --output-duplicates --address-radix=n --width=16 /usr/share/zoneinfo/Europe/Berlin |
 // sed -e 's/\b\(\w\)/0x\1/g' -e 's/\(\w\)\b/\1,/g'
 // Do not remove the type annotation, otherwise the compiler slows down to a crawl for this file even more.
 // This constant is in a separate file to avoid recompiling it on every change to the test file, which is slow to the
 // point of freezing the IDE.
-internal val EuropeBerlinTzFile2023c = listOf<Int>(
+val EuropeBerlinTzFile2023c = listOf<Int>(
     0x54, 0x5a, 0x69, 0x66, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x8f, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x12, 0x80, 0x00, 0x00, 0x00,

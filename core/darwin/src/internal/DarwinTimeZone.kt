@@ -5,28 +5,17 @@
 
 package kotlinx.datetime.internal
 
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.convert
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalDateTimeOffsetInfo
-import kotlinx.datetime.UtcOffset
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toKotlinInstant
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.toNSDate
-import kotlinx.datetime.toNSDateComponents
-import platform.Foundation.NSCalendar
-import platform.Foundation.NSCalendarIdentifierISO8601
-import platform.Foundation.NSCalendarUnitYear
-import platform.Foundation.NSDate
-import platform.Foundation.NSTimeZone
+import kotlinx.cinterop.*
+import kotlinx.datetime.*
+import platform.Foundation.*
 import kotlin.time.Instant
 
 internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val id: String) : TimeZone() {
 
     override fun offsetAt(instant: Instant): UtcOffset =
-        infoAtNsDate(instant.toNSDate())
+        /* NSTimeZone operates with millisecond precision, so we want convert .123XXXXXX to .123000000,
+        to avoid NSTimeZone rounding it up to S.124. */
+        infoAtNsDate(instant.toNSDateRoundingDownToMillisecond())
 
     /**
      * IMPORTANT: mirrors the logic in [RecurringZoneRules.infoAtLocalDateTime].
@@ -86,3 +75,6 @@ internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val i
     public override fun hashCode(): Int =
         id.hashCode()
 }
+
+private fun Instant.toNSDateRoundingDownToMillisecond(): NSDate =
+    NSDate.dateWithTimeIntervalSince1970(epochSeconds * 1.0 + (nanosecondsOfSecond / 1000) / 1.0e6)
