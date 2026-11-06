@@ -18,7 +18,7 @@ internal class DarwinTimeZone(private val nsTimeZone: NSTimeZone, override val i
         to avoid NSTimeZone rounding it up to S.124. */
         infoAtNsDate(instant.toNSDateRoundingDownToMillisecond())
 
-    @OptIn(ExperimentalForeignApi::class)
+    @OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
     override fun standardOffsetAt(instant: Instant): UtcOffset {
         val nsDate = instant.toNSDate()
         val totalOffsetSeconds = nsTimeZone.secondsFromGMTForDate(nsDate) 
