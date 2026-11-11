@@ -797,11 +797,22 @@ private fun Instant.toLocalDateTimeFailing(offset: UtcOffset): LocalDateTime = t
 private fun Instant.toLocalDateTimeFailing(timeZone: TimeZone): LocalDateTime =
     toLocalDateTimeFailing(offsetIn(timeZone))
 
-/** Check that [Instant] fits in [LocalDateTime].
+
+private const val MAX_UTC_OFFSET_SECONDS = 18L * 60 * 60
+
+private val minValidEpochSeconds: Long =
+    LocalDateTime.MIN.toInstant(UtcOffset.ZERO).epochSeconds + MAX_UTC_OFFSET_SECONDS
+
+private val maxValidEpochSeconds: Long =
+    LocalDateTime.MAX.toInstant(UtcOffset.ZERO).epochSeconds - MAX_UTC_OFFSET_SECONDS
+
+/**
+ * Check that [Instant] fits in [LocalDateTime].
  * This is done on the results of computations for consistency with other platforms.
  */
 @IgnorableReturnValue
 private fun Instant.check(zone: TimeZone): Instant = this@check.also {
+    if (epochSeconds in minValidEpochSeconds..maxValidEpochSeconds) return@also
     val _ = toLocalDateTimeFailing(zone)
 }
 
