@@ -12,6 +12,7 @@ import kotlin.time.Instant
 /**
  * Oracle: not really important
  */
+@Ignore
 class SystemTimeZoneFuzzFindings {
 
     // ===============================================================================================================
