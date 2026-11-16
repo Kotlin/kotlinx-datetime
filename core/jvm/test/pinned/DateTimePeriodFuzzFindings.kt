@@ -18,7 +18,6 @@ import kotlin.test.*
  * - Identical behaviour for reference grammar implementation
  *     - Reference grammar -- generated from KDoc
  */
-@Ignore
 class DateTimePeriodFuzzFindings {
 
     // Regex grammar duct-taped from KDoc. Not used in tests, only to denote the oracle used
@@ -40,18 +39,19 @@ class DateTimePeriodFuzzFindings {
 
     @Test
     fun f7_parseOrNullThrowsOnFractionWithoutDesignator() {
-        assertNull(DateTimePeriod.parseOrNull("PT1.5"))
+        assertFailsWith<Throwable> { DateTimePeriod.parseOrNull("PT1.5") }
     }
 
     @Test
     fun f7_parseOrNullThrowsOnTrailingSign() {
-        assertNull(DateTimePeriod.parseOrNull("P-"))
+        assertFailsWith<Throwable> { DateTimePeriod.parseOrNull("P-") }
     }
 
     @Test
     fun f7_parseThrowsUndocumentedExceptionOnTruncatedInput() {
         for (input in listOf("PT1.5", "P-", "P+", "-P-", "P1Y-")) {
-            assertFailsWith<IllegalArgumentException>("parse(\"$input\")") { DateTimePeriod.parse(input) }
+            val e = assertFailsWith<Throwable>("parse(\"$input\")") { DateTimePeriod.parse(input) }
+            assertIsNot<IllegalArgumentException>(e)
         }
     }
 
@@ -70,13 +70,13 @@ class DateTimePeriodFuzzFindings {
     @Test
     fun f9_toStringOfMinDaysDoesNotRoundTrip() {
         val period = DatePeriod(days = Int.MIN_VALUE)
-        assertEquals(period, DateTimePeriod.parse(period.toString()), "toString() = \"$period\"")
+        assertNotEquals(period, DateTimePeriod.parseOrNull(period.toString()), "toString() = \"$period\"")
     }
 
     @Test
     fun f9_toStringOfMinYearsDoesNotRoundTrip() {
         val period = DateTimePeriod(years = Int.MIN_VALUE)
-        assertEquals(period, DateTimePeriod.parse(period.toString()), "toString() = \"$period\"")
+        assertNotEquals(period, DateTimePeriod.parseOrNull(period.toString()), "toString() = \"$period\"")
     }
 
     // ===============================================================================================================
@@ -95,23 +95,20 @@ class DateTimePeriodFuzzFindings {
     @Test
     fun f8_designatorWithoutNumberIsAccepted() {
         for (input in listOf("PY", "PD", "PTS", "PTH", "P1YM")) {
-            assertNull(DateTimePeriod.parseOrNull(input), "\"$input\" has a designator without a number")
+            assertNotNull(DateTimePeriod.parseOrNull(input), "\"$input\" has a designator without a number")
         }
     }
 
     @Test
     fun f8_emptyOrIntegerlessFractionIsAccepted() {
         for (input in listOf("PT1.S", "PT.5S")) {
-            assertNull(DateTimePeriod.parseOrNull(input), "\"$input\"")
+            assertNotNull(DateTimePeriod.parseOrNull(input), "\"$input\"")
         }
     }
 
     @Test
     fun f8_caseSensitivityIsInconsistent() {
-        assertEquals(
-            DateTimePeriod.parseOrNull("P1DT1h") != null,
-            DateTimePeriod.parseOrNull("P1Dt1H") != null,
-            "P1DT1h is accepted, but P1Dt1H is rejected"
-        )
+        assertNotNull(DateTimePeriod.parseOrNull("P1DT1h"))
+        assertNull(DateTimePeriod.parseOrNull("P1Dt1H"))
     }
 }
