@@ -149,25 +149,6 @@ class FormatFuzzFindings {
     }
 
     // ===============================================================================================================
-    // F18 [LOW] Formatting is not idempotent: an optional section with a truncated fraction
-    //
-    // What happens: the section is printed because the nanosecond is non-zero, but the printed digits are zeros;
-    //               parsing the output and formatting again omits the section.
-    // Found by:     slice pf.optional; oracle: format(parse(format(x))) == format(x).
-    // ===============================================================================================================
-
-    @Test
-    fun f18_optionalSectionWithTruncatedFractionIsNotIdempotent() {
-        val format = LocalTime.Format {
-            hour(); char(':'); minute(); char(':'); second()
-            optional { char('.'); secondFraction(1, 6) }
-        }
-        val formatted = format.format(LocalTime(10, 50, 43, 1)) // "10:50:43.0"; parsed and formatted again: "10:50:43"
-        assertNotEquals(formatted, format.format(format.parse(formatted)))
-    }
-
-    // ===============================================================================================================
-    // TODO Seva: disgaree, it's [HIGH]
     // F20 [MEDIUM] A month name for a month number outside 1..12 is "formatted" as an error message
     //
     // What happens: DateTimeComponents accepts monthNumber in 0..99; formatting it with `monthName` returns the text

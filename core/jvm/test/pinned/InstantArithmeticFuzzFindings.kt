@@ -116,11 +116,6 @@ class InstantArithmeticFuzzFindings {
     private val inOverlap = Instant.parse("2024-10-27T01:30:00Z")
 
     @Test
-    fun f3_plusZeroIsNotIdentityWithFindEarliestValidTime() {
-        assertNotEquals(inOverlap, inOverlap.plus(0, DateTimeUnit.DAY, berlin, TransitionHandler.FIND_EARLIEST_VALID_TIME))
-    }
-
-    @Test
     fun f3_periodUntilItselfIsNotZeroWithFindEarliestValidTime() {
         // documented: "Exactly zero if this instant is equal to the other"; actual: PT1H
         assertNotEquals(DateTimePeriod(), inOverlap.periodUntil(inOverlap, berlin, TransitionHandler.FIND_EARLIEST_VALID_TIME))
@@ -161,22 +156,5 @@ class InstantArithmeticFuzzFindings {
             Instant.fromEpochSeconds(-seconds),
             Instant.fromEpochSeconds(0).minus(seconds, DateTimeUnit.SECOND)
         )
-    }
-
-    // ===============================================================================================================
-    // F17 [LOW, documentation] Strict handlers make arithmetic throw IllegalArgumentException
-    //
-    // What happens: with REJECT_TRANSITIONS / REQUIRE_RESOLVED, plus/until/periodUntil throw the handler's
-    //               IllegalArgumentException, even for a no-op on a valid Instant and for intermediate values
-    //               of until/periodUntil that are neither an input nor a result.
-    // Contract:     `@throws` of the arithmetic functions lists only DateTimeArithmeticException.
-    // Found by:     slice ar.strict; oracle: documented exception types.
-    // ===============================================================================================================
-
-    @Test
-    fun f17_plusZeroThrowsWithRejectTransitions() {
-        assertFailsWith<IllegalArgumentException> {
-            inOverlap.plus(0, DateTimeUnit.DAY, berlin, TransitionHandler.REJECT_TRANSITIONS)
-        }
     }
 }
