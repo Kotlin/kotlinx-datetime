@@ -25,5 +25,9 @@ internal fun String.toKotlinCode(): String = buildString {
 internal fun Char.toKotlinCode(): String = when (this) {
     '\'' -> "'\\''"
     '\\' -> "'\\\\'"
+    '\b' -> "'\\b'"
+    '\t' -> "'\\t'"
+    '\n' -> "'\\n'"
+    '\r' -> "'\\r'"
     else -> "'$this'"
 }
