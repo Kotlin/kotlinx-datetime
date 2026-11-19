@@ -14,7 +14,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.*
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @Serializable(with = UtcOffsetSerializer::class)
 public actual class UtcOffset(
     internal val zoneOffset: ZoneOffset
@@ -40,9 +40,6 @@ public actual class UtcOffset(
             format === Formats.FOUR_DIGITS -> parseWithFormat(input, fourDigitsFormat)
             else -> format.parse(input)
         }
-
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(offsetString: String): UtcOffset = parse(input = offsetString)
 
         @Suppress("FunctionName")
         public actual fun Format(block: DateTimeFormatBuilder.WithUtcOffset.() -> Unit): DateTimeFormat<UtcOffset> =

@@ -27,9 +27,9 @@ public actual class LocalDate private constructor(
     }
 
     private val _month: Int = month
-    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.ERROR)
     public actual val monthNumber: Int get() = _month
-    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.ERROR)
     public actual val dayOfMonth: Int get() = day
 
     public actual constructor(year: Int, month: Month, day: Int) : this(year, month.number, day, Unit) {
@@ -51,9 +51,6 @@ public actual class LocalDate private constructor(
 
     public actual companion object {
         public actual fun parse(input: CharSequence, format: DateTimeFormat<LocalDate>): LocalDate = format.parse(input)
-
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): LocalDate = parse(input = isoString)
 
         public actual fun orNull(year: Int, month: Int, day: Int): LocalDate? =
             if (year !in YEAR_MIN..YEAR_MAX || month !in 1..12 || day !in 1..31 ||
@@ -232,7 +229,7 @@ public actual fun LocalDate.Companion.parseOrNull(
     input: CharSequence, format: DateTimeFormat<LocalDate>
 ): LocalDate? = format.parseOrNull(input)
 
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
 public actual fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate = plus(1, unit)
 
 public actual fun LocalDate.plus(value: Long, unit: DateTimeUnit.DateBased): LocalDate = try {

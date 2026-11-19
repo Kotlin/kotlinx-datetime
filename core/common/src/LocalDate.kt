@@ -258,7 +258,7 @@ public expect class LocalDate : Comparable<LocalDate> {
     public val year: Int
 
     /** @suppress */
-    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'month' property instead", ReplaceWith("this.month.number"), level = DeprecationLevel.ERROR)
     public val monthNumber: Int
 
     /**
@@ -276,7 +276,7 @@ public expect class LocalDate : Comparable<LocalDate> {
     public val day: Int
 
     /** @suppress */
-    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use the 'day' property instead", ReplaceWith("this.day"), level = DeprecationLevel.ERROR)
     public val dayOfMonth: Int
 
     /**
@@ -362,7 +362,7 @@ public expect fun LocalDate.Companion.parseOrNull(
 @Deprecated(
     "Use the constructor that accepts a 'month' and a 'day'",
     ReplaceWith("LocalDate(year = year, month = monthNumber, day = dayOfMonth)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution
@@ -375,7 +375,7 @@ public fun LocalDate(year: Int, monthNumber: Int, dayOfMonth: Int): LocalDate =
 @Deprecated(
     "Use the constructor that accepts a 'day'",
     ReplaceWith("LocalDate(year = year, month = month, day = dayOfMonth)"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @LowPriorityInOverloadResolution
@@ -393,7 +393,7 @@ public fun LocalDate.format(format: DateTimeFormat<LocalDate>): String = format.
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDate.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("LocalDate.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 /**
@@ -565,7 +565,7 @@ public expect fun LocalDate.yearsUntil(other: LocalDate): Int
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"))
+@Deprecated("Use the plus overload with an explicit number of units", ReplaceWith("this.plus(1, unit)"), level = DeprecationLevel.ERROR)
 public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
 
 /**
@@ -577,7 +577,7 @@ public expect fun LocalDate.plus(unit: DateTimeUnit.DateBased): LocalDate
  *
  * @throws DateTimeArithmeticException if the result exceeds the boundaries of [LocalDate].
  */
-@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"))
+@Deprecated("Use the minus overload with an explicit number of units", ReplaceWith("this.minus(1, unit)"), level = DeprecationLevel.ERROR)
 public fun LocalDate.minus(unit: DateTimeUnit.DateBased): LocalDate = plus(-1, unit)
 
 /**

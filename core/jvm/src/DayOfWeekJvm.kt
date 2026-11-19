@@ -7,14 +7,5 @@
 @file:JvmMultifileClass
 package kotlinx.datetime
 
-@Deprecated("Use kotlinx.datetime.DayOfWeek", ReplaceWith("toKotlinDayOfWeek().isoDayNumber"))
+@Deprecated("Use kotlinx.datetime.DayOfWeek", ReplaceWith("toKotlinDayOfWeek().isoDayNumber"), level = DeprecationLevel.ERROR)
 public val java.time.DayOfWeek.isoDayNumber: Int get() = toKotlinDayOfWeek().isoDayNumber
-
-@Deprecated(
-    message = "This overload is only kept for binary compatibility",
-    level = DeprecationLevel.HIDDEN,
-)
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.LowPriorityInOverloadResolution
-public fun DayOfWeek(isoDayNumber: Int): java.time.DayOfWeek =
-    DayOfWeek(isoDayNumber).toJavaDayOfWeek()

@@ -2,7 +2,7 @@
  * Copyright 2019-2022 JetBrains s.r.o. and contributors.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
@@ -26,7 +26,6 @@ class ConvertersTest {
             val ktInstant = kxdtInstant.fromEpochSeconds(seconds, nanosecond.toLong())
             val jtInstant = JTInstant.ofEpochSecond(seconds, nanosecond.toLong())
 
-            assertEquals(ktInstant, jtInstant.toKotlinInstant())
             assertEquals(jtInstant, ktInstant.toJavaInstant())
 
             assertEquals(ktInstant, jtInstant.toString().let(kxdtInstant::parse))

@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 @file:JvmMultifileClass
 @file:JvmName("InstantKt")
 package kotlinx.datetime
@@ -35,17 +35,17 @@ private const val MAX_SECOND = 31556889864403199L // +1000000000-12-31T23:59:59Z
 @Deprecated(
     "Use kotlin.time.Instant instead",
     ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Serializable(with = InstantSerializer::class)
 public actual class Instant internal constructor(
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().epochSeconds")
     )
     public actual val epochSeconds: Long,
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
     )
     public actual val nanosecondsOfSecond: Int
@@ -56,7 +56,7 @@ public actual class Instant internal constructor(
     }
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     // org.threeten.bp.Instant#toEpochMilli
@@ -94,7 +94,7 @@ public actual class Instant internal constructor(
     }
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() + duration).toDeprecatedInstant()")
     )
     public actual operator fun plus(duration: Duration): Instant = duration.toComponents { secondsToAdd, nanosecondsToAdd ->
@@ -108,13 +108,13 @@ public actual class Instant internal constructor(
     }
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() - duration).toDeprecatedInstant()")
     )
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant() - other.toStdlibInstant()")
     )
     public actual operator fun minus(other: Instant): Duration =
@@ -122,7 +122,7 @@ public actual class Instant internal constructor(
                 (this.nanosecondsOfSecond - other.nanosecondsOfSecond).nanoseconds
 
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().compareTo(other.toStdlibInstant())")
     )
     actual override fun compareTo(other: Instant): Int {
@@ -142,7 +142,7 @@ public actual class Instant internal constructor(
 
     @Suppress("POTENTIALLY_NON_REPORTED_ANNOTATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toString()")
     )
     // org.threeten.bp.format.DateTimeFormatterBuilder.InstantPrinterParser#print
@@ -194,9 +194,6 @@ public actual class Instant internal constructor(
         } catch (e: IllegalArgumentException) {
             throw DateTimeFormatException("Failed to parse an instant from '$input'", e)
         }
-
-        @Deprecated("This overload is only kept for binary compatibility", level = DeprecationLevel.HIDDEN)
-        public fun parse(isoString: String): Instant = parse(input = isoString)
 
         public actual val DISTANT_PAST: Instant = fromEpochSeconds(DISTANT_PAST_SECONDS, 999_999_999)
 

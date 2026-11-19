@@ -474,7 +474,7 @@ public sealed class DateTimePeriod {
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DateTimePeriod.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DateTimePeriod.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toDateTimePeriod(): DateTimePeriod = DateTimePeriod.parse(this)
 
 /**
@@ -574,7 +574,7 @@ public class DatePeriod internal constructor(
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DatePeriod.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("DatePeriod.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toDatePeriod(): DatePeriod = DatePeriod.parse(this)
 
 private class DateTimePeriodImpl(
@@ -667,7 +667,7 @@ public fun Duration.toDateTimePeriod(): DateTimePeriod = buildDateTimePeriod(tot
  */
 @Deprecated(
     "Adding periods is not a well-defined operation. See https://github.com/Kotlin/kotlinx-datetime/issues/381",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod = buildDateTimePeriod(
     safeAdd(totalMonths, other.totalMonths),
@@ -685,7 +685,7 @@ public operator fun DateTimePeriod.plus(other: DateTimePeriod): DateTimePeriod =
  */
 @Deprecated(
     "Adding periods is not a well-defined operation. See https://github.com/Kotlin/kotlinx-datetime/issues/381",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 public operator fun DatePeriod.plus(other: DatePeriod): DatePeriod = DatePeriod(
     safeAdd(totalMonths, other.totalMonths),

@@ -158,7 +158,7 @@ class DateTimePeriodTest {
 
         val dp1 = DatePeriod(years = 1, months = 6)
 
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION_ERROR")
         run {
             assertEquals(DateTimePeriod(years = 10, days = 3, hours = 2), p1 + p2 + p3)
             assertEquals(DatePeriod(years = 11, months = 6), dp1 + p1)

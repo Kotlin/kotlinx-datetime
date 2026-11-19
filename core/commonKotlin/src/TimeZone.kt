@@ -39,6 +39,5 @@ internal fun Instant.toLocalDateTimeImpl(offset: UtcOffset): LocalDateTime {
 public actual fun LocalDateTime.toInstant(timeZone: TimeZone, youShallNotPass: OverloadMarker): Instant =
     localDateTimeToInstantLenient(this, timeZone, TransitionHandler.USE_OFFSET_BEFORE, null)
 
-@Suppress("DEPRECATION_ERROR")
-public actual fun LocalDateTime.toInstant(offset: UtcOffset, youShallNotPass: OverloadMarker): Instant =
+public actual fun LocalDateTime.toInstant(offset: UtcOffset): Instant =
     Instant.fromEpochSeconds(this.toEpochSecond(offset), this.nanosecond)

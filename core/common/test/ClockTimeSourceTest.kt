@@ -16,7 +16,7 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 class ClockTimeSourceTest {
     @Test
     fun arithmetic() {

@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 package kotlinx.datetime
 
 import kotlin.js.*
@@ -19,4 +19,5 @@ public fun Instant.toJSDate(): Date = Date(milliseconds = toEpochMilliseconds().
 /**
  * Converts the JS [Date] to the corresponding [Instant].
  */
-public fun Date.toKotlinInstant(): Instant = Instant.fromEpochMilliseconds(getTime().toLong())
+@PublishedApi
+internal fun Date.toKotlinInstant(): Instant = Instant.fromEpochMilliseconds(getTime().toLong())

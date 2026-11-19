@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 @file:JvmMultifileClass
 @file:JvmName("InstantKt")
 package kotlinx.datetime
@@ -49,7 +49,7 @@ public fun kotlin.time.Instant.toDeprecatedInstant(): Instant =
 @Deprecated(
     "Use kotlin.time.Instant instead",
     ReplaceWith("kotlin.time.Instant", "kotlin.time.Instant"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
 @Serializable(with = InstantSerializer::class)
 public expect class Instant : Comparable<Instant> {
@@ -66,7 +66,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.epochSeconds
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().epochSeconds")
     )
     public val epochSeconds: Long
@@ -80,7 +80,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.nanosecondsOfSecond
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().nanosecondsOfSecond")
     )
     public val nanosecondsOfSecond: Int
@@ -97,7 +97,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.toEpochMilliseconds
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toEpochMilliseconds()")
     )
     public fun toEpochMilliseconds(): Long
@@ -118,7 +118,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.plusDuration
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() + duration).toDeprecatedInstant()")
     )
     public operator fun plus(duration: Duration): Instant
@@ -139,7 +139,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.minusDuration
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("(this.toStdlibInstant() - duration).toDeprecatedInstant()")
     )
     public operator fun minus(duration: Duration): Instant
@@ -162,7 +162,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstant
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant() - other.toStdlibInstant()")
     )
     public operator fun minus(other: Instant): Duration
@@ -176,7 +176,7 @@ public expect class Instant : Comparable<Instant> {
      * @sample kotlinx.datetime.test.samples.InstantSamples.compareToSample
      */
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().compareTo(other.toStdlibInstant())")
     )
     public override operator fun compareTo(other: Instant): Int
@@ -197,7 +197,7 @@ public expect class Instant : Comparable<Instant> {
      */
     @Suppress("POTENTIALLY_NON_REPORTED_ANNOTATION")
     @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("this.toStdlibInstant().toString()")
     )
     public override fun toString(): String
@@ -306,7 +306,7 @@ public expect class Instant : Comparable<Instant> {
  * @sample kotlinx.datetime.test.samples.InstantSamples.isDistantPast
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().isDistantPast", "kotlin.time.isDistantPast")
 )
 public val Instant.isDistantPast: Boolean
@@ -318,7 +318,7 @@ public val Instant.isDistantPast: Boolean
  * @sample kotlinx.datetime.test.samples.InstantSamples.isDistantFuture
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().isDistantFuture", "kotlin.time.isDistantFuture")
 )
 public val Instant.isDistantFuture: Boolean
@@ -327,7 +327,7 @@ public val Instant.isDistantFuture: Boolean
 /**
  * @suppress
  */
-@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("Instant.parse(this)"), DeprecationLevel.WARNING)
+@Deprecated("Removed to support more idiomatic code. See https://github.com/Kotlin/kotlinx-datetime/issues/339", ReplaceWith("Instant.parse(this)"), DeprecationLevel.ERROR)
 public fun String.toInstant(): Instant = Instant.parse(this)
 
 /**
@@ -346,7 +346,7 @@ public fun String.toInstant(): Instant = Instant.parse(this)
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusPeriod
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(period, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
@@ -368,7 +368,7 @@ public fun Instant.plus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusPeriod
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(period, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
@@ -397,7 +397,7 @@ public fun Instant.minus(period: DateTimePeriod, timeZone: TimeZone): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.periodUntil
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().periodUntil(other.toStdlibInstant(), timeZone)")
 )
 public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeriod =
@@ -418,7 +418,7 @@ public fun Instant.periodUntil(other: Instant, timeZone: TimeZone): DateTimePeri
  * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().until(other.toStdlibInstant(), unit, timeZone)")
 )
 public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
@@ -437,7 +437,7 @@ public fun Instant.until(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
  * @sample kotlinx.datetime.test.samples.InstantSamples.untilAsTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().until(other.toStdlibInstant(), unit)")
 )
 public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
@@ -460,7 +460,7 @@ public fun Instant.until(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  * @sample kotlinx.datetime.test.samples.InstantSamples.daysUntil
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().daysUntil(other.toStdlibInstant(), timeZone)")
 )
 public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
@@ -476,7 +476,7 @@ public fun Instant.daysUntil(other: Instant, timeZone: TimeZone): Int =
  * @sample kotlinx.datetime.test.samples.InstantSamples.monthsUntil
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().monthsUntil(other.toStdlibInstant(), timeZone)")
 )
 public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
@@ -492,7 +492,7 @@ public fun Instant.monthsUntil(other: Instant, timeZone: TimeZone): Int =
  * @sample kotlinx.datetime.test.samples.InstantSamples.yearsUntil
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().yearsUntil(other.toStdlibInstant(), timeZone)")
 )
 public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
@@ -513,7 +513,7 @@ public fun Instant.yearsUntil(other: Instant, timeZone: TimeZone): Int =
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusInstantInZone
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(other.toStdlibInstant(), timeZone)")
 )
 public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
@@ -529,7 +529,7 @@ public fun Instant.minus(other: Instant, timeZone: TimeZone): DateTimePeriod =
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(1, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -544,7 +544,7 @@ public fun Instant.plus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  * @throws DateTimeArithmeticException if this value or the result is too large to fit in [LocalDateTime].
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(1, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -558,7 +558,7 @@ public fun Instant.minus(unit: DateTimeUnit, timeZone: TimeZone): Instant =
  * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(1, unit).toDeprecatedInstant()")
 )
 public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
@@ -572,7 +572,7 @@ public fun Instant.plus(unit: DateTimeUnit.TimeBased): Instant =
  * The return value is clamped to the boundaries of [Instant] if the result exceeds them.
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(1, unit).toDeprecatedInstant()")
 )
 public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
@@ -592,7 +592,7 @@ public fun Instant.minus(unit: DateTimeUnit.TimeBased): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -615,7 +615,7 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Ins
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -632,7 +632,7 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit, timeZone: TimeZone): In
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit).toDeprecatedInstant()")
 )
 public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
@@ -649,7 +649,7 @@ public fun Instant.plus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit).toDeprecatedInstant()")
 )
 public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
@@ -669,7 +669,7 @@ public fun Instant.minus(value: Int, unit: DateTimeUnit.TimeBased): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -689,7 +689,7 @@ public fun Instant.plus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): In
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit, timeZone).toDeprecatedInstant()")
 )
 public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): Instant =
@@ -710,7 +710,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit, timeZone: TimeZone): I
  * @sample kotlinx.datetime.test.samples.InstantSamples.plusTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().plus(value, unit).toDeprecatedInstant()")
 )
 public fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
@@ -727,7 +727,7 @@ public fun Instant.plus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(value, unit).toDeprecatedInstant()")
 )
 public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
@@ -751,7 +751,7 @@ public fun Instant.minus(value: Long, unit: DateTimeUnit.TimeBased): Instant =
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusAsDateTimeUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(other.toStdlibInstant(), unit, timeZone)")
 )
 public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone): Long =
@@ -769,7 +769,7 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit, timeZone: TimeZone)
  * @sample kotlinx.datetime.test.samples.InstantSamples.minusAsTimeBasedUnit
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().minus(other.toStdlibInstant(), unit)")
 )
 public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
@@ -788,7 +788,7 @@ public fun Instant.minus(other: Instant, unit: DateTimeUnit.TimeBased): Long =
  * @sample kotlinx.datetime.test.samples.InstantSamples.formatting
  */
 @Deprecated("kotlinx.datetime.Instant is superseded by kotlin.time.Instant",
-    level = DeprecationLevel.WARNING,
+    level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("this.toStdlibInstant().format(format, offset)")
 )
 public fun Instant.format(format: DateTimeFormat<DateTimeComponents>, offset: UtcOffset = UtcOffset.ZERO): String {
