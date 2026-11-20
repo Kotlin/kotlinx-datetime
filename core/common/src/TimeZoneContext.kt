@@ -22,6 +22,11 @@ public interface TimeZoneDatabase {
     /**
      * Returns the time zone identified by the provided [id].
      *
+     * Repeated successful calls with the same [id] should return objects that behave identically,
+     * even if the timezone data supported by the platform changed.
+     * In practice, this means either caching the timezone data until the program is restarted,
+     * or updating the already obtained [TimeZone] objects once a timezone data update is detected.
+     *
      * @throws IllegalTimeZoneException if [id] has an unsupported format
      * or the time zone with the given [id] is not found.
      * @throws IllegalStateException if the [id] corresponds to a time zone, but its internal state
@@ -35,6 +40,11 @@ public interface TimeZoneDatabase {
     /**
      * Returns the time zone identified by the provided [id],
      * or `null` if it's not found or the [id] has an unsupported format.
+     *
+     * Repeated successful calls with the same [id] should return objects that behave identically,
+     * even if the timezone data supported by the platform changed.
+     * In practice, this means either caching the timezone data until the program is restarted,
+     * or updating the already obtained [TimeZone] objects once a timezone data update is detected.
      *
      * @throws IllegalStateException if the [id] corresponds to a time zone, but its internal state
      * could not be obtained, e.g., because the timezone database is corrupted.
@@ -163,6 +173,11 @@ public interface TimeZoneContext: TimeZoneDatabase, TimeZoneIdProvider {
          *   as a dependency, it is used to obtain the timezone rules.
          *   Otherwise, the [IllegalTimeZoneException] is thrown.
          *   This behavior is likely to change in the future if Wasm/WASI exposes a way to access the timezone database.
+         *
+         * Once obtained, the timezone data is cached forever internally by [TimeZoneContext.System].
+         * Repeated successful calls to [get] with the same [id]
+         * returns objects that behave like the earliest obtained one does.
+         * To observe an update in timezone data, a program restart is required.
          *
          * @throws IllegalTimeZoneException if [id] has an invalid format or a time zone
          * with the identifier [id] is not found.

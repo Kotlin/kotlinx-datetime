@@ -19,7 +19,7 @@ class TimeZoneRulesCompleteTest {
         val tzdb = TzdbOnFilesystem()
         for (id in tzdb.availableZoneIds()) {
             val rules = tzdb.get(id)
-            runUnixCommand("env LOCALE=C zdump -V ${tzdb.tzdbPath}/$id").windowed(size = 2, step = 2).forEach { (line1, line2) ->
+            runUnixCommand("env LOCALE=C zdump -V $id").windowed(size = 2, step = 2).forEach { (line1, line2) ->
                 val beforeTransition = parseZdumpLine(line1)
                 val afterTransition = parseZdumpLine(line2)
                 try {
@@ -49,7 +49,6 @@ class TimeZoneRulesCompleteTest {
                 } catch (e: Throwable) {
                     println(beforeTransition)
                     println(afterTransition)
-                    println(Base64.encode(Path.fromString("${tzdb.tzdbPath}/$id").readBytes()!!))
                     throw e
                 }
             }
