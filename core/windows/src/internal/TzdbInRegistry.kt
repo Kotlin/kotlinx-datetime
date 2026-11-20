@@ -104,6 +104,8 @@ internal class TzdbInRegistry: TimeZoneDatabase {
         else  // the user explicitly disabled DST transitions, so
             FixedOffsetTimeZone.withSpecificPrefix(UtcOffset(minutes = -(dtzi.Bias + dtzi.StandardBias)), "GMT")
     }
+
+    override fun toString(): String = "WinAPI registry data"
 }
 
 internal class WindowsCurrentSystemDefault(

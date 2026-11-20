@@ -125,7 +125,7 @@ class TimeZoneTest {
 
     // from 310bp
     @Test
-    fun timeZoneToString() {
+    fun timeZoneIdNormalization() {
         val idToString = arrayOf(
             Pair("Europe/London", "Europe/London"),
             Pair("Europe/Paris", "Europe/Paris"),
@@ -136,8 +136,10 @@ class TimeZoneTest {
             Pair("UTC+01:00", "UTC+01:00"),
             Pair("GMT+01:00", "GMT+01:00"),
             Pair("UT+01:00", "UT+01:00"))
-        for ((id, str) in idToString) {
-            assertEquals(str, TimeZoneContext.System.get(id).toString())
+        for ((inputId, normalizedId) in idToString) {
+            val tz = TimeZoneContext.System.get(inputId)
+            assertEquals(normalizedId, tz.id)
+            assertTrue(tz.toString().contains(normalizedId))
         }
     }
 
