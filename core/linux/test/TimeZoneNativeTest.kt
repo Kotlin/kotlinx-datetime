@@ -12,6 +12,7 @@ import kotlinx.datetime.internal.systemTimezoneSearchRoot
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.time.Instant
 
 class TimeZoneNativeTest {
 
@@ -74,3 +75,5 @@ class TimeZoneNativeTest {
         }
     }
 }
+
+actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE

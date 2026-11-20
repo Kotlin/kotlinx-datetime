@@ -29,17 +29,21 @@ class TimezonesWithoutDatabaseTest {
         assertEquals(today.atTime(0, 0).toInstant(tz), today.atStartOfDayIn(tz))
     }
 
-    // Run manually with Europe/Berlin
-    // Copy of `TimeZoneTest#checkKnownTimezoneDatabaseRecords`
-    @Ignore
     @Test
     fun systemCheckKnownTimezoneDatabaseRecords() {
-        with(TimeZoneContext.System.currentTimeZone()) {
-            checkRegular(this, LocalDateTime(2019, 1, 31, 1, 0), UtcOffset(hours = 1))
-            checkGap(this, LocalDateTime(2019, 3, 31, 2, 0))
-            checkRegular(this, LocalDateTime(2019, 6, 27, 1, 0), UtcOffset(hours = 2))
-            checkOverlap(this, LocalDateTime(2019, 10, 27, 3, 0))
-            checkRegular(this, LocalDateTime(2019, 12, 5, 23, 0), UtcOffset(hours = 1))
+        val zone = TimeZoneContext.System.currentTimeZone()
+        val name = TimeZoneContext.System.currentTimeZoneId()
+        val behavior = when (name) {
+            "Europe/Berlin" -> europeBerlinBehavior
+            "America/New_York" -> americaNewYorkBehavior
+            else -> null
+        }
+        behavior?.let {
+            try {
+                assertTimeZoneHasBehavior(zone, it)
+            } catch (e: Throwable) {
+                throw AssertionError("Test failed for $name", e)
+            }
         }
     }
 

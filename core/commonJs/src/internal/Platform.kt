@@ -102,8 +102,7 @@ private object SystemTimeZone: TimeZone() {
 
     // Assuming there are not going to be multiple transitions on the same day or transitions of 24 hours or longer
     override fun offsetInfoFor(dateTime: LocalDateTime): LocalDateTimeOffsetInfo {
-        val offsetGuess = Date(milliseconds = dateTime.toInstant(UTC).toEpochMilliseconds().toDouble())
-            .getTimezoneOffset().toInt().let { UtcOffset(minutes = -it) }
+        val offsetGuess = offsetAt(dateTime.toInstant(UTC))
         val instantGuess = dateTime.toInstant(offsetGuess)
         val offsetBefore = offsetAt(instantGuess - 24.hours)
         val offsetAfter = offsetAt(instantGuess + 24.hours)
@@ -131,8 +130,8 @@ private object SystemTimeZone: TimeZone() {
         } else {
             // Overlap
             when {
-                dateTime < transitionStart.toLocalDateTime(offsetAfter) -> LocalDateTimeOffsetInfo.Regular(offsetAfter)
-                dateTime >= transitionStart.toLocalDateTime(offsetBefore) -> LocalDateTimeOffsetInfo.Regular(offsetBefore)
+                dateTime < transitionStart.toLocalDateTime(offsetAfter) -> LocalDateTimeOffsetInfo.Regular(offsetBefore)
+                dateTime >= transitionStart.toLocalDateTime(offsetBefore) -> LocalDateTimeOffsetInfo.Regular(offsetAfter)
                 else -> LocalDateTimeOffsetInfo.Overlap(transitionStart, offsetBefore, offsetAfter)
             }
         }

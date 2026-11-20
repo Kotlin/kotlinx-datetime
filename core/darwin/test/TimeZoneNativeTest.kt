@@ -6,11 +6,13 @@
 package kotlinx.datetime.test
 
 import kotlinx.datetime.*
+import kotlinx.datetime.testing.*
 import kotlinx.datetime.internal.*
 import kotlin.test.*
 import kotlinx.datetime.test.TimeZoneNativeTest.OffsetInfoType.*
 import platform.Foundation.NSTimeZone
 import platform.Foundation.timeZoneWithName
+import kotlin.time.Instant
 
 class TimeZoneNativeTest {
 
@@ -51,85 +53,6 @@ class TimeZoneNativeTest {
     }
 
     // timeZone.offsetAt(Instant) tests
-
-    @Test
-    fun shouldHandleDstSpringForwardTransitionConsistentlyBetweenImplementations() {
-        verifyDstTransitionConsistency(
-            "America/New_York",
-            timeJustBeforeTransition = LocalDateTime(2025, 3, 9, 1, 59, 59),
-            transitionName = "DST spring forward transition"
-        )
-    }
-
-    @Test
-    fun shouldHandleDstFallBackTransitionConsistentlyBetweenImplementations() {
-        verifyDstTransitionConsistency(
-            "America/New_York",
-            timeJustBeforeTransition = LocalDateTime(2025, 11, 2, 1, 59, 59),
-            transitionName = "DST fall back transition"
-        )
-    }
-
-    private fun verifyDstTransitionConsistency(zoneId: String, timeJustBeforeTransition: LocalDateTime, transitionName: String) {
-        val regularTz = TimeZoneContext.System.get(zoneId)
-        val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
-
-        val instantBefore = timeJustBeforeTransition.toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
-        val instantAfter = timeJustBeforeTransition.plusSeconds(1).toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
-
-        val offsetBefore = regularTz.offsetAt(instantBefore)
-        val offsetAfter = regularTz.offsetAt(instantAfter)
-
-        assertNotEquals(
-            offsetBefore,
-            offsetAfter,
-            "Expected offset change during $transitionName"
-        )
-
-        assertEquals(
-            offsetBefore,
-            foundationTz.offsetAt(instantBefore),
-            "Regular and Foundation implementations should have same offset before transition"
-        )
-
-        assertEquals(
-            offsetAfter,
-            foundationTz.offsetAt(instantAfter),
-            "Regular and Foundation implementations should have same offset after transition"
-        )
-    }
-
-    @Test
-    fun shouldHandleNoTransitionPeriodConsistentlyBetweenImplementations() {
-        val summerTime = LocalDateTime(2025, 7, 15, 12, 30, 45)
-        val zoneId = "America/New_York"
-        val regularTz = TimeZoneContext.System.get(zoneId)
-        val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
-        val summerTimeInstant = summerTime.toInstant(regularTz, TransitionHandler.USE_OFFSET_BEFORE)
-        val firstOffset = regularTz.offsetAt(summerTimeInstant)
-        for (period in listOf(
-            DateTimePeriod(),
-            DateTimePeriod(hours = 1),
-            DateTimePeriod(days = 1),
-            DateTimePeriod(days = 7),
-        )) {
-            val instant = summerTimeInstant.plus(period, regularTz)
-            val regularOffset = regularTz.offsetAt(instant)
-            val foundationOffset = foundationTz.offsetAt(instant)
-
-            assertEquals(
-                regularOffset,
-                foundationOffset,
-                "Regular and Foundation implementations should have same offset during stable period at $instant"
-            )
-
-            assertEquals(
-                firstOffset,
-                regularOffset,
-                "Regular implementation should have same offset as at summer time for period $period"
-            )
-        }
-    }
 
     @Test
     fun shouldProduceConsistentUtcOffsetBetweenRegularAndFoundationTimeZones() {
@@ -350,7 +273,7 @@ class TimeZoneNativeTest {
     fun shouldProduceConsistentOffsetInfoBetweenRegularAndFoundationTimeZoneRules() {
         for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
             val regularRules = tzdb.get(zoneId)
-            val foundationRules = DarwinTimeZone(NSTimeZone.timeZoneWithName(zoneId)!!, zoneId)
+            val foundationRules = timeZoneByIdFoundationOrNull(zoneId)!!
 
             for ((localDateTime, expectedType) in localDateTimes) {
                 val regularInfo = regularRules.offsetInfoFor(localDateTime)
@@ -372,21 +295,25 @@ class TimeZoneNativeTest {
         assertEquals(expectedType, actualType)
     }
 
-    // LocalDate.atStartOfDayIn(TimeZone) tests
-
     @Test
-    fun shouldProduceConsistentInstanceBetweenRegularAndFoundationTimeZones() {
-        for ((zoneId, localDateTimes) in timeZoneRulesTestCases) {
-            val regularTz = TimeZoneContext.System.get(zoneId)
-            val foundationTz = timeZoneByIdFoundationOrNull(zoneId)!!
-
-            for ((localDateTime, _) in localDateTimes) {
-                val date = localDateTime.date
-                val regularInstance = date.atStartOfDayIn(regularTz)
-                val foundationInstance = date.atStartOfDayIn(foundationTz)
-
-                assertEquals(regularInstance, foundationInstance)
-            }
-        }
+    fun checkKnownTimezoneDatabaseRecords() {
+        assertTimeZoneHasBehavior(
+            timeZoneByIdFoundationOrNull("America/New_York")!!,
+            americaNewYorkBehavior.limit(RELIABLE_TRANSITIONS)
+        )
+        assertTimeZoneHasBehavior(
+            timeZoneByIdFoundationOrNull("Europe/Berlin")!!,
+            europeBerlinBehavior.limit(RELIABLE_TRANSITIONS)
+        )
+        assertTimeZoneHasBehavior(
+            timeZoneByIdFoundationOrNull("Australia/Sydney")!!,
+            australiaSydneyBehavior.limit(RELIABLE_TRANSITIONS)
+        )
+        assertTimeZoneHasBehavior(
+            timeZoneByIdFoundationOrNull("Europe/Moscow")!!,
+            europeMoscowBehavior.limit(RELIABLE_TRANSITIONS)
+        )
     }
 }
+
+actual val RELIABLE_TRANSITIONS = Instant.DISTANT_PAST..Instant.DISTANT_FUTURE
