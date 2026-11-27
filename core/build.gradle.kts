@@ -115,7 +115,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
-        nodejs()
+        wasmtime()
     }
 
     // Tiers are in accordance with <https://kotlinlang.org/docs/native-target-support.html>

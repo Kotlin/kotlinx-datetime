@@ -6,7 +6,6 @@
 import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.npm.task.NpxTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.npm.NpmResolverPlugin
 import java.util.*
 
 plugins {
@@ -55,8 +54,7 @@ val generateZoneInfo by tasks.registering {
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
-        nodejs()
-        NpmResolverPlugin.apply(project) //Workaround KT-66373
+        wasmtime()
     }
 
     sourceSets.all {

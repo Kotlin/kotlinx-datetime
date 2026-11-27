@@ -65,8 +65,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
-        nodejs {
-        }
+        wasmtime()
     }
 
     sourceSets.all {
